@@ -17,6 +17,7 @@ const OrderCustomerTransaction = () => {
 
   const saveOrderCustomerDataHandler = (orderCustomer) => {
     // this.fetchMarkUpPriceList();
+    //
     setOrderCustomerList([...orderCustomerList, orderCustomer]);
   }
 
