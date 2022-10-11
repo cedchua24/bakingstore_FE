@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import OrderCustomerTransactionService from "./OrderCustomerTransaction.service";
-import OrderCustomerTransactionList from "./OrderCustomerTransactionList";
 import MarkUpPriceServiceService from "../MarkUpPrice/MarkUpPriceService.service";
 import AddProductOrderCustomer from "./AddProductOrderCustomer";
 

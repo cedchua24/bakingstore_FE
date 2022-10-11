@@ -60,10 +60,6 @@ const OrderSupplierTransaction = () => {
                 onSaveOrderTransactionData={saveOrderTransactionDataHandler}
                 supplierList={supplierList}
             />
-            {/* <SupplierTransactionList
-                orderTransactionList={orderTransactionList}
-                deleteOrderTransaction={deleteOrderTransaction}
-            /> */}
         </div>
     )
 }

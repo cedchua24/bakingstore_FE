@@ -132,7 +132,7 @@ const StockList = (props) => {
                                 <td>{product.product_name}</td>
                                 <td>{product.brand_name}</td>
                                 <td>{product.category_name}</td>
-                                <td>₱. {product.price}.00</td>
+                                <td>₱ {product.price}.00</td>
                                 <td>{product.stock}</td>
                                 <td>{product.weight}x{product.quantity}kg</td>
                                 <td>

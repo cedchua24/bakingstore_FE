@@ -98,8 +98,8 @@ const NavBar = () => {
                     </Link>
                 </li>
                 <li className="nav-item">
-                    <Link to={"/orderCustomerTransactionList"} className="nav-link">
-                        Order Customerr List
+                    <Link to={"/orderCustomerList"} className="nav-link">
+                        Order Customer List
                     </Link>
                 </li>
                 <li className="nav-item">

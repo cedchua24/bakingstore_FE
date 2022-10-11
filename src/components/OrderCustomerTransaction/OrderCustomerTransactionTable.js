@@ -23,9 +23,12 @@ import Input from '@mui/material/Input';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography'
 
+import OrderCustomerService from "./OrderCustomerService.service";
+
 const OrderCustomerTransactionTable = (props) => {
 
     const orderCustomerList = props.orderCustomerList;
+    const orderCustomerDTO = props.orderCustomerDTO;
 
     const [orderCustomerModal, setOrderCustomerModal] = useState({
         id: 0,
@@ -38,6 +41,10 @@ const OrderCustomerTransactionTable = (props) => {
         discount: 0
     });
 
+    // const [orderCustomerDTO, setOrderCustomerDTO] = useState({
+    //     grandTotal: 0,
+    //     orderCustomerList: []
+    // });
 
     const TAX_RATE = 0.12;
 
@@ -65,6 +72,7 @@ const OrderCustomerTransactionTable = (props) => {
         p: 4,
         '& .MuiTextField-root': { m: 1, width: '25ch' },
     };
+
 
     const [open, setOpen] = React.useState(false);
 
@@ -101,6 +109,33 @@ const OrderCustomerTransactionTable = (props) => {
             price: e.target.value,
             total_price: e.target.value * orderCustomerModal.quantity
         });
+    }
+
+    const saveCustomerTransaction = (e) => {
+        e.preventDefault();
+        console.log('order', orderCustomerList)
+        OrderCustomerService.sanctum().then(response => {
+            OrderCustomerService.saveCustomerTransaction((orderCustomerDTO))
+                .then(response => {
+                    console.log('success', response);
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+        });
+
+        // orderCustomerList.map((data, index) => (
+        //     OrderCustomerService.sanctum().then(response => {
+        //         OrderCustomerService.create(data)
+        //             .then(response => {
+        //                 console.log('success', response);
+        //             })
+        //             .catch(e => {
+        //                 console.log(e);
+        //             });
+        //     })
+        // )
+        // )
     }
 
     return (
@@ -152,7 +187,7 @@ const OrderCustomerTransactionTable = (props) => {
                     </TableBody>
                     <TableRow>
                         <TableCell rowSpan={3} />
-                        <TableCell colSpan={2}>Subtotal</TableCell>
+                        <TableCell colSpan={2}>Total</TableCell>
                         <TableCell align="right">{ccyFormat(invoiceSubtotal)}</TableCell>
                     </TableRow>
                     <TableRow>
@@ -161,11 +196,29 @@ const OrderCustomerTransactionTable = (props) => {
                         <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
                     </TableRow>
                     <TableRow>
-                        <TableCell colSpan={2}>Total</TableCell>
+                        <TableCell colSpan={2}>Grand Total</TableCell>
                         <TableCell align="right">{ccyFormat(invoiceTotal)}</TableCell>
                     </TableRow>
                 </Table>
             </TableContainer>
+            <br></br>
+            <form onSubmit={saveCustomerTransaction} >
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <Button
+                        variant="contained"
+                        type="submit"
+                        size="large" >
+                        Submit
+                    </Button>
+                </Box>
+            </form>
 
             <Modal
                 keepMounted
@@ -220,25 +273,27 @@ const OrderCustomerTransactionTable = (props) => {
                         label="Total Price"
                         variant="filled"
                         name='total_price'
-                        startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                        // startAdornment={<InputAdornment position="start">₱</InputAdornment>}
                         value={'₱ ' + orderCustomerModal.total_price}
                     />
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
-                    </Box>
+                    <form onSubmit={updateOrderSupplier} >
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: { xs: 'column', md: 'row' },
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                // onClick={updateOrderSupplier}
+                                size="large" >
+                                Submit
+                            </Button>
+                        </Box>
+                    </form>
                 </Box>
             </Modal>
         </div>

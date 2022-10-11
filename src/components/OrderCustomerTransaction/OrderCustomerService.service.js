@@ -9,6 +9,9 @@ class OrderCustomerService {
     create(data) {
         return axios.post("/api/orderCustomers", data);
     }
+    saveCustomerTransaction(data) {
+        return axios.post("/api/orderCustomers/saveCustomerTransaction", data);
+    }
     update(id, data) {
         return axios.put(`/api/orderCustomers/${id}`, data);
     }

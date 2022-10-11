@@ -30,11 +30,11 @@ const MarkUpPriceList = (props) => {
                             <tr key={mark_up.id} >
                                 <td>{mark_up.id}</td>
                                 <td>{mark_up.product_name}</td>
-                                <td>{'₱. ' + mark_up.price + '.00'}</td>
+                                <td>{'₱ ' + mark_up.price + '.00'}</td>
                                 {/* <td>{mark_up.mark_up_option}</td> */}
-                                <td>{mark_up.mark_up_option === 'PERCENTAGE' ? mark_up.mark_up_price + '% / ' + '₱. ' + (Number(mark_up.new_price) - Number(mark_up.price)) + '.00' : '₱. ' + mark_up.mark_up_price + '.00'}</td>
-                                {/* <td>{'₱. ' + (Number(mark_up.new_price) - Number(mark_up.price)) + '.00'}</td> */}
-                                <td style={{ fontWeight: 'bold' }}>{'₱. ' + mark_up.new_price}{mark_up.new_price % 1 === 0 ? '.00' : ''}</td>
+                                <td>{mark_up.mark_up_option === 'PERCENTAGE' ? mark_up.mark_up_price + '% / ' + '₱ ' + (Number(mark_up.new_price) - Number(mark_up.price)) + '.00' : '₱ ' + mark_up.mark_up_price + '.00'}</td>
+                                {/* <td>{'₱ ' + (Number(mark_up.new_price) - Number(mark_up.price)) + '.00'}</td> */}
+                                <td style={{ fontWeight: 'bold' }}>{'₱ ' + mark_up.new_price}{mark_up.new_price % 1 === 0 ? '.00' : ''}</td>
                                 <td>
                                     <Link variant="primary" to={"/editMarkUp/" + mark_up.id}   >
                                         <Button variant="primary" >

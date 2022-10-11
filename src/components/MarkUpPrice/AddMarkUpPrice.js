@@ -108,7 +108,7 @@ const AddMarkUpPrice = (props) => {
                             className="mb-3"
                             id="disable-close-on-select"
                             onChange={handleInputChange}
-                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱.' + (products.price) + ')'}
+                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.price) + ')'}
                             renderInput={(params) => (
                                 <TextField {...params} label="Choose Product" variant="standard" />
                             )}

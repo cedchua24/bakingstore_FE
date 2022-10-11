@@ -23,10 +23,16 @@ const AddProductOrderCustomer = (props) => {
 
   const [value, setValue] = useState(products[0])
   const [orderCustomerList, setOrderCustomerList] = useState([]);
+
+  const [orderCustomerDTO, setOrderCustomerDTO] = useState({
+    grandTotal: 0,
+    orderCustomerList: []
+  });
+
   const [orderCustomer, setOrderCustomer] = useState({
     id: 0,
     order_customer_transaction_id: 0,
-    product_id: 0,
+    mark_up_id: 0,
     product_name: '',
     price: 0,
     quantity: 0,
@@ -70,22 +76,29 @@ const AddProductOrderCustomer = (props) => {
 
   const handleInputChange = (e, value) => {
     e.persist();
+    console.log(value)
     setOrderCustomer({
       ...orderCustomer,
       price: value.price,
       product_name: value.product_name,
-      product_id: value.id
+      mark_up_id: value.id
     });
+  }
+
+  function subtotal(items) {
+    return items.map(({ total_price }) => total_price).reduce((sum, i) => sum + i, 0);
   }
 
   const saveProductOrderCustomer = (event) => {
     setValue(products[0]);
     event.preventDefault();
     setOrderCustomerList([...orderCustomerList, orderCustomer]);
+    let arr = orderCustomerList.concat(orderCustomer);
+    setOrderCustomerDTO({ orderCustomerList: arr, grandTotal: subtotal(arr) });
     setOrderCustomer({
       id: 0,
       order_customer_transaction_id: 0,
-      product_id: 0,
+      mark_up_id: 0,
       product_name: '',
       price: 0,
       quantity: 0,
@@ -93,16 +106,7 @@ const AddProductOrderCustomer = (props) => {
       discount: 0
     });
     setValue(products[0]);
-    // OrderCustomerServiceService.sanctum().then(response => {
-    //   OrderCustomerServiceService.create(orderCustomer)
-    //     .then(response => {
-    //       props.onSaveOrderCustomerData(orderCustomer);
-    //       setMessage(true);
-    //     })
-    //     .catch(e => {
-    //       console.log(e);
-    //     });
-    // });
+
   }
 
   return (
@@ -135,7 +139,7 @@ const AddProductOrderCustomer = (props) => {
               className="mb-3"
               id="disable-close-on-select"
               onChange={handleInputChange}
-              getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱.' + (products.price) + ')'}
+              getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.new_price) + ')'}
               renderInput={(params) => (
                 <TextField {...params} label='Choose Product' variant="standard" />
               )}
@@ -203,6 +207,7 @@ const AddProductOrderCustomer = (props) => {
       </Box>
       <br></br>
       <OrderCustomerTransactionList
+        orderCustomerDTO={orderCustomerDTO}
         orderCustomerList={orderCustomerList}
         deleteOrderCustomer={deleteOrderCustomerHandler}
         updateOrderCustomerList={updateOrderCustomerListHandler}

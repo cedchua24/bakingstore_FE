@@ -23,6 +23,7 @@ import EditOrderSupplierTransaction from "./components/OrderSupplierTransaction/
 import AddProductOrderSupplierTransaction from "./components/OrderSupplierTransaction/AddProductOrderSupplierTransaction";
 import FinalizeOrder from "./components/OrderSupplierTransaction/FinalizeOrder";
 import CompletedOrder from "./components/OrderSupplierTransaction/CompletedOrder";
+import CompletedCustomerOrder from "./components/OrderCustomerList/CompletedCustomerOrder";
 import Stock from "./components/Stock/Stock";
 import EditStock from "./components/Stock/EditStock";
 import ViewTransaction from "./components/Stock/ViewTransaction";
@@ -30,7 +31,7 @@ import ViewTransaction from "./components/Stock/ViewTransaction";
 import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
 
 import OrderCustomerTransaction from "./components/OrderCustomerTransaction/OrderCustomerTransaction";
-import OrderCustomerTransactionList from "./components/OrderCustomerTransaction/OrderCustomerTransactionList";
+import OrderCustomerList from "./components/OrderCustomerList/OrderCustomerList";
 
 
 
@@ -80,7 +81,8 @@ const App = () => {
           <Route exact path="/markUpPrice/" element={<MarkUpPrice />} />
 
           <Route exact path="/orderCustomerTransaction/" element={<OrderCustomerTransaction />} />
-          <Route exact path="/orderCustomerTransactionList/" element={<OrderCustomerTransactionList />} />
+          <Route exact path="/orderCustomerList/" element={<OrderCustomerList />} />
+          <Route exact path="/completedCustomerOrder/:id" element={<CompletedCustomerOrder />} />
 
           <Route
             exact

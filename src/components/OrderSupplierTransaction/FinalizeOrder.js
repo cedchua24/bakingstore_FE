@@ -203,7 +203,7 @@ const FinalizeOrder = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell colSpan={2} style={{ color: 'red', }}>Total</TableCell>
-                            <TableCell align="right" style={{ color: 'red', }}>₱. {ccyFormat(invoiceTotal)}</TableCell>
+                            <TableCell align="right" style={{ color: 'red', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
