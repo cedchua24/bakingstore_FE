@@ -73,7 +73,7 @@ const OrderCustomeList = () => {
                                     </Link>
                                 </td>
                                 <td>
-                                    <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >
+                                    <Link variant="primary" to={"/updateCustomerOrder/" + orderTransaction.id}   >
                                         <Button variant="success" >
                                             Update
                                         </Button>

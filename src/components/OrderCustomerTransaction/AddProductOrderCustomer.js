@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Alert } from 'react-bootstrap';
-import MarkUpPriceServiceService from "../MarkUpPrice/MarkUpPriceService.service";
-import OrderCustomerServiceService from "./OrderCustomerService.service";
+// import { Alert } from 'react-bootstrap';
+
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
+
 
 import OrderCustomerTransactionList from "./OrderCustomerTransactionList";
 
@@ -12,10 +14,10 @@ import Input from '@mui/material/Input';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+
 import Button from '@mui/material/Button';
 import { v4 as uuidv4 } from 'uuid';
+
 
 const AddProductOrderCustomer = (props) => {
 
@@ -40,7 +42,12 @@ const AddProductOrderCustomer = (props) => {
     discount: 0
   });
 
-  const [message, setMessage] = useState(false);
+
+  const [validator, setValidator] = useState({
+    severity: '',
+    message: '',
+    isShow: false
+  });
 
   const deleteOrderCustomerHandler = (id) => {
     const index = orderCustomerList.findIndex(orderCustomer => orderCustomer.id === id);
@@ -62,7 +69,10 @@ const AddProductOrderCustomer = (props) => {
 
   const onChangeInput = (e) => {
     console.log(e.target.value);
-    setOrderCustomer({ ...orderCustomer, [e.target.name]: e.target.value });
+    setOrderCustomer({
+      ...orderCustomer,
+      [e.target.name]: e.target.value,
+    });
   }
 
   const onChangeQuantity = (e) => {
@@ -79,9 +89,11 @@ const AddProductOrderCustomer = (props) => {
     console.log(value)
     setOrderCustomer({
       ...orderCustomer,
-      price: value.price,
+      id: uuidv4(),
+      price: value.new_price,
       product_name: value.product_name,
-      mark_up_id: value.id
+      mark_up_id: value.id,
+      total_price: Number(value.new_price) * Number(orderCustomer.quantity)
     });
   }
 
@@ -89,41 +101,83 @@ const AddProductOrderCustomer = (props) => {
     return items.map(({ total_price }) => total_price).reduce((sum, i) => sum + i, 0);
   }
 
-  const saveProductOrderCustomer = (event) => {
-    setValue(products[0]);
-    event.preventDefault();
-    setOrderCustomerList([...orderCustomerList, orderCustomer]);
-    let arr = orderCustomerList.concat(orderCustomer);
-    setOrderCustomerDTO({ orderCustomerList: arr, grandTotal: subtotal(arr) });
-    setOrderCustomer({
-      id: 0,
-      order_customer_transaction_id: 0,
-      mark_up_id: 0,
-      product_name: '',
-      price: 0,
-      quantity: 0,
-      total_price: 0,
-      discount: 0
-    });
-    setValue(products[0]);
+  function inputValidation() {
+    if (orderCustomer.product_name === '') {
+      setValidator({
+        severity: 'warning',
+        message: 'Please choose Product',
+        isShow: true,
+      });
+    } else
+      if (orderCustomer.quantity === 0) {
+        setValidator({
+          severity: 'warning',
+          message: 'Please insert Quantity',
+          isShow: true,
+        });
+      } else {
+        setValidator({
+          severity: '',
+          message: '',
+          isShow: false,
+        });
+        const index = orderCustomerList.filter(obj => {
+          return obj.product_name === orderCustomer.product_name;
+        });
+        if (index.length === 0) {
+          setValidator({
+            severity: 'success',
+            message: 'Successfuly Added!',
+            isShow: true,
+          });
+          setOrderCustomerList([...orderCustomerList, orderCustomer]);
+          let arr = orderCustomerList.concat(orderCustomer);
+          setOrderCustomerDTO({ orderCustomerList: arr, grandTotal: subtotal(arr) });
+          // setOrderCustomer({
+          //   id: 0,
+          //   order_customer_transaction_id: 0,
+          //   mark_up_id: 0,
+          //   product_name: '',
+          //   price: 0,
+          //   quantity: 0,
+          //   total_price: 0,
+          //   discount: 0
+          // });
+          setValue(products[1]);
+
+        } else {
+          setValidator({
+            severity: 'error',
+            message: 'Product already exists!',
+            isShow: true,
+          });
+        }
+      }
 
   }
 
+
+  const saveProductOrderCustomer = (event) => {
+    setValue(products[0]);
+    event.preventDefault();
+    inputValidation();
+
+  }
+
+
+
+
   return (
     <div>
-      {message &&
-        <Alert variant="success" dismissible>
-          <Alert.Heading>Successfully Added!</Alert.Heading>
-          <p>
-            Change this and that and try again. Duis mollis, est non commodo
-            luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-            Cras mattis consectetur purus sit amet fermentum.
-          </p>
-        </Alert>
-      }
+      <Stack sx={{ width: '100%' }} spacing={2}>
+        {validator.isShow &&
+          <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+        }
+      </Stack>
+
       <Box
         sx={{
-          '& .MuiTextField-root': { m: 1, width: '25ch' },
+          '& .MuiTextField-root': { m: 1 },
         }}
         noValidate
         autoComplete="off"
@@ -131,9 +185,13 @@ const AddProductOrderCustomer = (props) => {
       >
         <br></br>
         <form onSubmit={saveProductOrderCustomer} >
-          <FormControl variant="standard" >
+          <FormControl variant="standard"  >
             <Autocomplete
               // {...defaultProps}
+              //assign the width as your requirement
+              sx={{
+                width: 400
+              }}
               options={products}
               value={value}
               className="mb-3"

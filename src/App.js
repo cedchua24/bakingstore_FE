@@ -24,6 +24,7 @@ import AddProductOrderSupplierTransaction from "./components/OrderSupplierTransa
 import FinalizeOrder from "./components/OrderSupplierTransaction/FinalizeOrder";
 import CompletedOrder from "./components/OrderSupplierTransaction/CompletedOrder";
 import CompletedCustomerOrder from "./components/OrderCustomerList/CompletedCustomerOrder";
+import UpdateCustomerOrder from "./components/OrderCustomerList/UpdateCustomerOrder";
 import Stock from "./components/Stock/Stock";
 import EditStock from "./components/Stock/EditStock";
 import ViewTransaction from "./components/Stock/ViewTransaction";
@@ -32,6 +33,7 @@ import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
 
 import OrderCustomerTransaction from "./components/OrderCustomerTransaction/OrderCustomerTransaction";
 import OrderCustomerList from "./components/OrderCustomerList/OrderCustomerList";
+import { Update } from "@mui/icons-material";
 
 
 
@@ -83,6 +85,7 @@ const App = () => {
           <Route exact path="/orderCustomerTransaction/" element={<OrderCustomerTransaction />} />
           <Route exact path="/orderCustomerList/" element={<OrderCustomerList />} />
           <Route exact path="/completedCustomerOrder/:id" element={<CompletedCustomerOrder />} />
+          <Route exact path="/updateCustomerOrder/:id" element={<UpdateCustomerOrder />} />
 
           <Route
             exact

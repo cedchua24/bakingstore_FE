@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect } from "react";
+import { useParams } from 'react-router-dom';
+import OrderCustomerListService from "./OrderCustomerListService.service";
+import OrderCustomerService from "../OrderCustomerTransaction/OrderCustomerService.service";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -21,36 +23,24 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
+import Typography from '@mui/material/Typography'
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
-import CircularProgress from '@mui/material/CircularProgress';
+const UpdateCustomerOrder = () => {
 
-import OrderCustomerService from "./OrderCustomerService.service";
 
-const OrderCustomerTransactionTable = (props) => {
+    const { id } = useParams();
 
-    const orderCustomerList = props.orderCustomerList;
-    const orderCustomerDTO = props.orderCustomerDTO;
+    useEffect(() => {
+        fetchOrderCustomerTransaction(id);
+        fetchOrderCustomerTransactionList(id);
+    }, []);
 
-    const [orderCustomerModal, setOrderCustomerModal] = useState({
-        id: 0,
-        order_customer_transaction_id: 0,
-        product_id: 0,
-        product_name: '',
-        price: 0,
-        quantity: 0,
-        total_price: 0,
-        discount: 0
-    });
-
-    // const [orderCustomerDTO, setOrderCustomerDTO] = useState({
-    //     grandTotal: 0,
-    //     orderCustomerList: []
-    // });
 
     const TAX_RATE = 0.12;
 
@@ -58,13 +48,24 @@ const OrderCustomerTransactionTable = (props) => {
         return `${num.toFixed(2)}`;
     }
 
-    function subtotal(items) {
-        return items.map(({ total_price }) => total_price).reduce((sum, i) => sum + i, 0);
-    }
+    const [invoiceSubtotal, setinvoiceSubtotal] = useState(0);
+    const [invoiceTaxes, setinvoiceTaxes] = useState(0);
+    const [invoiceTotal, setinvoiceTotal] = useState(0);
 
-    const invoiceSubtotal = subtotal(orderCustomerList);
-    const invoiceTaxes = TAX_RATE * invoiceSubtotal;
-    const invoiceTotal = invoiceTaxes + invoiceSubtotal;
+
+    const [orderCustomerTransaction, setOrderCustomerTransaction] = useState({
+        id: 0,
+        customer_id: '',
+        total_transaction_price: 0,
+        status: '',
+        created_at: '',
+        updated_at: ''
+    });
+
+    const [orderCustomerTransactionList, setOrderCustomerTransactionList] = useState([]);
+
+    const [message, setMessage] = useState(false);
+
 
     const style = {
         position: 'absolute',
@@ -79,9 +80,54 @@ const OrderCustomerTransactionTable = (props) => {
         '& .MuiTextField-root': { m: 1, width: '25ch' },
     };
 
+    const [orderCustomerModal, setOrderCustomerModal] = useState({
+        id: 0,
+        order_customer_transaction_id: 0,
+        product_id: 0,
+        product_name: '',
+        price: 0,
+        quantity: 0,
+        total_price: 0,
+        discount: 0
+    });
+
+    function subtotal(items) {
+        return items.map(({ total_price }) => total_price).reduce((sum, i) => sum + i, 0);
+    }
+
+
+    const updateOrderCustomerList = () => {
+
+        const index = orderCustomerTransactionList.findIndex(obj => {
+            return obj.id === orderCustomerModal.id;
+        });
+
+        const newOrderCustomerTransactionList = [...orderCustomerTransactionList];
+        newOrderCustomerTransactionList[index] = orderCustomerModal;
+        setOrderCustomerTransactionList(newOrderCustomerTransactionList);
+
+        OrderCustomerService.update(orderCustomerModal.id, orderCustomerModal)
+            .then(response => {
+                // setOrderCustomerTransactionList(response.data);  
+                console.log('orderCustomerModal.id', orderCustomerModal.id);
+                console.log('orderCustomerModal.id', orderCustomerModal.id);
+                OrderCustomerListService.update(orderCustomerModal.order_customer_transaction_id, orderCustomerModal)
+                    .then(response => {
+                        fetchOrderCustomerTransaction(id);
+                        fetchOrderCustomerTransactionList(id);
+                    })
+                    .catch(e => {
+                        console.log("error", e)
+                    });
+
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
 
     const [open, setOpen] = React.useState(false);
-    const [submitLoading, setSubmitLoading] = useState(false);
 
     const handleOpen = (order, e) => {
         setOpen(true);
@@ -91,33 +137,20 @@ const OrderCustomerTransactionTable = (props) => {
 
     const handleClose = () => setOpen(false);
 
-    const [open2, setOpen2] = React.useState(false);
+    const deleteOrderCustomer = (idProduct) => {
 
+        const index = orderCustomerTransactionList.findIndex(obj => obj.id === idProduct);
+        const newOrderCustomer = [...orderCustomerTransactionList];
+        newOrderCustomer.splice(index, 1);
 
-    const handleClose2 = () => {
-        setOpen2(false);
-    };
-
-    const [open3, setOpen3] = React.useState(false);
-
-
-    const handleClose3 = () => {
-        setOpen3(false);
-    };
-
-    const deleteOrderCustomer = (id, e) => {
-        console.log(id, 'id')
-        props.deleteOrderCustomer(id);
-    }
-
-    const updateOrderCustomerList = () => {
-        setOpen3(true);
-    }
-
-    const confirmUpdateTransaction = () => {
-        props.updateOrderCustomerList(orderCustomerModal);
-        setOpen3(false);
-        setOpen(false);
+        OrderCustomerService.delete(idProduct)
+            .then(response => {
+                setOrderCustomerTransactionList(newOrderCustomer);
+                fetchOrderCustomerTransaction(id);
+            })
+            .catch(e => {
+                console.log('error', e);
+            });
     }
 
 
@@ -140,27 +173,30 @@ const OrderCustomerTransactionTable = (props) => {
     }
 
 
-    const saveCustomerTransaction = (e) => {
-        e.preventDefault();
-        setOpen2(true);
+    const fetchOrderCustomerTransaction = async (id) => {
+        await OrderCustomerListService.get(id)
+            .then(response => {
+                // setOrderCustomerTransactionList(response.data);
+                setinvoiceSubtotal(response.data.total_transaction_price - TAX_RATE * response.data.total_transaction_price);
+                setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
+                setinvoiceTotal(response.data.total_transaction_price);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
     }
 
-    const confirmTransaction = () => {
-        console.log('order', orderCustomerList)
-        setSubmitLoading(true);
-        OrderCustomerService.sanctum().then(response => {
-            OrderCustomerService.saveCustomerTransaction((orderCustomerDTO))
-                .then(response => {
-                    setSubmitLoading(false);
-                    setOpen2(false);
-                    console.log('success', response);
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        });
-
+    const fetchOrderCustomerTransactionList = async (id) => {
+        await OrderCustomerService.findById(id)
+            .then(response => {
+                setOrderCustomerTransactionList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
     }
+
+
 
     return (
         <div>
@@ -179,12 +215,10 @@ const OrderCustomerTransactionTable = (props) => {
                             <TableCell align="right">Qty.</TableCell>
                             <TableCell align="right">Unit</TableCell>
                             <TableCell align="right">Sum</TableCell>
-                            <TableCell align="right"></TableCell>
-                            <TableCell align="right"></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {orderCustomerList.map((row) => (
+                        {orderCustomerTransactionList.map((row) => (
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
@@ -207,43 +241,23 @@ const OrderCustomerTransactionTable = (props) => {
                             </TableRow>
                         ))}
 
-
+                        <TableRow>
+                            <TableCell rowSpan={3} />
+                            <TableCell colSpan={2}>Subtotal</TableCell>
+                            <TableCell align="right">{invoiceSubtotal}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Tax</TableCell>
+                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
+                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell colSpan={2}>Grand Total: </TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
+                        </TableRow>
                     </TableBody>
-                    <TableRow>
-                        <TableCell rowSpan={3} />
-                        <TableCell colSpan={2}>Total</TableCell>
-                        <TableCell align="right">{ccyFormat(invoiceSubtotal)}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell>Tax</TableCell>
-                        <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                        <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell colSpan={2}>Grand Total</TableCell>
-                        <TableCell align="right">{ccyFormat(invoiceTotal)}</TableCell>
-                    </TableRow>
                 </Table>
             </TableContainer>
-            <br></br>
-            <form onSubmit={saveCustomerTransaction} >
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: { xs: 'column', md: 'row' },
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <Button
-                        variant="contained"
-                        type="submit"
-                        disabled={orderCustomerList.length === 0 ? true : false}
-                        size="large" >
-                        Submit
-                    </Button>
-                </Box>
-            </form>
 
             <Modal
                 keepMounted
@@ -319,50 +333,11 @@ const OrderCustomerTransactionTable = (props) => {
                     </Box>
                 </Box>
             </Modal >
-            <div>
-                <Dialog
-                    open={open2}
-                    onClose={handleClose2}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-
-                    <DialogTitle id="alert-dialog-title">
-                        {"Are you sure you want to Submit?"}
-                    </DialogTitle>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <DialogActions>
-                        <Button onClick={handleClose2}>Disagree</Button>
-                        <Button onClick={confirmTransaction} autoFocus>
-                            Agree
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </div>
-            <div>
-                <Dialog
-                    open={open3}
-                    onClose={handleClose2}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-
-                    <DialogTitle id="alert-dialog-title">
-                        {"Updated Successfully!"}
-                    </DialogTitle>
-                    <DialogActions>
-                        <Button onClick={confirmUpdateTransaction} >
-                            Ok
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </div>
         </div >
     )
 }
 
-export default OrderCustomerTransactionTable
+export default UpdateCustomerOrder
+
+
+
