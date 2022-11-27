@@ -108,9 +108,6 @@ const UpdateCustomerOrder = () => {
 
         OrderCustomerService.update(orderCustomerModal.id, orderCustomerModal)
             .then(response => {
-                // setOrderCustomerTransactionList(response.data);  
-                console.log('orderCustomerModal.id', orderCustomerModal.id);
-                console.log('orderCustomerModal.id', orderCustomerModal.id);
                 OrderCustomerListService.update(orderCustomerModal.order_customer_transaction_id, orderCustomerModal)
                     .then(response => {
                         fetchOrderCustomerTransaction(id);

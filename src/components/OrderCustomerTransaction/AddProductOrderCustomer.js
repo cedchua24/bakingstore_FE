@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// import { Alert } from 'react-bootstrap';
 
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -35,6 +34,7 @@ const AddProductOrderCustomer = (props) => {
     id: 0,
     order_customer_transaction_id: 0,
     mark_up_id: 0,
+    product_id: 0,
     product_name: '',
     price: 0,
     quantity: 0,
@@ -93,6 +93,7 @@ const AddProductOrderCustomer = (props) => {
       price: value.new_price,
       product_name: value.product_name,
       mark_up_id: value.id,
+      product_id: value.product_id,
       total_price: Number(value.new_price) * Number(orderCustomer.quantity)
     });
   }
@@ -133,16 +134,6 @@ const AddProductOrderCustomer = (props) => {
           setOrderCustomerList([...orderCustomerList, orderCustomer]);
           let arr = orderCustomerList.concat(orderCustomer);
           setOrderCustomerDTO({ orderCustomerList: arr, grandTotal: subtotal(arr) });
-          // setOrderCustomer({
-          //   id: 0,
-          //   order_customer_transaction_id: 0,
-          //   mark_up_id: 0,
-          //   product_name: '',
-          //   price: 0,
-          //   quantity: 0,
-          //   total_price: 0,
-          //   discount: 0
-          // });
           setValue(products[1]);
 
         } else {
@@ -166,7 +157,6 @@ const AddProductOrderCustomer = (props) => {
 
 
 
-
   return (
     <div>
       <Stack sx={{ width: '100%' }} spacing={2}>
@@ -185,19 +175,22 @@ const AddProductOrderCustomer = (props) => {
       >
         <br></br>
         <form onSubmit={saveProductOrderCustomer} >
+
           <FormControl variant="standard"  >
             <Autocomplete
-              // {...defaultProps}
-              //assign the width as your requirement
               sx={{
-                width: 400
+                width: 500
               }}
-              options={products}
+              // options={products}
+              options={products.sort((a, b) =>
+                b.category_name.toString().localeCompare(a.category_name.toString())
+              )}
               value={value}
               className="mb-3"
               id="disable-close-on-select"
               onChange={handleInputChange}
-              getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.new_price) + ')'}
+              groupBy={(products) => products.category_name}
+              getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + (products.stock)}
               renderInput={(params) => (
                 <TextField {...params} label='Choose Product' variant="standard" />
               )}
@@ -209,6 +202,7 @@ const AddProductOrderCustomer = (props) => {
           <FormControl variant="standard" >
             <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
             <Input
+              type='number'
               className="mb-3"
               id="filled-required"
               label="Price"
