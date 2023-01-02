@@ -21,6 +21,7 @@ import OrderSupplierTransaction from "./components/OrderSupplierTransaction/Orde
 import SupplierTransactionListV2 from "./components/OrderSupplierTransaction/SupplierTransactionListV2";
 import EditOrderSupplierTransaction from "./components/OrderSupplierTransaction/EditOrderSupplierTransaction";
 import AddProductOrderSupplierTransaction from "./components/OrderSupplierTransaction/AddProductOrderSupplierTransaction";
+import BranchStock from "./components/OrderSupplierTransaction/BranchStock";
 import FinalizeOrder from "./components/OrderSupplierTransaction/FinalizeOrder";
 import CompletedOrder from "./components/OrderSupplierTransaction/CompletedOrder";
 import CompletedCustomerOrder from "./components/OrderCustomerList/CompletedCustomerOrder";
@@ -33,6 +34,10 @@ import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
 
 import OrderCustomerTransaction from "./components/OrderCustomerTransaction/OrderCustomerTransaction";
 import OrderCustomerList from "./components/OrderCustomerList/OrderCustomerList";
+
+import Warehouse from "./components/Warehouse/Warehouse";
+import EditWarehouse from "./components/Warehouse/EditWarehouse";
+
 import { Update } from "@mui/icons-material";
 
 
@@ -72,6 +77,7 @@ const App = () => {
           {/* <Route path="/OrderSupplierTransaction" element={<OrderSupplierTransaction />} /> */}
           <Route exact path="/editOrderSupplierTransaction/:id" element={<EditOrderSupplierTransaction />} />.
           <Route exact path="/addProductOrderSupplierTransaction/:id" element={<AddProductOrderSupplierTransaction />} />
+          <Route exact path="/branchStock/:id" element={<BranchStock />} />
 
           <Route exact path="/finalizeOrder/:id" element={<FinalizeOrder />} />
           <Route exact path="/completedOrder/:id" element={<CompletedOrder />} />
@@ -86,6 +92,9 @@ const App = () => {
           <Route exact path="/orderCustomerList/" element={<OrderCustomerList />} />
           <Route exact path="/completedCustomerOrder/:id" element={<CompletedCustomerOrder />} />
           <Route exact path="/updateCustomerOrder/:id" element={<UpdateCustomerOrder />} />
+
+          <Route path="/warehouse" element={<Warehouse />} />
+          <Route exact path="/editWarehouse/:id" element={<EditWarehouse />} />
 
           <Route
             exact

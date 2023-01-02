@@ -73,6 +73,11 @@ const NavBar = () => {
                     </Link>
                 </li>
                 <li className="nav-item">
+                    <Link to={"/warehouse"} className="nav-link">
+                        Warehouse
+                    </Link>
+                </li>
+                <li className="nav-item">
                     <Link to={"/markUpPrice"} className="nav-link">
                         MarkUpPrice
                     </Link>

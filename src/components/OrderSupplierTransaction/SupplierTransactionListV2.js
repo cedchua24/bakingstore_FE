@@ -55,6 +55,7 @@ const SupplierTransactionListV2 = () => {
                         <th>Status</th>
                         <th></th>
                         <th></th>
+                        <th>Organize Stock</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -80,6 +81,13 @@ const SupplierTransactionListV2 = () => {
                                     <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >
                                         <Button variant="success" >
                                             Update
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"/branchStock/" + orderTransaction.id}   >
+                                        <Button variant="success" >
+                                            Place Stock
                                         </Button>
                                     </Link>
                                 </td>
