@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Alert } from 'react-bootstrap';
 import MarkUpPriceServiceService from "./MarkUpPriceService.service";
+import BranchStockTransactionService from "../OtherService/BranchStockTransactionService";
 
 import InputAdornment from '@mui/material/InputAdornment';
 import FormControl from '@mui/material/FormControl';
@@ -15,6 +16,7 @@ import Button from '@mui/material/Button';
 const AddMarkUpPrice = (props) => {
 
     const products = props.products;
+    const [branchStockTransactionList, setBranchStockTransactionList] = useState([]);
 
     const [markUpPrice, setMarkUpPrice] = useState({
         id: 0,
@@ -24,7 +26,8 @@ const AddMarkUpPrice = (props) => {
         mark_up_option: '',
         mark_up_price: 0,
         new_price: 0,
-        status: 0
+        status: 0,
+        branch_stock_transaction_id: 0
     });
 
     const [message, setMessage] = useState(false);
@@ -53,6 +56,7 @@ const AddMarkUpPrice = (props) => {
 
     const handleInputChange = (e, value) => {
         e.persist();
+        fetchBranchStockWarehouseList(value.id);
         console.log(value);
         setMarkUpPrice({
             ...markUpPrice,
@@ -60,6 +64,26 @@ const AddMarkUpPrice = (props) => {
             product_name: value.product_name,
             price: value.price
         });
+    }
+
+    const handleWarehouseChange = (e, value) => {
+        e.persist();
+        console.log(value);
+        setMarkUpPrice({
+            ...markUpPrice,
+            branch_stock_transaction_id: value.id,
+        });
+    }
+
+    const fetchBranchStockWarehouseList = ($id) => {
+        BranchStockTransactionService.fetchBranchStockWarehouseList($id)
+            .then(response => {
+                console.log(response.data);
+                setBranchStockTransactionList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
     }
 
     const saveMarkUpPrice = (event) => {
@@ -111,6 +135,20 @@ const AddMarkUpPrice = (props) => {
                             getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.price) + ')'}
                             renderInput={(params) => (
                                 <TextField {...params} label="Choose Product" variant="standard" />
+                            )}
+                        />
+                    </FormControl>
+                    <br></br>
+                    <FormControl variant="standard" >
+                        <Autocomplete
+                            // {...defaultProps}
+                            options={branchStockTransactionList}
+                            className="mb-3"
+                            id="disable-close-on-select"
+                            onChange={handleWarehouseChange}
+                            getOptionLabel={(branchStockTransactionList) => branchStockTransactionList.warehouse_name + ' - ' + ' (Stock - ' + (branchStockTransactionList.branch_stock_transaction) + ')'}
+                            renderInput={(params) => (
+                                <TextField {...params} label="Choose Warehouse" variant="standard" />
                             )}
                         />
                     </FormControl>

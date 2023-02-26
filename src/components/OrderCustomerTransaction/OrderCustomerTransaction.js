@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import OrderCustomerTransactionService from "./OrderCustomerTransaction.service";
-import MarkUpPriceServiceService from "../MarkUpPrice/MarkUpPriceService.service";
+import MarkUpPriceService from "../MarkUpPrice/MarkUpPriceService.service";
 import AddProductOrderCustomer from "./AddProductOrderCustomer";
 
 const OrderCustomerTransaction = () => {
@@ -32,7 +32,7 @@ const OrderCustomerTransaction = () => {
   }
 
   const fetchProductList = () => {
-    MarkUpPriceServiceService.getAll()
+    MarkUpPriceService.getAll()
       .then(response => {
         setProducts(response.data);
       })

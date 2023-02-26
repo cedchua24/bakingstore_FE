@@ -249,11 +249,14 @@ const BranchStock = () => {
                                 <TableCell align="right">{row.quantity - row.stock_remaining}</TableCell>
                                 <TableCell align="right">{row.stock_remaining}</TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
+                                    {row.stock_remaining > 0 &&
+                                        <Tooltip title="Update">
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    }
+
                                 </TableCell>
                             </TableRow>
                         ))}

@@ -36,9 +36,23 @@ import OrderCustomerTransaction from "./components/OrderCustomerTransaction/Orde
 import OrderCustomerList from "./components/OrderCustomerList/OrderCustomerList";
 
 import Warehouse from "./components/Warehouse/Warehouse";
+import WarehouseStock from "./components/Warehouse/WarehouseStock";
 import EditWarehouse from "./components/Warehouse/EditWarehouse";
 
-import { Update } from "@mui/icons-material";
+import Shop from "./components/Shop/Shop";
+import EditShop from "./components/Shop/EditShop";
+
+
+import ShopOrderTransaction from "./components/ShopOrderTransaction/ShopOrderTransaction";
+import AddProductShopOrderTransaction from "./components/ShopOrderTransaction/AddProductShopOrderTransaction";
+import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
+import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
+import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
+
+
+
+
+
 
 
 
@@ -94,7 +108,11 @@ const App = () => {
           <Route exact path="/updateCustomerOrder/:id" element={<UpdateCustomerOrder />} />
 
           <Route path="/warehouse" element={<Warehouse />} />
-          <Route exact path="/editWarehouse/:id" element={<EditWarehouse />} />
+          <Route exact path="/warehouseStock/:id" element={<WarehouseStock />} />
+
+          <Route path="/shop" element={<Shop />} />
+          <Route exact path="/editShop/:id" element={<EditShop />} />
+
 
           <Route
             exact
@@ -106,6 +124,20 @@ const App = () => {
                 : <UserLogin />
             }
           />
+          <Route
+            exact
+            path="/shopOrderTransaction"
+            element={
+              localStorage.getItem('auth_token')
+                // items !== null
+                ? <ShopOrderTransaction />
+                : <UserLogin />
+            }
+          />
+          <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
+          <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
+          <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
+          <Route exact path="/shopOrderTransaction/completedShopOrderTransaction/:id" element={<CompletedShopOrderTransaction />} />
           <Route
             exact
             path="/supplierTransactionList"

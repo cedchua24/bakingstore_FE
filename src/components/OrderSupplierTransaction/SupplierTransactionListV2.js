@@ -53,9 +53,10 @@ const SupplierTransactionListV2 = () => {
                         <th>Total Amount</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th></th>
-                        <th></th>
+                        <th>Placed Stock Status</th>
                         <th>Organize Stock</th>
+                        <th></th>
+                        <th></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -70,6 +71,14 @@ const SupplierTransactionListV2 = () => {
                                 <td>{orderTransaction.total_transaction_price}</td>
                                 <td>{orderTransaction.order_date}</td>
                                 <td>{orderTransaction.status}</td>
+                                <td>{orderTransaction.stock_status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td>
+                                    <Link variant="primary" to={"/branchStock/" + orderTransaction.id}   >
+                                        <Button variant="success" >
+                                            {orderTransaction.stock_status === 1 ? 'View Stock' : 'Place Stock'}
+                                        </Button>
+                                    </Link>
+                                </td>
                                 <td>
                                     <Link variant="primary" to={"/completedOrder/" + orderTransaction.id}   >
                                         <Button variant="primary" >
@@ -81,13 +90,6 @@ const SupplierTransactionListV2 = () => {
                                     <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >
                                         <Button variant="success" >
                                             Update
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Link variant="primary" to={"/branchStock/" + orderTransaction.id}   >
-                                        <Button variant="success" >
-                                            Place Stock
                                         </Button>
                                     </Link>
                                 </td>

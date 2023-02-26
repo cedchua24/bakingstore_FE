@@ -39,20 +39,6 @@ const OrderSupplierTransaction = () => {
             });
     }
 
-    const deleteOrderTransaction = (id, e) => {
-
-        const index = orderTransactionList.findIndex(orderTransaction => orderTransaction.id === id);
-        const newOrderTransaction = [...orderTransactionList];
-        newOrderTransaction.splice(index, 1);
-
-        OrderSupplierTransactionService.delete(id)
-            .then(response => {
-                setOrderTransactionList(newOrderTransaction);
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
-    }
 
     return (
         <div>

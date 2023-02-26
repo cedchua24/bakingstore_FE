@@ -61,7 +61,7 @@ const AddOrderSupplierTransaction = (props) => {
         OrderSupplierTransactionService.sanctum().then(response => {
             OrderSupplierTransactionService.create(orderTransaction)
                 .then(response => {
-                    props.onSaveOrderTransactionData(response.data);
+                    // props.onSaveOrderTransactionData(response.data);
                     setMessage(true);
                     navigate('/addProductOrderSupplierTransaction/' + response.data.id);
                 })

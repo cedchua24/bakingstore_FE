@@ -2,10 +2,10 @@ import React from 'react'
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
-const WarehouseList = (props) => {
+const ShopList = (props) => {
 
-    const warehouseList = props.warehouseList;
-    const deleteWarehouse = props.deleteWarehouse;
+    const shopList = props.shopList;
+    const deleteShop = props.deleteShop;
 
     return (
         <div>
@@ -13,7 +13,8 @@ const WarehouseList = (props) => {
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
-                        <th>Warehouse Name</th>
+                        <th>Shop Name</th>
+                        <th>Shop Details</th>
                         <th>View Stock</th>
                         <th></th>
                     </tr>
@@ -21,19 +22,20 @@ const WarehouseList = (props) => {
                 <tbody>
 
                     {
-                        warehouseList.map((warehouse, index) => (
-                            <tr key={warehouse.id} >
-                                <td>{warehouse.id}</td>
-                                <td>{warehouse.warehouse_name}</td>
+                        shopList.map((shop, index) => (
+                            <tr key={shop.id} >
+                                <td>{shop.id}</td>
+                                <td>{shop.shop_name}</td>
+                                <td>{shop.shop_type_description}</td>
                                 <td>
-                                    <Link variant="primary" to={"/warehouseStock/" + warehouse.id}   >
+                                    <Link variant="primary" to={"/shopStock/" + shop.id}   >
                                         <Button variant="primary" >
                                             Show
                                         </Button>
                                     </Link>
                                 </td>
                                 <td>
-                                    <Link variant="primary" to={"/editWarehouse/" + warehouse.id}   >
+                                    <Link variant="primary" to={"/editShop/" + shop.id}   >
                                         <Button variant="primary" >
                                             Update
                                         </Button>
@@ -49,4 +51,4 @@ const WarehouseList = (props) => {
     )
 }
 
-export default WarehouseList
+export default ShopList

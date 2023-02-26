@@ -14,6 +14,7 @@ const MarkUpPriceList = (props) => {
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Product Name </th>
+                        <th>Warehouse Name </th>
                         <th>Supplier Price </th>
                         {/* <th>Mark Up Type</th> */}
                         <th>Mark Up Price</th>
@@ -30,6 +31,7 @@ const MarkUpPriceList = (props) => {
                             <tr key={mark_up.id} >
                                 <td>{mark_up.id}</td>
                                 <td>{mark_up.product_name}</td>
+                                <td>{mark_up.warehouse_name}</td>
                                 <td>{'₱ ' + mark_up.price + '.00'}</td>
                                 {/* <td>{mark_up.mark_up_option}</td> */}
                                 <td>{mark_up.mark_up_option === 'PERCENTAGE' ? mark_up.mark_up_price + '% / ' + '₱ ' + (Number(mark_up.new_price) - Number(mark_up.price)) + '.00' : '₱ ' + mark_up.mark_up_price + '.00'}</td>

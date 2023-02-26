@@ -7,6 +7,9 @@ class WarehouseService {
     get(id) {
         return axios.get(`/api/warehouse/${id}`);
     }
+    fetchWarehouseStock(id) {
+        return axios.get(`/api/warehouse/fetchWarehouseStock/${id}`);
+    }
     create(data) {
         return axios.post("/api/warehouse", data);
     }

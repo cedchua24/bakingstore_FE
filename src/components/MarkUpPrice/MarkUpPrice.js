@@ -41,6 +41,8 @@ const MarkUpPrice = () => {
             });
     }
 
+
+
     const deleteMarkUpPrice = (id, e) => {
 
         const index = setMarkupPriceList.findIndex(markUpPrice => markUpPrice.id === id);
