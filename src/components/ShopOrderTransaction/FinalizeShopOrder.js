@@ -19,6 +19,13 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 
+
+import CircularProgress from '@mui/material/CircularProgress';
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+
 const FinalizeShopOrder = () => {
 
 
@@ -29,6 +36,13 @@ const FinalizeShopOrder = () => {
         fetchShopOrderTransaction(id);
         fetchShopOrderDTO(id);
     }, []);
+
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [submitOpenModal, setSubmitOpenModal] = React.useState(false);
+
+    const handleSubmitCloseModal = () => {
+        setSubmitOpenModal(false);
+    };
 
     const [orderShop, setOrderShop] = useState({
         id: 0,
@@ -123,6 +137,7 @@ const FinalizeShopOrder = () => {
 
     const updateShopOrderTransactionStatus = async (event) => {
         event.preventDefault();
+        setSubmitLoading(true);
         setShopOrderTransaction({
             ...shopOrderTransaction,
             status: 1,
@@ -131,11 +146,16 @@ const FinalizeShopOrder = () => {
         ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransaction.id, shopOrderTransaction)
             .then(response => {
                 setMessage(true);
+                setSubmitLoading(false);
                 navigate('/shopOrderTransaction/shorOrderTransactionList/');
             })
             .catch(e => {
                 console.log(e);
             });
+    }
+
+    const openSubmit = () => {
+        setSubmitOpenModal(true);
     }
 
 
@@ -242,7 +262,8 @@ const FinalizeShopOrder = () => {
                 </Table>
             </TableContainer>
             <br></br>
-            <form onSubmit={updateShopOrderTransactionStatus} >
+            {/* <form onSubmit={ openSubmit} > */}
+            <form >
                 <Box
                     sx={{
                         display: 'flex',
@@ -253,7 +274,7 @@ const FinalizeShopOrder = () => {
                 >
                     <Button
                         variant="contained"
-                        type="submit"
+                        onClick={openSubmit}
                         size="large" >
                         Submit
                     </Button>
@@ -261,6 +282,28 @@ const FinalizeShopOrder = () => {
             </form>
 
 
+            <Dialog
+                open={submitOpenModal}
+                onClose={handleSubmitCloseModal}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+
+                <DialogTitle id="alert-dialog-title">
+                    {"Are you sure you want to Submit?"}
+                </DialogTitle>
+                {submitLoading &&
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress />
+                    </div>
+                }
+                <DialogActions>
+                    <Button onClick={handleSubmitCloseModal}>Cancel</Button>
+                    <Button onClick={updateShopOrderTransactionStatus} autoFocus>
+                        Agree
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div >
     )
 }

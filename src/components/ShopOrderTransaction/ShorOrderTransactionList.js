@@ -39,6 +39,22 @@ const ShorOrderTransactionList = () => {
             });
     }
 
+    const deleteShopOrderTransaction = (shopOrderTransaction) => {
+
+        console.log('shopOrderTransaction', shopOrderTransaction);
+        // const index = shopOrderTransactionList.findIndex(shopOrderTransaction => shopOrderTransaction.id === id);
+        // const newShopOrderTransaction = [...shopOrderTransactionList];
+        // newShopOrderTransaction.splice(index, 1);
+
+        ShopOrderTransactionService.deleteShopOrderTransaction(shopOrderTransaction)
+            .then(response => {
+
+            })
+            .catch(e => {
+                console.log('error', e);
+            });
+    }
+
 
     return (
         <div>
@@ -89,10 +105,16 @@ const ShorOrderTransactionList = () => {
                                     </Link>
                                 </td>
                                 <td>
-                                    <Button variant="danger" onClick={(e) => deleteOrderTransaction(shopOrderTransaction.id, e)} >
+                                    <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
                                         Cancel
                                     </Button>
                                 </td>
+                                {/* <td>
+                                    <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
+                                        deleteShopOrderTransaction
+                                    </Button>
+                                </td> */}
+
                                 <td>
                                     <Button variant="danger" onClick={(e) => deleteOrderTransaction(shopOrderTransaction.id, e)} >
                                         Delete

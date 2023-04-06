@@ -47,10 +47,14 @@ const OrderCustomerTransactionTable = (props) => {
         discount: 0
     });
 
-    // const [orderCustomerDTO, setOrderCustomerDTO] = useState({
-    //     grandTotal: 0,
-    //     orderCustomerList: []
-    // });
+
+    const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
+
+    const handleDeleteCloseModal = () => {
+        setDeleteOpenModal(false);
+    };
+
+
 
     const TAX_RATE = 0.12;
 
@@ -100,10 +104,6 @@ const OrderCustomerTransactionTable = (props) => {
 
     const [open3, setOpen3] = React.useState(false);
 
-
-    const handleClose3 = () => {
-        setOpen3(false);
-    };
 
     const deleteOrderCustomer = (id, e) => {
         console.log(id, 'id')
@@ -162,6 +162,11 @@ const OrderCustomerTransactionTable = (props) => {
 
     }
 
+    const openDelete = () => {
+        setDeleteOpenModal(true);
+    }
+
+
     return (
         <div>
             <TableContainer component={Paper}>
@@ -200,10 +205,32 @@ const OrderCustomerTransactionTable = (props) => {
                                 <TableCell align="right">
                                     <Tooltip title="Delete">
                                         <IconButton>
-                                            <DeleteIcon color="error" onClick={(e) => deleteOrderCustomer(row.id, e)} />
+                                            <DeleteIcon color="error" onClick={(e) => openDelete()} />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
+                                <Dialog
+                                    open={deleteOpenModal}
+                                    onClose={handleDeleteCloseModal}
+                                    aria-labelledby="alert-dialog-title"
+                                    aria-describedby="alert-dialog-description"
+                                >
+
+                                    <DialogTitle id="alert-dialog-title">
+                                        {"Are you sure you want to Delete?"}
+                                    </DialogTitle>
+                                    {submitLoading &&
+                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                            <CircularProgress />
+                                        </div>
+                                    }
+                                    <DialogActions>
+                                        <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                                        <Button onClick={(e) => deleteOrderCustomer(row.id, e)} autoFocus>
+                                            Agree
+                                        </Button>
+                                    </DialogActions>
+                                </Dialog>
                             </TableRow>
                         ))}
 
@@ -240,7 +267,7 @@ const OrderCustomerTransactionTable = (props) => {
                         type="submit"
                         disabled={orderCustomerList.length === 0 ? true : false}
                         size="large" >
-                        Submit
+                        Next
                     </Button>
                 </Box>
             </form>

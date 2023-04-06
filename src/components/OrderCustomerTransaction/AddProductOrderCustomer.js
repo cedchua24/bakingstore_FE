@@ -103,6 +103,7 @@ const AddProductOrderCustomer = (props) => {
   }
 
   function inputValidation() {
+    const product = products.find(product => product.product_id === orderCustomer.product_id);
     if (orderCustomer.product_name === '') {
       setValidator({
         severity: 'warning',
@@ -114,6 +115,12 @@ const AddProductOrderCustomer = (props) => {
         setValidator({
           severity: 'warning',
           message: 'Please insert Quantity',
+          isShow: true,
+        });
+      } else if (orderCustomer.quantity > product.stock) {
+        setValidator({
+          severity: 'error',
+          message: 'Quantity is more than to Stock',
           isShow: true,
         });
       } else {
@@ -144,7 +151,7 @@ const AddProductOrderCustomer = (props) => {
           });
         }
       }
-
+    window.scrollTo(0, 0);
   }
 
 

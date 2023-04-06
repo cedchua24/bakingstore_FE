@@ -35,6 +35,11 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
 
+import CircularProgress from '@mui/material/CircularProgress';
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
 
 const AddProductShopOrderTransaction = () => {
 
@@ -48,7 +53,20 @@ const AddProductShopOrderTransaction = () => {
         fetchShopOrderDTO(id);
     }, []);
 
+    const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
 
+    const handleDeleteCloseModal = () => {
+        setDeleteOpenModal(false);
+    };
+
+
+    const [validator, setValidator] = useState({
+        severity: '',
+        message: '',
+        isShow: false
+    });
+
+    const [submitLoading, setSubmitLoading] = useState(false);
     const [products, setProducts] = useState([]);
     const [value, setValue] = useState(products[0])
 
@@ -136,6 +154,84 @@ const AddProductShopOrderTransaction = () => {
     const [invoiceTotal, setinvoiceTotal] = useState(0);
 
     const [message, setMessage] = useState(false);
+
+
+    function inputValidation() {
+        console.log('orderShop', orderShop);
+        const product = products.find(product => product.product_id === orderShop.product_id);
+        if (orderShop.product_id == 0) {
+            setValidator({
+                severity: 'warning',
+                message: 'Please choose Product',
+                isShow: true,
+            });
+        } else
+            if (orderShop.shop_order_quantity === 0) {
+                setValidator({
+                    severity: 'warning',
+                    message: 'Please insert Quantity',
+                    isShow: true,
+                });
+            } else if (orderShop.shop_order_quantity > product.stock) {
+                setValidator({
+                    severity: 'error',
+                    message: 'Quantity is more than to Stock',
+                    isShow: true,
+                });
+            }
+            else {
+                setValidator({
+                    severity: '',
+                    message: '',
+                    isShow: false,
+                });
+
+                const index = orderShopDTO.shopOrderList.filter(obj => {
+                    return obj.product_id === orderShop.product_id;
+                });
+                console.log('orderShop', orderShop);
+                console.log('orderShopDTO', orderShopDTO);
+                if (index.length === 0) {
+                    setValidator({
+                        severity: 'success',
+                        message: 'Successfuly Added!',
+                        isShow: true,
+                    });
+                    // setorderShopList([...orderShopList, orderShop]);
+                    // let arr = orderShopList.concat(orderShop);
+                    // setorderShopDTO({ orderShopList: arr, grandTotal: subtotal(arr) });
+                    // setValue(products[1]);
+
+                    ShopOrderService.sanctum().then(response => {
+                        ShopOrderService.create(orderShop)
+                            .then(response => {
+                                fetchShopOrder(id);
+                                setOrderShop({
+                                    shop_transaction_id: id,
+                                    product_id: 0,
+                                    shop_order_price: 0,
+                                    shop_order_quantity: 0,
+                                    shop_order_total_price: 0,
+                                });
+                                fetchShopOrderDTO(id);
+                                // fetchProductList();
+                                // window.location.reload();
+                            })
+                            .catch(e => {
+                                console.log(e);
+                            });
+                    });
+
+                } else {
+                    setValidator({
+                        severity: 'error',
+                        message: 'Product already exists!',
+                        isShow: true,
+                    });
+                }
+            }
+        window.scrollTo(0, 0);
+    }
 
 
     const onChangeInput = (e) => {
@@ -233,25 +329,7 @@ const AddProductShopOrderTransaction = () => {
 
     const saveOrderSupplier = (event) => {
         event.preventDefault();
-        ShopOrderService.sanctum().then(response => {
-            ShopOrderService.create(orderShop)
-                .then(response => {
-                    fetchShopOrder(id);
-                    setOrderShop({
-                        shop_transaction_id: id,
-                        product_id: 0,
-                        shop_order_price: 0,
-                        shop_order_quantity: 0,
-                        shop_order_total_price: 0,
-                    });
-                    fetchShopOrderDTO(id);
-                    // fetchProductList();
-                    window.location.reload();
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        });
+        inputValidation();
     }
 
 
@@ -270,22 +348,67 @@ const AddProductShopOrderTransaction = () => {
     }
 
 
-    const deleteOrderTransaction = (id, e) => {
-        ShopOrderService.delete(id, orderSupplierModal)
+    const deleteOrderTransaction = (deleteId, e) => {
+        setSubmitLoading(true);
+        ShopOrderService.delete(deleteId, orderSupplierModal)
             .then(response => {
-                window.location.reload();
+                setSubmitLoading(false);
+                setOpen(false);
+                setDeleteOpenModal(false);
+                window.scrollTo(0, 0);
+                setValidator({
+                    severity: 'success',
+                    message: 'Successfuly Deleted!',
+                    isShow: true,
+                });
+                fetchShopOrderDTO(id);
+                // window.location.reload();
             })
             .catch(e => {
                 console.log('error', e);
             });
     }
 
+
+
+
+    const openDelete = () => {
+        setDeleteOpenModal(true);
+    }
+
     const updateOrderSupplier = () => {
+        setSubmitLoading(true);
         ShopOrderService.update(orderSupplierModal.id, orderSupplierModal)
             .then(response => {
-                window.location.reload();
-                // fetchShopOrder(id);
-                // updateOrderTransaction();
+                console.log(response.data);
+                if (response.data.code == 200) {
+                    setSubmitLoading(false);
+                    setOpen(false);
+                    window.scrollTo(0, 0);
+                    setValidator({
+                        severity: 'success',
+                        message: 'Successfuly Added!',
+                        isShow: true,
+                    });
+                    fetchShopOrderDTO(id);
+                } else if (response.data.code == 400) {
+                    setSubmitLoading(false);
+                    setOpen(false);
+                    window.scrollTo(0, 0);
+                    setValidator({
+                        severity: 'error',
+                        message: response.data.message,
+                        isShow: true,
+                    });
+                } else {
+                    setSubmitLoading(false);
+                    setOpen(false);
+                    setValidator({
+                        severity: 'error',
+                        message: "Unknown Error",
+                        isShow: true,
+                    });
+                }
             })
             .catch(e => {
                 console.log(e);
@@ -300,22 +423,11 @@ const AddProductShopOrderTransaction = () => {
 
     return (
         <div>
-            {message &&
-                // <Alert variant="success" dismissible>
-                //     <Alert.Heading>Successfully Updated!</Alert.Heading>
-                //     <p>
-                //         Change this and that and try again. Duis mollis, est non commodo
-                //         luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-                //         Cras mattis consectetur purus sit amet fermentum.
-                //     </p>
-                // </Alert>
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
-
-            }
+            <Stack sx={{ width: '100%' }} spacing={2}>
+                {validator.isShow &&
+                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                }
+            </Stack>
             <br></br>
             <Box
                 sx={{
@@ -485,10 +597,33 @@ const AddProductShopOrderTransaction = () => {
                                 <TableCell align="right">
                                     <Tooltip title="Delete">
                                         <IconButton>
-                                            <DeleteIcon color="error" onClick={(e) => deleteOrderTransaction(row.id, e)} />
+                                            <DeleteIcon color="error" onClick={(e) => openDelete()} />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
+
+                                <Dialog
+                                    open={deleteOpenModal}
+                                    onClose={handleDeleteCloseModal}
+                                    aria-labelledby="alert-dialog-title"
+                                    aria-describedby="alert-dialog-description"
+                                >
+
+                                    <DialogTitle id="alert-dialog-title">
+                                        {"Are you sure you want to Delete?"}
+                                    </DialogTitle>
+                                    {submitLoading &&
+                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                            <CircularProgress />
+                                        </div>
+                                    }
+                                    <DialogActions>
+                                        <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                                        <Button onClick={(e) => deleteOrderTransaction(row.id, e)} autoFocus>
+                                            Agree
+                                        </Button>
+                                    </DialogActions>
+                                </Dialog>
                             </TableRow>
                         ))}
 
@@ -522,6 +657,7 @@ const AddProductShopOrderTransaction = () => {
                     variant="contained"
                     type="submit"
                     onClick={finalizeOrder}
+                    disabled={orderShopDTO.shopOrderList.length === 0 ? true : false}
                     size="large" >
                     Next
                 </Button>
@@ -538,7 +674,11 @@ const AddProductShopOrderTransaction = () => {
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
                         Update Product
                     </Typography>
-
+                    {submitLoading &&
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <CircularProgress />
+                        </div>
+                    }
                     <TextField
                         disabled
                         id="filled-required"
@@ -601,6 +741,7 @@ const AddProductShopOrderTransaction = () => {
                     </Box>
                 </Box>
             </Modal>
+
         </div >
     )
 }
