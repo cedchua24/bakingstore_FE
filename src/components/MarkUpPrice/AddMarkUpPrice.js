@@ -22,6 +22,20 @@ const AddMarkUpPrice = (props) => {
         id: 0,
         product_id: 0,
         product_name: '',
+        quantity: 0,
+        price: 0,
+        mark_up_option: '',
+        mark_up_price: 0,
+        new_price: 0,
+        status: 0,
+        branch_stock_transaction_id: 0
+    });
+
+    const [markUpPriceRetail, setMarkUpPriceRetail] = useState({
+        id: 0,
+        product_id: 0,
+        product_name: '',
+        quantity: 0,
         price: 0,
         mark_up_option: '',
         mark_up_price: 0,
@@ -57,12 +71,23 @@ const AddMarkUpPrice = (props) => {
     const handleInputChange = (e, value) => {
         e.persist();
         fetchBranchStockWarehouseList(value.id);
-        console.log(value);
+        console.log('ey', value);
         setMarkUpPrice({
             ...markUpPrice,
             product_id: value.id,
             product_name: value.product_name,
-            price: value.price
+            quantity: value.quantity,
+            price: value.price,
+            business_type: "WHOLESALE"
+        });
+
+        setMarkUpPriceRetail({
+            ...markUpPriceRetail,
+            product_id: value.id,
+            product_name: value.product_name,
+            quantity: value.quantity,
+            price: Math.ceil(value.price / value.quantity)
+
         });
     }
 
@@ -73,7 +98,38 @@ const AddMarkUpPrice = (props) => {
             ...markUpPrice,
             branch_stock_transaction_id: value.id,
         });
+
+        setMarkUpPriceRetail({
+            ...markUpPriceRetail,
+            branch_stock_transaction_id: value.id,
+            business_type: "RETAIL"
+        });
     }
+
+    const onChangeInputRetail = (e) => {
+        console.log(e.target.value);
+        setMarkUpPriceRetail({ ...markUpPriceRetail, [e.target.name]: e.target.value });
+    }
+
+    const onChangeMarkUpPriceRetail = (e) => {
+        setMarkUpPriceRetail({
+            ...markUpPriceRetail,
+            mark_up_price: Number(e.target.value),
+            new_price: Number(markUpPriceRetail.price) + Number(e.target.value)
+        });
+    }
+
+    const onChangeMarkUpPercentageRetail = (e) => {
+        const divisible = (markUpPriceRetail.price / 100) * e.target.value;
+        setMarkUpPriceRetail({
+            ...markUpPriceRetail,
+            mark_up_price: Number(e.target.value),
+            new_price: Math.ceil(markUpPriceRetail.price + divisible)
+        });
+    }
+
+
+
 
     const fetchBranchStockWarehouseList = ($id) => {
         BranchStockTransactionService.fetchBranchStockWarehouseList($id)
@@ -92,6 +148,7 @@ const AddMarkUpPrice = (props) => {
             MarkUpPriceServiceService.create(markUpPrice)
                 .then(response => {
                     props.onSaveMarkUpPriceData(markUpPrice);
+                    console.log('markUpPrice', markUpPrice);
                     setMessage(true);
                     // setMarkUpPrice({
                     //     product_name: ''
@@ -100,6 +157,20 @@ const AddMarkUpPrice = (props) => {
                 .catch(e => {
                     console.log(e);
                 });
+            if (markUpPrice.quantity > 1) {
+                MarkUpPriceServiceService.create(markUpPriceRetail)
+                    .then(response => {
+                        props.onSaveMarkUpPriceData(markUpPriceRetail);
+                        console.log('markUpPriceRetail', markUpPriceRetail);
+                        setMessage(true);
+                        // setMarkUpPrice({
+                        //     product_name: ''
+                        // });
+                    })
+                    .catch(e => {
+                        console.log(e);
+                    });
+            }
         });
     }
 
@@ -124,6 +195,7 @@ const AddMarkUpPrice = (props) => {
             // onSubmit={saveOrderSupplier}
             >
                 <br></br>
+                <h1>Wholesale</h1>
                 <form onSubmit={saveMarkUpPrice} >
                     <FormControl variant="standard" >
                         <Autocomplete
@@ -146,7 +218,8 @@ const AddMarkUpPrice = (props) => {
                             className="mb-3"
                             id="disable-close-on-select"
                             onChange={handleWarehouseChange}
-                            getOptionLabel={(branchStockTransactionList) => branchStockTransactionList.warehouse_name + ' - ' + ' (Stock - ' + (branchStockTransactionList.branch_stock_transaction) + ')'}
+                            // getOptionLabel={(branchStockTransactionList) => branchStockTransactionList.warehouse_name + ' - ' + ' (Stock : ' + (branchStockTransactionList.branch_stock_transaction) + ')'}
+                            getOptionLabel={(branchStockTransactionList) => branchStockTransactionList.warehouse_name}
                             renderInput={(params) => (
                                 <TextField {...params} label="Choose Warehouse" variant="standard" />
                             )}
@@ -232,6 +305,97 @@ const AddMarkUpPrice = (props) => {
                             startAdornment={<InputAdornment position="start">₱</InputAdornment>}
                         />
                     </FormControl>
+                    <br></br>
+                    {/* retail */}
+                    {markUpPrice.quantity > 1 ? (
+                        <div>
+                            <h1>Retail</h1>
+                            <FormControl variant="standard" >
+                                <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
+                                <Input
+                                    className="mb-3"
+                                    id="filled-required"
+                                    label="Price"
+                                    variant="filled"
+                                    name='price'
+                                    disabled
+                                    value={markUpPriceRetail.price}
+                                    onChange={onChangeInputRetail}
+                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                                />
+                            </FormControl>
+                            <br></br>
+                            <FormControl fullWidth>
+                                <InputLabel id="demo-simple-select-label">Mark Up Option</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    className="mb-3"
+                                    id="demo-simple-select"
+                                    value={markUpPriceRetail.mark_up_option}
+                                    name='mark_up_option'
+                                    label="Mark Up Option"
+                                    onChange={onChangeInputRetail}
+                                >
+                                    <MenuItem value='PERCENTAGE'>PERCENTAGE</MenuItem>
+                                    <MenuItem value='AMOUNT'>AMOUNT</MenuItem>
+                                </Select>
+                            </FormControl>
+                            <br></br>
+
+                            {markUpPriceRetail.mark_up_option === 'AMOUNT' ? (
+                                <FormControl variant="standard" >
+                                    <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Price</InputLabel>
+                                    <Input
+                                        className="mb-3"
+                                        id="filled-required"
+                                        label="Mark Up Price"
+                                        variant="filled"
+                                        name='mark_up_price'
+                                        // value={markUpPriceRetail.mark_up_price}
+                                        onChange={onChangeMarkUpPriceRetail}
+                                        startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                                    />
+                                </FormControl>
+                            ) : markUpPriceRetail.mark_up_option === 'PERCENTAGE' ? (
+                                <FormControl variant="standard" >
+                                    <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Percentage</InputLabel>
+                                    <Input
+                                        className="mb-3"
+                                        id="filled-required"
+                                        label="Mark Up Price"
+                                        variant="filled"
+                                        name='mark_up_percentage'
+                                        // value={markUpPriceRetail.mark_up_price}
+                                        onChange={onChangeMarkUpPercentageRetail}
+                                        endAdornment={<InputAdornment position="end">%</InputAdornment>}
+                                    />
+                                </FormControl>
+                            ) : (
+                                <div></div>
+                            )}
+
+                            <br></br>
+                            <FormControl variant="standard" >
+                                <InputLabel htmlFor="standard-adornment-amount">Mark Up Price</InputLabel>
+                                <Input
+                                    className="mb-3"
+                                    id="filled-required"
+                                    label="Mark Up Price"
+                                    variant="filled"
+                                    name='new_price'
+                                    value={markUpPriceRetail.new_price}
+                                    onChange={onChangeInputRetail}
+                                    disabled
+                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                                />
+                            </FormControl>
+
+                            <br></br>
+                        </div>
+
+                    ) : (
+                        <div></div>
+                    )}
 
                     <br></br>
                     <div>

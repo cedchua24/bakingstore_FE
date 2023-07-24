@@ -98,6 +98,11 @@ const NavBar = () => {
                     </Link>
                 </li>
                 <li className="nav-item">
+                    <Link to={"/supplierTransactionList"} className="nav-link">
+                        PO Transaction
+                    </Link>
+                </li>
+                <li className="nav-item">
                     <Link to={"/shopOrderTransaction"} className="nav-link">
                         Shop Order
                     </Link>
@@ -108,11 +113,16 @@ const NavBar = () => {
                     </Link>
                 </li>
                 <li className="nav-item">
-                    <Link to={"/supplierTransactionList"} className="nav-link">
-                        PO Transaction
+                    <Link to={"/customerOrderTransaction"} className="nav-link">
+                        Customer Order
                     </Link>
                 </li>
                 <li className="nav-item">
+                    <Link to={"/shopOrderTransaction/customerOrderTransactionList"} className="nav-link">
+                        Customer Order Transaction
+                    </Link>
+                </li>
+                {/* <li className="nav-item">
                     <Link to={"/orderCustomerTransaction"} className="nav-link">
                         Order Customer
                     </Link>
@@ -121,7 +131,7 @@ const NavBar = () => {
                     <Link to={"/orderCustomerList"} className="nav-link">
                         Order Customer List
                     </Link>
-                </li>
+                </li> */}
                 <li className="nav-item">
                     <button className="nav-link btn btn-danger btn-sm text-white" type='button' onClick={logoutSubmit} >Logout</button>
                 </li>

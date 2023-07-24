@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import { useParams, useNavigate } from 'react-router-dom';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -47,7 +47,7 @@ const OrderCustomerTransactionTable = (props) => {
         discount: 0
     });
 
-
+    const navigate = useNavigate();
     const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
 
     const handleDeleteCloseModal = () => {
@@ -153,7 +153,8 @@ const OrderCustomerTransactionTable = (props) => {
                 .then(response => {
                     setSubmitLoading(false);
                     setOpen2(false);
-                    console.log('success', response);
+                    navigate('/completedCustomerOrder/' + response.data.data.id);
+                    console.log('Result: ', response);
                 })
                 .catch(e => {
                     console.log(e);

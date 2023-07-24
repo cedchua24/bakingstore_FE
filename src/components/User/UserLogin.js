@@ -32,6 +32,7 @@ const UserLogin = (props) => {
                     setErrorMessage('');
                     localStorage.setItem('auth_token', response.data.token);
                     localStorage.setItem('auth_name', response.data.email);
+                    localStorage.setItem('auth_user_id', response.data.id);
                     // swal("Success", response.data.message, "success")
 
                     if (response.data.role === 'admin') {

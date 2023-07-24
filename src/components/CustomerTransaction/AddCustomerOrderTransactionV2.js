@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form, Alert } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
-import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -12,11 +12,9 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Box from '@mui/material/Box';
 
-import { styled } from '@mui/material/styles';
 
 
-
-const AddShopOrderTransaction = (props) => {
+const AddCustomerOrderTransactionV2 = (props) => {
 
     const navigate = useNavigate();
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
@@ -30,7 +28,7 @@ const AddShopOrderTransaction = (props) => {
         updated_at: ''
     });
     const shopList = props.shopList;
-    const userList = props.userList;
+    const customerList = props.customerList;
 
     const steps = [
         'Create Transaction Details',
@@ -56,16 +54,9 @@ const AddShopOrderTransaction = (props) => {
                 });
         });
     }
-    const Div = styled('div')(({ theme }) => ({
-        ...theme.typography.button,
-        backgroundColor: theme.palette.background.paper,
-        fontSize: "2rem",
-        padding: theme.spacing(1),
-    }));
 
     return (
         <div>
-            <Div>{"Shop Order"}</Div>
             <Stepper activeStep={0} alternativeLabel>
                 {steps.map((label) => (
                     <Step key={label}>
@@ -110,7 +101,7 @@ const AddShopOrderTransaction = (props) => {
 
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Requestor</InputLabel>
+                        <InputLabel id="demo-simple-select-label">Customer</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
@@ -120,28 +111,8 @@ const AddShopOrderTransaction = (props) => {
                             onChange={onChangeInput}
                         >
                             {
-                                userList.map((user, index) => (
-                                    <MenuItem value={user.id}>{user.name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Checker</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={shopOrderTransaction.user_id}
-                            label="Checker"
-                            name="checker"
-                            onChange={onChangeInput}
-                        >
-                            {
-                                userList.map((user, index) => (
-                                    <MenuItem value={user.id}>{user.name}</MenuItem>
+                                customerList.map((user, index) => (
+                                    <MenuItem value={user.id}>{user.first_name} {user.last_name}</MenuItem>
                                 ))
                             }
                         </Select>
@@ -163,4 +134,4 @@ const AddShopOrderTransaction = (props) => {
     )
 }
 
-export default AddShopOrderTransaction
+export default AddCustomerOrderTransactionV2

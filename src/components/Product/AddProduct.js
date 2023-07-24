@@ -1,9 +1,32 @@
 import React, { useState, useEffect } from "react";
 import ProductServiceService from "./ProductService.service";
+import ProductTransactionService from "../OtherService/ProductTransactionService";
 import BrandServiceService from "../Brand/BrandService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
-import { Button, Form, Alert, FloatingLabel } from 'react-bootstrap';
+import { Form, FloatingLabel } from 'react-bootstrap';
 import { Link } from "react-router-dom";
+
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
+
+import UpdateIcon from '@mui/icons-material/Update';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import Modal from '@mui/material/Modal';
+
+import InputAdornment from '@mui/material/InputAdornment';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
+
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography'
+import CircularProgress from '@mui/material/CircularProgress';
+
+import { styled } from '@mui/material/styles';
 
 
 const AddProduct = () => {
@@ -13,6 +36,102 @@ const AddProduct = () => {
     fetchBrandList();
     fetchCategoryList();
   }, []);
+
+
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [validator, setValidator] = useState({
+    severity: '',
+    message: '',
+    isShow: false
+  });
+
+  const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 300,
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+    '& .MuiTextField-root': { m: 1, width: '25ch' },
+  };
+
+  const [open, setOpen] = React.useState(false);
+
+  const handleOpen = (id, e) => {
+    console.log('e', id);
+    fetchShopOrder(id);
+    setOpen(true);
+  }
+
+  const [orderSupplierModal, setOrderSupplierModal] = useState({
+    id: 0,
+    user_id: localStorage.getItem('auth_user_id'),
+    product_name: '',
+    shop_order_quantity: 0,
+    stock: 0
+  });
+
+  const fetchShopOrder = async (id) => {
+    await ProductServiceService.get(id)
+      .then(response => {
+        setOrderSupplierModal(response.data);
+      })
+      .catch(e => {
+        console.log("error", e)
+      });
+  }
+
+  const onChangeInputQuantityModal = (e) => {
+    e.persist();
+    setOrderSupplierModal({
+      ...orderSupplierModal,
+      user_id: localStorage.getItem('auth_user_id'),
+      shop_order_quantity: e.target.value,
+    });
+  }
+
+  const updateOrderSupplier = () => {
+    setSubmitLoading(true);
+    ProductTransactionService.create(orderSupplierModal)
+      .then(response => {
+        if (response.data.code == 200) {
+          setSubmitLoading(false);
+          setOpen(false);
+          window.scrollTo(0, 0);
+          setValidator({
+            severity: 'success',
+            message: 'Successfuly Added!',
+            isShow: true,
+          });
+          fetchProductList();
+        } else if (response.data.code == 400) {
+          setSubmitLoading(false);
+          setOpen(false);
+          window.scrollTo(0, 0);
+          setValidator({
+            severity: 'error',
+            message: response.data.message,
+            isShow: true,
+          });
+        } else {
+          setSubmitLoading(false);
+          setOpen(false);
+          setValidator({
+            severity: 'error',
+            message: "Unknown Error",
+            isShow: true,
+          });
+        }
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
+
+  const handleClose = () => setOpen(false);
 
   const [product, setProduct] = useState({
     id: 0,
@@ -24,8 +143,9 @@ const AddProduct = () => {
     price: 0,
     stock: 0,
     weight: 0,
-    quantity: 0
-  });
+    quantity: 0,
+    packaging: ''
+  })
 
   const [brandList, setBrandList] = useState([]);
   const [categeryList, setCategoryList] = useState([]);
@@ -44,6 +164,10 @@ const AddProduct = () => {
 
   const onChangeBrand = (e) => {
     setProduct({ ...product, brand_id: e.target.value });
+  }
+
+  const onChangePackaging = (e) => {
+    setProduct({ ...product, packaging: e.target.value });
   }
 
   const onChangePrice = (e) => {
@@ -69,13 +193,34 @@ const AddProduct = () => {
     ProductServiceService.sanctum().then(response => {
       ProductServiceService.create(product)
         .then(response => {
-          // setProductList([...productList, response.data]);;
-          // setProduct({
-          //   product_name: ''
-          // });
-          fetchProductList();
-          console.log('save', response.data);
-          setMessage(true);
+          if (response.data.code == 200) {
+            setSubmitLoading(false);
+            setOpen(false);
+            window.scrollTo(0, 0);
+            setValidator({
+              severity: 'success',
+              message: 'Successfuly Added!',
+              isShow: true,
+            });
+            fetchProductList();
+          } else if (response.data.code == 400) {
+            setSubmitLoading(false);
+            setOpen(false);
+            window.scrollTo(0, 0);
+            setValidator({
+              severity: 'error',
+              message: response.data.message,
+              isShow: true,
+            });
+          } else {
+            setSubmitLoading(false);
+            setOpen(false);
+            setValidator({
+              severity: 'error',
+              message: "Unknown Error",
+              isShow: true,
+            });
+          }
         })
         .catch(e => {
           console.log(e);
@@ -133,16 +278,12 @@ const AddProduct = () => {
   return (
     <div>
       <Form onSubmit={saveProduct}>
-        {message &&
-          <Alert variant="success" dismissible>
-            <Alert.Heading>Successfully Added!</Alert.Heading>
-            <p>
-              Change this and that and try again. Duis mollis, est non commodo
-              luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-              Cras mattis consectetur purus sit amet fermentum.
-            </p>
-          </Alert>
-        }
+        <Stack sx={{ width: '100%' }} spacing={2}>
+          {validator.isShow &&
+            <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+          }
+        </Stack>
+        <br></br>
         {/* <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Label>Product</Form.Label>
           <Form.Control type="text" value={product.product_name} name="product_name" placeholder="Enter product" onChange={onChangeProduct} />
@@ -206,16 +347,84 @@ const AddProduct = () => {
           controlId="floatingInput"
           label="Quantity"
           className="mb-3"
-
         >
+
           <Form.Control type="text" value={product.quantity} onChange={onChangeQuantity} required />
         </FloatingLabel>
 
+        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangePackaging}  >
+          <option>Select Packaging</option>
 
-        <Button variant="primary" type="submit" className="mb-3" >
+          <option value="Sack">Sack</option>
+          <option value="Box">Box</option>
+          <option value="Plastic">Plastic</option>
+
+        </Form.Select>
+
+        <Button
+          variant="contained"
+          type="submit"
+        >
           Submit
         </Button>
+        <br></br>
       </Form>
+      <br></br>
+      <Modal
+        keepMounted
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="keep-mounted-modal-title"
+        aria-describedby="keep-mounted-modal-description"
+      >
+        <Box sx={style}>
+          <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+            Add Stock
+          </Typography>
+          {submitLoading &&
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <CircularProgress />
+            </div>
+          }
+          <TextField
+            disabled
+            id="filled-required"
+            label="Product Name"
+            variant="filled"
+            name='product_name'
+            value={orderSupplierModal.product_name}
+          />
+
+          <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+            <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
+            <Input
+              type='number'
+              id="filled-required"
+              label="Quantity"
+              variant="filled"
+              name='shop_order_quantity'
+              onChange={onChangeInputQuantityModal}
+            />
+          </FormControl>
+
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Button
+              variant="contained"
+              type="submit"
+              onClick={updateOrderSupplier}
+              size="large" >
+              Submit
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
 
       <table class="table table-bordered">
         <thead class="table-dark">
@@ -225,10 +434,14 @@ const AddProduct = () => {
             <th>Brand</th>
             <th>Category</th>
             <th>Price</th>
-            <th>Stock</th>
             <th>Quantity / Weight</th>
-            <th></th>
-            <th></th>
+            <th>Stock</th>
+            <th>Packaging</th>
+            <th>Stock / Per Piece</th>
+            <th>Add Stock</th>
+            <th>Transaction</th>
+            <th>Action</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -241,17 +454,37 @@ const AddProduct = () => {
                 <td>{product.brand_name}</td>
                 <td>{product.category_name}</td>
                 <td>₱ {product.price}.00</td>
+                {/* <td>{product.weight}x{product.quantity}kg</td> */}
+                <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
+                  : <p >{product.weight}x{product.weight / product.quantity}kg</p>}
+                </td>
                 <td>{product.stock}</td>
-                <td>{product.weight}x{product.quantity}kg</td>
+                <td>{product.packaging}</td>
+                <td>{product.stock_pc}</td>
+                <td>
+                  <Tooltip title="Update">
+                    <IconButton>
+                      <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
+                    </IconButton>
+                  </Tooltip>
+                </td>
+                <td>
+                  <Link variant="primary" to={"/productTransactionList/" + product.id}   >
+                    <Button variant="contained" >
+                      View
+                    </Button>
+                  </Link>
+                </td>
+
                 <td>
                   <Link variant="primary" to={"/editProduct/" + product.id}   >
-                    <Button variant="primary" >
+                    <Button variant="contained" >
                       Update
                     </Button>
                   </Link>
                 </td>
                 <td>
-                  <Button variant="danger" onClick={(e) => deleteProduct(product.id, e)} >
+                  <Button disabled variant="contained" color="error" onClick={(e) => deleteProduct(product.id, e)} >
                     Delete
                   </Button>
                 </td>

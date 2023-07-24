@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import AddShopOrderTransaction from "./AddShopOrderTransaction";
+import AddCustomerOrderTransactionV2 from "./AddCustomerOrderTransactionV2";
 import ShopService from "../Shop/ShopService";
 import UserService from "../User/UserService.service";
+import CustomerService from "../Customer/CustomerService";
 
-const ShopOrderTransaction = () => {
+const CustomerOrderTransaction = () => {
 
     useEffect(() => {
         fetchShopList();
@@ -12,11 +13,11 @@ const ShopOrderTransaction = () => {
 
     const [shopList, setShopList] = useState([]);
 
-    const [userList, setUserList] = useState([]);
+    const [customerList, setCustomerList] = useState([]);
 
 
     const fetchShopList = () => {
-        ShopService.fetchPhysicalStoreList()
+        ShopService.fetchOnlineOrderList()
             .then(response => {
                 setShopList(response.data);
             })
@@ -27,9 +28,9 @@ const ShopOrderTransaction = () => {
 
 
     const fetchUserList = () => {
-        UserService.getAll()
+        CustomerService.getAll()
             .then(response => {
-                setUserList(response.data);
+                setCustomerList(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -39,12 +40,12 @@ const ShopOrderTransaction = () => {
 
     return (
         <div>
-            <AddShopOrderTransaction
+            <AddCustomerOrderTransactionV2
                 shopList={shopList}
-                userList={userList}
+                customerList={customerList}
             />
         </div>
     )
 }
 
-export default ShopOrderTransaction
+export default CustomerOrderTransaction

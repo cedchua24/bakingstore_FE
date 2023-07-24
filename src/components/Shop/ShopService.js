@@ -10,6 +10,15 @@ class ShopService {
     fetchShopList(id) {
         return axios.get(`/api/shop/fetchShopList/${id}`);
     }
+    fetchOnlineOrderList(id) {
+        return axios.get(`/api/shop/fetchOnlineOrderList/${id}`);
+    }
+    fetchPhysicalStoreList(id) {
+        return axios.get(`/api/shop/fetchPhysicalStoreList/${id}`);
+    }
+    test(id) {
+        return axios.get(`/api/shop/test/${id}`);
+    }
     create(data) {
         return axios.post("/api/shop", data);
     }

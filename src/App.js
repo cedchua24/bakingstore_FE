@@ -46,10 +46,18 @@ import EditShop from "./components/Shop/EditShop";
 import ShopOrderTransaction from "./components/ShopOrderTransaction/ShopOrderTransaction";
 import AddProductShopOrderTransaction from "./components/ShopOrderTransaction/AddProductShopOrderTransaction";
 import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
+import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
 import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
 
+import CustomerOrderTransaction from "./components/CustomerTransaction/CustomerOrderTransaction";
+import AddProductCustomerOrderTransaction from "./components/CustomerTransaction/AddProductCustomerOrderTransaction";
+// import AddProductCustomerOrderTransaction from "./components/customerOrderTransaction/AddProductCustomerOrderTransaction";
+// import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
+// import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
+// import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
 
+import ProductTransactionList from "./components/Product/ProductTransactionList";
 
 
 
@@ -113,6 +121,8 @@ const App = () => {
           <Route path="/shop" element={<Shop />} />
           <Route exact path="/editShop/:id" element={<EditShop />} />
 
+          <Route exact path="/productTransactionList/:id" element={<ProductTransactionList />} />
+
 
           <Route
             exact
@@ -136,8 +146,21 @@ const App = () => {
           />
           <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
+          <Route exact path="/shopOrderTransaction/customerOrderTransactionList/" element={<CustomerOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
           <Route exact path="/shopOrderTransaction/completedShopOrderTransaction/:id" element={<CompletedShopOrderTransaction />} />
+          <Route
+            exact
+            path="/customerOrderTransaction"
+            element={
+              localStorage.getItem('auth_token')
+                // items !== null
+                ? <CustomerOrderTransaction />
+                : <UserLogin />
+            }
+          />
+          <Route exact path="/customerOrderTransaction/addProductCustomerOrderTransaction/:id" element={<AddProductCustomerOrderTransaction />} />
+          {/* <Route exact path="/customerOrderTransaction/addProductCustomerTransaction/:id" element={<AddProductCustomerTransaction />} /> */}
           <Route
             exact
             path="/supplierTransactionList"

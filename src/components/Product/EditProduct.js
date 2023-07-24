@@ -157,13 +157,13 @@ const EditProduct = () => {
                     <Form.Control type="number" value={product.price} onChange={onChangePrice} />
                 </FloatingLabel>
 
-                <FloatingLabel
+                {/* <FloatingLabel
                     controlId="floatingInput"
                     label="Stock"
                     className="w-25 mb-3"
                 >
                     <Form.Control type="number" value={product.stock} onChange={onChangeStock} />
-                </FloatingLabel>
+                </FloatingLabel> */}
 
                 <FloatingLabel
                     controlId="floatingInput"

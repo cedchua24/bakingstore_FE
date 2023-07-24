@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
-import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import CustomerOrderTransactionService from "./CustomerOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
 import MarkUpPriceService from "../MarkUpPrice/MarkUpPriceService.service";
 
@@ -41,16 +41,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
-
-import { styled } from '@mui/material/styles';
-
 const AddProductCustomerOrderTransaction = () => {
 
     const { id } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchShopOrderTransaction(id);
+        fetchCustomerOrderTransaction(id);
         fetchShopOrder(id);
         fetchProductList();
         fetchShopOrderDTO(id);
@@ -73,34 +70,28 @@ const AddProductCustomerOrderTransaction = () => {
     const [products, setProducts] = useState([]);
     const [value, setValue] = useState(products[0])
 
-    const [orderShop, setOrderShop] = useState({
+    const [orderCustomer, setOrderCustomer] = useState({
         id: 0,
-        shop_transaction_id: id,
-        branch_stock_transaction_id: 0,
-        mark_up_product_id: 0,
+        order_customer_transaction_id: id,
+        mark_up_id: 0,
         product_id: 0,
-        shop_order_quantity: 0,
-        shop_order_price: 0,
-        business_type: '',
-        shop_order_total_price: 0,
+        quantity: 0,
+        total_price: 0,
+        discount: 0,
         created_at: ''
     });
 
-    const [shopOrderTransaction, setShopOrderTransaction] = useState({
+    const [customerOrderTransaction, setCustomerOrderTransaction] = useState({
         id: 0,
-        shop_id: 0,
-        shop_order_transaction_total_quantity: 0,
-        shop_order_transaction_total_price: 0,
-        requestor: 0,
-        checker: 0,
-        requestor_name: '',
-        checker_name: '',
+        customer_id: 0,
+        total_transaction_price: 0,
+        status: 0,
         created_at: '',
         updated_at: ''
     });
 
-    const [orderShopDTO, setOrderShopDTO] = useState({
-        shopOrderTransaction: {},
+    const [orderCustomerDTO, setOrderCustomerDTO] = useState({
+        customerOrderTransaction: {},
         shopOrderList: []
     });
 
@@ -108,11 +99,10 @@ const AddProductCustomerOrderTransaction = () => {
         id: 0,
         order_supplier_transaction_id: id,
         product_id: 0,
-        business_type: '',
         product_name: '',
-        shop_order_price: 0,
-        shop_order_quantity: 0,
-        shop_order_total_price: 0
+        price: 0,
+        quantity: 0,
+        total_price: 0
     });
 
 
@@ -163,22 +153,22 @@ const AddProductCustomerOrderTransaction = () => {
 
 
     function inputValidation() {
-        console.log('orderShop', orderShop);
-        const product = products.find(product => product.product_id === orderShop.product_id);
-        if (orderShop.product_id == 0) {
+        console.log('orderCustomer', orderCustomer);
+        const product = products.find(product => product.product_id === orderCustomer.product_id);
+        if (orderCustomer.product_id == 0) {
             setValidator({
                 severity: 'warning',
                 message: 'Please choose Product',
                 isShow: true,
             });
         } else
-            if (orderShop.shop_order_quantity === 0) {
+            if (orderCustomer.quantity === 0) {
                 setValidator({
                     severity: 'warning',
                     message: 'Please insert Quantity',
                     isShow: true,
                 });
-            } else if (orderShop.shop_order_quantity > product.stock) {
+            } else if (orderCustomer.quantity > product.stock) {
                 setValidator({
                     severity: 'error',
                     message: 'Quantity is more than to Stock',
@@ -192,32 +182,32 @@ const AddProductCustomerOrderTransaction = () => {
                     isShow: false,
                 });
 
-                const index = orderShopDTO.shopOrderList.filter(obj => {
-                    return obj.id === orderShop.mark_up_product_id;
+                const index = orderCustomerDTO.shopOrderList.filter(obj => {
+                    return obj.product_id === orderCustomer.product_id;
                 });
-                console.log('orderShop', orderShop);
-                console.log('orderShopDTO', orderShopDTO);
+                console.log('orderCustomer', orderCustomer);
+                console.log('orderCustomerDTO', orderCustomerDTO);
                 if (index.length === 0) {
                     setValidator({
                         severity: 'success',
                         message: 'Successfuly Added!',
                         isShow: true,
                     });
-                    // setorderShopList([...orderShopList, orderShop]);
-                    // let arr = orderShopList.concat(orderShop);
-                    // setorderShopDTO({ orderShopList: arr, grandTotal: subtotal(arr) });
+                    // setorderCustomerList([...orderCustomerList, orderCustomer]);
+                    // let arr = orderCustomerList.concat(orderCustomer);
+                    // setorderCustomerDTO({ orderCustomerList: arr, grandTotal: subtotal(arr) });
                     // setValue(products[1]);
 
                     ShopOrderService.sanctum().then(response => {
-                        ShopOrderService.create(orderShop)
+                        ShopOrderService.create(orderCustomer)
                             .then(response => {
                                 fetchShopOrder(id);
-                                setOrderShop({
-                                    shop_transaction_id: id,
+                                setOrderCustomer({
+                                    order_customer_transaction_id: id,
                                     product_id: 0,
-                                    shop_order_price: 0,
-                                    shop_order_quantity: 0,
-                                    shop_order_total_price: 0,
+                                    price: 0,
+                                    quantity: 0,
+                                    total_price: 0,
                                 });
                                 fetchShopOrderDTO(id);
                                 // fetchProductList();
@@ -243,15 +233,15 @@ const AddProductCustomerOrderTransaction = () => {
     const onChangeInput = (e) => {
         e.persist();
         console.log(e.target.name)
-        setOrderShop({ ...orderShop, [e.target.name]: e.target.value });
+        setOrderCustomer({ ...orderCustomer, [e.target.name]: e.target.value });
     }
 
     const onChangeQuantity = (e) => {
-        setOrderShop({
-            ...orderShop,
-            shop_transaction_id: id,
-            shop_order_quantity: e.target.value,
-            shop_order_total_price: Number(orderShop.shop_order_price) * Number(e.target.value)
+        setOrderCustomer({
+            ...orderCustomer,
+            order_customer_transaction_id: id,
+            quantity: e.target.value,
+            total_price: Number(orderCustomer.price) * Number(e.target.value)
         });
     }
 
@@ -260,8 +250,8 @@ const AddProductCustomerOrderTransaction = () => {
         e.persist();
         setOrderSupplierModal({
             ...orderSupplierModal,
-            shop_order_quantity: e.target.value,
-            shop_order_total_price: orderSupplierModal.shop_order_price * e.target.value
+            quantity: e.target.value,
+            total_price: orderSupplierModal.price * e.target.value
         });
     }
 
@@ -269,23 +259,21 @@ const AddProductCustomerOrderTransaction = () => {
         e.persist();
         setOrderSupplierModal({
             ...orderSupplierModal,
-            shop_order_price: e.target.value,
-            shop_order_total_price: e.target.value * orderSupplierModal.shop_order_quantity
+            price: e.target.value,
+            total_price: e.target.value * orderSupplierModal.quantity
         });
     }
 
     const handleInputChange = (e, value) => {
         e.persist();
         console.log(value)
-        setOrderShop({
-            ...orderShop,
-            shop_transaction_id: id,
+        setOrderCustomer({
+            ...orderCustomer,
+            order_customer_transaction_id: id,
             branch_stock_transaction_id: value.branch_stock_transaction_id,
-            shop_order_price: value.new_price,
-            mark_up_product_id: value.id,
+            price: value.new_price,
             product_id: value.product_id,
-            business_type: value.business_type,
-            shop_order_total_price: Number(value.new_price) * Number(orderShop.shop_order_quantity)
+            total_price: Number(value.new_price) * Number(orderCustomer.quantity)
         });
     }
 
@@ -299,12 +287,12 @@ const AddProductCustomerOrderTransaction = () => {
             });
     }
 
-    const fetchShopOrderTransaction = async (id) => {
+    const fetchCustomerOrderTransaction = async (id) => {
         console.log('test')
-        await ShopOrderTransactionService.fetchShopOrderTransaction(id)
+        await CustomerOrderTransactionService.fetchCustomerOrderTransaction(id)
             .then(response => {
-                console.log('fetchShopOrderTransaction', response.data)
-                setShopOrderTransaction(response.data);
+                console.log('fetchCustomerOrderTransaction', response.data)
+                setCustomerOrderTransaction(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -324,10 +312,10 @@ const AddProductCustomerOrderTransaction = () => {
     const fetchShopOrderDTO = async (id) => {
         await ShopOrderService.fetchShopOrderDTO(id)
             .then(response => {
-                setOrderShopDTO(response.data);
-                setinvoiceSubtotal(response.data.shopOrderTransaction.shop_order_transaction_total_price - TAX_RATE * response.data.shopOrderTransaction.shop_order_transaction_total_price);
-                setinvoiceTaxes(TAX_RATE * response.data.shopOrderTransaction.shop_order_transaction_total_price);
-                setinvoiceTotal(response.data.shopOrderTransaction.shop_order_transaction_total_price);
+                setOrderCustomerDTO(response.data);
+                setinvoiceSubtotal(response.data.customerOrderTransaction.shop_order_transaction_total_price - TAX_RATE * response.data.customerOrderTransaction.shop_order_transaction_total_price);
+                setinvoiceTaxes(TAX_RATE * response.data.customerOrderTransaction.shop_order_transaction_total_price);
+                setinvoiceTotal(response.data.customerOrderTransaction.shop_order_transaction_total_price);
             })
             .catch(e => {
                 console.log("error", e)
@@ -335,7 +323,7 @@ const AddProductCustomerOrderTransaction = () => {
     }
 
 
-    const saveOrderSupplier = (event) => {
+    const saveCustomerSupplier = (event) => {
         event.preventDefault();
         inputValidation();
     }
@@ -345,10 +333,10 @@ const AddProductCustomerOrderTransaction = () => {
 
     const updateOrderTransaction = () => {
 
-        ShopOrderTransactionService.update(id, shopOrderTransaction)
+        CustomerOrderTransactionService.update(id, customerOrderTransaction)
             .then(response => {
                 setMessage(true);
-                fetchShopOrderTransaction(id);
+                fetchCustomerOrderTransaction(id);
             })
             .catch(e => {
                 console.log(e);
@@ -358,7 +346,6 @@ const AddProductCustomerOrderTransaction = () => {
 
     const deleteOrderTransaction = (deleteId, e) => {
         setSubmitLoading(true);
-        console.log("test", orderSupplierModal);
         ShopOrderService.delete(deleteId, orderSupplierModal)
             .then(response => {
                 setSubmitLoading(false);
@@ -425,26 +412,13 @@ const AddProductCustomerOrderTransaction = () => {
     }
 
     const finalizeOrder = () => {
-        navigate('/shopOrderTransaction/finalizeShopOrder/' + id);
+        navigate('/customerOrderTransaction/finalizeShopOrder/' + id);
     }
 
-
-    const Div = styled('div')(({ theme }) => ({
-        ...theme.typography.button,
-        backgroundColor: theme.palette.background.paper,
-        fontSize: "2rem",
-        padding: theme.spacing(1),
-    }));
 
 
     return (
         <div>
-            {shopOrderTransaction.checker != 0 ? (
-                <Div>{"Shop Branch Order"}</Div>)
-                :
-                (<Div>{"Online Order"}</Div>)
-            }
-
             <Stack sx={{ width: '100%' }} spacing={2}>
                 {validator.isShow &&
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
@@ -468,40 +442,24 @@ const AddProductCustomerOrderTransaction = () => {
                 </Stepper>
                 <br></br>
                 <TextField
-                    id="filled-disabled"
-                    variant="filled"
-                    label="Shop"
-                    value={shopOrderTransaction.shop_name}
-                    disabled
-                />
-                {shopOrderTransaction.checker != 0 &&
-                    <TextField
-                        id="outlined-disabled"
-                        variant="filled"
-                        label="Checker"
-                        value={shopOrderTransaction.checker_name}
-                        disabled
-                    />}
-
-                <TextField
                     id="outlined-disabled"
                     variant="filled"
-                    label="Requestor"
-                    value={shopOrderTransaction.requestor_name}
+                    label="Customer"
+                    value={customerOrderTransaction.first_name}
                     disabled
                 />
                 <TextField
                     id="outlined-disabled"
                     variant="filled"
                     label="Date"
-                    value={shopOrderTransaction.created_at}
+                    value={customerOrderTransaction.created_at}
                     disabled
                 />
 
                 <br></br>
                 <br></br>
 
-                <form onSubmit={saveOrderSupplier} >
+                <form onSubmit={saveCustomerSupplier} >
 
                     <FormControl variant="standard"  >
                         <Autocomplete
@@ -517,7 +475,7 @@ const AddProductCustomerOrderTransaction = () => {
                             id="disable-close-on-select"
                             onChange={handleInputChange}
                             groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + ' - ' + (products.business_type === 'WHOLESALE' ? products.weight : (products.weight / products.quantity)) + 'kg' + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + (products.business_type === 'WHOLESALE' ? products.stock : products.stock_pc)}
+                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + (products.stock)}
                             renderInput={(params) => (
                                 <TextField {...params} label='Choose Product' variant="standard" />
                             )}
@@ -534,11 +492,11 @@ const AddProductCustomerOrderTransaction = () => {
                             id="filled-required"
                             label="Price"
                             variant="filled"
-                            name='shop_order_price'
-                            value={orderShop.shop_order_price}
+                            name='price'
+                            value={orderCustomer.price}
                             onChange={onChangeInput}
                             startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                            disabled={orderShop.product_id === 0 ? true : false}
+                            disabled={orderCustomer.product_id === 0 ? true : false}
                         />
                     </FormControl>
                     <br></br>
@@ -550,10 +508,10 @@ const AddProductCustomerOrderTransaction = () => {
                             id="filled-required"
                             label="Quantity"
                             variant="filled"
-                            name='shop_order_quantity'
-                            value={orderShop.shop_order_quantity}
+                            name='quantity'
+                            value={orderCustomer.quantity}
                             onChange={onChangeQuantity}
-                            disabled={orderShop.product_id === 0 ? true : false}
+                            disabled={orderCustomer.product_id === 0 ? true : false}
                         />
                     </FormControl>
                     <br></br>
@@ -564,8 +522,8 @@ const AddProductCustomerOrderTransaction = () => {
                             id="filled-required"
                             label="Total Price"
                             variant="filled"
-                            name='shop_order_total_price'
-                            value={orderShop.shop_order_total_price}
+                            name='total_price'
+                            value={orderCustomer.total_price}
                             onChange={onChangeInput}
                             startAdornment={<InputAdornment position="start">₱</InputAdornment>}
                             disabled
@@ -605,12 +563,12 @@ const AddProductCustomerOrderTransaction = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {orderShopDTO.shopOrderList.map((row) => (
+                        {orderCustomerDTO.shopOrderList.map((row) => (
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
-                                <TableCell align="right">{row.shop_order_quantity}</TableCell>
-                                <TableCell align="right">{row.shop_order_price}</TableCell>
-                                <TableCell align="right">{row.shop_order_total_price}</TableCell>
+                                <TableCell align="right">{row.quantity}</TableCell>
+                                <TableCell align="right">{row.price}</TableCell>
+                                <TableCell align="right">{row.total_price}</TableCell>
                                 <TableCell align="right">
                                     <Tooltip title="Update">
                                         <IconButton>
@@ -681,7 +639,7 @@ const AddProductCustomerOrderTransaction = () => {
                     variant="contained"
                     type="submit"
                     onClick={finalizeOrder}
-                    disabled={orderShopDTO.shopOrderList.length === 0 ? true : false}
+                    disabled={orderCustomerDTO.shopOrderList.length === 0 ? true : false}
                     size="large" >
                     Next
                 </Button>
@@ -719,7 +677,7 @@ const AddProductCustomerOrderTransaction = () => {
                             label="=Price"
                             variant="filled"
                             name='price'
-                            value={orderSupplierModal.shop_order_price}
+                            value={orderSupplierModal.price}
                             onChange={onChangeInputPriceModal}
                             startAdornment={<InputAdornment position="start">₱</InputAdornment>}
                         />
@@ -733,7 +691,7 @@ const AddProductCustomerOrderTransaction = () => {
                             label="=Price"
                             variant="filled"
                             name='quantity'
-                            value={orderSupplierModal.shop_order_quantity}
+                            value={orderSupplierModal.quantity}
                             onChange={onChangeInputQuantityModal}
                         />
                     </FormControl>
@@ -745,7 +703,7 @@ const AddProductCustomerOrderTransaction = () => {
                         variant="filled"
                         name='total_price'
                         startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        value={'₱ ' + orderSupplierModal.shop_order_total_price}
+                        value={'₱ ' + orderSupplierModal.total_price}
                     />
                     <Box
                         sx={{

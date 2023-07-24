@@ -26,6 +26,8 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
+import { styled } from '@mui/material/styles';
+
 const FinalizeShopOrder = () => {
 
 
@@ -58,6 +60,7 @@ const FinalizeShopOrder = () => {
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         id: 0,
         shop_id: 0,
+        shop_type_id: 0,
         shop_order_transaction_total_quantity: 0,
         shop_order_transaction_total_price: 0,
         requestor: 0,
@@ -147,7 +150,12 @@ const FinalizeShopOrder = () => {
             .then(response => {
                 setMessage(true);
                 setSubmitLoading(false);
-                navigate('/shopOrderTransaction/shorOrderTransactionList/');
+                if (shopOrderTransaction.shop_type_id == 3) {
+                    navigate('/shopOrderTransaction/customerOrderTransactionList/');
+                } else {
+                    navigate('/shopOrderTransaction/shorOrderTransactionList/');
+                }
+
             })
             .catch(e => {
                 console.log(e);
@@ -158,10 +166,24 @@ const FinalizeShopOrder = () => {
         setSubmitOpenModal(true);
     }
 
+    const Div = styled('div')(({ theme }) => ({
+        ...theme.typography.button,
+        backgroundColor: theme.palette.background.paper,
+        fontSize: "2rem",
+        padding: theme.spacing(1),
+    }));
+
 
 
     return (
         <div>
+
+            {shopOrderTransaction.checker != 0 ? (
+                <Div>{"Shop Branch Order"}</Div>)
+                :
+                (<Div>{"Online Order"}</Div>)
+            }
+
             {message &&
                 <Stack sx={{ width: '100%' }} spacing={2}>
                     <Alert variant="filled" severity="success">
@@ -195,13 +217,15 @@ const FinalizeShopOrder = () => {
                     value={shopOrderTransaction.shop_name}
                     disabled
                 />
-                <TextField
-                    id="outlined-disabled"
-                    variant="filled"
-                    label="Checker"
-                    value={shopOrderTransaction.checker_name}
-                    disabled
-                />
+                {shopOrderTransaction.checker != 0 &&
+                    <TextField
+                        id="outlined-disabled"
+                        variant="filled"
+                        label="Checker"
+                        value={shopOrderTransaction.checker_name}
+                        disabled
+                    />}
+
                 <TextField
                     id="outlined-disabled"
                     variant="filled"
