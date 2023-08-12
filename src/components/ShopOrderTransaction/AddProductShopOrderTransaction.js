@@ -73,6 +73,9 @@ const AddProductCustomerOrderTransaction = () => {
     const [products, setProducts] = useState([]);
     const [value, setValue] = useState(products[0])
 
+    const [stock, setStock] = useState(0);
+
+
     const [orderShop, setOrderShop] = useState({
         id: 0,
         shop_transaction_id: id,
@@ -108,6 +111,7 @@ const AddProductCustomerOrderTransaction = () => {
         id: 0,
         order_supplier_transaction_id: id,
         product_id: 0,
+        mark_up_product_id: 0,
         business_type: '',
         product_name: '',
         shop_order_price: 0,
@@ -164,7 +168,7 @@ const AddProductCustomerOrderTransaction = () => {
 
     function inputValidation() {
         console.log('orderShop', orderShop);
-        const product = products.find(product => product.product_id === orderShop.product_id);
+
         if (orderShop.product_id == 0) {
             setValidator({
                 severity: 'warning',
@@ -178,7 +182,7 @@ const AddProductCustomerOrderTransaction = () => {
                     message: 'Please insert Quantity',
                     isShow: true,
                 });
-            } else if (orderShop.shop_order_quantity > product.stock) {
+            } else if (orderShop.shop_order_quantity > stock) {
                 setValidator({
                     severity: 'error',
                     message: 'Quantity is more than to Stock',
@@ -276,7 +280,12 @@ const AddProductCustomerOrderTransaction = () => {
 
     const handleInputChange = (e, value) => {
         e.persist();
-        console.log(value)
+        console.log('eym', value)
+        if (orderShop.business_type === 'WHOLESALE') {
+            setStock(value.stock);
+        } else {
+            setStock(value.stock_pc);
+        }
         setOrderShop({
             ...orderShop,
             shop_transaction_id: id,
@@ -292,6 +301,7 @@ const AddProductCustomerOrderTransaction = () => {
     const fetchProductList = () => {
         MarkUpPriceService.getAll()
             .then(response => {
+                console.log("prodcut", response.data)
                 setProducts(response.data);
             })
             .catch(e => {

@@ -379,7 +379,7 @@ const AddProduct = () => {
       >
         <Box sx={style}>
           <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-            Add Stock
+            Add Stocks
           </Typography>
           {submitLoading &&
             <div style={{ display: 'flex', justifyContent: 'center' }}>
