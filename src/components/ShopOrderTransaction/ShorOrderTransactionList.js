@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import { styled } from '@mui/material/styles';
+import { Form } from 'react-bootstrap';
 
 const ShorOrderTransactionList = () => {
 
@@ -11,6 +12,16 @@ const ShorOrderTransactionList = () => {
         fetchShopOrderTransactionList();
     }, []);
 
+    const [shopOrderDate, setShopOrderDate] = useState({
+        date: ""
+    });
+    const [shopOrderTransaction, setShopOrderTransaction] = useState({
+        data: [],
+        code: '',
+        message: '',
+        total_price: 0
+    });
+
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
 
 
@@ -18,7 +29,7 @@ const ShorOrderTransactionList = () => {
     const fetchShopOrderTransactionList = () => {
         ShopOrderTransactionService.getAll()
             .then(response => {
-                setShopOrderTransactionList(response.data);
+                setShopOrderTransaction(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -64,8 +75,39 @@ const ShorOrderTransactionList = () => {
         padding: theme.spacing(1),
     }));
 
+    const onChangeInput = (e) => {
+        setShopOrderDate({ ...shopOrderDate, [e.target.name]: e.target.value });
+    }
+
+    const saveOrderTransaction = () => {
+        console.log('shopOrderDate', shopOrderDate.date);
+        ShopOrderTransactionService.fetchShopOrderTransactionListByDate(shopOrderDate.date)
+            .then(response => {
+                setShopOrderTransaction(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+
+            });
+
+    }
+
     return (
         <div>
+            <Form>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control type="date" name="date" onChange={onChangeInput} />
+                </Form.Group>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label>Total Sales: </Form.Label>
+                    <Form.Control type="text" value={"₱. " + shopOrderTransaction.total_price} />
+                </Form.Group>
+
+                <Button variant="primary" onClick={saveOrderTransaction}>
+                    Find
+                </Button>
+            </Form >
             <Div>{"Shop Branch Order"}</Div>
             <table class="table table-bordered">
                 <thead class="table-dark">
@@ -87,7 +129,7 @@ const ShorOrderTransactionList = () => {
                 <tbody>
 
                     {
-                        shopOrderTransactionList.map((shopOrderTransaction, index) => (
+                        shopOrderTransaction.data.map((shopOrderTransaction, index) => (
                             <tr key={shopOrderTransaction.id} >
                                 <td>{shopOrderTransaction.id}</td>
                                 <td>{shopOrderTransaction.shop_name}</td>
@@ -95,7 +137,7 @@ const ShorOrderTransactionList = () => {
                                 <td>{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                 <td>{shopOrderTransaction.requestor_name}</td>
                                 <td>{shopOrderTransaction.checker_name}</td>
-                                <td>{shopOrderTransaction.created_at}</td>
+                                <td>{shopOrderTransaction.date}</td>
                                 <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                         <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>

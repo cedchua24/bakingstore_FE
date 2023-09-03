@@ -55,7 +55,8 @@ const AddMarkUpPrice = (props) => {
         setMarkUpPrice({
             ...markUpPrice,
             mark_up_price: Number(e.target.value),
-            new_price: Number(markUpPrice.price) + Number(e.target.value)
+            new_price: Number(markUpPrice.price) + Number(e.target.value),
+            profit: Number(e.target.value)
         });
     }
 
@@ -64,7 +65,8 @@ const AddMarkUpPrice = (props) => {
         setMarkUpPrice({
             ...markUpPrice,
             mark_up_price: Number(e.target.value),
-            new_price: markUpPrice.price + divisible
+            new_price: markUpPrice.price + divisible,
+            profit: divisible
         });
     }
 
@@ -115,7 +117,8 @@ const AddMarkUpPrice = (props) => {
         setMarkUpPriceRetail({
             ...markUpPriceRetail,
             mark_up_price: Number(e.target.value),
-            new_price: Number(markUpPriceRetail.price) + Number(e.target.value)
+            new_price: Number(markUpPriceRetail.price) + Number(e.target.value),
+            profit: Number(e.target.value)
         });
     }
 
@@ -124,7 +127,8 @@ const AddMarkUpPrice = (props) => {
         setMarkUpPriceRetail({
             ...markUpPriceRetail,
             mark_up_price: Number(e.target.value),
-            new_price: Math.ceil(markUpPriceRetail.price + divisible)
+            new_price: Math.ceil(markUpPriceRetail.price + divisible),
+            profit: divisible
         });
     }
 
@@ -158,7 +162,7 @@ const AddMarkUpPrice = (props) => {
                     console.log(e);
                 });
             if (markUpPrice.quantity > 1) {
-                MarkUpPriceServiceService.create(markUpPriceRetail)
+                MarkUpPriceServiceService.saveMarkUp(markUpPriceRetail)
                     .then(response => {
                         props.onSaveMarkUpPriceData(markUpPriceRetail);
                         console.log('markUpPriceRetail', markUpPriceRetail);

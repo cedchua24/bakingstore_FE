@@ -24,6 +24,7 @@ const AddShopOrderTransaction = (props) => {
         shop_id: 0,
         shop_order_transaction_total_quantity: 0,
         shop_order_transaction_total_price: 0,
+        date: '',
         requestor: 0,
         checker: 0,
         created_at: '',
@@ -150,7 +151,7 @@ const AddShopOrderTransaction = (props) => {
 
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date</Form.Label>
-                    <Form.Control type="date" name="created_at" onChange={onChangeInput} />
+                    <Form.Control type="date" name="date" onChange={onChangeInput} />
                 </Form.Group>
 
                 <Button variant="primary" onClick={saveOrderTransaction}>

@@ -13,6 +13,12 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionList(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionList/${id}`);
     }
+    fetchOnlineShopOrderTransactionListByDate(date) {
+        return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByDate/${date}`);
+    }
+    fetchShopOrderTransactionListByDate(date) {
+        return axios.get(`/api/shopOrderTransaction/fetchShopOrderTransactionListByDate/${date}`);
+    }
     fetchShopOrderTransaction(id) {
         return axios.get(`/api/shopOrderTransaction/fetchShopOrderTransaction/${id}`);
     }

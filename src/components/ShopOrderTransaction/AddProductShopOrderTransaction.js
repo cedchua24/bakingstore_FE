@@ -81,10 +81,13 @@ const AddProductCustomerOrderTransaction = () => {
         shop_transaction_id: id,
         branch_stock_transaction_id: 0,
         mark_up_product_id: 0,
+        shop_order_profit: 0,
+        order_profit: 0,
         product_id: 0,
         shop_order_quantity: 0,
         shop_order_price: 0,
         business_type: '',
+        stock: 0,
         shop_order_total_price: 0,
         created_at: ''
     });
@@ -94,8 +97,10 @@ const AddProductCustomerOrderTransaction = () => {
         shop_id: 0,
         shop_order_transaction_total_quantity: 0,
         shop_order_transaction_total_price: 0,
+        profit: 0,
         requestor: 0,
         checker: 0,
+        date: '',
         requestor_name: '',
         checker_name: '',
         created_at: '',
@@ -155,6 +160,7 @@ const AddProductCustomerOrderTransaction = () => {
     const TAX_RATE = 0.12;
 
     function ccyFormat(num) {
+
         return `${num.toFixed(2)}`;
     }
 
@@ -182,10 +188,10 @@ const AddProductCustomerOrderTransaction = () => {
                     message: 'Please insert Quantity',
                     isShow: true,
                 });
-            } else if (orderShop.shop_order_quantity > stock) {
+            } else if (orderShop.shop_order_quantity > orderShop.stock) {
                 setValidator({
                     severity: 'error',
-                    message: 'Quantity is more than to Stock',
+                    message: 'Quantity is more than to Stocksss',
                     isShow: true,
                 });
             }
@@ -197,10 +203,11 @@ const AddProductCustomerOrderTransaction = () => {
                 });
 
                 const index = orderShopDTO.shopOrderList.filter(obj => {
-                    return obj.id === orderShop.mark_up_product_id;
+                    return obj.mark_up_product_id === orderShop.mark_up_product_id;
                 });
                 console.log('orderShop', orderShop);
                 console.log('orderShopDTO', orderShopDTO);
+                console.log('index', index);
                 if (index.length === 0) {
                     setValidator({
                         severity: 'success',
@@ -255,6 +262,7 @@ const AddProductCustomerOrderTransaction = () => {
             ...orderShop,
             shop_transaction_id: id,
             shop_order_quantity: e.target.value,
+            shop_order_profit: Number(orderShop.order_profit) * Number(e.target.value),
             shop_order_total_price: Number(orderShop.shop_order_price) * Number(e.target.value)
         });
     }
@@ -292,7 +300,9 @@ const AddProductCustomerOrderTransaction = () => {
             branch_stock_transaction_id: value.branch_stock_transaction_id,
             shop_order_price: value.new_price,
             mark_up_product_id: value.id,
+            order_profit: value.profit,
             product_id: value.product_id,
+            stock: value.stock,
             business_type: value.business_type,
             shop_order_total_price: Number(value.new_price) * Number(orderShop.shop_order_quantity)
         });
@@ -446,6 +456,15 @@ const AddProductCustomerOrderTransaction = () => {
         padding: theme.spacing(1),
     }));
 
+    const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+
+        // These options are needed to round to whole numbers if that's what you want.
+        //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+        //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+    });
+
 
     return (
         <div>
@@ -477,7 +496,32 @@ const AddProductCustomerOrderTransaction = () => {
                     ))}
                 </Stepper>
                 <br></br>
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+
+                        <TableBody>
+                            <TableRow >
+                                <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
+                                <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
+                                {shopOrderTransaction.checker != 0 &&
+                                    <>
+                                        <TableCell align="right" >Checker</TableCell>
+                                        <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
+                                    </>
+                                }
+                                <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
+                                <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
+                                <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
+
+                            </TableRow>
+
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                {/* 
                 <TextField
+
                     id="filled-disabled"
                     variant="filled"
                     label="Shop"
@@ -506,7 +550,7 @@ const AddProductCustomerOrderTransaction = () => {
                     label="Date"
                     value={shopOrderTransaction.created_at}
                     disabled
-                />
+                /> */}
 
                 <br></br>
                 <br></br>
@@ -527,7 +571,7 @@ const AddProductCustomerOrderTransaction = () => {
                             id="disable-close-on-select"
                             onChange={handleInputChange}
                             groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + ' - ' + (products.business_type === 'WHOLESALE' ? products.weight : (products.weight / products.quantity)) + 'kg' + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + (products.business_type === 'WHOLESALE' ? products.stock : products.stock_pc)}
+                            getOptionLabel={(products) => products.product_name + ' - ' + (products.business_type === 'WHOLESALE' ? products.weight : (products.weight / products.quantity)) + 'kg' + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock}
                             renderInput={(params) => (
                                 <TextField {...params} label='Choose Product' variant="standard" />
                             )}

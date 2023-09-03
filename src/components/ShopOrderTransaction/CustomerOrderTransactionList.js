@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import { styled } from '@mui/material/styles';
+import { Form } from 'react-bootstrap';
 
 const CustomerOrderTransactionList = () => {
 
@@ -11,6 +12,18 @@ const CustomerOrderTransactionList = () => {
         fetchShopOrderTransactionList();
     }, []);
 
+    const [customerOrderDate, setCustomerOrderDate] = useState({
+        date: ""
+    });
+
+    const [shopOrderTransaction, setShopOrderTransaction] = useState({
+        data: [],
+        code: '',
+        message: '',
+        total_price: 0,
+        total_profit: 0
+    });
+
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
 
 
@@ -18,7 +31,8 @@ const CustomerOrderTransactionList = () => {
     const fetchShopOrderTransactionList = () => {
         ShopOrderTransactionService.fetchOnlineShopOrderTransactionList()
             .then(response => {
-                setShopOrderTransactionList(response.data);
+                // setShopOrderTransactionList(response.data);
+                setShopOrderTransaction(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -64,10 +78,48 @@ const CustomerOrderTransactionList = () => {
         padding: theme.spacing(1),
     }));
 
+    const onChangeInput = (e) => {
+        setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
+    }
+
+    const saveOrderTransaction = () => {
+        console.log('orderTransaction', customerOrderDate.date);
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDate(customerOrderDate.date)
+            .then(response => {
+                setShopOrderTransaction(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+
+            });
+    }
+
+
 
     return (
         <div>
-            <Div>{"Online Order"}</Div>
+            <Form>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control type="date" name="date" onChange={onChangeInput} />
+                </Form.Group>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label>Total Sales: </Form.Label>
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_price} />
+                </Form.Group>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label>Total Profit: </Form.Label>
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
+                </Form.Group>
+
+
+                <Button variant="primary" onClick={saveOrderTransaction}>
+                    Find
+                </Button>
+            </Form >
+            <Div>{"Online Orders"}
+            </Div>
+
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -75,9 +127,11 @@ const CustomerOrderTransactionList = () => {
                         <th>Shop Name</th>
                         <th>Total Quantity</th>
                         <th>Total Amount</th>
+                        <th>Profit</th>
                         <th>Customer</th>
                         <th>Date</th>
                         <th>Status</th>
+                        <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -87,14 +141,15 @@ const CustomerOrderTransactionList = () => {
                 <tbody>
 
                     {
-                        shopOrderTransactionList.map((shopOrderTransaction, index) => (
+                        shopOrderTransaction.data.map((shopOrderTransaction, index) => (
                             <tr key={shopOrderTransaction.id} >
                                 <td>{shopOrderTransaction.id}</td>
                                 <td>{shopOrderTransaction.shop_name}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_price}</td>
+                                <td>{shopOrderTransaction.profit}</td>
                                 <td>{shopOrderTransaction.requestor_name}</td>
-                                <td>{shopOrderTransaction.created_at}</td>
+                                <td>{shopOrderTransaction.date}</td>
                                 <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                         <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
@@ -102,6 +157,13 @@ const CustomerOrderTransactionList = () => {
                                     <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
                                         <Button variant="primary" >
                                             View
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
+                                        <Button variant="primary" >
+                                            Receipt
                                         </Button>
                                     </Link>
                                 </td>
@@ -134,7 +196,7 @@ const CustomerOrderTransactionList = () => {
                     }
                 </tbody>
             </table>
-        </div>
+        </div >
     )
 }
 

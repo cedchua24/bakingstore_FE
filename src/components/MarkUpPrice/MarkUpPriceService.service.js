@@ -10,6 +10,9 @@ class MarkUpPriceService {
     create(data) {
         return axios.post("/api/markUpPrice", data);
     }
+    saveMarkUp(data) {
+        return axios.post("/api/markUpPrice/saveMarkUp", data);
+    }
     update(id, data) {
         return axios.put(`/api/markUpPrice/${id}`, data);
     }

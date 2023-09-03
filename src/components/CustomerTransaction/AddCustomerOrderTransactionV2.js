@@ -14,6 +14,7 @@ import Box from '@mui/material/Box';
 
 
 
+
 const AddCustomerOrderTransactionV2 = (props) => {
 
     const navigate = useNavigate();
@@ -24,6 +25,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
         shop_order_transaction_total_price: 0,
         requestor: 0,
         checker: 0,
+        date: '',
         created_at: '',
         updated_at: ''
     });
@@ -121,7 +123,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
 
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date</Form.Label>
-                    <Form.Control type="date" name="created_at" onChange={onChangeInput} />
+                    <Form.Control type="date" name="date" onChange={onChangeInput} />
                 </Form.Group>
 
                 <Button variant="primary" onClick={saveOrderTransaction}>

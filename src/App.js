@@ -5,6 +5,7 @@ import "./App.css";
 import NavBar from "./components/Navigation/NavBar";
 import NavBar2 from "./components/Navigation/NavBar2";
 import AddProduct from "./components/Product/AddProduct";
+import ProductList from "./components/Product/ProductList";
 import EditProduct from "./components/Product/EditProduct";
 import Brand from "./components/Brand/Brand";
 import EditBrand from "./components/Brand/EditBrand";
@@ -49,6 +50,7 @@ import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrd
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
 import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
+import ReceiptOrder from "./components/ShopOrderTransaction/ReceiptOrder";
 
 import CustomerOrderTransaction from "./components/CustomerTransaction/CustomerOrderTransaction";
 import AddProductCustomerOrderTransaction from "./components/CustomerTransaction/AddProductCustomerOrderTransaction";
@@ -84,6 +86,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
 
           <Route path="/addProduct" element={<AddProduct />} />
+          <Route path="/productList" element={<ProductList />} />
           <Route exact path="/editProduct/:id" element={<EditProduct />} />
 
           <Route path="/addBrand" element={<Brand />} />
@@ -149,6 +152,7 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/customerOrderTransactionList/" element={<CustomerOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
           <Route exact path="/shopOrderTransaction/completedShopOrderTransaction/:id" element={<CompletedShopOrderTransaction />} />
+          <Route exact path="/shopOrderTransaction/receiptOrder/:id" element={<ReceiptOrder />} />
           <Route
             exact
             path="/customerOrderTransaction"
