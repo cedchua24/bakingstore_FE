@@ -13,8 +13,20 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionList(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionList/${id}`);
     }
+    fetchOnlineShopOrderTransactionListReport(id) {
+        return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReport/${id}`);
+    }
+    fetchShopOrderTransactionListReport(id) {
+        return axios.get(`/api/shopOrderTransaction/fetchShopOrderTransactionListReport/${id}`);
+    }
     fetchOnlineShopOrderTransactionListByDate(date) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByDate/${date}`);
+    }
+    fetchOnlineShopOrderTransactionListReportByDate(data) {
+        return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReportByDate", data);
+    }
+    fetchShopOrderTransactionListReportByDate(data) {
+        return axios.post("/api/shopOrderTransaction/fetchShopOrderTransactionListReportByDate", data);
     }
     fetchShopOrderTransactionListByDate(date) {
         return axios.get(`/api/shopOrderTransaction/fetchShopOrderTransactionListByDate/${date}`);
@@ -25,7 +37,6 @@ class ShopOrderTransactionService {
     updateShopOrderTransactionStatus(id, data) {
         return axios.put(`/api/shopOrderTransaction/updateShopOrderTransactionStatus/${id}`, data);
     }
-
     create(data) {
         return axios.post("/api/shopOrderTransaction", data);
     }

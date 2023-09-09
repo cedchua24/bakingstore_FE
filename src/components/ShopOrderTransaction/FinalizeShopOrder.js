@@ -210,52 +210,42 @@ const FinalizeShopOrder = () => {
                     ))}
                 </Stepper>
                 <br></br>
-                <TextField
-                    id="filled-disabled"
-                    variant="filled"
-                    label="Shop"
-                    value={shopOrderTransaction.shop_name}
-                    disabled
-                />
-                {shopOrderTransaction.checker != 0 &&
-                    <TextField
-                        id="outlined-disabled"
-                        variant="filled"
-                        label="Checker"
-                        value={shopOrderTransaction.checker_name}
-                        disabled
-                    />}
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                        <TableBody>
+                            <TableRow >
+                                <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
+                                <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
 
-                <TextField
-                    id="outlined-disabled"
-                    variant="filled"
-                    label="Requestor"
-                    value={shopOrderTransaction.requestor_name}
-                    disabled
-                />
-                <TextField
-                    id="outlined-disabled"
-                    variant="filled"
-                    label="Date"
-                    value={shopOrderTransaction.created_at}
-                    disabled
-                />
+                                {shopOrderTransaction.checker != 0 ?
+                                    <>
+                                        <TableCell align="right" >Checker</TableCell>
+                                        <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
+                                        <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
+                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                                    :
+                                    <>    <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
+                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                                }
+
+                                <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
+                                <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
+
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+
             </Box>
             <br></br>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
                         <TableRow>
-                            <TableCell align="left" colSpan={3}>
-                                Details
-                            </TableCell>
-                            <TableCell align="center" >Price</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
-                            <TableCell align="right">Unit</TableCell>
-                            <TableCell align="right">Sum</TableCell>
+                            <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Sum</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

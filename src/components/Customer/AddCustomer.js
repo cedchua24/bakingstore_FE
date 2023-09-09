@@ -17,18 +17,16 @@ const AddCustomer = (props) => {
     const [message, setMessage] = useState(false);
 
     const onChangeCustomer = (e) => {
-        setCustomer({ brand_name: e.target.value });
+        setCustomer({ ...customer, [e.target.name]: e.target.value });
     }
 
     const saveCustomer = () => {
+        console.log(customer);
         CustomerServiceService.sanctum().then(response => {
             CustomerServiceService.create(customer)
                 .then(response => {
                     props.onSaveCustomerData(response.data);
                     setMessage(true);
-                    setCustomer({
-                        first_name: ''
-                    });
                 })
                 .catch(e => {
                     console.log(e);
@@ -51,39 +49,29 @@ const AddCustomer = (props) => {
 
             <Form>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>First Name</Form.Label>
+                    <Form.Label>First Name *</Form.Label>
                     <Form.Control type="text" value={customer.first_name} name="first_name" placeholder="Enter First Name" onChange={onChangeCustomer} />
-                    <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
-                    </Form.Text>
+
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Last Name</Form.Label>
                     <Form.Control type="text" value={customer.last_name} name="last_name" placeholder="Enter Last Name" onChange={onChangeCustomer} />
-                    <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
-                    </Form.Text>
+
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Contact Number</Form.Label>
                     <Form.Control type="text" value={customer.contact_number} name="contact_number" placeholder="Enter Contact Number" onChange={onChangeCustomer} />
-                    <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
-                    </Form.Text>
+
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Email </Form.Label>
                     <Form.Control type="text" value={customer.email} name="email" placeholder="Enter Email" onChange={onChangeCustomer} />
-                    <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
-                    </Form.Text>
+
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Address</Form.Label>
                     <Form.Control type="text" value={customer.address} name="address" placeholder="Enter Address" onChange={onChangeCustomer} />
-                    <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
-                    </Form.Text>
+
                 </Form.Group>
 
                 <Button variant="primary" onClick={saveCustomer}>

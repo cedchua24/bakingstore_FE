@@ -101,7 +101,11 @@ const ShorOrderTransactionList = () => {
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label>Total Sales: </Form.Label>
-                    <Form.Control type="text" value={"₱. " + shopOrderTransaction.total_price} />
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_price} />
+                </Form.Group>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label>Total Profit: </Form.Label>
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
                 </Form.Group>
 
                 <Button variant="primary" onClick={saveOrderTransaction}>
@@ -116,6 +120,7 @@ const ShorOrderTransactionList = () => {
                         <th>Shop Name</th>
                         <th>Total Quantity</th>
                         <th>Total Amount</th>
+                        <th>Profit</th>
                         <th>Requestor</th>
                         <th>Checker</th>
                         <th>Date</th>
@@ -135,6 +140,7 @@ const ShorOrderTransactionList = () => {
                                 <td>{shopOrderTransaction.shop_name}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_price}</td>
+                                <td>{shopOrderTransaction.profit}</td>
                                 <td>{shopOrderTransaction.requestor_name}</td>
                                 <td>{shopOrderTransaction.checker_name}</td>
                                 <td>{shopOrderTransaction.date}</td>

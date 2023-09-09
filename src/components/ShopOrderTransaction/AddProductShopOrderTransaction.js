@@ -92,6 +92,9 @@ const AddProductCustomerOrderTransaction = () => {
         created_at: ''
     });
 
+    const [origPrice, setOrigPrice] = useState(0);
+    const [profit, setProfit] = useState(0);
+
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         id: 0,
         shop_id: 0,
@@ -120,6 +123,7 @@ const AddProductCustomerOrderTransaction = () => {
         business_type: '',
         product_name: '',
         shop_order_price: 0,
+        shop_order_profit: 0,
         shop_order_quantity: 0,
         shop_order_total_price: 0
     });
@@ -254,7 +258,33 @@ const AddProductCustomerOrderTransaction = () => {
     const onChangeInput = (e) => {
         e.persist();
         console.log(e.target.name)
-        setOrderShop({ ...orderShop, [e.target.name]: e.target.value });
+        setOrderShop({
+            ...orderShop,
+            [e.target.name]: e.target.value,
+        });
+    }
+
+    const onChangePrice = (e) => {
+        e.persist();
+        console.log(e.target.name)
+        console.log(computeProfit(e.target.value))
+        setOrderShop({
+            ...orderShop,
+            shop_transaction_id: id,
+            shop_order_price: e.target.value,
+            shop_order_profit: computeProfit(e.target.value) * Number(orderShop.shop_order_quantity),
+            shop_order_total_price: e.target.value * Number(orderShop.shop_order_quantity)
+        });
+    }
+
+    const computeProfit = ($newPrice) => {
+        console.log('origPrice', origPrice);
+        console.log('newPrice', $newPrice);
+        console.log('profit', profit);
+        const $diffPrice = origPrice - $newPrice;
+        console.log('total:', profit - $diffPrice);
+        return profit - $diffPrice
+
     }
 
     const onChangeQuantity = (e) => {
@@ -262,7 +292,7 @@ const AddProductCustomerOrderTransaction = () => {
             ...orderShop,
             shop_transaction_id: id,
             shop_order_quantity: e.target.value,
-            shop_order_profit: Number(orderShop.order_profit) * Number(e.target.value),
+            shop_order_profit: computeProfit(Number(orderShop.shop_order_price)) * Number(e.target.value),
             shop_order_total_price: Number(orderShop.shop_order_price) * Number(e.target.value)
         });
     }
@@ -273,16 +303,28 @@ const AddProductCustomerOrderTransaction = () => {
         setOrderSupplierModal({
             ...orderSupplierModal,
             shop_order_quantity: e.target.value,
+            shop_order_profit: computeProfit(Number(orderSupplierModal.shop_order_price)) * Number(e.target.value),
             shop_order_total_price: orderSupplierModal.shop_order_price * e.target.value
         });
     }
 
+    // const onChangeInputPriceModal = (e) => {
+    //     e.persist();
+    //     setOrderSupplierModal({
+    //         ...orderSupplierModal,
+    //         shop_order_price: e.target.value,
+    //         shop_order_total_price: e.target.value * orderSupplierModal.shop_order_quantity
+    //     });
+    // }
+
     const onChangeInputPriceModal = (e) => {
         e.persist();
+        console.log(computeProfit(e.target.value))
         setOrderSupplierModal({
             ...orderSupplierModal,
             shop_order_price: e.target.value,
-            shop_order_total_price: e.target.value * orderSupplierModal.shop_order_quantity
+            shop_order_profit: computeProfit(e.target.value) * Number(orderSupplierModal.shop_order_quantity),
+            shop_order_total_price: e.target.value * Number(orderSupplierModal.shop_order_quantity)
         });
     }
 
@@ -306,6 +348,8 @@ const AddProductCustomerOrderTransaction = () => {
             business_type: value.business_type,
             shop_order_total_price: Number(value.new_price) * Number(orderShop.shop_order_quantity)
         });
+        setOrigPrice(value.new_price)
+        setProfit(value.profit)
     }
 
     const fetchProductList = () => {
@@ -335,6 +379,9 @@ const AddProductCustomerOrderTransaction = () => {
         await ShopOrderService.fetchShopOrder(id)
             .then(response => {
                 setOrderSupplierModal(response.data);
+                console.log(response.data)
+                setOrigPrice(response.data.shop_order_price);
+                setProfit(response.data.shop_order_profit)
             })
             .catch(e => {
                 console.log("error", e)
@@ -498,61 +545,30 @@ const AddProductCustomerOrderTransaction = () => {
                 <br></br>
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-
                         <TableBody>
                             <TableRow >
                                 <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
                                 <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
-                                {shopOrderTransaction.checker != 0 &&
+
+                                {shopOrderTransaction.checker != 0 ?
                                     <>
                                         <TableCell align="right" >Checker</TableCell>
                                         <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
-                                    </>
+                                        <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
+                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                                    :
+                                    <>  <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
+                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
                                 }
-                                <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
-                                <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell>
+
                                 <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
                                 <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
 
                             </TableRow>
-
                         </TableBody>
                     </Table>
                 </TableContainer>
-                {/* 
-                <TextField
 
-                    id="filled-disabled"
-                    variant="filled"
-                    label="Shop"
-                    value={shopOrderTransaction.shop_name}
-                    disabled
-                />
-                {shopOrderTransaction.checker != 0 &&
-                    <TextField
-                        id="outlined-disabled"
-                        variant="filled"
-                        label="Checker"
-                        value={shopOrderTransaction.checker_name}
-                        disabled
-                    />}
-
-                <TextField
-                    id="outlined-disabled"
-                    variant="filled"
-                    label="Requestor"
-                    value={shopOrderTransaction.requestor_name}
-                    disabled
-                />
-                <TextField
-                    id="outlined-disabled"
-                    variant="filled"
-                    label="Date"
-                    value={shopOrderTransaction.created_at}
-                    disabled
-                /> */}
-
-                <br></br>
                 <br></br>
 
                 <form onSubmit={saveOrderSupplier} >
@@ -590,7 +606,8 @@ const AddProductCustomerOrderTransaction = () => {
                             variant="filled"
                             name='shop_order_price'
                             value={orderShop.shop_order_price}
-                            onChange={onChangeInput}
+                            // onChange={onChangeInput}
+                            onChange={onChangePrice}
                             startAdornment={<InputAdornment position="start">₱</InputAdornment>}
                             disabled={orderShop.product_id === 0 ? true : false}
                         />
@@ -643,17 +660,10 @@ const AddProductCustomerOrderTransaction = () => {
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
                         <TableRow>
-                            <TableCell align="left" colSpan={3}>
-                                Details
-                            </TableCell>
-                            <TableCell align="center" >Price</TableCell>
-                            <TableCell align="center" colSpan={2}>Action</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
-                            <TableCell align="right">Unit</TableCell>
-                            <TableCell align="right">Sum</TableCell>
+                            <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Sum</TableCell>
                             <TableCell align="right"></TableCell>
                             <TableCell align="right"></TableCell>
                         </TableRow>
@@ -772,7 +782,7 @@ const AddProductCustomerOrderTransaction = () => {
                             id="filled-required"
                             label="=Price"
                             variant="filled"
-                            name='price'
+                            name='shop_order_price'
                             value={orderSupplierModal.shop_order_price}
                             onChange={onChangeInputPriceModal}
                             startAdornment={<InputAdornment position="start">₱</InputAdornment>}

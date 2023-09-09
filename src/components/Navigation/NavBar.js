@@ -68,6 +68,11 @@ const NavBar = () => {
                     </Link>
                 </li>
                 <li className="nav-item">
+                    <Link to={"/customers"} className="nav-link">
+                        Customer
+                    </Link>
+                </li>
+                <li className="nav-item">
                     <Link to={"/addProduct"} className="nav-link">
                         Product
                     </Link>
@@ -125,6 +130,16 @@ const NavBar = () => {
                 <li className="nav-item">
                     <Link to={"/shopOrderTransaction/customerOrderTransactionList"} className="nav-link">
                         Customer Order Transaction
+                    </Link>
+                </li>
+                <li className="nav-item">
+                    <Link to={"/reports/reportsList"} className="nav-link">
+                        Reports
+                    </Link>
+                </li>
+                <li className="nav-item">
+                    <Link to={"/reports/shopBranchReportList"} className="nav-link">
+                        Shop Reports
                     </Link>
                 </li>
                 {/* <li className="nav-item">

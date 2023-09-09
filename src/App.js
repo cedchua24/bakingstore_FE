@@ -60,6 +60,10 @@ import AddProductCustomerOrderTransaction from "./components/CustomerTransaction
 // import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
 
 import ProductTransactionList from "./components/Product/ProductTransactionList";
+import ReportList from "./components/Reports/ReportList";
+import ShopBranchReportList from "./components/Reports/ShopBranchReportList";
+import Customer from "./components/Customer/Customer";
+import EditCustomer from "./components/Customer/EditCustomer";
 
 
 
@@ -199,6 +203,11 @@ const App = () => {
           {/* <AdminPrivateRoute path="/admin" name="Admin" /> */}
           <Route exact path="/admin" element={<AdminPrivateRoute />} />
 
+          <Route exact path="/reports/reportsList" element={<ReportList />} />
+          <Route exact path="/reports/shopBranchReportList" element={<ShopBranchReportList />} />
+
+          <Route exact path="/customers/" element={<Customer />} />
+          <Route exact path="/customers/:id" element={<EditCustomer />} />
 
         </Routes>
       </div>

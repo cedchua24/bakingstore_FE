@@ -165,6 +165,7 @@ const MarkUpPriceList = (props) => {
                         <th>New Price</th>
                         <th></th>
                         <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
