@@ -5,6 +5,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
 
+import Container from 'react-bootstrap/Container';
+import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
+import NavDropdown from 'react-bootstrap/NavDropdown';
+
 
 const NavBar = () => {
 
@@ -34,115 +39,104 @@ const NavBar = () => {
     var AuthButtons = '';
     if (!localStorage.getItem('auth_token')) {
         AuthButtons = (
-            <ul className='navbar-nav'>
-                <li className="nav-item">
-                    <Link to={"/userRegistration"} className="nav-link">
-                        Register
-                    </Link>
-                </li>
-
-                <li className="nav-item">
-                    <Link to={"/login"} className="nav-link">
-                        Login
-                    </Link>
-                </li>
-            </ul>
+            <>
+                <Navbar.Toggle aria-controls="basic-navbar-nav" />
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="me-auto">
+                        <Nav.Link href="/userRegistration">Register</Nav.Link>
+                        <Nav.Link href="/login">Login</Nav.Link>
+                    </Nav>
+                </Navbar.Collapse>
+            </>
         );
+
+
     }
     else {
         AuthButtons = (
-            <ul className='navbar-nav'>
-                <li className="nav-item">
-                    <Link to={"/addCategory"} className="nav-link">
-                        Category
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/addBrand"} className="nav-link">
-                        Brand
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/supplier"} className="nav-link">
-                        Supplier
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/customers"} className="nav-link">
-                        Customer
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/addProduct"} className="nav-link">
-                        Product
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/productList"} className="nav-link">
-                        Product List
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/warehouse"} className="nav-link">
-                        Warehouse
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/shop"} className="nav-link">
-                        Shop
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/markUpPrice"} className="nav-link">
-                        MarkUpPrice
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/addStock"} className="nav-link">
-                        Stock
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/orderSupplierTransaction"} className="nav-link">
-                        Purchase Order
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/supplierTransactionList"} className="nav-link">
-                        PO Transaction
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/shopOrderTransaction"} className="nav-link">
-                        Shop Order
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/shopOrderTransaction/shorOrderTransactionList"} className="nav-link">
-                        Shop Order Transaction
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/customerOrderTransaction"} className="nav-link">
-                        Customer Order
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/shopOrderTransaction/customerOrderTransactionList"} className="nav-link">
-                        Customer Order Transaction
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/reports/reportsList"} className="nav-link">
-                        Reports
-                    </Link>
-                </li>
-                <li className="nav-item">
-                    <Link to={"/reports/shopBranchReportList"} className="nav-link">
-                        Shop Reports
-                    </Link>
-                </li>
-                {/* <li className="nav-item">
+            <>
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="me-auto">
+                        <NavDropdown title="Category" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/addCategory">Add Category</NavDropdown.Item>
+                            <NavDropdown.Item href="/categoryList">Category List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Brand" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/brand">Add Brand</NavDropdown.Item>
+                            <NavDropdown.Item href="/brandListV2">Brand List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Supplier" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/supplier">Add Supplier</NavDropdown.Item>
+                            <NavDropdown.Item href="/supplierListV2">Supplier List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Customer" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Product" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/addProduct">Add Product</NavDropdown.Item>
+                            <NavDropdown.Item href="/productList">Product List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Warehouse" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/warehouse">Add Warehouse</NavDropdown.Item>
+                            <NavDropdown.Item href="/warehouseListV2">Warehouse List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Shop" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/shop">Add Shop</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopListV2">Shop List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="MarkUpPrice" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/markUpPrice">Add MarkUpPrice</NavDropdown.Item>
+                            <NavDropdown.Item href="/markUpPriceListV2">MarkUpPrice List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Stock" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/addStock">Add Stock</NavDropdown.Item>
+                            <NavDropdown.Item href="/addStock">Stock List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Purchase Order" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/orderSupplierTransaction">Add Purchase Order Stock</NavDropdown.Item>
+                            <NavDropdown.Item href="/supplierTransactionList">Purchase Order List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Shop Order" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/shopOrderTransaction">Add Shop Order Stock</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/shorOrderTransactionList">Shop Order List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Customer Order" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/customerOrderTransactionList">Customer Order List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Reports" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/reports/reportsList">Online Order Reports</NavDropdown.Item>
+                            <NavDropdown.Item href="/reports/shopBranchReportList">Shop Order Reports</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                </Navbar.Collapse>
+                <ul className='navbar-nav'>
+                    {/* <li className="nav-item">
                     <Link to={"/orderCustomerTransaction"} className="nav-link">
                         Order Customer
                     </Link>
@@ -152,10 +146,12 @@ const NavBar = () => {
                         Order Customer List
                     </Link>
                 </li> */}
-                <li className="nav-item">
-                    <button className="nav-link btn btn-danger btn-sm text-white" type='button' onClick={logoutSubmit} >Logout</button>
-                </li>
-            </ul>
+                    <li className="nav-item">
+                        <button className="nav-link btn btn-danger btn-sm text-white" type='button' onClick={logoutSubmit} >Logout</button>
+                    </li>
+                </ul >
+
+            </>
         );
     }
 
@@ -163,15 +159,16 @@ const NavBar = () => {
         <div>
             <nav className="navbar navbar-expand navbar-dark bg-dark">
                 <div className="navbar-nav mr-auto">
-                    <li className="nav-item">
-                        <Link to={"/"} className="nav-link">
-                            Home
-                        </Link>
-                    </li>
+                    <Navbar.Brand href="/"> &nbsp; MDR POS</Navbar.Brand>
                     {AuthButtons}
 
                 </div>
             </nav>
+
+            <Navbar expand="lg" className="bg-body-tertiary">
+                <Container>
+                </Container>
+            </Navbar>
 
         </div>
     )

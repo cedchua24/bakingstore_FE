@@ -8,8 +8,10 @@ import AddProduct from "./components/Product/AddProduct";
 import ProductList from "./components/Product/ProductList";
 import EditProduct from "./components/Product/EditProduct";
 import Brand from "./components/Brand/Brand";
+import BrandListV2 from "./components/Brand/BrandListV2";
 import EditBrand from "./components/Brand/EditBrand";
 import AddCategory from "./components/Category/AddCategory";
+import CategoryList from "./components/Category/CategoryList";
 import EditCategory from "./components/Category/EditCategory";
 import UserRegistration from "./components/User/UserRegistration";
 import UserLogin from "./components/User/UserLogin";
@@ -17,6 +19,7 @@ import Logout from "./components/User/Logout";
 import Home from "./components/Home/Home";
 import AdminPrivateRoute from "./components/AdminPrivateRoute";
 import Supplier from "./components/Supplier/Supplier";
+import SupplierListV2 from "./components/Supplier/SupplierListV2";
 import EditSupplier from "./components/Supplier/EditSupplier";
 import OrderSupplierTransaction from "./components/OrderSupplierTransaction/OrderSupplierTransaction";
 import SupplierTransactionListV2 from "./components/OrderSupplierTransaction/SupplierTransactionListV2";
@@ -32,15 +35,18 @@ import EditStock from "./components/Stock/EditStock";
 import ViewTransaction from "./components/Stock/ViewTransaction";
 
 import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
+import MarkUpPriceListV2 from "./components/MarkUpPrice/MarkUpPriceListV2";
 
 import OrderCustomerTransaction from "./components/OrderCustomerTransaction/OrderCustomerTransaction";
 import OrderCustomerList from "./components/OrderCustomerList/OrderCustomerList";
 
 import Warehouse from "./components/Warehouse/Warehouse";
+import WarehouseListV2 from "./components/Warehouse/WarehouseListV2";
 import WarehouseStock from "./components/Warehouse/WarehouseStock";
 import EditWarehouse from "./components/Warehouse/EditWarehouse";
 
 import Shop from "./components/Shop/Shop";
+import ShopListV2 from "./components/Shop/ShopListV2";
 import EditShop from "./components/Shop/EditShop";
 
 
@@ -63,6 +69,7 @@ import ProductTransactionList from "./components/Product/ProductTransactionList"
 import ReportList from "./components/Reports/ReportList";
 import ShopBranchReportList from "./components/Reports/ShopBranchReportList";
 import Customer from "./components/Customer/Customer";
+import CustomerListV2 from "./components/Customer/CustomerListV2";
 import EditCustomer from "./components/Customer/EditCustomer";
 
 
@@ -93,14 +100,17 @@ const App = () => {
           <Route path="/productList" element={<ProductList />} />
           <Route exact path="/editProduct/:id" element={<EditProduct />} />
 
-          <Route path="/addBrand" element={<Brand />} />
+          <Route path="/brand" element={<Brand />} />
+          <Route path="/brandListV2" element={<BrandListV2 />} />
           <Route exact path="/editBrand/:id" element={<EditBrand />} />
 
           <Route path="/supplier" element={<Supplier />} />
+          <Route path="/supplierListV2" element={<SupplierListV2 />} />
           <Route exact path="/editSupplier/:id" element={<EditSupplier />} />
 
 
           <Route path="/addCategory" element={<AddCategory />} />
+          <Route path="/categoryList" element={<CategoryList />} />
           <Route exact path="/editCategory/:id" element={<EditCategory />} />
 
           {/* <Route path="/OrderSupplierTransaction" element={<OrderSupplierTransaction />} /> */}
@@ -116,6 +126,7 @@ const App = () => {
           <Route exact path="/viewTransaction/:id" element={<ViewTransaction />} />
 
           <Route exact path="/markUpPrice/" element={<MarkUpPrice />} />
+          <Route exact path="/markUpPriceListV2/" element={<MarkUpPriceListV2 />} />
 
           <Route exact path="/orderCustomerTransaction/" element={<OrderCustomerTransaction />} />
           <Route exact path="/orderCustomerList/" element={<OrderCustomerList />} />
@@ -123,9 +134,11 @@ const App = () => {
           <Route exact path="/updateCustomerOrder/:id" element={<UpdateCustomerOrder />} />
 
           <Route path="/warehouse" element={<Warehouse />} />
+          <Route path="/warehouseListV2" element={<WarehouseListV2 />} />
           <Route exact path="/warehouseStock/:id" element={<WarehouseStock />} />
 
           <Route path="/shop" element={<Shop />} />
+          <Route path="/shopListV2" element={<ShopListV2 />} />
           <Route exact path="/editShop/:id" element={<EditShop />} />
 
           <Route exact path="/productTransactionList/:id" element={<ProductTransactionList />} />
@@ -207,6 +220,7 @@ const App = () => {
           <Route exact path="/reports/shopBranchReportList" element={<ShopBranchReportList />} />
 
           <Route exact path="/customers/" element={<Customer />} />
+          <Route exact path="/customerListV2" element={<CustomerListV2 />} />
           <Route exact path="/customers/:id" element={<EditCustomer />} />
 
         </Routes>

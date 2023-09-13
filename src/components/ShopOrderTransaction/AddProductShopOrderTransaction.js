@@ -381,7 +381,7 @@ const AddProductCustomerOrderTransaction = () => {
                 setOrderSupplierModal(response.data);
                 console.log(response.data)
                 setOrigPrice(response.data.shop_order_price);
-                setProfit(response.data.shop_order_profit)
+                setProfit(response.data.shop_order_profit / response.data.shop_order_quantity)
             })
             .catch(e => {
                 console.log("error", e)
