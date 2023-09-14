@@ -129,6 +129,12 @@ const NavBar = () => {
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
+                        <NavDropdown title="Expenses" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/expenses">Add Expenses</NavDropdown.Item>
+                            <NavDropdown.Item href="/expensesType">Add Expenses Type</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
                         <NavDropdown title="Reports" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/reports/reportsList">Online Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/shopBranchReportList">Shop Order Reports</NavDropdown.Item>

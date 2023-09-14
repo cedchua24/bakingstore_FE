@@ -72,6 +72,11 @@ import Customer from "./components/Customer/Customer";
 import CustomerListV2 from "./components/Customer/CustomerListV2";
 import EditCustomer from "./components/Customer/EditCustomer";
 
+import ExpensesType from "./components/ExpensesType/ExpensesType";
+import EditExpensesType from "./components/ExpensesType/EditExpensesType";
+
+import Expenses from "./components/Expenses/Expenses";
+import EditExpenses from "./components/Expenses/EditExpenses";
 
 
 
@@ -222,6 +227,16 @@ const App = () => {
           <Route exact path="/customers/" element={<Customer />} />
           <Route exact path="/customerListV2" element={<CustomerListV2 />} />
           <Route exact path="/customers/:id" element={<EditCustomer />} />
+
+          <Route exact path="/expensesType/" element={<ExpensesType />} />
+          {/* <Route exact path="/customerListV2" element={<CustomerListV2 />} /> */}
+          <Route exact path="/expensesType/:id" element={<EditExpensesType />} />
+
+          <Route exact path="/expenses/" element={<Expenses />} />
+          {/* <Route exact path="/customerListV2" element={<CustomerListV2 />} /> */}
+          <Route exact path="/expenses/:id" element={<EditExpenses />} />
+
+
 
         </Routes>
       </div>
