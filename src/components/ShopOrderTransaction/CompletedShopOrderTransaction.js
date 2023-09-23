@@ -18,6 +18,7 @@ import Button from '@mui/material/Button';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
+import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
 
 const CompletedShopOrderTransaction = () => {
 
@@ -27,6 +28,7 @@ const CompletedShopOrderTransaction = () => {
     useEffect(() => {
         fetchShopOrderTransaction(id);
         fetchShopOrderDTO(id);
+        fetchPaymentTypeByShopTransactionId(id);
     }, []);
 
     const [orderShop, setOrderShop] = useState({
@@ -38,6 +40,11 @@ const CompletedShopOrderTransaction = () => {
         shop_order_price: 0,
         shop_order_total_price: 0,
         created_at: ''
+    });
+
+    const [modeOfPaymentDTO, setModeOfPaymentDTO] = useState({
+        data: [],
+        code: ''
     });
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
@@ -92,6 +99,20 @@ const CompletedShopOrderTransaction = () => {
 
 
     const [message, setMessage] = useState(false);
+
+    const fetchPaymentTypeByShopTransactionId = async (id) => {
+        await ModeOfPaymentService.fetchPaymentTypeByShopTransactionId(id)
+            .then(response => {
+                setModeOfPaymentDTO(response.data);
+                console.log('balance', response.data)
+
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+
 
 
     const fetchShopOrderTransaction = async (id) => {
@@ -149,52 +170,56 @@ const CompletedShopOrderTransaction = () => {
 
             }
             <br></br>
-            <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
-                noValidate
-                autoComplete="off"
-            >
-                <Stepper activeStep={3} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                    <TableBody>
+                        <TableRow >
+                            <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
+                            <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
 
+                            {shopOrderTransaction.checker != 0 ?
+                                <>
+                                    <TableCell align="right" >Checker</TableCell>
+                                    <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
+                                    <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
+                                    <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                                :
+                                <>  <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
+                                    <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                            }
 
-                        </Step>
-                    ))}
-                </Stepper>
-                <br></br>
-                <TextField
-                    id="filled-disabled"
-                    variant="filled"
-                    label="Shop"
-                    value={shopOrderTransaction.shop_name}
-                    disabled
-                />
-                <TextField
-                    id="outlined-disabled"
-                    variant="filled"
-                    label="Checker"
-                    value={shopOrderTransaction.checker_name}
-                    disabled
-                />
-                <TextField
-                    id="outlined-disabled"
-                    variant="filled"
-                    label="Requestor"
-                    value={shopOrderTransaction.requestor_name}
-                    disabled
-                />
-                <TextField
-                    id="outlined-disabled"
-                    variant="filled"
-                    label="Date"
-                    value={shopOrderTransaction.created_at}
-                    disabled
-                />
-            </Box>
+                            <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
+                            <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
+
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <br></br>
+            {shopOrderTransaction.checker == 0 &&
+                <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {modeOfPaymentDTO.data.map((row) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>{row.payment_type}</TableCell>
+                                    <TableCell align="right">{row.amount}</TableCell>
+                                </TableRow>
+                            ))}
+                            <TableRow>
+                                <TableCell colSpan={1} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            }
             <br></br>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">

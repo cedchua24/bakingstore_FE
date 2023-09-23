@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
-import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+import ExpensesService from "../Expenses/ExpensesService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 
-const ReportList = () => {
+const ReportExpenses = () => {
 
 
     useEffect(() => {
@@ -24,7 +24,7 @@ const ReportList = () => {
     });
 
     const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListReport()
+        ExpensesService.fetchExpensesTransaction()
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -51,7 +51,7 @@ const ReportList = () => {
 
     const saveOrderTransaction = () => {
         console.log('orderTransaction', customerOrderDate);
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListReportByDate(customerOrderDate)
+        ExpensesService.fetchExpensesTransactionByDate(customerOrderDate)
             .then(response => {
                 setShopOrderTransaction(response.data);
             })
@@ -75,20 +75,8 @@ const ReportList = () => {
                     <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Cash Payment: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_online} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Online Payment: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_cash} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Sales: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_sales} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Profit: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
+                    <Form.Label>Total Expenses: </Form.Label>
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_expenses} />
                 </Form.Group>
                 <Button variant="primary" onClick={saveOrderTransaction}>
                     Find
@@ -101,10 +89,8 @@ const ReportList = () => {
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>Date</th>
-                        <th>Total Cash</th>
-                        <th>Total Online</th>
-                        <th>Total Sales</th>
-                        <th>Total Profit</th>
+                        <th>Total Expenses</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -113,10 +99,14 @@ const ReportList = () => {
                         shopOrderTransaction.data.map((shopOrderTransaction, index) => (
                             <tr  >
                                 <td>{shopOrderTransaction.date}</td>
-                                <td>{shopOrderTransaction.total_cash}</td>
-                                <td>{shopOrderTransaction.total_online}</td>
-                                <td>{shopOrderTransaction.total_sales}</td>
-                                <td>{shopOrderTransaction.total_profit}</td>
+                                <td>{shopOrderTransaction.total_expenses}</td>
+                                <td>
+                                    <Link variant="primary" to={"/reports/reportExpensesView/" + shopOrderTransaction.date}   >
+                                        <Button variant="primary" >
+                                            View
+                                        </Button>
+                                    </Link>
+                                </td>
                             </tr>
                         )
                         )
@@ -127,4 +117,4 @@ const ReportList = () => {
     )
 }
 
-export default ReportList
+export default ReportExpenses

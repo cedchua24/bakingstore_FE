@@ -138,6 +138,7 @@ const NavBar = () => {
                         <NavDropdown title="Reports" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/reports/reportsList">Online Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/shopBranchReportList">Shop Order Reports</NavDropdown.Item>
+                            <NavDropdown.Item href="/reports/reportExpenses">Expenses Reports</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                 </Navbar.Collapse>

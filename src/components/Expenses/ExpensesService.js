@@ -22,6 +22,15 @@ class ExpensesService {
     findByTitle(customerName) {
         return axios.get(`/api/expenses/getId/${customerName}`);
     }
+    fetchExpensesTransaction(id) {
+        return axios.get(`/api/expenses/fetchExpensesTransaction/${id}`);
+    }
+    fetchExpensesTransactionById(id) {
+        return axios.get(`/api/expenses/fetchExpensesTransactionById/${id}`);
+    }
+    fetchExpensesTransactionByDate(data) {
+        return axios.post("/api/expenses/fetchExpensesTransactionByDate", data);
+    }
     sanctum() {
         return axios.get("/sanctum/csrf-cookie");
     }

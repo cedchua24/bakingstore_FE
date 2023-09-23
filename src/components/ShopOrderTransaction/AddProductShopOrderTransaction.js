@@ -829,6 +829,25 @@ const AddProductCustomerOrderTransaction = () => {
                     </Box>
                 </Box>
             </Modal>
+            <div>
+                <br></br>
+                {orderShopDTO.shopOrderList.map((row) => (
+                    <>
+                        <h6>{row.shop_order_quantity} x {row.shop_order_price}
+                            &nbsp;{row.product_name} {
+                                row.business_type === 'WHOLESALE' ? <>({row.weight}x{row.weight / row.quantity}kg)</>
+                                    : < >({row.weight / row.quantity}kg)</>
+                            }
+
+                            <> = </>{row.shop_order_total_price}</h6>
+
+                    </>
+
+                ))
+                }
+                <h6>Total: {orderShopDTO.shopOrderTransaction.shop_order_transaction_total_price} </h6>
+
+            </div>
 
         </div >
     )

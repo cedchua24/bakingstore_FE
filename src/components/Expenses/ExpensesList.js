@@ -14,6 +14,7 @@ const ExpensesList = (props) => {
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Expenses Name</th>
+                        <th>Expenses Category</th>
                         <th>Amount</th>
                         <th>Details</th>
                         <th>Date</th>
@@ -28,6 +29,7 @@ const ExpensesList = (props) => {
                             <tr key={expenses.id} >
                                 <td>{expenses.id}</td>
                                 <td>{expenses.expenses_name}</td>
+                                <td>{expenses.expenses_category_name}</td>
                                 <td>{expenses.amount}</td>
                                 <td>{expenses.details}</td>
                                 <td>{expenses.date}</td>

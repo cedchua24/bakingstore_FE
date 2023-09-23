@@ -66,7 +66,8 @@ import AddProductCustomerOrderTransaction from "./components/CustomerTransaction
 // import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
 
 import ProductTransactionList from "./components/Product/ProductTransactionList";
-import ReportList from "./components/Reports/ReportList";
+
+
 import ShopBranchReportList from "./components/Reports/ShopBranchReportList";
 import Customer from "./components/Customer/Customer";
 import CustomerListV2 from "./components/Customer/CustomerListV2";
@@ -77,6 +78,10 @@ import EditExpensesType from "./components/ExpensesType/EditExpensesType";
 
 import Expenses from "./components/Expenses/Expenses";
 import EditExpenses from "./components/Expenses/EditExpenses";
+
+import ReportList from "./components/Reports/ReportList";
+import ReportExpenses from "./components/Reports/ReportExpenses";
+import ReportExpensesView from "./components/Reports/ReportExpensesView";
 
 
 
@@ -223,6 +228,8 @@ const App = () => {
 
           <Route exact path="/reports/reportsList" element={<ReportList />} />
           <Route exact path="/reports/shopBranchReportList" element={<ShopBranchReportList />} />
+          <Route exact path="/reports/reportExpenses" element={<ReportExpenses />} />
+          <Route exact path="/reports/reportExpensesView/:id" element={<ReportExpensesView />} />
 
           <Route exact path="/customers/" element={<Customer />} />
           <Route exact path="/customerListV2" element={<CustomerListV2 />} />

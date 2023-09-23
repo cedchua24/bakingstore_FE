@@ -5,6 +5,12 @@ import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 
+import CircularProgress from '@mui/material/CircularProgress';
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+
 const CustomerOrderTransactionList = () => {
 
 
@@ -23,6 +29,22 @@ const CustomerOrderTransactionList = () => {
         total_price: 0,
         total_profit: 0
     });
+
+    const [shopOrderTransactionUpdate, setShopOrderTransactionUpdate] = useState({
+        checker: 0,
+        id: 0,
+        profit: 0,
+        requestor: 0,
+        requestor_name: 0,
+        shop_name: 0,
+        shop_order_transaction_total_price: 0,
+        shop_order_transaction_total_quantity: '',
+        shop_type_id: 0,
+        status: 3,
+        created_at: '',
+        updated_at: ''
+    });
+
 
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
 
@@ -55,19 +77,38 @@ const CustomerOrderTransactionList = () => {
             });
     }
 
-    const deleteShopOrderTransaction = (shopOrderTransaction) => {
+    const [submitOpenModal, setSubmitOpenModal] = React.useState(false);
+    const [submitLoading, setSubmitLoading] = useState(false);
 
-        console.log('shopOrderTransaction', shopOrderTransaction);
-        // const index = shopOrderTransactionList.findIndex(shopOrderTransaction => shopOrderTransaction.id === id);
-        // const newShopOrderTransaction = [...shopOrderTransactionList];
-        // newShopOrderTransaction.splice(index, 1);
 
-        ShopOrderTransactionService.deleteShopOrderTransaction(shopOrderTransaction)
+    const handleSubmitCloseModal = () => {
+        setSubmitOpenModal(false);
+    };
+
+    const deleteShopOrderTransaction = (shopOrderTransactions) => {
+
+        console.log('shopOrderTransaction', shopOrderTransactions);
+
+        setShopOrderTransactionUpdate({
+            id: shopOrderTransactions.id,
+            status: 3,
+        });
+        setSubmitOpenModal(true);
+
+    }
+
+    const updateShopOrderTransactionStatus = async (event) => {
+        event.preventDefault();
+        setSubmitLoading(true);
+
+        ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
             .then(response => {
-
+                setSubmitLoading(false);
+                setSubmitOpenModal(false);
+                fetchShopOrderTransactionList();
             })
             .catch(e => {
-                console.log('error', e);
+                console.log(e);
             });
     }
 
@@ -104,6 +145,14 @@ const CustomerOrderTransactionList = () => {
                     <Form.Control type="date" name="date" onChange={onChangeInput} />
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label>Total Cash Payment: </Form.Label>
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_cash} />
+                </Form.Group>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label>Total Online Payment: </Form.Label>
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_online} />
+                </Form.Group>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label>Total Sales: </Form.Label>
                     <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_price} />
                 </Form.Group>
@@ -111,6 +160,7 @@ const CustomerOrderTransactionList = () => {
                     <Form.Label>Total Profit: </Form.Label>
                     <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
                 </Form.Group>
+
 
 
                 <Button variant="primary" onClick={saveOrderTransaction}>
@@ -131,7 +181,6 @@ const CustomerOrderTransactionList = () => {
                         <th>Customer</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -163,7 +212,7 @@ const CustomerOrderTransactionList = () => {
                                 <td>
                                     <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
                                         <Button variant="primary" >
-                                            Receipt
+                                            Print Receipt
                                         </Button>
                                     </Link>
                                 </td>
@@ -175,9 +224,12 @@ const CustomerOrderTransactionList = () => {
                                     </Link>
                                 </td>
                                 <td>
-                                    <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
-                                        Cancel
-                                    </Button>
+                                    {
+                                        shopOrderTransaction.status != 3 &&
+                                        <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
+                                            Cancel
+                                        </Button>
+                                    }
                                 </td>
                                 {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
@@ -185,17 +237,39 @@ const CustomerOrderTransactionList = () => {
                                     </Button>
                                 </td> */}
 
-                                <td>
+                                {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteOrderTransaction(shopOrderTransaction.id, e)} >
                                         Delete
                                     </Button>
-                                </td>
+                                </td> */}
                             </tr>
                         )
                         )
                     }
                 </tbody>
             </table>
+            <Dialog
+                open={submitOpenModal}
+                onClose={handleSubmitCloseModal}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+
+                <DialogTitle id="alert-dialog-title">
+                    {"Are you sure you want to Submit?"}
+                </DialogTitle>
+                {submitLoading &&
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress />
+                    </div>
+                }
+                <DialogActions>
+                    <Button onClick={handleSubmitCloseModal}>Cancel</Button>
+                    <Button onClick={updateShopOrderTransactionStatus} autoFocus>
+                        Agree
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div >
     )
 }
