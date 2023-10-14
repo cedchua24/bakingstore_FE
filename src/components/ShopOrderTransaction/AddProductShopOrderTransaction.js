@@ -587,7 +587,7 @@ const AddProductCustomerOrderTransaction = () => {
                             id="disable-close-on-select"
                             onChange={handleInputChange}
                             groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + ' - ' + (products.business_type === 'WHOLESALE' ? products.weight : (products.weight / products.quantity)) + 'kg' + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock}
+                            getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " + products.packaging : '') + ' - ' + (products.business_type === 'WHOLESALE' ? (" ") + products.weight : (products.weight / products.quantity)) + products.variation + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock}
                             renderInput={(params) => (
                                 <TextField {...params} label='Choose Product' variant="standard" />
                             )}
@@ -833,9 +833,9 @@ const AddProductCustomerOrderTransaction = () => {
                 <br></br>
                 {orderShopDTO.shopOrderList.map((row) => (
                     <>
-                        <h6>{row.shop_order_quantity} x {row.shop_order_price}
+                        <h6>{row.shop_order_quantity} x {row.shop_order_price} -
                             &nbsp;{row.product_name} {
-                                row.business_type === 'WHOLESALE' ? <>({row.weight}x{row.weight / row.quantity}kg)</>
+                                row.business_type === 'WHOLESALE' ? <>{row.packaging} ({row.weight / row.quantity}{row.variation}) x {row.quantity}</>
                                     : < >({row.weight / row.quantity}kg)</>
                             }
 
@@ -845,7 +845,7 @@ const AddProductCustomerOrderTransaction = () => {
 
                 ))
                 }
-                <h6>Total: {orderShopDTO.shopOrderTransaction.shop_order_transaction_total_price} </h6>
+                <h6>Total: ₱ {orderShopDTO.shopOrderTransaction.shop_order_transaction_total_price} </h6>
 
             </div>
 

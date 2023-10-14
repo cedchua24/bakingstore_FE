@@ -143,6 +143,7 @@ const AddProduct = () => {
     price: 0,
     stock: 0,
     weight: 0,
+    variation: '',
     quantity: 0,
     packaging: ''
   })
@@ -151,6 +152,8 @@ const AddProduct = () => {
   const [categeryList, setCategoryList] = useState([]);
 
   const [message, setMessage] = useState(false);
+
+  const [variationLabel, setVariationLabel] = useState('Weight');
 
   const [productList, setProductList] = useState([]);
 
@@ -168,6 +171,16 @@ const AddProduct = () => {
 
   const onChangePackaging = (e) => {
     setProduct({ ...product, packaging: e.target.value });
+  }
+
+  const onChangeVariation = (e) => {
+    setProduct({ ...product, variation: e.target.value });
+    if (e.target.value === "kg") {
+      setVariationLabel("Weight");
+    } else {
+      setVariationLabel("Pcs");
+    }
+
   }
 
   const onChangePrice = (e) => {
@@ -334,9 +347,15 @@ const AddProduct = () => {
           <Form.Control type="number" value={product.stock} name="stock" onChange={onChangeStock} />
         </FloatingLabel>
 
+        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangeVariation}  >
+          <option value="kg">kg</option>
+          <option value="pcs">pcs</option>
+
+        </Form.Select>
+
         <FloatingLabel
           controlId="floatingInput"
-          label="Weight"
+          label={variationLabel}
           className="mb-3"
 
         >
@@ -358,6 +377,7 @@ const AddProduct = () => {
           <option value="Sack">Sack</option>
           <option value="Box">Box</option>
           <option value="Plastic">Plastic</option>
+          <option value="Galloon">Galloon</option>
 
         </Form.Select>
 
@@ -455,8 +475,8 @@ const AddProduct = () => {
                 <td>{product.category_name}</td>
                 <td>₱ {product.price}.00</td>
                 {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
-                  : <p >{product.weight}x{product.weight / product.quantity}kg</p>}
+                <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
+                  : <p >({product.weight / product.quantity}{product.variation}) x {product.quantity}</p>}
                 </td>
                 <td>{product.stock}</td>
                 <td>{product.packaging}</td>
