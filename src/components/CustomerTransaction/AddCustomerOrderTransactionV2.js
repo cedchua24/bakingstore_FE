@@ -11,7 +11,8 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import Box from '@mui/material/Box';
-
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 
 
@@ -42,6 +43,14 @@ const AddCustomerOrderTransactionV2 = (props) => {
 
     const onChangeInput = (e) => {
         setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
+    }
+
+    const handleInputChange = (e, value) => {
+        e.persist();
+        setShopOrderTransaction({
+            ...shopOrderTransaction,
+            requestor: value.id,
+        });
     }
 
     const saveOrderTransaction = () => {
@@ -101,8 +110,15 @@ const AddCustomerOrderTransactionV2 = (props) => {
                     </FormControl>
                 </Box>
 
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                <Box
+                    sx={{
+                        '& .MuiTextField-root': { m: 1, width: '35ch' },
+                    }}
+                    noValidate
+                    autoComplete="off"
+                // onSubmit={saveOrderSupplier}
+                >
+                    {/* <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Customer</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
@@ -118,6 +134,20 @@ const AddCustomerOrderTransactionV2 = (props) => {
                                 ))
                             }
                         </Select>
+                    </FormControl> */}
+
+                    <FormControl variant="standard" >
+                        <Autocomplete
+                            // {...defaultProps}
+                            options={customerList}
+                            className="mb-3"
+                            id="disable-close-on-select"
+                            onChange={handleInputChange}
+                            getOptionLabel={(customerList) => customerList.first_name + " " + customerList.last_name}
+                            renderInput={(params) => (
+                                <TextField {...params} label="Choose Customer" variant="standard" />
+                            )}
+                        />
                     </FormControl>
                 </Box>
 
