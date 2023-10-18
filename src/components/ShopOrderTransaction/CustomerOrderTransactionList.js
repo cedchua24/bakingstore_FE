@@ -176,6 +176,8 @@ const CustomerOrderTransactionList = () => {
                         <th>ID</th>
                         <th>Shop Name</th>
                         <th>Total Quantity</th>
+                        <th>Total Cash</th>
+                        <th>Total Online</th>
                         <th>Total Amount</th>
                         <th>Profit</th>
                         <th>Customer</th>
@@ -195,8 +197,10 @@ const CustomerOrderTransactionList = () => {
                                 <td>{shopOrderTransaction.id}</td>
                                 <td>{shopOrderTransaction.shop_name}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                <td>{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                <td>{shopOrderTransaction.profit}</td>
+                                <td>{shopOrderTransaction.total_cash}</td>
+                                <td>{shopOrderTransaction.total_online}</td>
+                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
+                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
                                 <td>{shopOrderTransaction.requestor_name}</td>
                                 <td>{shopOrderTransaction.date}</td>
                                 <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
