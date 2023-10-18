@@ -831,6 +831,8 @@ const AddProductCustomerOrderTransaction = () => {
             </Modal>
             <div>
                 <br></br>
+                <h6> {shopOrderTransaction.requestor_name} </h6>
+                <br></br>
                 {orderShopDTO.shopOrderList.map((row) => (
                     <>
                         <h6>{row.shop_order_quantity} x {row.shop_order_price} -
@@ -845,6 +847,7 @@ const AddProductCustomerOrderTransaction = () => {
 
                 ))
                 }
+                <br></br>
                 <h6>Total: ₱ {orderShopDTO.shopOrderTransaction.shop_order_transaction_total_price} </h6>
 
             </div>
