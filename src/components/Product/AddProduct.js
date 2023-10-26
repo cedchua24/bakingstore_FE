@@ -242,7 +242,7 @@ const AddProduct = () => {
   }
 
   const fetchProductList = () => {
-    ProductServiceService.getAll()
+    ProductServiceService.fetchProductByCategoryIdV2()
       .then(response => {
         setProductList(response.data);
       })

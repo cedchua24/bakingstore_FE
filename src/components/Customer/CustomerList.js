@@ -34,7 +34,8 @@ const CustomerList = (props) => {
                                 <td>{customer.email}</td>
                                 <td>{customer.address}</td>
                                 <td>
-                                    <Link variant="primary" to={+ customer.id}   >
+
+                                    <Link variant="primary" to={"/customers/" + customer.id}   >
                                         <Button variant="primary" >
                                             Update
                                         </Button>

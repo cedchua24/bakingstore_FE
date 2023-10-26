@@ -10,6 +10,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import UpdateIcon from '@mui/icons-material/Update';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography'
+import Modal from '@mui/material/Modal';
 
 const CustomerOrderTransactionList = () => {
 
@@ -41,6 +46,22 @@ const CustomerOrderTransactionList = () => {
         shop_order_transaction_total_quantity: '',
         shop_type_id: 0,
         status: 3,
+        created_at: '',
+        updated_at: ''
+    });
+
+    const [shopOrderTransactionUpdateModal, setShopOrderTransactionUpdateModal] = useState({
+        checker: 0,
+        id: 0,
+        profit: 0,
+        requestor: 0,
+        requestor_name: 0,
+        shop_name: 0,
+        shop_order_transaction_total_price: 0,
+        shop_order_transaction_total_quantity: '',
+        shop_type_id: 0,
+        status: 3,
+        date: '',
         created_at: '',
         updated_at: ''
     });
@@ -135,6 +156,53 @@ const CustomerOrderTransactionList = () => {
             });
     }
 
+    const [open, setOpen] = React.useState(false);
+
+    const handleOpen = (id, e) => {
+        console.log('e', id);
+        fetchTransaction(id);
+        setOpen(true);
+    }
+    const handleClose = () => setOpen(false);
+
+    const fetchTransaction = async (id) => {
+        await ShopOrderTransactionService.get(id)
+            .then(response => {
+                setShopOrderTransactionUpdateModal(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const updateDate = () => {
+        ShopOrderTransactionService.update(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
+            .then(response => {
+                fetchShopOrderTransactionList();
+                setOpen(false);
+            })
+            .catch(e => {
+                console.log(e);
+            });
+    }
+
+    const onChangeDate = (e) => {
+        setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, [e.target.name]: e.target.value });
+    }
+
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 300,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    };
+
 
 
     return (
@@ -183,6 +251,8 @@ const CustomerOrderTransactionList = () => {
                         <th>Customer</th>
                         <th>Date</th>
                         <th>Status</th>
+                        <th>Update Date</th>
+                        <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -206,6 +276,11 @@ const CustomerOrderTransactionList = () => {
                                 <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                         <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                <td>
+                                    <IconButton>
+                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
+                                    </IconButton>
+                                </td>
                                 <td>
                                     <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
                                         <Button variant="primary" >
@@ -274,6 +349,39 @@ const CustomerOrderTransactionList = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <Modal
+                keepMounted
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                        Update Date
+                    </Typography>
+
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label></Form.Label>
+                        <Form.Control type="date" value={shopOrderTransactionUpdateModal.date} name="date" onChange={onChangeDate} />
+                    </Form.Group>
+
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Button variant="primary" onClick={updateDate}>
+                            Submit
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
         </div >
     )
 }

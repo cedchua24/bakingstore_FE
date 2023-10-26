@@ -137,6 +137,11 @@ const ReceiptOrder = () => {
             <div>
                 <table class="print-receipt" >
                     <tr>
+                        <th>
+                            MDR Baking
+                        </th>
+                    </tr>
+                    <tr>
                         <th>{shopOrderTransaction.requestor_name}</th>
                         <th>{shopOrderTransaction.created_at}</th>
                     </tr>
