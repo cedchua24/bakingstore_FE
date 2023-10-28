@@ -72,6 +72,7 @@ const AddProductCustomerOrderTransaction = () => {
     const [submitLoading, setSubmitLoading] = useState(false);
     const [products, setProducts] = useState([]);
     const [value, setValue] = useState(products[0])
+    const [deleteId, setDeleteId] = useState(0)
 
     const [stock, setStock] = useState(0);
 
@@ -426,6 +427,7 @@ const AddProductCustomerOrderTransaction = () => {
     const deleteOrderTransaction = (deleteId, e) => {
         setSubmitLoading(true);
         console.log("test", orderSupplierModal);
+        console.log("deleteId", deleteId);
         ShopOrderService.delete(deleteId, orderSupplierModal)
             .then(response => {
                 setSubmitLoading(false);
@@ -448,7 +450,9 @@ const AddProductCustomerOrderTransaction = () => {
 
 
 
-    const openDelete = () => {
+    const openDelete = (id) => {
+        console.log('delete', id);
+        setDeleteId(id)
         setDeleteOpenModal(true);
     }
 
@@ -685,7 +689,7 @@ const AddProductCustomerOrderTransaction = () => {
                                 <TableCell align="right">
                                     <Tooltip title="Delete">
                                         <IconButton>
-                                            <DeleteIcon color="error" onClick={(e) => openDelete()} />
+                                            <DeleteIcon color="error" onClick={(e) => openDelete(row.id, e)} />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
@@ -707,7 +711,7 @@ const AddProductCustomerOrderTransaction = () => {
                                     }
                                     <DialogActions>
                                         <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                                        <Button onClick={(e) => deleteOrderTransaction(row.id, e)} autoFocus>
+                                        <Button onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
                                             Agree
                                         </Button>
                                     </DialogActions>
