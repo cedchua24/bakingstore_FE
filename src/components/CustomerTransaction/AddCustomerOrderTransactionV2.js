@@ -26,12 +26,15 @@ const AddCustomerOrderTransactionV2 = (props) => {
         shop_order_transaction_total_price: 0,
         requestor: 0,
         checker: 0,
+        customer_type_id: 0,
         date: '',
         created_at: '',
         updated_at: ''
     });
     const shopList = props.shopList;
     const customerList = props.customerList;
+    const customerTypeList = props.customerTypeList;
+
 
     const steps = [
         'Create Transaction Details',
@@ -104,6 +107,26 @@ const AddCustomerOrderTransactionV2 = (props) => {
                             {
                                 shopList.map((shop, index) => (
                                     <MenuItem value={shop.id}>{shop.shop_name}</MenuItem>
+                                ))
+                            }
+                        </Select>
+                    </FormControl>
+                </Box>
+
+                <Box sx={{ minWidth: 120 }}>
+                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                        <InputLabel id="demo-simple-select-label">Customer Type</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={shopOrderTransaction.customer_type_id}
+                            label="Shop Name"
+                            name="customer_type_id"
+                            onChange={onChangeInput}
+                        >
+                            {
+                                customerTypeList.map((customerType, index) => (
+                                    <MenuItem value={customerType.id}>{customerType.customer_type}</MenuItem>
                                 ))
                             }
                         </Select>

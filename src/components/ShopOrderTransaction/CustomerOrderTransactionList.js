@@ -60,6 +60,7 @@ const CustomerOrderTransactionList = () => {
         shop_order_transaction_total_price: 0,
         shop_order_transaction_total_quantity: '',
         shop_type_id: 0,
+        rider_name: '',
         status: 3,
         date: '',
         created_at: '',
@@ -163,7 +164,18 @@ const CustomerOrderTransactionList = () => {
         fetchTransaction(id);
         setOpen(true);
     }
+
     const handleClose = () => setOpen(false);
+
+    const handleCloseRider = () => setOpen(false);
+
+    const [openRider, setOpenRider] = React.useState(false);
+
+    const handleOpenRider = (id, e) => {
+        console.log('e', id);
+        fetchTransaction(id);
+        setOpenRider(true);
+    }
 
     const fetchTransaction = async (id) => {
         await ShopOrderTransactionService.get(id)
@@ -180,6 +192,7 @@ const CustomerOrderTransactionList = () => {
             .then(response => {
                 fetchShopOrderTransactionList();
                 setOpen(false);
+                setOpenRider(false);
             })
             .catch(e => {
                 console.log(e);
@@ -243,14 +256,16 @@ const CustomerOrderTransactionList = () => {
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Shop Name</th>
+                        <th>Customer Type</th>
+                        <th>Customer</th>
                         <th>Total Quantity</th>
                         <th>Total Cash</th>
                         <th>Total Online</th>
                         <th>Total Amount</th>
                         <th>Profit</th>
-                        <th>Customer</th>
                         <th>Date</th>
                         <th>Status</th>
+                        <th>Rider</th>
                         <th>Update Date</th>
                         <th></th>
                         <th></th>
@@ -266,16 +281,23 @@ const CustomerOrderTransactionList = () => {
                             <tr key={shopOrderTransaction.id} >
                                 <td>{shopOrderTransaction.id}</td>
                                 <td>{shopOrderTransaction.shop_name}</td>
+                                <td>{shopOrderTransaction.customer_type}</td>
+                                <td>{shopOrderTransaction.requestor_name}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                 <td>{shopOrderTransaction.total_cash}</td>
                                 <td>{shopOrderTransaction.total_online}</td>
                                 <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                 <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
-                                <td>{shopOrderTransaction.requestor_name}</td>
                                 <td>{shopOrderTransaction.date}</td>
                                 <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                         <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                <td>
+                                    <p>{shopOrderTransaction.rider_name}</p>
+                                    <IconButton>
+                                        <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
+                                    </IconButton>
+                                </td>
                                 <td>
                                     <IconButton>
                                         <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
@@ -365,6 +387,39 @@ const CustomerOrderTransactionList = () => {
                     <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
                         <Form.Label></Form.Label>
                         <Form.Control type="date" value={shopOrderTransactionUpdateModal.date} name="date" onChange={onChangeDate} />
+                    </Form.Group>
+
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Button variant="primary" onClick={updateDate}>
+                            Submit
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
+
+            <Modal
+                keepMounted
+                open={openRider}
+                onClose={handleCloseRider}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                        Add Rider Name
+                    </Typography>
+
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label></Form.Label>
+                        <Form.Control type="text" value={shopOrderTransactionUpdateModal.rider_name} name="rider_name" onChange={onChangeDate} />
                     </Form.Group>
 
 
