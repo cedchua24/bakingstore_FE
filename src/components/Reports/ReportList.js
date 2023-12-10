@@ -76,11 +76,11 @@ const ReportList = () => {
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label>Total Cash Payment: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_online} />
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_cash} />
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label>Total Online Payment: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_cash} />
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_online} />
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label>Total Sales: </Form.Label>

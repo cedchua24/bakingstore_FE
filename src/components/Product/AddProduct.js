@@ -143,7 +143,7 @@ const AddProduct = () => {
     price: 0,
     stock: 0,
     weight: 0,
-    variation: '',
+    variation: 'kg',
     quantity: 0,
     packaging: ''
   })

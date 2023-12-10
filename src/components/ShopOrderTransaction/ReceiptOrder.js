@@ -138,7 +138,7 @@ const ReceiptOrder = () => {
                 <table class="print-receipt" >
                     <tr>
                         <th>
-                            MDR Baking
+                            MDR BAKING & RESTAURANT SUPPLIES
                         </th>
                     </tr>
                     <tr>
@@ -179,8 +179,10 @@ const ReceiptOrder = () => {
                     <tr>
                         <td></td>
                         <td></td>
-                        <td>Tax</td>
-                        <td>{`${(TAX_RATE * 100).toFixed(0)} %`}</td>
+                        <td>Tax - {`${(TAX_RATE * 100).toFixed(0)} %`}</td>
+                        {/* <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell> */}
+                        {/* <td>{`${(TAX_RATE * 100).toFixed(0)} %`}</td> */}
+                        <td> {ccyFormat(invoiceTaxes)}</td>
                     </tr>
 
                     <tr>
