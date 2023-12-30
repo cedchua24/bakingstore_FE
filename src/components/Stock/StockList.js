@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
+import CategoryServiceService from "../Category/CategoryService.service";
 
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
@@ -14,7 +15,13 @@ import Typography from '@mui/material/Typography'
 import UpdateIcon from '@mui/icons-material/Update';
 import Button from '@mui/material/Button';
 
-import { ValidatorComponent } from 'react-material-ui-form-validator';
+import { Form } from 'react-bootstrap';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+
+import CircularProgress from '@mui/material/CircularProgress';
+
+
 
 
 const StockList = (props) => {
@@ -22,9 +29,13 @@ const StockList = (props) => {
     // const productList = props.productList;
     useEffect(() => {
         fetchProductList();
+        fetchCategoryList();
     }, []);
 
     const [productList, setProductList] = useState([]);
+    const [categoryId, setCategoryId] = useState(0);
+    const [categeryList, setCategoryList] = useState([]);
+    const [submitLoading, setSubmitLoading] = useState(false);
 
     const style = {
         position: 'absolute',
@@ -58,6 +69,12 @@ const StockList = (props) => {
     const [realStock, setRealStock] = useState(0);
     const [errorStock, setErrorStock] = useState(false);
 
+    const onChangeInput = (e) => {
+        console.log(e.target.value)
+        setCategoryId(e.target.value)
+        // setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
+    }
+
     const onChangeStock = (e) => {
         // const realStock = product.stock;
         const totalStock = Number(realStock) + Number(e.target.value);
@@ -84,15 +101,31 @@ const StockList = (props) => {
             });
     }
 
+    const fetchCategoryList = () => {
+        CategoryServiceService.getAll()
+            .then(response => {
+                setCategoryList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
     const updateProduct = () => {
+        setSubmitLoading(true);
         ProductServiceService.update(product.id, product)
             .then(response => {
                 fetchProductList();
+                setSubmitLoading(false);
+                setOpen(false);
                 // updateOrderTransaction();
             })
             .catch(e => {
                 console.log(e);
+                setSubmitLoading(false);
+                setOpen(false);
             });
+
     }
 
 
@@ -106,8 +139,47 @@ const StockList = (props) => {
             });
     }
 
+    const fetchProductByCategoryId = () => {
+        ProductServiceService.fetchProductByCategoryId(categoryId)
+            .then(response => {
+                setProductList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
     return (
         <div>
+            <Form>
+                <Box sx={{ minWidth: 120 }}>
+                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                        <InputLabel id="demo-simple-select-label">Category</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            // value={shopOrderTransaction.shop_id}
+                            label="Shop Name"
+                            name="category_id"
+                            onChange={onChangeInput}
+                        >
+                            {
+                                categeryList.map((category, index) => (
+                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
+                                ))
+                            }
+                        </Select>
+                    </FormControl>
+                </Box>
+
+                <Button
+                    variant="contained"
+                    onClick={fetchProductByCategoryId}
+                >
+                    Search
+                </Button>
+            </Form>
+            <br></br>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -170,6 +242,12 @@ const StockList = (props) => {
                         Update Stock
                     </Typography>
 
+                    {submitLoading &&
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <CircularProgress />
+                        </div>
+                    }
+
                     <TextField
                         disabled
                         id="filled-required"
@@ -221,7 +299,7 @@ const StockList = (props) => {
                             onClick={updateProduct}
                             disabled={errorStock}
                             size="large" >
-                            Submit
+                            Submits
                         </Button>
                     </Box>
                 </Box>

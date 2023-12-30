@@ -586,6 +586,7 @@ const AddProductCustomerOrderTransaction = () => {
                             options={products.sort((a, b) =>
                                 b.category_name.toString().localeCompare(a.category_name.toString())
                             )}
+
                             value={value}
                             className="mb-3"
                             id="disable-close-on-select"
@@ -593,7 +594,8 @@ const AddProductCustomerOrderTransaction = () => {
                             groupBy={(products) => products.category_name}
                             getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " + products.packaging : '') + ' - ' + (products.business_type === 'WHOLESALE' ? (" ") + products.weight : (products.weight / products.quantity)) + products.variation + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock}
                             renderInput={(params) => (
-                                <TextField {...params} label='Choose Product' variant="standard" />
+                                <TextField
+                                    {...params} label='Choose Product' variant="standard" />
                             )}
                         />
                     </FormControl>

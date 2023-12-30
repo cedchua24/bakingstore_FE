@@ -3,19 +3,16 @@ import ProductServiceService from "./ProductService.service";
 import ProductTransactionService from "../OtherService/ProductTransactionService";
 import BrandServiceService from "../Brand/BrandService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
-import { Form, FloatingLabel } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
 
 import UpdateIcon from '@mui/icons-material/Update';
-import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Modal from '@mui/material/Modal';
 
-import InputAdornment from '@mui/material/InputAdornment';
+
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
@@ -25,8 +22,6 @@ import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress';
-
-import { styled } from '@mui/material/styles';
 
 
 import MenuItem from '@mui/material/MenuItem';
@@ -253,7 +248,7 @@ const ProductList = () => {
                     variant="contained"
                     onClick={fetchProductByCategoryId}
                 >
-                    Search
+                    Search 
                 </Button>
             </Form>
 
