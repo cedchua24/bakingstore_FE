@@ -31,6 +31,7 @@ import CompletedOrder from "./components/OrderSupplierTransaction/CompletedOrder
 import CompletedCustomerOrder from "./components/OrderCustomerList/CompletedCustomerOrder";
 import UpdateCustomerOrder from "./components/OrderCustomerList/UpdateCustomerOrder";
 import Stock from "./components/Stock/Stock";
+import StockWarning from "./components/Stock/StockWarning";
 import EditStock from "./components/Stock/EditStock";
 import ViewTransaction from "./components/Stock/ViewTransaction";
 
@@ -133,6 +134,7 @@ const App = () => {
 
           <Route path="/addStock" element={<Stock />} />
           <Route exact path="/editStock/:id" element={<EditStock />} />
+          <Route exact path="/stockWarning" element={<StockWarning />} />
           <Route exact path="/viewTransaction/:id" element={<ViewTransaction />} />
 
           <Route exact path="/markUpPrice/" element={<MarkUpPrice />} />

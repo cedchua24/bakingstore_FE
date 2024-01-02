@@ -24,7 +24,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 
 
-const StockList = (props) => {
+const StockWarning = (props) => {
 
     // const productList = props.productList;
     useEffect(() => {
@@ -144,7 +144,7 @@ const StockList = (props) => {
 
 
     const fetchProductList = () => {
-        ProductServiceService.getAll()
+        ProductServiceService.fetchByStockWarning()
             .then(response => {
                 setProductList(response.data);
             })
@@ -165,7 +165,7 @@ const StockList = (props) => {
 
     return (
         <div>
-            <Form>
+            {/* <Form>
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -192,7 +192,7 @@ const StockList = (props) => {
                 >
                     Search
                 </Button>
-            </Form>
+            </Form> */}
             <br></br>
             <table class="table table-bordered">
                 <thead class="table-dark">
@@ -287,10 +287,7 @@ const StockList = (props) => {
                             onChange={onChangePackaging}
                         >
                             <MenuItem value={product.packaging}>{product.packaging}</MenuItem>
-                            {product.quantity != 1 &&
-                                <MenuItem value="Pc">Pc</MenuItem>}
-
-
+                            <MenuItem value="Pc">Pc</MenuItem>
                         </Select>
                     </FormControl>
 
@@ -345,4 +342,4 @@ const StockList = (props) => {
     )
 }
 
-export default StockList
+export default StockWarning

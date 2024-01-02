@@ -248,7 +248,7 @@ const ProductList = () => {
                     variant="contained"
                     onClick={fetchProductByCategoryId}
                 >
-                    Search 
+                    Search
                 </Button>
             </Form>
 
@@ -319,8 +319,9 @@ const ProductList = () => {
                         <th>Price</th>
                         <th>Quantity / Weight</th>
                         <th>Stock</th>
-                        <th>Packaging</th>
                         <th>Stock / Per Piece</th>
+                        <th>Packaging</th>
+                        <th>Stock Warning</th>
                         <th>Add Stock</th>
                         <th>Transaction</th>
                         <th>Action</th>
@@ -342,8 +343,9 @@ const ProductList = () => {
                                     : <p >{product.quantity}x{product.weight / product.quantity}kg</p>}
                                 </td>
                                 <td>{product.stock}</td>
-                                <td>{product.packaging}</td>
                                 <td>{product.stock_pc}</td>
+                                <td>{product.packaging}</td>
+                                <td>{product.stock_warning}</td>
                                 <td>
                                     <Tooltip title="Update">
                                         <IconButton>

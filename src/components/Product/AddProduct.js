@@ -145,6 +145,7 @@ const AddProduct = () => {
     weight: 0,
     variation: 'kg',
     quantity: 0,
+    stock_warning: 0,
     packaging: ''
   })
 
@@ -198,6 +199,11 @@ const AddProduct = () => {
 
   const onChangeQuantity = (e) => {
     setProduct({ ...product, quantity: e.target.value });
+    console.log(product);
+  }
+
+  const onChangeStockWarning = (e) => {
+    setProduct({ ...product, stock_warning: e.target.value });
     console.log(product);
   }
 
@@ -369,6 +375,15 @@ const AddProduct = () => {
         >
 
           <Form.Control type="text" value={product.quantity} onChange={onChangeQuantity} required />
+        </FloatingLabel>
+
+        <FloatingLabel
+          controlId="floatingInput"
+          label="Stock Warning"
+          className="mb-3"
+        >
+
+          <Form.Control type="text" value={product.stock_warning} onChange={onChangeStockWarning} required />
         </FloatingLabel>
 
         <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangePackaging}  >

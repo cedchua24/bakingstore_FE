@@ -25,7 +25,8 @@ const EditProduct = () => {
         price: 0,
         stock: 0,
         weight: 0,
-        quantity: 0
+        quantity: 0,
+        stock_warning: 0
     });
 
     const [brandList, setBrandList] = useState([]);
@@ -59,6 +60,10 @@ const EditProduct = () => {
 
     const onChangeQuantity = (e) => {
         setProduct({ ...product, quantity: e.target.value });
+    }
+
+    const onChangeStockWarning = (e) => {
+        setProduct({ ...product, stock_warning: e.target.value });
     }
 
     const updateProduct = () => {
@@ -179,6 +184,14 @@ const EditProduct = () => {
                     className="w-25 mb-3"
                 >
                     <Form.Control type="number" value={product.quantity} onChange={onChangeQuantity} />
+                </FloatingLabel>
+
+                <FloatingLabel
+                    controlId="floatingInput"
+                    label="Stock Warning"
+                    className="w-25 mb-3"
+                >
+                    <Form.Control type="number" value={product.stock_warning} onChange={onChangeStockWarning} />
                 </FloatingLabel>
 
 

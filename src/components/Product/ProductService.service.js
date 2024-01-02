@@ -13,6 +13,10 @@ class ProductService {
     fetchProductByCategoryIdV2(id) {
         return axios.get(`/api/products/fetchProductByCategoryIdV2/${id}`);
     }
+    fetchByStockWarning(id) {
+        return axios.get(`/api/products/fetchByStockWarning/${id}`);
+    }
+
     create(data) {
         return axios.post("/api/products", data);
     }

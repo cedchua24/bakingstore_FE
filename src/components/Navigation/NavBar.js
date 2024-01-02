@@ -108,6 +108,7 @@ const NavBar = () => {
                         <NavDropdown title="Stock" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/addStock">Add Stock</NavDropdown.Item>
                             <NavDropdown.Item href="/addStock">Stock List</NavDropdown.Item>
+                            <NavDropdown.Item href="/stockWarning">Stock Warning</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
