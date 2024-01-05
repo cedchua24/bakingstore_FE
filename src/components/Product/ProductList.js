@@ -322,7 +322,7 @@ const ProductList = () => {
                         <th>Stock / Per Piece</th>
                         <th>Packaging</th>
                         <th>Stock Warning</th>
-                        <th>Add Stock</th>
+                        {/* <th>Add Stock</th> */}
                         <th>Transaction</th>
                         <th>Action</th>
                         <th>Action</th>
@@ -346,13 +346,13 @@ const ProductList = () => {
                                 <td>{product.stock_pc}</td>
                                 <td>{product.packaging}</td>
                                 <td>{product.stock_warning}</td>
-                                <td>
+                                {/* <td>
                                     <Tooltip title="Update">
                                         <IconButton>
                                             <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
                                         </IconButton>
                                     </Tooltip>
-                                </td>
+                                </td> */}
                                 <td>
                                     <Link variant="primary" to={"/productTransactionList/" + product.id}   >
                                         <Button variant="contained" >
