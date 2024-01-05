@@ -135,12 +135,11 @@ const ReceiptOrder = () => {
             }
             <br></br>
             <div>
+                <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}> MDR COFFEE AND MILK TEA SUPPLIES</h3>
+                <p style={{ textAlign: 'center' }}> 1897 Jordan Street Tabon Malaria Bgy 185, Caloocan</p>
+                <p style={{ textAlign: 'center' }}>Contact Number:  0999 514 1775</p>
                 <table class="print-receipt" >
-                    <tr>
-                        <th>
-                            MDR BAKING & RESTAURANT SUPPLIES
-                        </th>
-                    </tr>
+
                     <tr>
                         <th>{shopOrderTransaction.requestor_name}</th>
                         <th>{shopOrderTransaction.created_at}</th>
