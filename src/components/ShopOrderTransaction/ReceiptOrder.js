@@ -187,8 +187,8 @@ const ReceiptOrder = () => {
                     <tr>
                         <td></td>
                         <td></td>
-                        <td>Grand Total</td>
-                        <td>₱ {ccyFormat(invoiceTotal)}</td>
+                        <td style={{ fontWeight: 'bold' }}>Grand Total</td>
+                        <td style={{ fontWeight: 'bold' }}>₱ {ccyFormat(invoiceTotal)}</td>
                     </tr>
 
                 </table>
