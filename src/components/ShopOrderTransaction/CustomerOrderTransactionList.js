@@ -29,6 +29,7 @@ const CustomerOrderTransactionList = () => {
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         data: [],
+        payment: [],
         code: '',
         message: '',
         total_price: 0,
@@ -220,34 +221,50 @@ const CustomerOrderTransactionList = () => {
 
     return (
         <div>
-            <Form>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date</Form.Label>
-                    <Form.Control type="date" name="date" onChange={onChangeInput} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Cash Payment: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_cash} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Online Payment: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_online} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Sales: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_price} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Profit: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
-                </Form.Group>
+            <div style={{ float: 'right', marginRight: 600 }}>
+
+                {
+                    shopOrderTransaction.payment.map((payment, index) => (
+                        <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                            <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
+                            <Form.Control type="text" value={"₱ " + payment.total_amount} />
+                        </Form.Group>
+                    )
+                    )
+                }
+
+            </div>
+
+            <div>
+                <Form>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Date</Form.Label>
+                        <Form.Control type="date" name="date" onChange={onChangeInput} />
+                    </Form.Group>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Cash Payment: </Form.Label>
+                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_cash} />
+                    </Form.Group>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Online Payment: </Form.Label>
+                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_online} />
+                    </Form.Group>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Sales: </Form.Label>
+                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_price} />
+                    </Form.Group>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Profit: </Form.Label>
+                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
+                    </Form.Group>
 
 
 
-                <Button variant="primary" onClick={saveOrderTransaction}>
-                    Find
-                </Button>
-            </Form >
+                    <Button variant="primary" onClick={saveOrderTransaction}>
+                        Find
+                    </Button>
+                </Form >
+            </div>
             <Div>{"Online Orders"}
             </Div>
 
