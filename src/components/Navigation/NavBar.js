@@ -99,6 +99,11 @@ const NavBar = () => {
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
+                        <NavDropdown title="Payment Type" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/paymentType">Add Payment Type</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
                         <NavDropdown title="MarkUpPrice" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/markUpPrice">Add MarkUpPrice</NavDropdown.Item>
                             <NavDropdown.Item href="/markUpPriceListV2">MarkUpPrice List</NavDropdown.Item>

@@ -286,7 +286,7 @@ const FinalizeShopOrder = () => {
     }
 
     const fetchPaymentType = () => {
-        PaymentTypeService.getAll()
+        PaymentTypeService.fetchEnablePaymentType()
             .then(response => {
                 setPaymentTypeList(response.data);
             })

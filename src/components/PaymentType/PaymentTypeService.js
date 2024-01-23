@@ -7,11 +7,8 @@ class PaymentTypeService {
     get(id) {
         return axios.get(`/api/paymentType/${id}`);
     }
-    fetchpaymentTypeDTO(id) {
-        return axios.get(`/api/paymentType/fetchpaymentTypeDTO/${id}`);
-    }
-    fetchEnablePaymentType(id) {
-        return axios.get(`/api/paymentType/fetchEnablePaymentType/${id}`);
+    fetchEnablePaymentType() {
+        return axios.get(`/api/paymentType/fetchEnablePaymentType`);
     }
     create(data) {
         return axios.post("/api/paymentType", data);
@@ -19,8 +16,8 @@ class PaymentTypeService {
     update(id, data) {
         return axios.put(`/api/paymentType/${id}`, data);
     }
-    delete(brand, data) {
-        return axios.delete(`/api/paymentType/${brand}`, data);
+    delete(brand) {
+        return axios.delete(`/api/paymentType/${brand}`);
     }
     deleteAll() {
         return axios.delete(`/api/paymentType`);

@@ -10,6 +10,9 @@ import EditProduct from "./components/Product/EditProduct";
 import Brand from "./components/Brand/Brand";
 import BrandListV2 from "./components/Brand/BrandListV2";
 import EditBrand from "./components/Brand/EditBrand";
+import PaymentType from "./components/PaymentType/PaymentType";
+import PaymentTypeList from "./components/PaymentType/PaymentTypeList";
+import EditPaymentType from "./components/PaymentType/EditPaymentType";
 import AddCategory from "./components/Category/AddCategory";
 import CategoryList from "./components/Category/CategoryList";
 import EditCategory from "./components/Category/EditCategory";
@@ -114,6 +117,10 @@ const App = () => {
           <Route path="/brand" element={<Brand />} />
           <Route path="/brandListV2" element={<BrandListV2 />} />
           <Route exact path="/editBrand/:id" element={<EditBrand />} />
+
+          <Route path="/paymentType" element={<PaymentType />} />
+          <Route path="/paymentTypeList" element={<PaymentTypeList />} />
+          <Route exact path="/editPaymentType/:id" element={<EditPaymentType />} />
 
           <Route path="/supplier" element={<Supplier />} />
           <Route path="/supplierListV2" element={<SupplierListV2 />} />
