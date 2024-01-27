@@ -64,7 +64,7 @@ const CustomerOrderTransactionList = () => {
         shop_type_id: 0,
         rider_name: '',
         pick_up: '',
-        status: 3,
+        status: 0,
         date: '',
         created_at: '',
         updated_at: ''
