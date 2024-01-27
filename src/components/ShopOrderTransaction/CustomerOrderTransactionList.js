@@ -308,7 +308,7 @@ const CustomerOrderTransactionList = () => {
                         <th>Total Amount</th>
                         <th>Profit</th>
                         <th>Date</th>
-                        <th>Status</th>
+                        <th>Payment Status</th>
                         <th>Rider</th>
                         <th >Pick Up Status</th>
                         <th>Update Date</th>
