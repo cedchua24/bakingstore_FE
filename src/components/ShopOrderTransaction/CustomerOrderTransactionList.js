@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
+import Checkbox from '@mui/material/Checkbox';
 
 import CircularProgress from '@mui/material/CircularProgress';
 
@@ -51,8 +52,8 @@ const CustomerOrderTransactionList = () => {
         updated_at: ''
     });
 
+
     const [shopOrderTransactionUpdateModal, setShopOrderTransactionUpdateModal] = useState({
-        checker: 0,
         id: 0,
         profit: 0,
         requestor: 0,
@@ -62,6 +63,7 @@ const CustomerOrderTransactionList = () => {
         shop_order_transaction_total_quantity: '',
         shop_type_id: 0,
         rider_name: '',
+        pick_up: '',
         status: 3,
         date: '',
         created_at: '',
@@ -170,12 +172,22 @@ const CustomerOrderTransactionList = () => {
 
     const handleCloseRider = () => setOpen(false);
 
+    const handleClosePickUp = () => setOpen(false);
+
     const [openRider, setOpenRider] = React.useState(false);
+
+    const [openPickUp, setOpenPickUp] = React.useState(false);
 
     const handleOpenRider = (id, e) => {
         console.log('e', id);
         fetchTransaction(id);
         setOpenRider(true);
+    }
+
+    const handleOpenPickUp = (id, e) => {
+        console.log('e', id);
+        fetchTransaction(id);
+        setOpenPickUp(true);
     }
 
     const fetchTransaction = async (id) => {
@@ -194,6 +206,7 @@ const CustomerOrderTransactionList = () => {
                 fetchShopOrderTransactionList();
                 setOpen(false);
                 setOpenRider(false);
+                setOpenPickUp(false);
             })
             .catch(e => {
                 console.log(e);
@@ -202,6 +215,20 @@ const CustomerOrderTransactionList = () => {
 
     const onChangeDate = (e) => {
         setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, [e.target.name]: e.target.value });
+    }
+
+    const onChangePaymentTypeStatus = (e) => {
+
+        console.log("error", e.target.checked)
+        if (e.target.type === 'checkbox') {
+            if (e.target.checked === true) {
+                setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_pickup: 1 });
+            } else {
+                setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_pickup: 0 });
+            }
+        } else {
+            setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_pickup: e.target.value });
+        }
     }
 
     const style = {
@@ -283,6 +310,7 @@ const CustomerOrderTransactionList = () => {
                         <th>Date</th>
                         <th>Status</th>
                         <th>Rider</th>
+                        <th >Pick Up Status</th>
                         <th>Update Date</th>
                         <th></th>
                         <th></th>
@@ -313,6 +341,13 @@ const CustomerOrderTransactionList = () => {
                                     <p>{shopOrderTransaction.rider_name}</p>
                                     <IconButton>
                                         <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
+                                    </IconButton>
+                                </td>
+                                <td>
+                                    <p>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DONE</p> :
+                                        <p style={{ fontWeight: 'bold', color: 'orange', }}>WAITING</p>}</p>
+                                    <IconButton>
+                                        <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
                                     </IconButton>
                                 </td>
                                 <td>
@@ -439,6 +474,43 @@ const CustomerOrderTransactionList = () => {
                         <Form.Control type="text" value={shopOrderTransactionUpdateModal.rider_name} name="rider_name" onChange={onChangeDate} />
                     </Form.Group>
 
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Button variant="primary" onClick={updateDate}>
+                            Submit
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
+
+            <Modal
+                keepMounted
+                open={openPickUp}
+                onClose={handleClosePickUp}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                        Pick Up Status
+                    </Typography>
+
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>is Pick-up ? </Form.Label>
+
+                        <Checkbox
+                            checked={shopOrderTransactionUpdateModal.is_pickup === 0 ? false : true}
+                            onChange={onChangePaymentTypeStatus}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                        />
+                    </Form.Group>
 
                     <Box
                         sx={{
