@@ -13,6 +13,12 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionList(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionList/${id}`);
     }
+    fetchPendingTransactionList(data) {
+        return axios.post("/api/shopOrderTransaction/fetchPendingTransactionList", data);
+    }
+    fetchOnlineShopOrderTransactionListByIdDate(id, date) {
+        return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByIdDate/${id}/${date}`);
+    }
     fetchOnlineShopOrderTransactionListReport(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReport/${id}`);
     }

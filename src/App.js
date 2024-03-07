@@ -58,8 +58,11 @@ import ShopOrderTransaction from "./components/ShopOrderTransaction/ShopOrderTra
 import AddProductShopOrderTransaction from "./components/ShopOrderTransaction/AddProductShopOrderTransaction";
 import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
+import PendingTransactionList from "./components/ShopOrderTransaction/PendingTransactionList";
+import CancelTransactionList from "./components/ShopOrderTransaction/CancelTransactionList";
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
 import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
+import PaymentTypeSales from "./components/ShopOrderTransaction/PaymentTypeSales";
 import ReceiptOrder from "./components/ShopOrderTransaction/ReceiptOrder";
 
 import CustomerOrderTransaction from "./components/CustomerTransaction/CustomerOrderTransaction";
@@ -186,8 +189,11 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/customerOrderTransactionList/" element={<CustomerOrderTransactionList />} />
+          <Route exact path="/shopOrderTransaction/pendingTransactionList/" element={<PendingTransactionList />} />
+          <Route exact path="/shopOrderTransaction/cancelTransactionList/" element={<CancelTransactionList />} />
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
           <Route exact path="/shopOrderTransaction/completedShopOrderTransaction/:id" element={<CompletedShopOrderTransaction />} />
+          <Route exact path="/shopOrderTransaction/paymentTypeSales/:id" element={<PaymentTypeSales />} />
           <Route exact path="/shopOrderTransaction/receiptOrder/:id" element={<ReceiptOrder />} />
           <Route
             exact

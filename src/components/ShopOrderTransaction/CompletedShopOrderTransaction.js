@@ -116,7 +116,16 @@ const CompletedShopOrderTransaction = () => {
 
 
     const fetchShopOrderTransaction = async (id) => {
-        console.log('test')
+
+        var valueParam = id.split("+");
+        console.log('pieces', valueParam);
+        console.log('date', valueParam[1]);
+
+        if (valueParam[1] === '') {
+            console.log('empty');
+        } else {
+            console.log('non empty');
+        }
         await ShopOrderTransactionService.fetchShopOrderTransaction(id)
             .then(response => {
                 console.log('fetchShopOrderTransaction', response.data)

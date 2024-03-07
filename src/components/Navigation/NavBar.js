@@ -132,6 +132,8 @@ const NavBar = () => {
                         <NavDropdown title="Customer Order" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/customerOrderTransactionList">Customer Order List</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/pendingTransactionList">Pending Transaction List</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/cancelTransactionList">Cancel Transaction List</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">

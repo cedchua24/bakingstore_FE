@@ -17,7 +17,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 
-const CustomerOrderTransactionList = () => {
+const CancelTransactionList = () => {
 
 
     useEffect(() => {
@@ -26,6 +26,10 @@ const CustomerOrderTransactionList = () => {
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: ""
+    });
+
+    const [transactionStatus, setTransactionStatus] = useState({
+        status: 3
     });
 
     const [date, setDate] = useState('');
@@ -78,7 +82,7 @@ const CustomerOrderTransactionList = () => {
 
 
     const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList()
+        ShopOrderTransactionService.fetchPendingTransactionList(transactionStatus)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -271,36 +275,18 @@ const CustomerOrderTransactionList = () => {
             </div>
 
             <div>
-                <Form>
+                {/* <Form>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" name="date" onChange={onChangeInput} />
                     </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Cash Payment: </Form.Label>
-                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_cash} />
-                    </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Online Payment: </Form.Label>
-                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_online} />
-                    </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Sales: </Form.Label>
-                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_price} />
-                    </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Profit: </Form.Label>
-                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
-                    </Form.Group>
-
-
 
                     <Button variant="primary" onClick={saveOrderTransaction}>
                         Find
                     </Button>
-                </Form >
+                </Form > */}
             </div>
-            <Div>{"Online Orders"}
+            <Div>{"Cancelled Transaction"}
             </Div>
 
             <table class="table table-bordered">
@@ -538,4 +524,4 @@ const CustomerOrderTransactionList = () => {
     )
 }
 
-export default CustomerOrderTransactionList
+export default CancelTransactionList
