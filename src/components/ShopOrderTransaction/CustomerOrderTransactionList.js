@@ -251,7 +251,7 @@ const CustomerOrderTransactionList = () => {
 
     return (
         <div>
-            <div style={{ float: 'right', marginRight: 500 }}>
+            {/* <div style={{ float: 'right', marginRight: 500 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
@@ -268,7 +268,7 @@ const CustomerOrderTransactionList = () => {
                     )
                 }
 
-            </div>
+            </div> */}
 
             <div>
                 <Form>
@@ -364,14 +364,14 @@ const CustomerOrderTransactionList = () => {
                                     </IconButton>
                                 </td>
                                 <td>
-                                    <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id + "+" + date}   >
+                                    <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
                                         <Button variant="primary" >
                                             View
                                         </Button>
                                     </Link>
                                 </td>
                                 <td>
-                                    <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction}   >
+                                    <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
                                         <Button variant="primary" >
                                             Print Receipt
                                         </Button>

@@ -255,7 +255,7 @@ const PendingTransactionList = () => {
 
     return (
         <div>
-            <div style={{ float: 'right', marginRight: 500 }}>
+            {/* <div style={{ float: 'right', marginRight: 500 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
@@ -272,7 +272,7 @@ const PendingTransactionList = () => {
                     )
                 }
 
-            </div>
+            </div> */}
 
             <div>
                 {/* <Form>
