@@ -16,6 +16,7 @@ import UpdateIcon from '@mui/icons-material/Update';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
+import PageviewIcon from '@mui/icons-material/Pageview';
 
 const CustomerOrderTransactionList = () => {
 
@@ -257,12 +258,10 @@ const CustomerOrderTransactionList = () => {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                             <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
+                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
+                                <PageviewIcon color="primary" />
+                            </Link>
                             <Form.Control type="text" value={"₱ " + payment.total_amount} />
-                            {/* <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
-                                <Button variant="primary" >
-                                    View
-                                </Button>
-                            </Link> */}
                         </Form.Group>
                     )
                     )

@@ -16,7 +16,10 @@ const PaymentTypeSales = () => {
         fetchShopOrderTransactionList();
     }, []);
 
-    const [date, setDate] = useState('');
+    const [date, setDate] = useState({
+        id: 0,
+        newDate: ''
+    });
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         data: [],
@@ -36,6 +39,7 @@ const PaymentTypeSales = () => {
 
         if (valueParam[1] === '') {
             console.log('empty');
+            valueParam[1] = 0;
         } else {
             console.log('non empty');
         }
@@ -54,18 +58,13 @@ const PaymentTypeSales = () => {
 
     return (
         <div>
-            <div style={{ float: 'right', marginRight: 500 }}>
+            <div style={{ width: 300 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
+                            <Form.Label style={{ fontWeight: 'bold' }}> {payment.payment_type} {payment.payment_type_description}</Form.Label>
                             <Form.Control type="text" value={"₱ " + payment.total_amount} />
-                            <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
-                                <Button variant="primary" >
-                                    View
-                                </Button>
-                            </Link>
                         </Form.Group>
                     )
                     )
@@ -89,13 +88,7 @@ const PaymentTypeSales = () => {
                         <th>Total Amount</th>
                         <th>Profit</th>
                         <th>Date</th>
-                        <th>Payment Status</th>
-                        <th>Rider</th>
-                        <th >Pick Up Status</th>
-                        <th>Update Date</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
+                        <th>Status</th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -117,6 +110,13 @@ const PaymentTypeSales = () => {
                                 <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                         <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                <td>
+                                    <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
+                                        <Button variant="primary" >
+                                            View
+                                        </Button>
+                                    </Link>
+                                </td>
                             </tr>
                         )
                         )
