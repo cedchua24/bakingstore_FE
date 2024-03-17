@@ -4,6 +4,7 @@ import { Button, Form, Alert, Dropdown, FloatingLabel } from 'react-bootstrap';
 import ProductServiceService from "./ProductService.service";
 import BrandServiceService from "../Brand/BrandService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
+import Checkbox from '@mui/material/Checkbox';
 
 const EditProduct = () => {
 
@@ -26,13 +27,28 @@ const EditProduct = () => {
         stock: 0,
         weight: 0,
         quantity: 0,
-        stock_warning: 0
+        stock_warning: 0,
+        disabled: 0
     });
 
     const [brandList, setBrandList] = useState([]);
     const [categeryList, setCategoryList] = useState([]);
 
     const [message, setMessage] = useState(false);
+
+    const onChangePaymentTypedisabled = (e) => {
+
+        console.log("error", e.target.checked)
+        if (e.target.type === 'checkbox') {
+            if (e.target.checked === true) {
+                setProduct({ ...product, disabled: 1 });
+            } else {
+                setProduct({ ...product, disabled: 0 });
+            }
+        } else {
+            setProduct({ ...product, disabled: e.target.value });
+        }
+    }
 
     const onChangeProduct = (e) => {
         setProduct({ ...product, product_name: e.target.value });
@@ -193,6 +209,16 @@ const EditProduct = () => {
                 >
                     <Form.Control type="number" value={product.stock_warning} onChange={onChangeStockWarning} />
                 </FloatingLabel>
+
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Disabled ? </Form.Label>
+
+                    <Checkbox
+                        checked={product.disabled === 0 ? false : true}
+                        onChange={onChangePaymentTypedisabled}
+                        inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                </Form.Group>
 
 
                 <Button variant="primary" className="mb-3" onClick={updateProduct}>

@@ -7,9 +7,8 @@ import { Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
 
-import UpdateIcon from '@mui/icons-material/Update';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 import Modal from '@mui/material/Modal';
 
 
@@ -322,6 +321,7 @@ const ProductList = () => {
                         <th>Stock / Per Piece</th>
                         <th>Packaging</th>
                         <th>Stock Warning</th>
+                        <th>Status</th>
                         {/* <th>Add Stock</th> */}
                         <th>Transaction</th>
                         <th>Action</th>
@@ -346,6 +346,7 @@ const ProductList = () => {
                                 <td>{product.stock_pc}</td>
                                 <td>{product.packaging}</td>
                                 <td>{product.stock_warning}</td>
+                                <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 {/* <td>
                                     <Tooltip title="Update">
                                         <IconButton>

@@ -17,8 +17,6 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -196,7 +194,13 @@ const AddProductCustomerOrderTransaction = () => {
             } else if (orderShop.shop_order_quantity > orderShop.stock) {
                 setValidator({
                     severity: 'error',
-                    message: 'Quantity is more than to Stocksss',
+                    message: 'Quantity is more than to Stocks',
+                    isShow: true,
+                });
+            } else if (orderShop.shop_order_profit < 1) {
+                setValidator({
+                    severity: 'error',
+                    message: 'Price is less than to Capital',
                     isShow: true,
                 });
             }
