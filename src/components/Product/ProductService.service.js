@@ -10,6 +10,9 @@ class ProductService {
     fetchProductByCategoryId(id) {
         return axios.get(`/api/products/fetchProductByCategoryId/${id}`);
     }
+    fetchById(id) {
+        return axios.get(`/api/products/fetchById/${id}`);
+    }
     fetchProductByCategoryIdV2(id) {
         return axios.get(`/api/products/fetchProductByCategoryIdV2/${id}`);
     }

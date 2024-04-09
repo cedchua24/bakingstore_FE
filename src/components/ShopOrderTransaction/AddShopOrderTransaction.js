@@ -24,6 +24,7 @@ const AddShopOrderTransaction = (props) => {
         shop_id: 0,
         shop_order_transaction_total_quantity: 0,
         shop_order_transaction_total_price: 0,
+        customer_type_id: 0,
         date: '',
         requestor: 0,
         checker: 0,
@@ -46,7 +47,7 @@ const AddShopOrderTransaction = (props) => {
     }
 
     const saveOrderTransaction = () => {
-        console.log('orderTransaction', shopOrderTransaction);
+        console.log('orderTransaction test', shopOrderTransaction);
         ShopOrderTransactionService.sanctum().then(response => {
             ShopOrderTransactionService.create(shopOrderTransaction)
                 .then(response => {

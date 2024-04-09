@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
+import StockOrderService from "../OtherService/StockOrderService";
 import CategoryServiceService from "../Category/CategoryService.service";
 
 import IconButton from '@mui/material/IconButton';
@@ -64,6 +65,7 @@ const StockList = (props) => {
         id: 0,
         product_name: '',
         stock: 0,
+        stock_pc: 0,
         newStocks: 0,
         pack: ''
     });
@@ -97,11 +99,24 @@ const StockList = (props) => {
             newStocks: e.target.value,
         });
 
-        if (Number(e.target.value) < 1) {
-            setErrorStock(true);
+        let v = product.stock + Number(e.target.value);
+        let x = product.stock_pc + Number(e.target.value);
+        if (product.pack === 'Box') {
+            if (v < 0) {
+                setErrorStock(true);
+            } else {
+                setErrorStock(false);
+            }
         } else {
-            setErrorStock(false);
+            if (x < 0) {
+                setErrorStock(true);
+            } else {
+                setErrorStock(false);
+            }
+
         }
+
+
     }
 
     const fetchByProductId = async (id) => {
@@ -233,8 +248,15 @@ const StockList = (props) => {
                                     </IconButton>
                                 </td>
                                 <td>
-                                    <Link variant="primary" to={"/viewTransaction/" + product.id}   >
+                                    <Link variant="primary" to={"/viewStockTransactionList/" + product.id}   >
                                         <Button variant="contained" >
+                                            View
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"/viewTransaction/" + product.id}   >
+                                        <Button variant="contained" disabled>
                                             View
                                         </Button>
                                     </Link>
@@ -303,7 +325,7 @@ const StockList = (props) => {
                             variant="filled"
                             name='newStocks'
                             errorText='{this.state.password_error_text}'
-                            min='1'
+                            // min='1'
                             // value={product.stock}
                             onChange={onChangeStock}
                             // helperText="Incorrect entry."

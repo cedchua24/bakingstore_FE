@@ -37,6 +37,7 @@ import Stock from "./components/Stock/Stock";
 import StockWarning from "./components/Stock/StockWarning";
 import EditStock from "./components/Stock/EditStock";
 import ViewTransaction from "./components/Stock/ViewTransaction";
+import ViewStockTransactionList from "./components/Stock/ViewStockTransactionList";
 
 import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
 import MarkUpPriceListV2 from "./components/MarkUpPrice/MarkUpPriceListV2";
@@ -146,6 +147,7 @@ const App = () => {
           <Route exact path="/editStock/:id" element={<EditStock />} />
           <Route exact path="/stockWarning" element={<StockWarning />} />
           <Route exact path="/viewTransaction/:id" element={<ViewTransaction />} />
+          <Route exact path="/viewStockTransactionList/:id" element={<ViewStockTransactionList />} />
 
           <Route exact path="/markUpPrice/" element={<MarkUpPrice />} />
           <Route exact path="/markUpPriceListV2/" element={<MarkUpPriceListV2 />} />
