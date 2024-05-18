@@ -38,6 +38,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
+import LinearProgress from '@mui/material/LinearProgress';
 
 
 import { styled } from '@mui/material/styles';
@@ -66,6 +67,9 @@ const AddProductCustomerOrderTransaction = () => {
         message: '',
         isShow: false
     });
+
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
 
     const [submitLoading, setSubmitLoading] = useState(false);
     const [products, setProducts] = useState([]);
@@ -184,6 +188,7 @@ const AddProductCustomerOrderTransaction = () => {
                 message: 'Please choose Product',
                 isShow: true,
             });
+
         } else
             if (orderShop.shop_order_quantity === 0) {
                 setValidator({
@@ -218,15 +223,9 @@ const AddProductCustomerOrderTransaction = () => {
                 console.log('orderShopDTO', orderShopDTO);
                 console.log('index', index);
                 if (index.length === 0) {
-                    setValidator({
-                        severity: 'success',
-                        message: 'Successfuly Added!',
-                        isShow: true,
-                    });
-                    // setorderShopList([...orderShopList, orderShop]);
-                    // let arr = orderShopList.concat(orderShop);
-                    // setorderShopDTO({ orderShopList: arr, grandTotal: subtotal(arr) });
-                    // setValue(products[1]);
+                    setSubmitLoadingAdd(true);
+                    setIsAddDisabled(true);
+
 
                     ShopOrderService.sanctum().then(response => {
                         ShopOrderService.create(orderShop)
@@ -240,10 +239,19 @@ const AddProductCustomerOrderTransaction = () => {
                                     shop_order_total_price: 0,
                                 });
                                 fetchShopOrderDTO(id);
+                                setSubmitLoadingAdd(false);
+                                setIsAddDisabled(false);
+                                setValidator({
+                                    severity: 'success',
+                                    message: 'Successfuly Added!',
+                                    isShow: true,
+                                });
                                 // fetchProductList();
                                 // window.location.reload();
                             })
                             .catch(e => {
+                                setSubmitLoadingAdd(false);
+                                setIsAddDisabled(false);
                                 console.log(e);
                             });
                     });
@@ -255,6 +263,7 @@ const AddProductCustomerOrderTransaction = () => {
                         isShow: true,
                     });
                 }
+
             }
         window.scrollTo(0, 0);
     }
@@ -552,6 +561,7 @@ const AddProductCustomerOrderTransaction = () => {
                 </Stepper>
                 <br></br>
                 <TableContainer component={Paper}>
+
                     <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                         <TableBody>
                             <TableRow >
@@ -653,11 +663,16 @@ const AddProductCustomerOrderTransaction = () => {
                         />
                     </FormControl>
                     <br></br>
-
+                    {submitLoadingAdd &&
+                        <LinearProgress color="warning" />
+                    }
+                    {/* <LinearProgress color="secondary" /> */}
+                    <br></br>
                     <div>
                         <Button
                             variant="contained"
                             type="submit"
+                            disabled={isAddDisabled}
                         >
                             Add
                         </Button>
