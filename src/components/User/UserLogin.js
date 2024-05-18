@@ -26,15 +26,15 @@ const UserLogin = (props) => {
 
     const login = (e) => {
         e.preventDefault();
-        axios.get('/sanctum/csrf-cookie').then(response => {
-            axios.post(`api/login/`, user).then(response => {
+        UserService.sanctum().then(response => {
+            UserService.login(user).then(response => {
                 if (response.data.status === 200) {
                     setErrorMessage('');
                     localStorage.setItem('auth_token', response.data.token);
                     localStorage.setItem('auth_name', response.data.email);
                     localStorage.setItem('auth_user_id', response.data.id);
                     localStorage.setItem('auth_name', response.data.name);
-                    // swal("Success", response.data.message, "success")
+                    swal("Success", response.data.message, "success")
 
                     if (response.data.role === 'admin') {
                         navigate('/orderSupplierTransaction');

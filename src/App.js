@@ -237,7 +237,7 @@ const App = () => {
             }
           />
           {/* <Route exact path="/addUser" element={<UserRegistration />} /> */}
-          {/* <Route exact path="/login" element={<UserLogin />} /> */}
+          <Route exact path="/login" element={<UserLogin />} />
           <Route exact path="/logout" element={<Logout />} />
 
           {/* <AdminPrivateRoute path="/admin" name="Admin" /> */}

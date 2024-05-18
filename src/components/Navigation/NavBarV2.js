@@ -1,15 +1,9 @@
-import { Button, Form, Alert } from 'react-bootstrap';
 import React from 'react'
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
-
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-
+import UserServiceService from '../User/UserService.service';
 
 const NavBarV2 = () => {
 
@@ -17,8 +11,8 @@ const NavBarV2 = () => {
 
     const logoutSubmit = (e) => {
         e.preventDefault();
-        axios.get('/sanctum/csrf-cookie').then(response => {
-            axios.post(`api/logout/`).then(response => {
+        UserServiceService.sanctum().then(response => {
+            UserServiceService.logout().then(response => {
                 if (response.data.status === 200) {
                     localStorage.removeItem('auth_token', response.data.token);
                     localStorage.removeItem('auth_name', response.data.email);

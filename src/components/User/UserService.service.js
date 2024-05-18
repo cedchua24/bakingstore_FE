@@ -9,8 +9,17 @@ class UserService {
     get(id) {
         return axios.get(`/api/register/${id}`);
     }
+    get(id) {
+        return axios.get(`/api/register/${id}`);
+    }
     create(user) {
         return axios.post(`/api/register`, user);
+    }
+    login(user) {
+        return axios.post(`/api/login`, user);
+    }
+    logout(user) {
+        return axios.post(`/api/logout`, user);
     }
     update(id, data) {
         return axios.put(`/api/register/${id}`, data);

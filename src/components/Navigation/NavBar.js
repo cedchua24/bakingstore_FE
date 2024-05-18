@@ -18,7 +18,7 @@ const NavBar = () => {
     const logoutSubmit = (e) => {
         e.preventDefault();
         axios.get('/sanctum/csrf-cookie').then(response => {
-            axios.post(`api/logout/`).then(response => {
+            axios.post(`api/logout`).then(response => {
                 if (response.data.status === 200) {
                     localStorage.removeItem('auth_token', response.data.token);
                     localStorage.removeItem('auth_name', response.data.email);
