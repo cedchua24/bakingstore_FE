@@ -45,6 +45,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Modal from '@mui/material/Modal';
 import UpdateIcon from '@mui/icons-material/Update';
+import LinearProgress from '@mui/material/LinearProgress';
 
 import { styled } from '@mui/material/styles';
 
@@ -62,6 +63,7 @@ const FinalizeShopOrder = () => {
 
     }, []);
 
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [submitOpenModal, setSubmitOpenModal] = React.useState(false);
     const [errorStock, setErrorStock] = useState(false);
@@ -252,17 +254,20 @@ const FinalizeShopOrder = () => {
             });
         } else {
             if (result == undefined) {
+                setSubmitLoadingAdd(true);
                 ModeOfPaymentService.sanctum().then(response => {
                     ModeOfPaymentService.create(modeOfPayment)
                         .then(response => {
+                            fetchPaymentTypeByShopTransactionId(id);
+                            setSubmitLoadingAdd(false);
                             setValidator({
                                 severity: 'success',
                                 message: 'Sucessfully added!',
                                 isShow: true,
                             });
-                            fetchPaymentTypeByShopTransactionId(id);
                         })
                         .catch(e => {
+                            setSubmitLoadingAdd(false);
                             console.log(e);
                         });
                 });
@@ -584,6 +589,10 @@ const FinalizeShopOrder = () => {
                             size="large" >
                             Add
                         </Button>
+                        <br></br>
+                        {submitLoadingAdd &&
+                            <LinearProgress color="warning" />
+                        }
                     </Box>
                 }
             </Box>
