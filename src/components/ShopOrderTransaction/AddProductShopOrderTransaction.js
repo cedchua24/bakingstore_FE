@@ -600,6 +600,9 @@ const AddProductCustomerOrderTransaction = () => {
                             options={products.sort((a, b) =>
                                 b.category_name.toString().localeCompare(a.category_name.toString())
                             )}
+                            getOptionDisabled={(products) =>
+                                products.stock === 0
+                            }
 
                             value={value}
                             className="mb-3"
