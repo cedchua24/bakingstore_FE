@@ -91,6 +91,8 @@ import ReportList from "./components/Reports/ReportList";
 import ReportExpenses from "./components/Reports/ReportExpenses";
 import ReportExpensesView from "./components/Reports/ReportExpensesView";
 
+import MobileTest from "./components/Mobile/MobileTest";
+
 
 
 
@@ -166,6 +168,9 @@ const App = () => {
           <Route exact path="/editShop/:id" element={<EditShop />} />
 
           <Route exact path="/productTransactionList/:id" element={<ProductTransactionList />} />
+
+
+          <Route path="/mobileTest" element={<MobileTest />} />
 
 
           <Route
