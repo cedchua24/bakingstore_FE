@@ -601,7 +601,7 @@ const AddProductCustomerOrderTransaction = () => {
                                 b.category_name.toString().localeCompare(a.category_name.toString())
                             )}
                             getOptionDisabled={(products) =>
-                                products.stock === 0
+                                products.stock < 1
                             }
 
                             value={value}
