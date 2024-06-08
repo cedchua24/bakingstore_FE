@@ -17,6 +17,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import PageviewIcon from '@mui/icons-material/Pageview';
+import Tooltip from '@mui/material/Tooltip';
 
 const CustomerOrderTransactionList = () => {
 
@@ -386,9 +387,18 @@ const CustomerOrderTransactionList = () => {
                                 <td>
                                     {
                                         shopOrderTransaction.status != 3 &&
-                                        <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
-                                            Cancel
-                                        </Button>
+                                        <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
+                                            <span>
+                                                <Button
+                                                    variant="danger"
+                                                    onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
+                                                    disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                    color="error"
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </span>
+                                        </Tooltip>
                                     }
                                 </td>
                                 {/* <td>
