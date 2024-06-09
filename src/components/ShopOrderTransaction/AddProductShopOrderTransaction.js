@@ -416,7 +416,7 @@ const AddProductCustomerOrderTransaction = () => {
     }
 
 
-    const saveOrderSupplier = (event) => {
+    const saveCustomerOrder = (event) => {
         event.preventDefault();
         inputValidation();
     }
@@ -589,7 +589,7 @@ const AddProductCustomerOrderTransaction = () => {
 
                 <br></br>
 
-                <form onSubmit={saveOrderSupplier} >
+                <form onSubmit={saveCustomerOrder} >
 
                     <FormControl variant="standard"  >
                         <Autocomplete
