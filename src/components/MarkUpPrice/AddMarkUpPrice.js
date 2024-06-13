@@ -153,28 +153,31 @@ const AddMarkUpPrice = (props) => {
                 .then(response => {
                     props.onSaveMarkUpPriceData(markUpPrice);
                     console.log('markUpPrice', markUpPrice);
-                    setMessage(true);
+
                     // setMarkUpPrice({
                     //     product_name: ''
                     // });
+                    if (markUpPrice.quantity > 1) {
+                        MarkUpPriceServiceService.saveMarkUp(markUpPriceRetail)
+                            .then(response => {
+                                props.onSaveMarkUpPriceData(markUpPriceRetail);
+                                console.log('markUpPriceRetail', markUpPriceRetail);
+                                setMessage(true);
+                                // setMarkUpPrice({
+                                //     product_name: ''
+                                // });
+                            })
+                            .catch(e => {
+                                console.log(e);
+                            });
+                    } else {
+                        setMessage(true);
+                    }
                 })
                 .catch(e => {
                     console.log(e);
                 });
-            if (markUpPrice.quantity > 1) {
-                MarkUpPriceServiceService.saveMarkUp(markUpPriceRetail)
-                    .then(response => {
-                        props.onSaveMarkUpPriceData(markUpPriceRetail);
-                        console.log('markUpPriceRetail', markUpPriceRetail);
-                        setMessage(true);
-                        // setMarkUpPrice({
-                        //     product_name: ''
-                        // });
-                    })
-                    .catch(e => {
-                        console.log(e);
-                    });
-            }
+
         });
     }
 
