@@ -582,6 +582,7 @@ const FinalizeShopOrder = () => {
                                 error={errorStock}
                             />
                         </FormControl>
+
                         <Button
                             variant="contained"
                             disabled={errorStock}
@@ -589,6 +590,7 @@ const FinalizeShopOrder = () => {
                             size="large" >
                             Add
                         </Button>
+                        <br></br>
                         <br></br>
                         {submitLoadingAdd &&
                             <LinearProgress color="warning" />

@@ -54,7 +54,7 @@ const AddPaymentType = (props) => {
                     <Form.Label>Payment Type</Form.Label>
                     <Form.Control type="text" value={paymentType.payment_type} name="payment_type" placeholder="Enter Payment Type" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
+                        ..
                     </Form.Text>
                 </Form.Group>
 
@@ -62,7 +62,7 @@ const AddPaymentType = (props) => {
                     <Form.Label>Payment Type</Form.Label>
                     <Form.Control type="text" value={paymentType.payment_type_description} name="payment_type_description" placeholder="Enter Payment Type Description" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
+                        ..
                     </Form.Text>
                 </Form.Group>
 

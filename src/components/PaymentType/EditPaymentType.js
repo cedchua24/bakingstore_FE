@@ -83,7 +83,7 @@ const EditPaymentType = () => {
                     <Form.Label>Payment Type</Form.Label>
                     <Form.Control type="text" name="payment_type" value={paymentType.payment_type} placeholder="Enter Payment Type" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
+                        ..
                     </Form.Text>
                 </Form.Group>
 
@@ -91,7 +91,7 @@ const EditPaymentType = () => {
                     <Form.Label>Payment Type Description</Form.Label>
                     <Form.Control type="text" name="payment_type_description" value={paymentType.payment_type_description} placeholder="Enter Payment Type" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
+                        ..
                     </Form.Text>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">

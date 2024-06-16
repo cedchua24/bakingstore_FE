@@ -14,7 +14,7 @@ class OrderSupplierTransactionService {
         return axios.put(`/api/orderSupplierTransaction/${id}`, data);
     }
     setToCompleteTransaction(id) {
-        return axios.put(`/api/orderSupplierTransaction/ /${id}`);
+        return axios.put(`/api/orderSupplierTransaction/setToCompleteTransaction/${id}`);
     }
     delete(brand) {
         return axios.delete(`/api/orderSupplierTransaction/${brand}`);

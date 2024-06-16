@@ -13,6 +13,9 @@ import Box from '@mui/material/Box';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
+
+import LinearProgress from '@mui/material/LinearProgress';
+
 const AddMarkUpPrice = (props) => {
 
     const products = props.products;
@@ -45,6 +48,11 @@ const AddMarkUpPrice = (props) => {
     });
 
     const [message, setMessage] = useState(false);
+
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
+
 
     const onChangeInput = (e) => {
         console.log(e.target.value);
@@ -146,39 +154,95 @@ const AddMarkUpPrice = (props) => {
             });
     }
 
+    const validate = (values) => {
+        const errors = {};
+        if (markUpPrice.product_id == 0) {
+            errors.product_id = "Product is Required!";
+        }
+        if (markUpPrice.branch_stock_transaction_id == 0) {
+            errors.branch_stock_transaction_id = "Warehouse is Required!";
+        }
+        if (markUpPrice.mark_up_option.length == 0) {
+            errors.mark_up_option = "Mark Up Wholesale is Required!";
+        }
+        if (markUpPrice.mark_up_price == 0) {
+            errors.mark_up_price = "Mark Up Price is Required!";
+        }
+
+        if (markUpPrice.quantity > 1) {
+            if (markUpPriceRetail.mark_up_option.length == 0) {
+                errors.mark_up_option_retail = "Mark Up Option is Required!";
+            }
+            if (markUpPriceRetail.mark_up_price == 0) {
+                errors.mark_up_price_retail = "Mark Up Price is Required!";
+            }
+
+        }
+
+        return errors;
+    }
+
+
     const saveMarkUpPrice = (event) => {
         event.preventDefault();
-        MarkUpPriceServiceService.sanctum().then(response => {
-            MarkUpPriceServiceService.create(markUpPrice)
-                .then(response => {
-                    props.onSaveMarkUpPriceData(markUpPrice);
-                    console.log('markUpPrice', markUpPrice);
 
-                    // setMarkUpPrice({
-                    //     product_name: ''
-                    // });
-                    if (markUpPrice.quantity > 1) {
-                        MarkUpPriceServiceService.saveMarkUp(markUpPriceRetail)
-                            .then(response => {
-                                props.onSaveMarkUpPriceData(markUpPriceRetail);
-                                console.log('markUpPriceRetail', markUpPriceRetail);
-                                setMessage(true);
-                                // setMarkUpPrice({
-                                //     product_name: ''
-                                // });
-                            })
-                            .catch(e => {
-                                console.log(e);
-                            });
-                    } else {
-                        setMessage(true);
-                    }
-                })
-                .catch(e => {
-                    console.log(e);
-                });
+        console.log("count: ", Object.keys(validate(markUpPrice)).length);
+        console.log("validate: ", validate(markUpPrice));
+        setFormErrors(validate(markUpPrice));
+        if (Object.keys(validate(markUpPrice)).length > 0) {
+            console.log("Has Validation: ");
 
-        });
+        } else {
+            console.log("Ready for saving: ");
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+
+            MarkUpPriceServiceService.sanctum().then(response => {
+                MarkUpPriceServiceService.create(markUpPrice)
+                    .then(response => {
+                        props.onSaveMarkUpPriceData(markUpPrice);
+                        console.log('markUpPrice', markUpPrice);
+
+                        // setMarkUpPrice({
+                        //     product_name: ''
+                        // });
+                        if (markUpPrice.quantity > 1) {
+                            MarkUpPriceServiceService.saveMarkUp(markUpPriceRetail)
+                                .then(response => {
+
+                                    props.onSaveMarkUpPriceData(markUpPriceRetail);
+                                    console.log('markUpPriceRetail', markUpPriceRetail);
+                                    setMessage(true);
+                                    // setMarkUpPrice({
+                                    //     product_name: ''
+                                    // });
+                                    setSubmitLoadingAdd(false);
+                                    setIsAddDisabled(false);
+                                    window.scrollTo(0, 0);
+                                })
+                                .catch(e => {
+                                    console.log(e);
+                                    setSubmitLoadingAdd(false);
+                                    setIsAddDisabled(false);
+                                    window.scrollTo(0, 0);
+                                });
+                        } else {
+                            setMessage(true);
+                            setSubmitLoadingAdd(false);
+                            setIsAddDisabled(false);
+                            window.scrollTo(0, 0);
+                        }
+                    })
+                    .catch(e => {
+                        console.log(e);
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
+                        window.scrollTo(0, 0);
+                    });
+
+            });
+        }
+
     }
 
     return (
@@ -204,6 +268,7 @@ const AddMarkUpPrice = (props) => {
                 <br></br>
                 <h1>Wholesale</h1>
                 <form onSubmit={saveMarkUpPrice} >
+                    {formErrors.product_id && <p style={{ color: "red" }}>{formErrors.product_id}</p>}
                     <FormControl variant="standard" >
                         <Autocomplete
                             // {...defaultProps}
@@ -218,6 +283,8 @@ const AddMarkUpPrice = (props) => {
                         />
                     </FormControl>
                     <br></br>
+
+                    {formErrors.branch_stock_transaction_id && <p style={{ color: "red" }}>{formErrors.branch_stock_transaction_id}</p>}
                     <FormControl variant="standard" >
                         <Autocomplete
                             // {...defaultProps}
@@ -248,6 +315,7 @@ const AddMarkUpPrice = (props) => {
                         />
                     </FormControl>
                     <br></br>
+                    {formErrors.mark_up_option && <p style={{ color: "red" }}>{formErrors.mark_up_option}</p>}
                     <FormControl fullWidth>
                         <InputLabel id="demo-simple-select-label">Mark Up Option</InputLabel>
                         <Select
@@ -264,7 +332,7 @@ const AddMarkUpPrice = (props) => {
                         </Select>
                     </FormControl>
                     <br></br>
-
+                    {formErrors.mark_up_price && <p style={{ color: "red" }}>{formErrors.mark_up_price}</p>}
                     {markUpPrice.mark_up_option === 'AMOUNT' ? (
                         <FormControl variant="standard" >
                             <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Price</InputLabel>
@@ -332,6 +400,7 @@ const AddMarkUpPrice = (props) => {
                                 />
                             </FormControl>
                             <br></br>
+                            {formErrors.mark_up_option_retail && <p style={{ color: "red" }}>{formErrors.mark_up_option_retail}</p>}
                             <FormControl fullWidth>
                                 <InputLabel id="demo-simple-select-label">Mark Up Option</InputLabel>
                                 <Select
@@ -348,7 +417,7 @@ const AddMarkUpPrice = (props) => {
                                 </Select>
                             </FormControl>
                             <br></br>
-
+                            {formErrors.mark_up_price_retail && <p style={{ color: "red" }}>{formErrors.mark_up_price_retail}</p>}
                             {markUpPriceRetail.mark_up_option === 'AMOUNT' ? (
                                 <FormControl variant="standard" >
                                     <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Price</InputLabel>
@@ -409,10 +478,15 @@ const AddMarkUpPrice = (props) => {
                         <Button
                             variant="contained"
                             type="submit"
+                            disabled={isAddDisabled}
                         >
                             Submit
                         </Button>
                     </div>
+                    <br></br>
+                    {submitLoadingAdd &&
+                        <LinearProgress color="warning" />
+                    }
                     <br></br>
                 </form>
             </Box>

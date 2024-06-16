@@ -26,6 +26,8 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress';
 
+import LinearProgress from '@mui/material/LinearProgress';
+
 import { styled } from '@mui/material/styles';
 
 
@@ -143,7 +145,7 @@ const AddProduct = () => {
     price: 0,
     stock: 0,
     weight: 0,
-    variation: 'kg',
+    variation: '',
     quantity: 0,
     stock_warning: 0,
     packaging: ''
@@ -156,22 +158,21 @@ const AddProduct = () => {
 
   const [variationLabel, setVariationLabel] = useState('Weight');
 
+  const [quantityLabel, setQuantityLabel] = useState('');
+
   const [productList, setProductList] = useState([]);
 
-  const onChangeProduct = (e) => {
-    setProduct({ ...product, product_name: e.target.value });
-  }
+  const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+  const [isAddDisabled, setIsAddDisabled] = useState(false);
 
-  const onChangeCategory = (e) => {
-    setProduct({ ...product, category_id: e.target.value });
-  }
+  const [formErrors, setFormErrors] = useState({});
 
-  const onChangeBrand = (e) => {
-    setProduct({ ...product, brand_id: e.target.value });
-  }
 
   const onChangePackaging = (e) => {
+    console.log("ey", e.target.value)
     setProduct({ ...product, packaging: e.target.value });
+    setQuantityLabel(e.target.value);
+
   }
 
   const onChangeVariation = (e) => {
@@ -184,67 +185,115 @@ const AddProduct = () => {
 
   }
 
-  const onChangePrice = (e) => {
-    setProduct({ ...product, price: e.target.value });
+  const onChange = (e) => {
+    setProduct({ ...product, [e.target.name]: e.target.value });
   }
 
-  const onChangeStock = (e) => {
-    setProduct({ ...product, stock: e.target.value });
-    console.log(product);
+  const validate = (values) => {
+    const errors = {};
+    console.log("prodcts: ", product);
+    if (product.product_name.length == 0) {
+      errors.product_name = "Product Name is Required!";
+      // console.log("Product Name is Required!");
+    }
+    if (product.category_id == 0) {
+      errors.category_id = "Category is Required!";
+      // console.log("Category is Required!");
+    }
+    if (product.brand_id == 0) {
+      errors.brand_id = "Brand is Required!";
+      // console.log("Brand is Required!");
+    }
+    if (product.price == 0) {
+      errors.price = "Price is Required!";
+      // console.log("Price is Required!");
+    }
+    if (product.packaging.length == 0) {
+      errors.packaging = "Packaging is Required!";
+      // console.log("Packaging is Required!");
+    }
+    if (product.variation.length == 0) {
+      errors.variation = "Variation is Required!";
+      // console.log("Variation is Required!");
+    }
+    if (product.weight == 0) {
+      errors.weight = "Weight is Required!";
+      // console.log("Weight is Required!");
+    }
+    if (product.quantity == 0) {
+      errors.quantity = "Quantity is Required!";
+      // console.log("Quantity is Required!");
+    }
+    if (product.stock == 0) {
+      errors.stock = "Stock is Required!";
+      // console.log("Stock is Required!");
+    }
+    if (product.stock_warning == 0) {
+      errors.stock_warning = "Stock Warning is Required!";
+      // console.log("Stock Warning is Required!");
+    }
+
+
+    return errors;
   }
 
-  const onChangeWeight = (e) => {
-    setProduct({ ...product, weight: e.target.value });
-  }
 
-  const onChangeQuantity = (e) => {
-    setProduct({ ...product, quantity: e.target.value });
-    console.log(product);
-  }
-
-  const onChangeStockWarning = (e) => {
-    setProduct({ ...product, stock_warning: e.target.value });
-    console.log(product);
-  }
 
   const saveProduct = (event) => {
     event.preventDefault();
-    ProductServiceService.sanctum().then(response => {
-      ProductServiceService.create(product)
-        .then(response => {
-          if (response.data.code == 200) {
-            setSubmitLoading(false);
-            setOpen(false);
-            window.scrollTo(0, 0);
-            setValidator({
-              severity: 'success',
-              message: 'Successfuly Added!',
-              isShow: true,
-            });
-            fetchProductList();
-          } else if (response.data.code == 400) {
-            setSubmitLoading(false);
-            setOpen(false);
-            window.scrollTo(0, 0);
-            setValidator({
-              severity: 'error',
-              message: response.data.message,
-              isShow: true,
-            });
-          } else {
-            setSubmitLoading(false);
-            setOpen(false);
-            setValidator({
-              severity: 'error',
-              message: "Unknown Error",
-              isShow: true,
-            });
-          }
-        })
-        .catch(e => {
-          console.log(e);
-        });
-    });
+    console.log("count: ", Object.keys(validate(product)).length);
+    console.log("validate: ", validate(product));
+    setFormErrors(validate(product));
+    if (Object.keys(validate(product)).length > 0) {
+      console.log("Has Validation: ");
+
+    } else {
+      console.log("Ready for saving: ");
+      setSubmitLoadingAdd(true);
+      setIsAddDisabled(true);
+      ProductServiceService.sanctum().then(response => {
+        ProductServiceService.create(product)
+          .then(response => {
+            if (response.data.code == 200) {
+              setSubmitLoading(false);
+              setOpen(false);
+              window.scrollTo(0, 0);
+              setValidator({
+                severity: 'success',
+                message: 'Successfuly Added!',
+                isShow: true,
+              });
+              fetchProductList();
+              setSubmitLoadingAdd(false);
+              setIsAddDisabled(false);
+            } else if (response.data.code == 400) {
+              setSubmitLoading(false);
+              setOpen(false);
+              window.scrollTo(0, 0);
+              setValidator({
+                severity: 'error',
+                message: response.data.message,
+                isShow: true,
+              });
+              setSubmitLoadingAdd(false);
+              setIsAddDisabled(false);
+            } else {
+              setSubmitLoading(false);
+              setOpen(false);
+              setValidator({
+                severity: 'error',
+                message: "Unknown Error",
+                isShow: true,
+              });
+              setSubmitLoadingAdd(false);
+              setIsAddDisabled(false);
+            }
+          })
+          .catch(e => {
+            console.log(e);
+          });
+      });
+    }
   }
 
   const fetchProductList = () => {
@@ -307,18 +356,18 @@ const AddProduct = () => {
           <Form.Label>Product</Form.Label>
           <Form.Control type="text" value={product.product_name} name="product_name" placeholder="Enter product" onChange={onChangeProduct} />
         </Form.Group> */}
-
+        {formErrors.product_name && <p style={{ color: "red" }}>{formErrors.product_name}</p>}
         <FloatingLabel
           controlId="floatingInput"
-          label="Product"
+          label="Product Name"
           className="mb-3"
 
         >
-          <Form.Control type="text" value={product.product_name} name="product_name" onChange={onChangeProduct} required />
+          <Form.Control type="text" value={product.product_name} name="product_name" onChange={onChange} />
         </FloatingLabel>
 
-
-        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangeCategory} required>
+        {formErrors.category_id && <p style={{ color: "red" }}>{formErrors.category_id}</p>}
+        <Form.Select aria-label="Default select example" className="mb-3" name="category_id" onChange={onChange} >
 
           <option>Select Cateogory</option>
           {
@@ -328,7 +377,8 @@ const AddProduct = () => {
           }
         </Form.Select>
 
-        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangeBrand}  >
+        {formErrors.brand_id && <p style={{ color: "red" }}>{formErrors.brand_id}</p>}
+        <Form.Select aria-label="Default select example" className="mb-3" name="brand_id" onChange={onChange} >
           <option>Select Brand</option>
           {
             brandList.map((brand, index) => (
@@ -337,55 +387,16 @@ const AddProduct = () => {
           }
         </Form.Select>
 
+        {formErrors.price && <p style={{ color: "red" }}>{formErrors.price}</p>}
         <FloatingLabel
           controlId="floatingInput"
           label="Price"
           className="mb-3"
         >
-          <Form.Control type="number" value={product.price} name="price" onChange={onChangePrice} />
+          <Form.Control type="number" value={product.price} name="price" onChange={onChange} />
         </FloatingLabel>
 
-        <FloatingLabel
-          controlId="floatingInput"
-          label="Stock"
-          className="mb-3"
-        >
-          <Form.Control type="number" value={product.stock} name="stock" onChange={onChangeStock} />
-        </FloatingLabel>
-
-        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangeVariation}  >
-          <option value="kg">kg</option>
-          <option value="pcs">pcs</option>
-
-        </Form.Select>
-
-        <FloatingLabel
-          controlId="floatingInput"
-          label={variationLabel}
-          className="mb-3"
-
-        >
-          <Form.Control type="text" value={product.weight} onChange={onChangeWeight} required />
-        </FloatingLabel>
-
-        <FloatingLabel
-          controlId="floatingInput"
-          label="Quantity"
-          className="mb-3"
-        >
-
-          <Form.Control type="text" value={product.quantity} onChange={onChangeQuantity} required />
-        </FloatingLabel>
-
-        <FloatingLabel
-          controlId="floatingInput"
-          label="Stock Warning"
-          className="mb-3"
-        >
-
-          <Form.Control type="text" value={product.stock_warning} onChange={onChangeStockWarning} required />
-        </FloatingLabel>
-
+        {formErrors.packaging && <p style={{ color: "red" }}>{formErrors.packaging}</p>}
         <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangePackaging}  >
           <option>Select Packaging</option>
 
@@ -396,12 +407,66 @@ const AddProduct = () => {
 
         </Form.Select>
 
+        {formErrors.variation && <p style={{ color: "red" }}>{formErrors.variation}</p>}
+        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangeVariation}  >
+          <option>Select Variation</option>
+          <option value="kg">kg</option>
+          <option value="pcs">pcs</option>
+
+        </Form.Select>
+
+        {formErrors.weight && <p style={{ color: "red" }}>{formErrors.weight}</p>}
+        <FloatingLabel
+          controlId="floatingInput"
+          label={variationLabel}
+          className="mb-3"
+
+        >
+          <Form.Control type="text" value={product.weight} name="weight" onChange={onChange} />
+        </FloatingLabel>
+
+        {formErrors.quantity && <p style={{ color: "red" }}>{formErrors.quantity}</p>}
+        <FloatingLabel
+          controlId="floatingInput"
+          label={quantityLabel === '' || quantityLabel === 'Select Packaging' ? "Quantity" : "Quantity per " + quantityLabel}
+          className="mb-3"
+        >
+
+          <Form.Control type="text" value={product.quantity} name="quantity" onChange={onChange} />
+        </FloatingLabel>
+
+        {formErrors.stock && <p style={{ color: "red" }}>{formErrors.stock}</p>}
+        <FloatingLabel
+          controlId="floatingInput"
+          label="Stock"
+          className="mb-3"
+        >
+          <Form.Control type="number" value={product.stock} name="stock" onChange={onChange} />
+        </FloatingLabel>
+
+        {formErrors.stock_warning && <p style={{ color: "red" }}>{formErrors.stock_warning}</p>}
+        <FloatingLabel
+          controlId="floatingInput"
+          label="Stock Warning"
+          className="mb-3"
+        >
+
+          <Form.Control type="text" value={product.stock_warning} name="stock_warning" onChange={onChange} />
+        </FloatingLabel>
+
+
         <Button
           variant="contained"
           type="submit"
+          disabled={isAddDisabled}
         >
           Submit
         </Button>
+        <br></br>
+        <br></br>
+        {submitLoadingAdd &&
+          <LinearProgress color="warning" />
+        }
         <br></br>
       </Form>
       <br></br>
@@ -423,7 +488,7 @@ const AddProduct = () => {
           }
           <TextField
             disabled
-            id="filled-required"
+            id="filled-"
             label="Product Name"
             variant="filled"
             name='product_name'
@@ -434,7 +499,7 @@ const AddProduct = () => {
             <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
             <Input
               type='number'
-              id="filled-required"
+              id="filled-"
               label="Quantity"
               variant="filled"
               name='shop_order_quantity'
@@ -529,7 +594,7 @@ const AddProduct = () => {
           }
         </tbody>
       </table>
-    </div>
+    </div >
   )
 }
 

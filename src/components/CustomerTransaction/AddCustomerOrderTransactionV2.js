@@ -14,6 +14,8 @@ import Box from '@mui/material/Box';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
+import LinearProgress from '@mui/material/LinearProgress';
+
 
 
 const AddCustomerOrderTransactionV2 = (props) => {
@@ -34,6 +36,11 @@ const AddCustomerOrderTransactionV2 = (props) => {
     const shopList = props.shopList;
     const customerList = props.customerList;
     const customerTypeList = props.customerTypeList;
+
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
+
 
 
     const steps = [
@@ -56,17 +63,53 @@ const AddCustomerOrderTransactionV2 = (props) => {
         });
     }
 
+    const validate = (values) => {
+        const errors = {};
+        if (shopOrderTransaction.shop_id == 0) {
+            errors.shop_id = "Shop is Required!";
+        }
+        if (shopOrderTransaction.customer_type_id == 0) {
+            errors.customer_type_id = "Customer Type is Required!";
+        }
+        if (shopOrderTransaction.requestor == 0) {
+            errors.requestor = "Customer Name is Required!";
+        }
+        if (shopOrderTransaction.date.length == 0) {
+            errors.date = "Date is Required!";
+        }
+
+
+        return errors;
+    }
+
+
     const saveOrderTransaction = () => {
         console.log('orderTransaction', shopOrderTransaction);
-        ShopOrderTransactionService.sanctum().then(response => {
-            ShopOrderTransactionService.create(shopOrderTransaction)
-                .then(response => {
-                    navigate('/shopOrderTransaction/addProductShopOrderTransaction/' + response.data.id);
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        });
+
+        console.log("count: ", Object.keys(validate(shopOrderTransaction)).length);
+        console.log("validate: ", validate(shopOrderTransaction));
+        setFormErrors(validate(shopOrderTransaction));
+        if (Object.keys(validate(shopOrderTransaction)).length > 0) {
+            console.log("Has Validation: ");
+
+        } else {
+            console.log("Ready for saving: ");
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+            ShopOrderTransactionService.sanctum().then(response => {
+                ShopOrderTransactionService.create(shopOrderTransaction)
+                    .then(response => {
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
+                        navigate('/shopOrderTransaction/addProductShopOrderTransaction/' + response.data.id);
+                    })
+                    .catch(e => {
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
+                        console.log(e);
+                    });
+            });
+        }
     }
 
     return (
@@ -93,6 +136,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
             }
 
             <Form>
+                {formErrors.shop_id && <p style={{ color: "red" }}>{formErrors.shop_id}</p>}
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Shop Name</InputLabel>
@@ -112,7 +156,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
                         </Select>
                     </FormControl>
                 </Box>
-
+                {formErrors.customer_type_id && <p style={{ color: "red" }}>{formErrors.customer_type_id}</p>}
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Customer Type</InputLabel>
@@ -158,7 +202,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
                             }
                         </Select>
                     </FormControl> */}
-
+                    {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
                     <FormControl variant="standard" >
                         <Autocomplete
                             // {...defaultProps}
@@ -173,15 +217,24 @@ const AddCustomerOrderTransactionV2 = (props) => {
                         />
                     </FormControl>
                 </Box>
-
+                {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date</Form.Label>
                     <Form.Control type="date" name="date" onChange={onChangeInput} />
                 </Form.Group>
 
-                <Button variant="primary" onClick={saveOrderTransaction}>
+                <Button variant="primary"
+                    disabled={isAddDisabled}
+                    onClick={saveOrderTransaction}>
                     Next
                 </Button>
+                <br></br>
+                <br></br>
+                {submitLoadingAdd &&
+                    <LinearProgress color="warning" />
+                }
+                <br></br>
+
             </Form>
             <br></br>
 
