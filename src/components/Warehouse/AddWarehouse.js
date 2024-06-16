@@ -52,7 +52,7 @@ const AddWarehouse = (props) => {
                     <Form.Label>Warehouse</Form.Label>
                     <Form.Control type="text" value={warehouse.warehouse_name} name="warehouse_name" placeholder="Enter warehouse" onChange={onChangeWarehouse} />
                     <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
+                        ..
                     </Form.Text>
                 </Form.Group>
 

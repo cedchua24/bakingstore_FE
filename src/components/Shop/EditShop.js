@@ -63,7 +63,7 @@ const EditShop = () => {
                     <Form.Label>shop</Form.Label>
                     <Form.Control type="text" name="shop_name" value={shop.shop_name} placeholder="Enter shop" onChange={onChangeShop} />
                     <Form.Text className="text-muted"  >
-                        We'll never share your email with anyone else.
+                        ..
                     </Form.Text>
                 </Form.Group>
 
