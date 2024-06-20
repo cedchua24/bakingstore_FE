@@ -19,6 +19,8 @@ import Modal from '@mui/material/Modal';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import Tooltip from '@mui/material/Tooltip';
 
+import LinearProgress from '@mui/material/LinearProgress';
+
 const CustomerOrderTransactionList = () => {
 
 
@@ -76,6 +78,10 @@ const CustomerOrderTransactionList = () => {
 
 
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
+
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
 
 
 
@@ -153,16 +159,39 @@ const CustomerOrderTransactionList = () => {
         setDate(e.target.value);
     }
 
-    const saveOrderTransaction = () => {
-        console.log('orderTransaction', customerOrderDate.date);
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDate(customerOrderDate.date)
-            .then(response => {
-                setShopOrderTransaction(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
+    const validate = (values) => {
+        const errors = {};
+        if (customerOrderDate.date.length == 0) {
+            errors.date = "Date is Required!";
+        }
 
-            });
+        return errors;
+    }
+
+    const saveOrderTransaction = () => {
+        console.log('orderTransaction: ', customerOrderDate.date);
+        console.log("count: ", Object.keys(validate(customerOrderDate)).length);
+        console.log("validate: ", validate(customerOrderDate));
+        setFormErrors(validate(customerOrderDate));
+        if (Object.keys(validate(customerOrderDate)).length > 0) {
+            console.log("Has Validation: ");
+
+        } else {
+            console.log("Ready for saving: ");
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDate(customerOrderDate.date)
+                .then(response => {
+                    setShopOrderTransaction(response.data);
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                })
+                .catch(e => {
+                    console.log("error", e)
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                });
+        }
     }
 
     const [open, setOpen] = React.useState(false);
@@ -272,6 +301,7 @@ const CustomerOrderTransactionList = () => {
 
             <div>
                 <Form>
+                    {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" name="date" onChange={onChangeInput} />
@@ -295,9 +325,18 @@ const CustomerOrderTransactionList = () => {
 
 
 
-                    <Button variant="primary" onClick={saveOrderTransaction}>
+                    <Button variant="primary"
+                        onClick={saveOrderTransaction}
+                        disabled={isAddDisabled}
+                    >
                         Find
                     </Button>
+                    <br></br>
+                    <br></br>
+                    {submitLoadingAdd &&
+                        <LinearProgress color="warning" />
+                    }
+                    <br></br>
                 </Form >
             </div>
             <Div>{"Online Orders"}
@@ -327,96 +366,100 @@ const CustomerOrderTransactionList = () => {
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
+                {shopOrderTransaction.data.length == 0 ?
+                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    :
+                    (
+                        <tbody>
 
-                    {
-                        shopOrderTransaction.data.map((shopOrderTransaction, index) => (
-                            <tr key={shopOrderTransaction.id} >
-                                <td>{shopOrderTransaction.id}</td>
-                                <td>{shopOrderTransaction.shop_name}</td>
-                                <td>{shopOrderTransaction.customer_type}</td>
-                                <td>{shopOrderTransaction.requestor_name}</td>
-                                <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                <td>{shopOrderTransaction.total_cash}</td>
-                                <td>{shopOrderTransaction.total_online}</td>
-                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
-                                <td>{shopOrderTransaction.date}</td>
-                                <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                    : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                        <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
-                                <td>
-                                    <p>{shopOrderTransaction.rider_name}</p>
-                                    <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
-                                    </IconButton>
-                                </td>
-                                <td>
-                                    <p>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DONE</p> :
-                                        <p style={{ fontWeight: 'bold', color: 'orange', }}>WAITING</p>}</p>
-                                    <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
-                                    </IconButton>
-                                </td>
-                                <td>
-                                    <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
-                                    </IconButton>
-                                </td>
-                                <td>
-                                    <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
-                                        <Button variant="primary" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
-                                        <Button variant="primary" >
-                                            Print Receipt
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Link variant="primary" to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}   >
-                                        <Button variant="success" >
-                                            Update
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    {
-                                        shopOrderTransaction.status != 3 &&
-                                        <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
-                                            <span>
-                                                <Button
-                                                    variant="danger"
-                                                    onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
-                                                    disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
-                                                    color="error"
-                                                >
-                                                    Cancel
+                            {
+                                shopOrderTransaction.data.map((shopOrderTransaction, index) => (
+                                    <tr key={shopOrderTransaction.id} >
+                                        <td>{shopOrderTransaction.id}</td>
+                                        <td>{shopOrderTransaction.shop_name}</td>
+                                        <td>{shopOrderTransaction.customer_type}</td>
+                                        <td>{shopOrderTransaction.requestor_name}</td>
+                                        <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
+                                        <td>{shopOrderTransaction.total_cash}</td>
+                                        <td>{shopOrderTransaction.total_online}</td>
+                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
+                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
+                                        <td>{shopOrderTransaction.date}</td>
+                                        <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
+                                            : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
+                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                        <td>
+                                            <p>{shopOrderTransaction.rider_name}</p>
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
+                                            </IconButton>
+                                        </td>
+                                        <td>
+                                            <p>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DONE</p> :
+                                                <p style={{ fontWeight: 'bold', color: 'orange', }}>WAITING</p>}</p>
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
+                                            </IconButton>
+                                        </td>
+                                        <td>
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
+                                            </IconButton>
+                                        </td>
+                                        <td>
+                                            <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
+                                                <Button variant="primary" >
+                                                    View
                                                 </Button>
-                                            </span>
-                                        </Tooltip>
-                                    }
-                                </td>
-                                {/* <td>
+                                            </Link>
+                                        </td>
+                                        <td>
+                                            <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
+                                                <Button variant="primary" >
+                                                    Print Receipt
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        <td>
+                                            <Link variant="primary" to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}   >
+                                                <Button variant="success" >
+                                                    Update
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        <td>
+                                            {
+                                                shopOrderTransaction.status != 3 &&
+                                                <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
+                                                    <span>
+                                                        <Button
+                                                            variant="danger"
+                                                            onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
+                                                            disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                            color="error"
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    </span>
+                                                </Tooltip>
+                                            }
+                                        </td>
+                                        {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
                                         deleteShopOrderTransaction
                                     </Button>
                                 </td> */}
 
-                                {/* <td>
+                                        {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteOrderTransaction(shopOrderTransaction.id, e)} >
                                         Delete
                                     </Button>
                                 </td> */}
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
+                                    </tr>
+                                )
+                                )
+                            }
+                        </tbody>)}
             </table>
             <Dialog
                 open={submitOpenModal}

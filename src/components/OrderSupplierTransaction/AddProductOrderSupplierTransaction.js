@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransaction.service";
 import OrderSupplierService from "./OrderSupplierService.service";
 import ProductServiceService from "../Product/ProductService.service";
+import ProductSupplierService from "../ProductSupplier/ProductSupplierService";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -153,19 +154,27 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
     const handleInputChange = (e, value) => {
-        console.log(value.id);
+        console.log(value.product_id);
         e.persist();
-        setOrderSupplier({ ...orderSupplier, product_id: value.id });
+        setOrderSupplier({ ...orderSupplier, product_id: value.product_id });
     }
 
     const fetchProductList = () => {
-        ProductServiceService.getAll()
-            .then(response => {
-                setProducts(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+        // ProductServiceService.getAll()
+        //     .then(response => {
+        //         setProducts(response.data);
+        //     })
+        //     .catch(e => {
+        //         console.log("error", e)
+        //     });
+
+        // ProductSupplierService.fetchProductSupplierById()
+        //     .then(response => {
+        //         setProducts(response.data);
+        //     })
+        //     .catch(e => {
+        //         console.log("error", e)
+        //     });
     }
 
     const saveOrderSupplier = (event) => {
@@ -206,6 +215,14 @@ const AddProductOrderSupplierTransaction = () => {
                     setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                     setinvoiceTotal(response.data.total_transaction_price);
                 }
+
+                ProductSupplierService.fetchProductSupplierById(response.data.supplier_id)
+                    .then(response => {
+                        setProducts(response.data);
+                    })
+                    .catch(e => {
+                        console.log("error", e)
+                    });
 
 
                 // setChecked(response.data.withTax === 1 ? true : false);

@@ -21,8 +21,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
 import CircularProgress from '@mui/material/CircularProgress';
-
-
+import LinearProgress from '@mui/material/LinearProgress';
 
 
 const StockList = (props) => {
@@ -72,6 +71,9 @@ const StockList = (props) => {
 
     const [realStock, setRealStock] = useState(0);
     const [errorStock, setErrorStock] = useState(false);
+
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
 
     const onChangeInput = (e) => {
         console.log(e.target.value)
@@ -142,17 +144,20 @@ const StockList = (props) => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
+        setErrorStock(true);
         ProductServiceService.update(product.id, product)
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
                 setOpen(false);
+                setErrorStock(false);
                 // updateOrderTransaction();
             })
             .catch(e => {
                 console.log(e);
                 setSubmitLoading(false);
                 setOpen(false);
+                setErrorStock(false);
             });
 
     }
@@ -169,11 +174,18 @@ const StockList = (props) => {
     }
 
     const fetchProductByCategoryId = () => {
+        setSubmitLoadingAdd(true);
+        setIsAddDisabled(true);
         ProductServiceService.fetchProductByCategoryId(categoryId)
             .then(response => {
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
                 setProductList(response.data);
+
             })
             .catch(e => {
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
                 console.log("error", e)
             });
     }
@@ -204,11 +216,18 @@ const StockList = (props) => {
                 <Button
                     variant="contained"
                     onClick={fetchProductByCategoryId}
+                    disabled={isAddDisabled}
                 >
                     Search
                 </Button>
+                <br></br>
+                <br></br>
+                {submitLoadingAdd &&
+                    <LinearProgress color="warning" />
+                }
             </Form>
             <br></br>
+
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -224,55 +243,59 @@ const StockList = (props) => {
                         <th>Transaction</th>
                     </tr>
                 </thead>
-                <tbody>
+                {productList.length == 0 ?
+                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    :
+                    (
+                        <tbody>
 
 
-                    {
-                        productList.map((product, index) => (
-                            <tr key={product.id} >
-                                <td>{product.id}</td>
-                                <td>{product.product_name}</td>
-                                <td>{product.brand_name}</td>
-                                <td>{product.category_name}</td>
-                                <td>₱ {product.price}.00</td>
-                                <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
-                                    : <p >{product.stock}</p>}
-                                </td>
-                                <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
-                                    : <p >{product.stock_pc}</p>}
-                                </td>
-                                <td>{product.weight}x{product.quantity}kg</td>
-                                <td>
-                                    <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
-                                    </IconButton>
-                                </td>
-                                <td>
-                                    <Link variant="primary" to={"/viewStockTransactionList/" + product.id}   >
-                                        <Button variant="contained" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Link variant="primary" to={"/viewTransaction/" + product.id}   >
-                                        <Button variant="contained" disabled>
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
-                                {/* <td>
+                            {
+                                productList.map((product, index) => (
+                                    <tr key={product.id} >
+                                        <td>{product.id}</td>
+                                        <td>{product.product_name}</td>
+                                        <td>{product.brand_name}</td>
+                                        <td>{product.category_name}</td>
+                                        <td>₱ {product.price}.00</td>
+                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
+                                            : <p >{product.stock}</p>}
+                                        </td>
+                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
+                                            : <p >{product.stock_pc}</p>}
+                                        </td>
+                                        <td>{product.weight}x{product.quantity}kg</td>
+                                        <td>
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
+                                            </IconButton>
+                                        </td>
+                                        <td>
+                                            <Link variant="primary" to={"/viewStockTransactionList/" + product.id}   >
+                                                <Button variant="contained" >
+                                                    View
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        <td>
+                                            <Link variant="primary" to={"/viewTransaction/" + product.id}   >
+                                                <Button variant="contained" disabled>
+                                                    View
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteProduct(product.id, e)} >
                                         Delete
                                     </Button>
                                 </td> */}
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
+                                    </tr>
+                                )
+                                )
+                            }
+                        </tbody>)}
             </table>
-            <Modal
+            < Modal
                 keepMounted
                 open={open}
                 onClose={handleClose}
@@ -358,12 +381,12 @@ const StockList = (props) => {
                             onClick={updateProduct}
                             disabled={errorStock}
                             size="large" >
-                            Submits
+                            Submit
                         </Button>
                     </Box>
                 </Box>
             </Modal>
-        </div>
+        </div >
     )
 }
 
