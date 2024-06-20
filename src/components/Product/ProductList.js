@@ -22,6 +22,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress';
 
+import LinearProgress from '@mui/material/LinearProgress';
 
 import MenuItem from '@mui/material/MenuItem';
 
@@ -38,7 +39,8 @@ const ProductList = () => {
     }, []);
 
     const [categoryId, setCategoryId] = useState(0);
-
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
 
     const [submitLoading, setSubmitLoading] = useState(false);
     const [validator, setValidator] = useState({
@@ -159,7 +161,6 @@ const ProductList = () => {
     const onChangeInput = (e) => {
         console.log(e.target.value)
         setCategoryId(e.target.value)
-        // setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
     }
 
 
@@ -209,11 +210,17 @@ const ProductList = () => {
     }
 
     const fetchProductByCategoryId = () => {
+        setSubmitLoadingAdd(true);
+        setIsAddDisabled(true);
         ProductServiceService.fetchProductByCategoryId(categoryId)
             .then(response => {
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
                 setProductList(response.data);
             })
             .catch(e => {
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
                 console.log("error", e)
             });
     }
@@ -245,10 +252,16 @@ const ProductList = () => {
 
                 <Button
                     variant="contained"
+                    disabled={isAddDisabled}
                     onClick={fetchProductByCategoryId}
                 >
                     Search
                 </Button>
+                <br></br>
+                <br></br>
+                {submitLoadingAdd &&
+                    <LinearProgress color="warning" />
+                }
             </Form>
 
             <br></br>
@@ -307,7 +320,6 @@ const ProductList = () => {
                     </Box>
                 </Box>
             </Modal>
-
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -328,58 +340,65 @@ const ProductList = () => {
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody>
+                {productList.length == 0 ?
+                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    :
+                    (
+                        <tbody>
 
-                    {
-                        productList.map((product, index) => (
-                            <tr key={product.id} >
-                                <td>{product.id}</td>
-                                <td>{product.product_name}</td>
-                                <td>{product.brand_name}</td>
-                                <td>{product.category_name}</td>
-                                <td>₱ {product.price}.00</td>
-                                {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
-                                    : <p >{product.quantity}x{product.weight / product.quantity}kg</p>}
-                                </td>
-                                <td>{product.stock}</td>
-                                <td>{product.stock_pc}</td>
-                                <td>{product.packaging}</td>
-                                <td>{product.stock_warning}</td>
-                                <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                {/* <td>
+                            {
+                                productList.map((product, index) => (
+                                    <tr key={product.id} >
+                                        <td>{product.id}</td>
+                                        <td>{product.product_name}</td>
+                                        <td>{product.brand_name}</td>
+                                        <td>{product.category_name}</td>
+                                        <td>₱ {product.price}.00</td>
+                                        {/* <td>{product.weight}x{product.quantity}kg</td> */}
+                                        <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
+                                            : <p >{product.quantity}x{product.weight / product.quantity}kg</p>}
+                                        </td>
+                                        <td>{product.stock}</td>
+                                        <td>{product.stock_pc}</td>
+                                        <td>{product.packaging}</td>
+                                        <td>{product.stock_warning}</td>
+                                        <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                        {/* <td>
                                     <Tooltip title="Update">
                                         <IconButton>
                                             <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
                                         </IconButton>
                                     </Tooltip>
                                 </td> */}
-                                <td>
-                                    <Link variant="primary" to={"/productTransactionList/" + product.id}   >
-                                        <Button variant="contained" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
+                                        <td>
+                                            <Link variant="primary" to={"/productTransactionList/" + product.id}   >
+                                                <Button variant="contained" >
+                                                    View
+                                                </Button>
+                                            </Link>
+                                        </td>
 
-                                <td>
-                                    <Link variant="primary" to={"/editProduct/" + product.id}   >
-                                        <Button variant="contained" >
-                                            Update
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Button disabled variant="contained" color="error" onClick={(e) => deleteProduct(product.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td>
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
+                                        <td>
+                                            <Link variant="primary" to={"/editProduct/" + product.id}   >
+                                                <Button variant="contained" >
+                                                    Update
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        <td>
+                                            <Button disabled variant="contained" color="error" onClick={(e) => deleteProduct(product.id, e)} >
+                                                Delete
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                )
+                                )
+                            }
+                        </tbody>)}
             </table>
+
+
+
         </div>
     )
 }

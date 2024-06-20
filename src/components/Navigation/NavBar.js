@@ -72,6 +72,8 @@ const NavBar = () => {
                         <NavDropdown title="Supplier" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/supplier">Add Supplier</NavDropdown.Item>
                             <NavDropdown.Item href="/supplierListV2">Supplier List</NavDropdown.Item>
+                            <NavDropdown.Item href="/productSupplier">Add Product Supplier</NavDropdown.Item>
+                            <NavDropdown.Item href="/productSupplierList">Product Supplier List</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">

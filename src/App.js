@@ -27,6 +27,8 @@ import EditSupplier from "./components/Supplier/EditSupplier";
 import OrderSupplierTransaction from "./components/OrderSupplierTransaction/OrderSupplierTransaction";
 import SupplierTransactionListV2 from "./components/OrderSupplierTransaction/SupplierTransactionListV2";
 import EditOrderSupplierTransaction from "./components/OrderSupplierTransaction/EditOrderSupplierTransaction";
+import ProductSupplier from "./components/ProductSupplier/ProductSupplier";
+import ProductSupplierListV2 from "./components/ProductSupplier/ProductSupplierListV2";
 import AddProductOrderSupplierTransaction from "./components/OrderSupplierTransaction/AddProductOrderSupplierTransaction";
 import BranchStock from "./components/OrderSupplierTransaction/BranchStock";
 import FinalizeOrder from "./components/OrderSupplierTransaction/FinalizeOrder";
@@ -130,6 +132,8 @@ const App = () => {
           <Route path="/supplierListV2" element={<SupplierListV2 />} />
           <Route exact path="/editSupplier/:id" element={<EditSupplier />} />
 
+          <Route path="/productSupplier" element={<ProductSupplier />} />
+          <Route path="/productSupplierList" element={<ProductSupplierListV2 />} />
 
           <Route path="/addCategory" element={<AddCategory />} />
           <Route path="/categoryList" element={<CategoryList />} />
