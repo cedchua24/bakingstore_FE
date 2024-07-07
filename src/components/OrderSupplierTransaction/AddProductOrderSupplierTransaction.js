@@ -35,12 +35,16 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
 
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+
 
 const AddProductOrderSupplierTransaction = () => {
 
     const { id } = useParams();
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
+    const [value, setValue] = useState(products[0])
 
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
@@ -109,8 +113,10 @@ const AddProductOrderSupplierTransaction = () => {
         order_supplier_transaction_id: id,
         product_id: 0,
         price: 0,
+        real_price: 0,
         quantity: 0,
-        total_price: 0
+        total_price: 0,
+        variation: ''
     });
 
     const [orderSupplierModal, setOrderSupplierModal] = useState({
@@ -130,9 +136,34 @@ const AddProductOrderSupplierTransaction = () => {
 
 
     const onChangeInput = (e) => {
-        e.persist();
+        // e.persist();
+        console.log(e.target.name)
         console.log(e.target.name)
         setOrderSupplier({ ...orderSupplier, [e.target.name]: e.target.value });
+    }
+
+    const onChangeVariation = (e) => {
+        // e.persist();
+        console.log('name:', e.target.name)
+        console.log('value: ', e.target.value)
+        console.log('orderSupplier: ', orderSupplier)
+        // setOrderSupplier({ ...orderSupplier, [e.target.name]: e.target.value });
+        if (e.target.value === 'RETAIL') {
+            setOrderSupplier({
+                ...orderSupplier,
+                variation: e.target.value,
+                price: Math.floor(orderSupplier.real_price / orderSupplier.weight)
+            });
+
+        } else if (e.target.value === 'WHOLESALE') {
+            setOrderSupplier({
+                ...orderSupplier,
+                variation: e.target.value,
+                price: orderSupplier.real_price
+            });
+
+        }
+
     }
 
     const onChangeInputQuantityModal = (e) => {
@@ -154,9 +185,36 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
     const handleInputChange = (e, value) => {
-        console.log(value.product_id);
+        console.log(value);
         e.persist();
-        setOrderSupplier({ ...orderSupplier, product_id: value.product_id });
+        // setOrderSupplier({
+        //     ...orderSupplier,
+        //     product_id: value.product_id,
+        //     quantity: value.quantity
+        // });
+
+        if (value.quantity == 1) {
+            setOrderSupplier({
+                ...orderSupplier,
+                product_id: value.product_id,
+                quantity: value.quantity,
+                price: value.price,
+                weight: value.weight,
+                variation: '',
+                real_price: value.price
+            });
+
+        } else {
+            setOrderSupplier({
+                ...orderSupplier,
+                product_id: value.product_id,
+                quantity: value.quantity,
+                price: 0,
+                weight: value.weight,
+                variation: '',
+                real_price: value.price
+            });
+        }
     }
 
     const fetchProductList = () => {
@@ -361,9 +419,12 @@ const AddProductOrderSupplierTransaction = () => {
                     <br></br>
 
                     <FormControl variant="standard" >
-                        <Autocomplete
+                        {/* <Autocomplete
                             // {...defaultProps}
-                            options={products}
+                            // options={products}
+                            options={products.sort((a, b) =>
+                                b.category_name.toString().localeCompare(a.category_name.toString())
+                            )}
                             className="mb-3"
                             id="disable-close-on-select"
                             onChange={handleInputChange}
@@ -371,9 +432,51 @@ const AddProductOrderSupplierTransaction = () => {
                             renderInput={(params) => (
                                 <TextField {...params} label="Choose Product" variant="standard" />
                             )}
+                        /> */}
+
+                        <Autocomplete
+                            sx={{
+                                width: 500
+                            }}
+                            // options={products}
+                            options={products.sort((a, b) =>
+                                b.category_name.toString().localeCompare(a.category_name.toString())
+                            )}
+                            value={value}
+                            className="mb-3"
+                            id="disable-close-on-select"
+                            onChange={handleInputChange}
+                            groupBy={(products) => products.category_name}
+                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.price) + ')'}
+                            renderInput={(params) => (
+                                <TextField {...params} label='Choose Product' variant="standard" />
+                            )}
                         />
                     </FormControl>
+
                     <br></br>
+
+                    {orderSupplier.quantity > 1 ? (
+                        <FormControl fullWidth>
+                            <InputLabel id="demo-simple-select-label">Variation</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                className="mb-3"
+                                id="demo-simple-select"
+                                name='variation'
+                                label="Variation"
+                                value={orderSupplier.variation}
+                                onChange={onChangeVariation}
+                            >
+                                <MenuItem value='WHOLESALE'>Wholesale</MenuItem>
+                                <MenuItem value='RETAIL'>Retail</MenuItem>
+                            </Select>
+                        </FormControl>
+                    ) : (
+                        <div>
+                            <br></br>
+                        </div>
+                    )}
                     <FormControl variant="standard" >
                         <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
                         <Input
@@ -384,9 +487,11 @@ const AddProductOrderSupplierTransaction = () => {
                             name='price'
                             value={orderSupplier.price}
                             onChange={onChangeInput}
+                            disabled={orderSupplier.price == 0 ? true : false}
                             startAdornment={<InputAdornment position="start">₱</InputAdornment>}
                         />
                     </FormControl>
+
                     <br></br>
                     <FormControl variant="standard">
                         <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
@@ -397,12 +502,12 @@ const AddProductOrderSupplierTransaction = () => {
                             label="=Price"
                             variant="filled"
                             name='quantity'
-                            value={orderSupplier.quantity}
+                            // value={orderSupplier.quantity}
+                            disabled={orderSupplier.price == 0 ? true : false}
                             onChange={onChangeInput}
                         />
                     </FormControl>
 
-                    <br></br>
                     <div>
                         <Button
                             variant="contained"

@@ -609,7 +609,7 @@ const AddProductCustomerOrderTransaction = () => {
                             id="disable-close-on-select"
                             onChange={handleInputChange}
                             groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " + products.packaging : '') + ' - ' + (products.business_type === 'WHOLESALE' ? (" ") + products.weight : (products.weight / products.quantity)) + products.variation + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock}
+                            getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " + products.packaging : '') + ' - ' + (products.business_type === 'WHOLESALE' ? (" ") + products.weight : Number.isInteger(products.weight / products.quantity) ? products.weight / products.quantity : (products.weight / products.quantity).toPrecision(2)) + products.variation + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock}
 
                             renderInput={(params) => (
                                 <TextField

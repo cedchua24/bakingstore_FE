@@ -381,7 +381,7 @@ const AddMarkUpPrice = (props) => {
                         />
                     </FormControl>
                     <br></br>
-                    {/* retail */}
+
                     {markUpPrice.quantity > 1 ? (
                         <div>
                             <h1>Retail</h1>

@@ -159,8 +159,8 @@ const ReceiptOrder = () => {
                         <tr>
                             <td>{row.shop_order_quantity}</td>
                             <td>{row.product_name} {
-                                row.business_type === 'WHOLESALE' ? <p >{row.packaging}({row.weight / row.quantity}{row.variation}) x {row.quantity}</p>
-                                    : <p >{row.weight / row.quantity}{row.variation}</p>
+                                row.business_type === 'WHOLESALE' ? <p > {row.packaging}({row.weight / row.quantity}{row.variation} x {row.quantity})</p>
+                                    : <p >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation})</p>
                             }</td>
                             <td>{row.shop_order_price}</td>
                             <td>{row.shop_order_total_price}</td>
