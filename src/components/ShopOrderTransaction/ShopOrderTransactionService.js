@@ -28,6 +28,9 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionListByDate(date) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByDate/${date}`);
     }
+    fetchOnlineShopOrderTransactionListByStatus(status) {
+        return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByStatus/${status}`);
+    }
     fetchOnlineShopOrderTransactionListReportByDate(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReportByDate", data);
     }
