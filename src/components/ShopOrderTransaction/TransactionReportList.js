@@ -18,14 +18,10 @@ import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
 
 import LinearProgress from '@mui/material/LinearProgress';
 
-const CustomerOrderTransactionList = () => {
+const TransactionReportList = () => {
 
 
     useEffect(() => {
@@ -36,8 +32,6 @@ const CustomerOrderTransactionList = () => {
         date: ""
     });
 
-    const [status, setStatus] = useState(0);
-
     const [date, setDate] = useState('');
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
@@ -46,7 +40,6 @@ const CustomerOrderTransactionList = () => {
         code: '',
         message: '',
         total_price: 0,
-        total_count: 0,
         total_profit: 0
     });
 
@@ -95,7 +88,6 @@ const CustomerOrderTransactionList = () => {
     const fetchShopOrderTransactionList = () => {
         ShopOrderTransactionService.fetchOnlineShopOrderTransactionList()
             .then(response => {
-                console.log("response.data", response.data)
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
             })
@@ -163,34 +155,33 @@ const CustomerOrderTransactionList = () => {
     }));
 
     const onChangeInput = (e) => {
-        console.log("status", e.target.value);
-        setStatus(e.target.value);
+        setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
+        setDate(e.target.value);
     }
 
     const validate = (values) => {
         const errors = {};
-        if (status == 0) {
-            errors.date = "Status Type is Required!";
+        if (customerOrderDate.date.length == 0) {
+            errors.date = "Date is Required!";
         }
 
         return errors;
     }
 
     const saveOrderTransaction = () => {
-        console.log('status: ', status);
-        console.log("count: ", Object.keys(validate(status)).length);
-        console.log("validate: ", validate(status));
-        setFormErrors(validate(status));
-        if (Object.keys(validate(status)).length > 0) {
+        console.log('orderTransaction: ', customerOrderDate.date);
+        console.log("count: ", Object.keys(validate(customerOrderDate)).length);
+        console.log("validate: ", validate(customerOrderDate));
+        setFormErrors(validate(customerOrderDate));
+        if (Object.keys(validate(customerOrderDate)).length > 0) {
             console.log("Has Validation: ");
 
         } else {
             console.log("Ready for saving: ");
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByStatus(status)
+            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDate(customerOrderDate.date)
                 .then(response => {
-                    console.log("data: ", response.data);
                     setShopOrderTransaction(response.data);
                     setSubmitLoadingAdd(false);
                     setIsAddDisabled(false);
@@ -311,37 +302,10 @@ const CustomerOrderTransactionList = () => {
             <div>
                 <Form>
                     {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
-                    {/* <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" name="date" onChange={onChangeInput} />
-                    </Form.Group> */}
-                    <Box sx={{ minWidth: 120 }}>
-                        <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                            <InputLabel id="demo-simple-select-label">Choose Status</InputLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={status}
-                                label="Status"
-                                name="status"
-                                onChange={onChangeInput}
-                            >
-                                <MenuItem disabled value="" style={{ fontWeight: 'bold' }}>
-                                    <em>Payment Status</em>
-                                </MenuItem>
-                                <MenuItem value="1" style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</MenuItem>
-                                <MenuItem value="2" style={{ color: 'orange', }}>PENDING</MenuItem>
-                                <MenuItem value="3" style={{ color: 'red', }}>CANCELLED</MenuItem>
-                                <MenuItem disabled value="" style={{ fontWeight: 'bold' }}>
-                                    <em>Rider Status</em>
-                                </MenuItem>
-                                <MenuItem value="5" style={{ color: 'green', }}>DONE</MenuItem>
-                                <MenuItem value="4" style={{ color: 'orange', }}>WAITING</MenuItem>
-
-                            </Select>
-                        </FormControl>
-                    </Box>
-
+                    </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Transaction: </Form.Label>
                         <Form.Control type="text" value={shopOrderTransaction.total_count} />
@@ -630,4 +594,4 @@ const CustomerOrderTransactionList = () => {
     )
 }
 
-export default CustomerOrderTransactionList
+export default TransactionReportList

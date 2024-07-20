@@ -61,6 +61,7 @@ import ShopOrderTransaction from "./components/ShopOrderTransaction/ShopOrderTra
 import AddProductShopOrderTransaction from "./components/ShopOrderTransaction/AddProductShopOrderTransaction";
 import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
+import TransactionReportList from "./components/ShopOrderTransaction/TransactionReportList";
 import PendingTransactionList from "./components/ShopOrderTransaction/PendingTransactionList";
 import CancelTransactionList from "./components/ShopOrderTransaction/CancelTransactionList";
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
@@ -195,6 +196,7 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/customerOrderTransactionList/" element={<CustomerOrderTransactionList />} />
+          <Route exact path="/shopOrderTransaction/transactionReportList/" element={<TransactionReportList />} />
           <Route exact path="/shopOrderTransaction/pendingTransactionList/" element={<PendingTransactionList />} />
           <Route exact path="/shopOrderTransaction/cancelTransactionList/" element={<CancelTransactionList />} />
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
