@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransaction.service";
@@ -18,11 +18,13 @@ import Button from '@mui/material/Button';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
+import LinearProgress from '@mui/material/LinearProgress';
 
 const FinalizeOrder = () => {
 
 
     const { id } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
@@ -45,6 +47,9 @@ const FinalizeOrder = () => {
     const [invoiceSubtotal, setinvoiceSubtotal] = useState(0);
     const [invoiceTaxes, setinvoiceTaxes] = useState(0);
     const [invoiceTotal, setinvoiceTotal] = useState(0);
+
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
 
     const [orderList, setOrderList] = useState([]);
 
@@ -95,11 +100,17 @@ const FinalizeOrder = () => {
 
 
     const updateOrderTransaction = () => {
+        setSubmitLoadingAdd(true);
+        setIsAddDisabled(true);
         OrderSupplierTransactionService.setToCompleteTransaction(id)
             .then(response => {
-                setMessage(true);
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
+                navigate('/supplierTransactionList/');
             })
             .catch(e => {
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
                 console.log(e);
             });
     }
@@ -202,12 +213,16 @@ const FinalizeOrder = () => {
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell colSpan={2} style={{ color: 'red', }}>Total</TableCell>
-                            <TableCell align="right" style={{ color: 'red', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
+                            <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Total</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>
+            <br></br>
+            {submitLoadingAdd &&
+                <LinearProgress color="warning" />
+            }
             <br></br>
             <Box
                 sx={{
@@ -217,13 +232,19 @@ const FinalizeOrder = () => {
                     justifyContent: 'center',
                 }}
             >
+                <br></br>
+
+
+                <br></br>
                 <Button
                     variant="contained"
                     type="submit"
                     onClick={updateOrderTransaction}
+                    disabled={isAddDisabled}
                     size="large" >
                     Submit
                 </Button>
+
             </Box>
 
         </div >

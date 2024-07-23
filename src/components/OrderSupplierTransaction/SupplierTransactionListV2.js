@@ -86,25 +86,28 @@ const SupplierTransactionListV2 = () => {
                                         </Button>
                                     </Link>
                                 </td>
-                                <td>
-                                    <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >
-                                        <Button variant="success" >
-                                            Update
+                                {orderTransaction.status != 'COMPLETED' ? <div>
+                                    <td>
+                                        <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >
+                                            <Button variant="success" >
+                                                Update
+                                            </Button>
+                                        </Link>
+                                    </td>
+                                    <td>
+                                        <Button variant="danger" onClick={(e) => deleteOrderTransaction(orderTransaction.id, e)} >
+                                            Delete
                                         </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Button variant="danger" onClick={(e) => deleteOrderTransaction(orderTransaction.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td>
+                                    </td>
+                                </div> : ""}
+
                             </tr>
                         )
                         )
                     }
                 </tbody>
             </table>
-        </div>
+        </div >
     )
 }
 

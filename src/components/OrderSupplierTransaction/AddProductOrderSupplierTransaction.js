@@ -38,6 +38,13 @@ import Input from '@mui/material/Input';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
+import LinearProgress from '@mui/material/LinearProgress';
+import CircularProgress from '@mui/material/CircularProgress';
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+
 
 const AddProductOrderSupplierTransaction = () => {
 
@@ -45,6 +52,29 @@ const AddProductOrderSupplierTransaction = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [value, setValue] = useState(products[0])
+
+
+    const [submitLoading, setSubmitLoading] = useState(false);
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [submitLoadingUpdate, setSubmitLoadingUpdate] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
+
+
+    const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
+    const [deleteId, setDeleteId] = useState(0)
+
+    const handleDeleteCloseModal = () => {
+        setDeleteOpenModal(false);
+    };
+
+
+    const [validator, setValidator] = useState({
+        severity: '',
+        message: '',
+        isShow: false
+    });
+
 
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
@@ -115,6 +145,7 @@ const AddProductOrderSupplierTransaction = () => {
         price: 0,
         real_price: 0,
         quantity: 0,
+        quantity_order: 0,
         total_price: 0,
         variation: ''
     });
@@ -133,6 +164,7 @@ const AddProductOrderSupplierTransaction = () => {
     const [isChecked, setChecked] = useState(false);
 
     const [message, setMessage] = useState(false);
+
 
 
     const onChangeInput = (e) => {
@@ -235,25 +267,69 @@ const AddProductOrderSupplierTransaction = () => {
         //     });
     }
 
+    const validate = (values) => {
+        const errors = {};
+        if (orderSupplier.product_id == 0) {
+            errors.product_id = "Product is Required!";
+        }
+        if (orderSupplier.price == 0) {
+            errors.price = "Price is Required!";
+        }
+        if (orderSupplier.quantity_order == 0) {
+            errors.quantity_order = "Quantity is Required!";
+        }
+        const index = orderList.filter(obj => {
+            return obj.product_id === orderSupplier.product_id;
+        });
+
+        if (index.length != 0) {
+            errors.product_id = "Product is already exists!";
+        }
+
+        return errors;
+    }
+
     const saveOrderSupplier = (event) => {
         event.preventDefault();
-        OrderSupplierService.sanctum().then(response => {
-            OrderSupplierService.create(orderSupplier)
-                .then(response => {
-                    fetchByOrderSupplierId(id);
-                    setOrderSupplier({
-                        order_supplier_transaction_id: id,
-                        product_id: 0,
-                        price: 0,
-                        quantity: 0,
-                        total_price: 0,
+        console.log('orderSupplier', orderSupplier);
+
+        console.log("count: ", Object.keys(validate(orderSupplier)).length);
+        console.log("validate: ", validate(orderSupplier));
+        setFormErrors(validate(orderSupplier));
+        if (Object.keys(validate(orderSupplier)).length > 0) {
+            console.log("Has Validation: ");
+
+        } else {
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+            OrderSupplierService.sanctum().then(response => {
+                OrderSupplierService.create(orderSupplier)
+                    .then(response => {
+                        fetchByOrderSupplierId(id);
+                        setOrderSupplier({
+                            order_supplier_transaction_id: id,
+                            product_id: 0,
+                            price: 0,
+                            quantity: 0,
+                            quantity_order: 0,
+                            total_price: 0,
+                        });
+                        updateOrderTransaction();
+                        setValidator({
+                            severity: 'success',
+                            message: 'Added Successfully',
+                            isShow: true,
+                        });
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
+                    })
+                    .catch(e => {
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
+                        console.log(e);
                     });
-                    updateOrderTransaction();
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        });
+            });
+        }
     }
 
     const fetchOrderSupplierTransaction = async (id) => {
@@ -315,12 +391,22 @@ const AddProductOrderSupplierTransaction = () => {
     const updateOrderTransaction = () => {
         OrderSupplierTransactionService.update(id, orderSupplierTransaction)
             .then(response => {
-                setMessage(true);
+                // setValidator({
+                //     severity: 'success',
+                //     message: 'Updated Successfully',
+                //     isShow: true,
+                // });
                 fetchOrderSupplierTransaction(id);
             })
             .catch(e => {
                 console.log(e);
             });
+    }
+
+    const openDelete = (id) => {
+        console.log('delete', id);
+        setDeleteId(id)
+        setDeleteOpenModal(true);
     }
 
 
@@ -329,22 +415,40 @@ const AddProductOrderSupplierTransaction = () => {
         const index = orderList.findIndex(orderSupplier => orderSupplier.id === id);
         const neworderSupplier = [...orderList];
         neworderSupplier.splice(index, 1);
+        setSubmitLoading(true);
 
         OrderSupplierService.delete(id)
             .then(response => {
+                setValidator({
+                    severity: 'success',
+                    message: 'Deleted Successfully',
+                    isShow: true,
+                });
                 updateOrderTransaction();
                 setOrderList(neworderSupplier);
+                setSubmitLoading(false);
+                setDeleteOpenModal(false);
             })
             .catch(e => {
+                setSubmitLoading(false);
+                setDeleteOpenModal(false);
                 console.log('error', e);
             });
     }
 
     const updateOrderSupplier = () => {
+        setSubmitLoadingUpdate(true);
         OrderSupplierService.update(orderSupplierModal.id, orderSupplierModal)
             .then(response => {
+                setSubmitLoadingUpdate(false);
+                setOpen(false);
                 fetchByOrderSupplierId(id);
                 updateOrderTransaction();
+                setValidator({
+                    severity: 'success',
+                    message: 'Updated Successfully',
+                    isShow: true,
+                });
             })
             .catch(e => {
                 console.log(e);
@@ -359,22 +463,14 @@ const AddProductOrderSupplierTransaction = () => {
 
     return (
         <div>
-            {message &&
-                // <Alert variant="success" dismissible>
-                //     <Alert.Heading>Successfully Updated!</Alert.Heading>
-                //     <p>
-                //         Change this and that and try again. Duis mollis, est non commodo
-                //         luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-                //         Cras mattis consectetur purus sit amet fermentum.
-                //     </p>
-                // </Alert>
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
 
-            }
+
+            <Stack sx={{ width: '100%' }} spacing={2}>
+                {validator.isShow &&
+                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                }
+            </Stack>
+
             <br></br>
             <Box
                 sx={{
@@ -417,7 +513,7 @@ const AddProductOrderSupplierTransaction = () => {
                         inputProps={{ 'aria-label': 'controlled' }}
                     />} label="With Tax" />
                     <br></br>
-
+                    {formErrors.product_id && <p style={{ color: "red" }}>{formErrors.product_id}</p>}
                     <FormControl variant="standard" >
                         {/* <Autocomplete
                             // {...defaultProps}
@@ -436,7 +532,7 @@ const AddProductOrderSupplierTransaction = () => {
 
                         <Autocomplete
                             sx={{
-                                width: 500
+                                width: 800
                             }}
                             // options={products}
                             options={products.sort((a, b) =>
@@ -477,6 +573,7 @@ const AddProductOrderSupplierTransaction = () => {
                             <br></br>
                         </div>
                     )}
+                    {formErrors.price && <p style={{ color: "red" }}>{formErrors.price}</p>}
                     <FormControl variant="standard" >
                         <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
                         <Input
@@ -493,6 +590,7 @@ const AddProductOrderSupplierTransaction = () => {
                     </FormControl>
 
                     <br></br>
+                    {formErrors.quantity_order && <p style={{ color: "red" }}>{formErrors.quantity_order}</p>}
                     <FormControl variant="standard">
                         <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
                         <Input
@@ -501,17 +599,22 @@ const AddProductOrderSupplierTransaction = () => {
                             id="filled-required"
                             label="=Price"
                             variant="filled"
-                            name='quantity'
-                            // value={orderSupplier.quantity}
+                            name='quantity_order'
+                            value={orderSupplier.quantity_order}
                             disabled={orderSupplier.price == 0 ? true : false}
                             onChange={onChangeInput}
                         />
                     </FormControl>
-
+                    <br></br>
+                    {submitLoadingAdd &&
+                        <LinearProgress color="warning" />
+                    }
+                    <br></br>
                     <div>
                         <Button
                             variant="contained"
                             type="submit"
+                            disabled={isAddDisabled}
                         >
                             Add
                         </Button>
@@ -556,7 +659,7 @@ const AddProductOrderSupplierTransaction = () => {
                                 <TableCell align="right">
                                     <Tooltip title="Delete">
                                         <IconButton>
-                                            <DeleteIcon color="error" onClick={(e) => deleteOrderTransaction(row.id, e)} />
+                                            <DeleteIcon color="error" onClick={(e) => openDelete(row.id, e)} />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
@@ -596,8 +699,9 @@ const AddProductOrderSupplierTransaction = () => {
                     size="large" >
                     Next
                 </Button>
+                <br></br>
             </Box>
-
+            <br></br>
             <Modal
                 keepMounted
                 open={open}
@@ -609,6 +713,11 @@ const AddProductOrderSupplierTransaction = () => {
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
                         Update Product
                     </Typography>
+                    {submitLoadingUpdate &&
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <CircularProgress />
+                        </div>
+                    }
 
                     <TextField
                         disabled
@@ -672,6 +781,29 @@ const AddProductOrderSupplierTransaction = () => {
                     </Box>
                 </Box>
             </Modal>
+
+            <Dialog
+                open={deleteOpenModal}
+                onClose={handleDeleteCloseModal}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+
+                <DialogTitle id="alert-dialog-title">
+                    {"Are you sure you want to Delete?"}
+                </DialogTitle>
+                {submitLoading &&
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress />
+                    </div>
+                }
+                <DialogActions>
+                    <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                    <Button onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
+                        Agree
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div >
     )
 }
