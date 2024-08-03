@@ -134,9 +134,9 @@ const NavBar = () => {
                         <NavDropdown title="Customer Order" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/customerOrderTransactionList">Customer Order List</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/pendingTransactionList">Pending Transaction List</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/cancelTransactionList">Cancel Transaction List</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/transactionReportList">TransactionReportList</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Sorted Product List</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Sorted Customer List</NavDropdown.Item>
+
 
                         </NavDropdown>
                     </Nav>
@@ -148,6 +148,11 @@ const NavBar = () => {
                     </Nav>
                     <Nav className="me-auto">
                         <NavDropdown title="Reports" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/shopOrderTransaction/transactionReportList">Transaction Report List</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/pendingTransactionList">Pending Transaction List</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/cancelTransactionList">Cancel Transaction List</NavDropdown.Item>
+                            <NavDropdown.Item href="/reports/reportCustomerSorted">Customer Record List</NavDropdown.Item>
+                            <NavDropdown.Item href="/reports/reportProductSorted">Product Record List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportsList">Online Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/shopBranchReportList">Shop Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportExpenses">Expenses Reports</NavDropdown.Item>

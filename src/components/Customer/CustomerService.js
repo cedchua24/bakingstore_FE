@@ -4,6 +4,9 @@ class CustomerService {
   getAll() {
     return axios.get("/api/customers");
   }
+  fetchCustomerEnabled(date) {
+    return axios.get(`/api/customers/fetchCustomerEnabled/${date}`);
+  }
   get(id) {
     return axios.get(`/api/customers/${id}`);
   }

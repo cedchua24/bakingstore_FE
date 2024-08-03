@@ -1,6 +1,8 @@
 import React from 'react'
 import { Button, Form, Alert } from 'react-bootstrap';
 import { Link } from "react-router-dom";
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 const CustomerList = (props) => {
 
@@ -18,6 +20,7 @@ const CustomerList = (props) => {
                         <th>Contact Number</th>
                         <th>Email</th>
                         <th>Address</th>
+                        <th>Status</th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -33,6 +36,7 @@ const CustomerList = (props) => {
                                 <td>{customer.contact_number}</td>
                                 <td>{customer.email}</td>
                                 <td>{customer.address}</td>
+                                <td>{customer.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
 
                                     <Link variant="primary" to={"/customers/" + customer.id}   >
