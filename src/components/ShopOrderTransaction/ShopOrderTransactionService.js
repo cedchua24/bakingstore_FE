@@ -13,6 +13,12 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionList(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionList/${id}`);
     }
+    fetchSortedProduct(id) {
+        return axios.get(`/api/shopOrderTransaction/fetchSortedProduct/${id}`);
+    }
+    fetchSortedCustomer(id) {
+        return axios.get(`/api/shopOrderTransaction/fetchSortedCustomer/${id}`);
+    }
     fetchPendingTransactionList(data) {
         return axios.post("/api/shopOrderTransaction/fetchPendingTransactionList", data);
     }
@@ -33,6 +39,12 @@ class ShopOrderTransactionService {
     }
     fetchOnlineShopOrderTransactionListReportByDate(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReportByDate", data);
+    }
+    fetchSortedCustomerReport(data) {
+        return axios.post("/api/shopOrderTransaction/fetchSortedCustomerReport", data);
+    }
+    fetchSortedProductReport(data) {
+        return axios.post("/api/shopOrderTransaction/fetchSortedProductReport", data);
     }
     fetchShopOrderTransactionListReportByDate(data) {
         return axios.post("/api/shopOrderTransaction/fetchShopOrderTransactionListReportByDate", data);

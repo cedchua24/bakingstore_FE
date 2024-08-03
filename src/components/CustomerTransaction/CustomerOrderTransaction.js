@@ -43,7 +43,7 @@ const CustomerOrderTransaction = () => {
 
 
     const fetchUserList = () => {
-        CustomerService.getAll()
+        CustomerService.fetchCustomerEnabled()
             .then(response => {
                 setCustomerList(response.data);
             })

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
 import CustomerService from "./CustomerService";
+import Checkbox from '@mui/material/Checkbox';
+
 const EditCustomer = () => {
 
 
@@ -22,6 +24,20 @@ const EditCustomer = () => {
 
     const onChangeCustomer = (e) => {
         setCustomer({ ...customer, [e.target.name]: e.target.value });
+    }
+
+    const onChangePaymentTypedisabled = (e) => {
+
+        console.log("error", e.target.checked)
+        if (e.target.type === 'checkbox') {
+            if (e.target.checked === true) {
+                setCustomer({ ...customer, disabled: 1 });
+            } else {
+                setCustomer({ ...customer, disabled: 0 });
+            }
+        } else {
+            setCustomer({ ...customer, disabled: e.target.value });
+        }
     }
 
     const saveCustomer = () => {
@@ -77,6 +93,15 @@ const EditCustomer = () => {
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Address</Form.Label>
                     <Form.Control type="text" value={customer.address} name="address" placeholder="Enter Address" onChange={onChangeCustomer} />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Disabled ? </Form.Label>
+
+                    <Checkbox
+                        checked={customer.disabled === 0 ? false : true}
+                        onChange={onChangePaymentTypedisabled}
+                        inputProps={{ 'aria-label': 'controlled' }}
+                    />
                 </Form.Group>
 
                 <Button variant="primary" onClick={saveCustomer}>

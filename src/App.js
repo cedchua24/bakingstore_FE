@@ -61,6 +61,11 @@ import ShopOrderTransaction from "./components/ShopOrderTransaction/ShopOrderTra
 import AddProductShopOrderTransaction from "./components/ShopOrderTransaction/AddProductShopOrderTransaction";
 import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
+import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
+import CustomerSorted from "./components/ShopOrderTransaction/CustomerSorted";
+import ReportCustomerSorted from "./components/Reports/ReportCustomerSorted";
+import ReportProductSorted from "./components/Reports/ReportProductSorted";
+
 import TransactionReportList from "./components/ShopOrderTransaction/TransactionReportList";
 import PendingTransactionList from "./components/ShopOrderTransaction/PendingTransactionList";
 import CancelTransactionList from "./components/ShopOrderTransaction/CancelTransactionList";
@@ -196,6 +201,10 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/customerOrderTransactionList/" element={<CustomerOrderTransactionList />} />
+          <Route exact path="/shopOrderTransaction/quantitySortedList/" element={<QuantitySorted />} />
+          <Route exact path="/shopOrderTransaction/customerSortedList/" element={<CustomerSorted />} />
+
+
           <Route exact path="/shopOrderTransaction/transactionReportList/" element={<TransactionReportList />} />
           <Route exact path="/shopOrderTransaction/pendingTransactionList/" element={<PendingTransactionList />} />
           <Route exact path="/shopOrderTransaction/cancelTransactionList/" element={<CancelTransactionList />} />
@@ -253,6 +262,9 @@ const App = () => {
           <Route exact path="/reports/shopBranchReportList" element={<ShopBranchReportList />} />
           <Route exact path="/reports/reportExpenses" element={<ReportExpenses />} />
           <Route exact path="/reports/reportExpensesView/:id" element={<ReportExpensesView />} />
+          <Route exact path="/reports/reportCustomerSorted/" element={<ReportCustomerSorted />} />
+          <Route exact path="/reports/reportProductSorted/" element={<ReportProductSorted />} />
+
 
           <Route exact path="/customers/" element={<Customer />} />
           <Route exact path="/customerListV2" element={<CustomerListV2 />} />
