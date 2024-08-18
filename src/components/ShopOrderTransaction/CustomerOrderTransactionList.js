@@ -95,7 +95,7 @@ const CustomerOrderTransactionList = () => {
     const fetchShopOrderTransactionList = () => {
         ShopOrderTransactionService.fetchOnlineShopOrderTransactionList()
             .then(response => {
-                console.log("response.data", response.data)
+                console.log("fetchOnlineShopOrderTransactionList :", response.data)
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
             })
@@ -290,8 +290,8 @@ const CustomerOrderTransactionList = () => {
 
 
     return (
-        <div>
-            <div style={{ float: 'right', marginRight: 500 }}>
+        <div style={{ marginLeft: -100 }}>
+            <div style={{ float: 'right', marginRight: 400 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
@@ -382,7 +382,10 @@ const CustomerOrderTransactionList = () => {
             <Div>{"Online Orders"}
             </Div>
 
-            <table class="table table-bordered">
+
+
+
+            <table class="table table-bordered" >
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
@@ -392,6 +395,7 @@ const CustomerOrderTransactionList = () => {
                         <th>Total Quantity</th>
                         <th>Total Cash</th>
                         <th>Total Online</th>
+                        <th>Bank</th>
                         <th>Total Amount</th>
                         <th>Profit</th>
                         <th>Date</th>
@@ -407,21 +411,35 @@ const CustomerOrderTransactionList = () => {
                     </tr>
                 </thead>
                 {shopOrderTransaction.data.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    (<tr style={{ color: "red", }}>{"No Data Available"}</tr>)
                     :
                     (
                         <tbody>
 
                             {
                                 shopOrderTransaction.data.map((shopOrderTransaction, index) => (
-                                    <tr key={shopOrderTransaction.id} >
-                                        <td>{shopOrderTransaction.id}</td>
+                                    <tr key={shopOrderTransaction.id} style={{ border: "2px solid black" }}>
+                                        <td >{shopOrderTransaction.id}</td>
                                         <td>{shopOrderTransaction.shop_name}</td>
                                         <td>{shopOrderTransaction.customer_type}</td>
                                         <td>{shopOrderTransaction.requestor_name}</td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                         <td>{shopOrderTransaction.total_cash}</td>
                                         <td>{shopOrderTransaction.total_online}</td>
+                                        <td>{shopOrderTransaction.status == 1 ? (
+
+                                            shopOrderTransaction.mode_of_payment.map((sot, index) => (
+                                                <>
+                                                    <tr>
+                                                        <td><p style={{ fontSize: 12 }}>{sot.amount}</p></td>
+                                                        <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
+                                                    </tr>
+                                                </>
+                                            )
+                                            )
+                                        ) : (<></>)
+                                        }</td>
+
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
                                         <td>{shopOrderTransaction.date}</td>
@@ -501,6 +519,7 @@ const CustomerOrderTransactionList = () => {
                             }
                         </tbody>)}
             </table>
+
             <Dialog
                 open={submitOpenModal}
                 onClose={handleSubmitCloseModal}
