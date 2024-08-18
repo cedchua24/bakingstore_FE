@@ -281,8 +281,8 @@ const TransactionReportList = () => {
 
 
     return (
-        <div>
-            <div style={{ float: 'right', marginRight: 500 }}>
+        <div style={{ marginLeft: -100 }}>
+            <div style={{ float: 'right', marginRight: 400 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
@@ -356,6 +356,7 @@ const TransactionReportList = () => {
                         <th>Total Quantity</th>
                         <th>Total Cash</th>
                         <th>Total Online</th>
+                        <th>Bank</th>
                         <th>Total Amount</th>
                         <th>Profit</th>
                         <th>Date</th>
@@ -378,7 +379,7 @@ const TransactionReportList = () => {
 
                             {
                                 shopOrderTransaction.data.map((shopOrderTransaction, index) => (
-                                    <tr key={shopOrderTransaction.id} >
+                                    <tr key={shopOrderTransaction.id} style={{ border: "2px solid black" }}>
                                         <td>{shopOrderTransaction.id}</td>
                                         <td>{shopOrderTransaction.shop_name}</td>
                                         <td>{shopOrderTransaction.customer_type}</td>
@@ -386,6 +387,19 @@ const TransactionReportList = () => {
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                         <td>{shopOrderTransaction.total_cash}</td>
                                         <td>{shopOrderTransaction.total_online}</td>
+                                        <td>{shopOrderTransaction.status == 1 ? (
+
+                                            shopOrderTransaction.mode_of_payment.map((sot, index) => (
+                                                <>
+                                                    <tr>
+                                                        <td><p style={{ fontSize: 12 }}>{sot.amount}</p></td>
+                                                        <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
+                                                    </tr>
+                                                </>
+                                            )
+                                            )
+                                        ) : (<></>)
+                                        }</td>
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
                                         <td>{shopOrderTransaction.date}</td>

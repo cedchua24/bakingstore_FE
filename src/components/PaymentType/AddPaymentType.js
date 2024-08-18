@@ -51,16 +51,16 @@ const AddPaymentType = (props) => {
 
             <Form>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Payment Type</Form.Label>
-                    <Form.Control type="text" value={paymentType.payment_type} name="payment_type" placeholder="Enter Payment Type" onChange={onChangePaymentType} />
+                    <Form.Label>Payment Type Name</Form.Label>
+                    <Form.Control type="text" value={paymentType.payment_type} name="payment_type" placeholder="Enter Payment Type Name" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
                         ..
                     </Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Payment Type</Form.Label>
-                    <Form.Control type="text" value={paymentType.payment_type_description} name="payment_type_description" placeholder="Enter Payment Type Description" onChange={onChangePaymentType} />
+                    <Form.Label>Account Number</Form.Label>
+                    <Form.Control type="text" value={paymentType.payment_type_description} name="payment_type_description" placeholder="Enter Account Number" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
                         ..
                     </Form.Text>
