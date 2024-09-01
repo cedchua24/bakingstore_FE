@@ -75,7 +75,7 @@ const ReportExpenses = () => {
                     <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Expenses: </Form.Label>
+                    <Form.Label>Total Expenses </Form.Label>
                     <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_expenses} />
                 </Form.Group>
                 <Button variant="primary" onClick={saveOrderTransaction}>

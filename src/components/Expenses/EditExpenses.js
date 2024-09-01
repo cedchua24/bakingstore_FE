@@ -14,16 +14,16 @@ const EditExpenses = () => {
     const { id } = useParams();
 
     useEffect(() => {
-        fetchExpensesType(id);
+        fetchExpenses(id);
         fetchExpensesTypeList();
     }, []);
 
     const [expenses, setExpenses] = useState({
         id: 0,
-        expenses_type_id: 0,
         expenses_name: '',
+        expenses_category_name: '',
         details: '',
-        amount: '',
+        amount: 0,
         date: ''
     });
 
@@ -38,7 +38,7 @@ const EditExpenses = () => {
         e.persist();
         setExpenses({
             ...expenses,
-            expenses_category_id: value.id,
+            expenses_type_id: value.id,
         });
     }
 
@@ -64,8 +64,8 @@ const EditExpenses = () => {
             });
     }
 
-    const fetchExpensesType = (id) => {
-        ExpensesService.get(id)
+    const fetchExpenses = (id) => {
+        ExpensesService.fetchExpenseById(id)
             .then(response => {
                 setExpenses(response.data);
             })
@@ -95,19 +95,11 @@ const EditExpenses = () => {
             // onSubmit={saveOrderSupplier}
             >
                 <Form>
-                    <FormControl variant="standard" >
-                        <Autocomplete
-                            // {...defaultProps}
-                            options={expensesList}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleInputChange}
-                            getOptionLabel={(expensesList) => expensesList.expenses_name}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Choose Expenses" variant="standard" />
-                            )}
-                        />
-                    </FormControl>
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>Expense</Form.Label>
+                        <Form.Control type="text" value={expenses.expenses_name} name="Expense" disabled />
+
+                    </Form.Group>
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>Details</Form.Label>
                         <Form.Control type="text" value={expenses.details} name="details" placeholder="Enter Details" onChange={onChangeExpenses} />
@@ -117,11 +109,6 @@ const EditExpenses = () => {
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>Amount</Form.Label>
                         <Form.Control type="text" value={expenses.amount} name="amount" placeholder="Enter Amount" onChange={onChangeExpenses} />
-                    </Form.Group>
-
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                        <Form.Label>Date</Form.Label>
-                        <Form.Control type="date" name="date" onChange={onChangeExpenses} />
                     </Form.Group>
 
                     <Button variant="primary" onClick={saveExpenses}>

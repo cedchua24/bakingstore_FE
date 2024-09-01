@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import ExpensesService from "../Expenses/ExpensesService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -23,16 +24,18 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 const TransactionReportList = () => {
 
-
-    useEffect(() => {
-        fetchShopOrderTransactionList();
-    }, []);
-
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: ""
     });
 
-    const [date, setDate] = useState('');
+    const [expenses, setExpenses] = useState({
+        data: [],
+        code: '',
+        message: '',
+        total_expenses: 0
+    });
+
+    const [date, setDate] = useState(0);
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         data: [],
@@ -77,12 +80,22 @@ const TransactionReportList = () => {
     });
 
 
-    const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
+
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
 
+
+    const fetchExpensesList = (date) => {
+        ExpensesService.fetchExpensesByDate(date)
+            .then(response => {
+                setExpenses(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
 
 
     const fetchShopOrderTransactionList = () => {
@@ -97,20 +110,7 @@ const TransactionReportList = () => {
             });
     }
 
-    const deleteOrderTransaction = (id, e) => {
 
-        const index = shopOrderTransactionList.findIndex(shopOrderTransaction => shopOrderTransaction.id === id);
-        const newShopOrderTransaction = [...shopOrderTransactionList];
-        newShopOrderTransaction.splice(index, 1);
-
-        ShopOrderTransactionService.delete(id)
-            .then(response => {
-                setShopOrderTransactionList(newShopOrderTransaction);
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
-    }
 
     const [submitOpenModal, setSubmitOpenModal] = React.useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -180,6 +180,7 @@ const TransactionReportList = () => {
             console.log("Ready for saving: ");
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
+            fetchExpensesList(customerOrderDate.date);
             ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDate(customerOrderDate.date)
                 .then(response => {
                     setShopOrderTransaction(response.data);
@@ -282,7 +283,22 @@ const TransactionReportList = () => {
 
     return (
         <div style={{ marginLeft: -100 }}>
-            <div style={{ float: 'right', marginRight: 400 }}>
+
+            {expenses.total_expenses != 0 &&
+                <div style={{ float: 'right', marginRight: 200 }}>
+                    <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label> Expenses</Form.Label>
+                        {/* <Link variant="primary" to={"../expenses"}   > */}
+                        <Link variant="primary" to={"/reports/reportExpensesView/" + date}   >
+                            <PageviewIcon color="primary" />
+                        </Link>
+                        <Form.Control type="text" value={"₱ " + expenses.total_expenses} />
+                    </Form.Group>
+                </div>
+            }
+
+
+            <div style={{ float: 'right', marginRight: 200 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
