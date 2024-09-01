@@ -45,6 +45,7 @@ const AddExpenses = (props) => {
                 .then(response => {
                     props.onSaveExpensesTypeData(response.data);
                     setMessage(true);
+                    window.location.reload();
                 })
                 .catch(e => {
                     console.log(e);
@@ -76,11 +77,17 @@ const AddExpenses = (props) => {
                     <FormControl variant="standard" >
                         <Autocomplete
                             // {...defaultProps}
-                            options={expensesTypeList}
+
+                            options={expensesTypeList.sort((a, b) =>
+                                b.expenses_category_name.toString().localeCompare(a.expenses_category_name.toString())
+                            )}
                             className="mb-3"
                             id="disable-close-on-select"
                             onChange={handleInputChange}
+                            groupBy={(expensesTypeList) => expensesTypeList.expenses_category_name}
                             getOptionLabel={(expensesTypeList) => expensesTypeList.expenses_name}
+
+
                             renderInput={(params) => (
                                 <TextField {...params} label="Choose Expenses" variant="standard" />
                             )}

@@ -276,7 +276,7 @@ const App = () => {
 
           <Route exact path="/expenses/" element={<Expenses />} />
           {/* <Route exact path="/customerListV2" element={<CustomerListV2 />} /> */}
-          <Route exact path="/expenses/:id" element={<EditExpenses />} />
+          <Route exact path="/editExpenses/:id" element={<EditExpenses />} />
 
 
 

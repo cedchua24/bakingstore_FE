@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import ExpensesService from "../Expenses/ExpensesService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -30,10 +31,17 @@ const CustomerOrderTransactionList = () => {
 
     useEffect(() => {
         fetchShopOrderTransactionList();
+        fetchExpensesList();
     }, []);
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: ""
+    });
+
+    const [expenses, setExpenses] = useState({
+        data: [],
+        code: '',
+        message: '',
     });
 
     const [status, setStatus] = useState(0);
@@ -93,6 +101,10 @@ const CustomerOrderTransactionList = () => {
 
 
     const fetchShopOrderTransactionList = () => {
+        let newDate = new Date().toLocaleDateString();
+        let nDate = newDate.replaceAll("/", "-");
+        console.log('nDate', nDate);
+        // console.log('date', new Date().toLocaleDateString().replace("/", "-"));
         ShopOrderTransactionService.fetchOnlineShopOrderTransactionList()
             .then(response => {
                 console.log("fetchOnlineShopOrderTransactionList :", response.data)
@@ -102,6 +114,16 @@ const CustomerOrderTransactionList = () => {
             .catch(e => {
                 console.log("error", e)
 
+            });
+    }
+
+    const fetchExpensesList = () => {
+        ExpensesService.fetchExpensesTransactionToday()
+            .then(response => {
+                setExpenses(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
             });
     }
 
@@ -291,7 +313,21 @@ const CustomerOrderTransactionList = () => {
 
     return (
         <div style={{ marginLeft: -100 }}>
-            <div style={{ float: 'right', marginRight: 400 }}>
+
+            {expenses.total_expenses != 0 &&
+                <div style={{ float: 'right', marginRight: 200 }}>
+                    <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label> Expenses</Form.Label>
+                        <Link variant="primary" to={"../expenses"}   >
+                            <PageviewIcon color="primary" />
+                        </Link>
+                        <Form.Control type="text" value={"₱ " + expenses.total_expenses} />
+                    </Form.Group>
+                </div>
+            }
+
+
+            <div style={{ float: 'right', marginRight: 200 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
@@ -307,6 +343,8 @@ const CustomerOrderTransactionList = () => {
                 }
 
             </div>
+
+
 
             <div>
                 <Form>

@@ -22,9 +22,25 @@ class ExpensesService {
     findByTitle(customerName) {
         return axios.get(`/api/expenses/getId/${customerName}`);
     }
+    fetchExpenseById(id) {
+        return axios.get(`/api/expenses/fetchExpenseById/${id}`);
+    }
     fetchExpensesTransaction(id) {
         return axios.get(`/api/expenses/fetchExpensesTransaction/${id}`);
     }
+    fetchExpensesTransactionToday(id) {
+        return axios.get(`/api/expenses/fetchExpensesTransactionToday/${id}`);
+    }
+    fetchExpensesByDate(id) {
+        return axios.get(`/api/expenses/fetchExpensesByDate/${id}`);
+    }
+    fetchExpensesNonMandatoryToday(id) {
+        return axios.get(`/api/expenses/fetchExpensesNonMandatoryToday/${id}`);
+    }
+    fetchExpensesMandatoryToday(id) {
+        return axios.get(`/api/expenses/fetchExpensesMandatoryToday/${id}`);
+    }
+
     fetchExpensesTransactionById(id) {
         return axios.get(`/api/expenses/fetchExpensesTransactionById/${id}`);
     }

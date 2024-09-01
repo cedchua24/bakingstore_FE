@@ -9,21 +9,45 @@ const Expenses = () => {
 
     useEffect(() => {
         fetchExpensesList();
+        fetchExpensesNonList();
         fetchCategoryList();
     }, []);
 
     const [expensesList, setExpensesList] = useState([]);
+
+    const [expensesMandatoryList, setExpensesMandatoryuList] = useState({
+        data: [],
+        code: '',
+        message: '',
+    });
+
+    const [expensesNonList, setExpensesNonList] = useState({
+        data: [],
+        code: '',
+        message: '',
+    });
+
     const [expensesTypeList, setExpensesTypeList] = useState([]);
 
     const saveExpensesTypeDataHandler = (expensesType) => {
-        setExpensesList([...expensesList, expensesType]);
+        setExpensesList(...expensesList, expensesType);
     }
 
 
     const fetchExpensesList = () => {
-        ExpensesService.getAll()
+        ExpensesService.fetchExpensesMandatoryToday()
             .then(response => {
-                setExpensesList(response.data);
+                setExpensesMandatoryuList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const fetchExpensesNonList = () => {
+        ExpensesService.fetchExpensesNonMandatoryToday()
+            .then(response => {
+                setExpensesNonList(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -40,15 +64,17 @@ const Expenses = () => {
             });
     }
 
-    const deleteExpensesType = (id, e) => {
+    const deleteExpenses = (id, e) => {
 
         const index = expensesList.findIndex(expensesType => expensesType.id === id);
         const newExpensesType = [...expensesList];
         newExpensesType.splice(index, 1);
-
+        console.log("delete", id)
         ExpensesService.delete(id)
             .then(response => {
                 setExpensesList(newExpensesType);
+                fetchExpensesList();
+                fetchExpensesNonList();
             })
             .catch(e => {
                 console.log('error', e);
@@ -66,8 +92,9 @@ const Expenses = () => {
             />
 
             <ExpensesList
-                expensesList={expensesList}
-                deleteExpensesType={deleteExpensesType}
+                expensesMandatoryList={expensesMandatoryList}
+                expensesNonList={expensesNonList}
+                deleteExpenses={deleteExpenses}
             />
         </div>
     )
