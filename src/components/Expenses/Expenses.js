@@ -10,7 +10,7 @@ const Expenses = () => {
     useEffect(() => {
         fetchExpensesList();
         fetchExpensesNonList();
-        fetchCategoryList();
+        fetchExpenseTypeList();
     }, []);
 
     const [expensesList, setExpensesList] = useState([]);
@@ -54,7 +54,7 @@ const Expenses = () => {
             });
     }
 
-    const fetchCategoryList = (id) => {
+    const fetchExpenseTypeList = (id) => {
         ExpensesTypeService.getAll()
             .then(response => {
                 setExpensesTypeList(response.data);

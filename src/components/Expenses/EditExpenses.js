@@ -16,7 +16,9 @@ const EditExpenses = () => {
     useEffect(() => {
         fetchExpenses(id);
         fetchExpensesTypeList();
+        fetchExpenseTypeList();
     }, []);
+
 
     const [expenses, setExpenses] = useState({
         id: 0,
@@ -30,6 +32,8 @@ const EditExpenses = () => {
     const [message, setMessage] = useState(false);
     const [expensesList, setExpensesList] = useState([]);
 
+    const [expensesTypeList, setExpensesTypeList] = useState([]);
+
     const onChangeExpenses = (e) => {
         setExpenses({ ...expenses, [e.target.name]: e.target.value });
     }
@@ -38,6 +42,7 @@ const EditExpenses = () => {
         e.persist();
         setExpenses({
             ...expenses,
+            expenses_name: value.expenses_name,
             expenses_type_id: value.id,
         });
     }
@@ -74,6 +79,16 @@ const EditExpenses = () => {
             });
     }
 
+    const fetchExpenseTypeList = (id) => {
+        ExpensesTypeService.getAll()
+            .then(response => {
+                setExpensesTypeList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
     return (
         <div>
             {message &&
@@ -95,11 +110,29 @@ const EditExpenses = () => {
             // onSubmit={saveOrderSupplier}
             >
                 <Form>
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <FormControl variant="standard" >
+                        <Autocomplete
+                            options={expensesTypeList.sort((a, b) =>
+                                b.expenses_category_name.toString().localeCompare(a.expenses_category_name.toString())
+                            )}
+                            className="mb-3"
+                            id="disable-close-on-select"
+                            onChange={handleInputChange}
+                            groupBy={(expensesTypeList) => expensesTypeList.expenses_category_name}
+                            getOptionLabel={(expensesTypeList) => expensesTypeList.expenses_name}
+
+
+                            renderInput={(params) => (
+                                <TextField {...params} label={expenses.expenses_name} variant="standard" />
+                            )}
+                        />
+                    </FormControl>
+
+                    {/* <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>Expense</Form.Label>
                         <Form.Control type="text" value={expenses.expenses_name} name="Expense" disabled />
 
-                    </Form.Group>
+                    </Form.Group> */}
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>Details</Form.Label>
                         <Form.Control type="text" value={expenses.details} name="details" placeholder="Enter Details" onChange={onChangeExpenses} />

@@ -35,6 +35,12 @@ const TransactionReportList = () => {
         total_expenses: 0
     });
 
+    const [expensesMandatory, setExpensesMandatory] = useState({
+        data: [],
+        code: '',
+        message: '',
+    });
+
     const [date, setDate] = useState(0);
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
@@ -91,6 +97,14 @@ const TransactionReportList = () => {
         ExpensesService.fetchExpensesByDate(date)
             .then(response => {
                 setExpenses(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+        ExpensesService.fetchExpensesMandatoryToday(date)
+            .then(response => {
+                setExpensesMandatory(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -279,26 +293,58 @@ const TransactionReportList = () => {
         '& .MuiTextField-root': { m: 1, width: '25ch' },
     };
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
 
 
     return (
         <div style={{ marginLeft: -100 }}>
 
             {expenses.total_expenses != 0 &&
-                <div style={{ float: 'right', marginRight: 200 }}>
+                <div style={{ float: 'right', marginRight: 100 }}>
                     <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label> Expenses</Form.Label>
                         {/* <Link variant="primary" to={"../expenses"}   > */}
                         <Link variant="primary" to={"/reports/reportExpensesView/" + date}   >
                             <PageviewIcon color="primary" />
                         </Link>
-                        <Form.Control type="text" value={"₱ " + expenses.total_expenses} />
+                        <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
                     </Form.Group>
+
+                    <br></br>
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr class="table-secondary">
+                                <th></th>
+                                <th></th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr  >
+                                <td>Total Profit: </td>
+                                <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
+                            </tr>
+                            <tr  >
+                                <td>Total Mandatory Expenses: </td>
+                                <td>{numberFormat(expensesMandatory.total_expenses)}</td>
+                            </tr>
+                            <tr  >
+                                <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
+                                <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses)}</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
                 </div>
             }
 
 
-            <div style={{ float: 'right', marginRight: 200 }}>
+            <div style={{ float: 'right', marginRight: 100 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
@@ -307,7 +353,7 @@ const TransactionReportList = () => {
                             <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
                                 <PageviewIcon color="primary" />
                             </Link>
-                            <Form.Control type="text" value={"₱ " + payment.total_amount} />
+                            <Form.Control type="text" value={numberFormat(payment.total_amount)} />
                         </Form.Group>
                     )
                     )
@@ -328,19 +374,19 @@ const TransactionReportList = () => {
                     </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Cash Payment: </Form.Label>
-                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_cash} />
+                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash)} />
                     </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Online Payment: </Form.Label>
-                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_online} />
+                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online)} />
                     </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Sales: </Form.Label>
-                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_price} />
+                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_price)} />
                     </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Profit: </Form.Label>
-                        <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
+                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
                     </Form.Group>
 
 
@@ -400,15 +446,15 @@ const TransactionReportList = () => {
                                         <td>{shopOrderTransaction.shop_name}</td>
                                         <td>{shopOrderTransaction.customer_type}</td>
                                         <td>{shopOrderTransaction.requestor_name}</td>
-                                        <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                        <td>{shopOrderTransaction.total_cash}</td>
-                                        <td>{shopOrderTransaction.total_online}</td>
+                                        <td>{shopOrderTransaction.shop_order_transaction_total_quantity != 0 ? shopOrderTransaction.shop_order_transaction_total_quantity : ""}</td>
+                                        <td>{shopOrderTransaction.total_cash != 0 ? numberFormat(shopOrderTransaction.total_cash) : ""}</td>
+                                        <td>{shopOrderTransaction.total_online != 0 ? numberFormat(shopOrderTransaction.total_online) : ""}</td>
                                         <td>{shopOrderTransaction.status == 1 ? (
 
                                             shopOrderTransaction.mode_of_payment.map((sot, index) => (
                                                 <>
                                                     <tr>
-                                                        <td><p style={{ fontSize: 12 }}>{sot.amount}</p></td>
+                                                        <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
                                                         <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
                                                     </tr>
                                                 </>
@@ -416,8 +462,9 @@ const TransactionReportList = () => {
                                             )
                                         ) : (<></>)
                                         }</td>
-                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
+
+                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price != 0 ? numberFormat(shopOrderTransaction.shop_order_transaction_total_price) : ""}</td>
+                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}</td>
                                         <td>{shopOrderTransaction.date}</td>
                                         <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                             : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
