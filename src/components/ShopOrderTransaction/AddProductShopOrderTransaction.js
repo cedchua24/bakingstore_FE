@@ -91,6 +91,7 @@ const AddProductCustomerOrderTransaction = () => {
         shop_order_price: 0,
         business_type: '',
         stock: 0,
+        sale_price: 0,
         shop_order_total_price: 0,
         created_at: ''
     });
@@ -202,7 +203,7 @@ const AddProductCustomerOrderTransaction = () => {
                     message: 'Quantity is more than to Stocks',
                     isShow: true,
                 });
-            } else if (orderShop.shop_order_profit < 1) {
+            } else if (orderShop.shop_order_profit < 1 && orderShop.sale_price < 1) {
                 setValidator({
                     severity: 'error',
                     message: 'Price is less than to Capital',
@@ -359,6 +360,7 @@ const AddProductCustomerOrderTransaction = () => {
             order_profit: value.profit,
             product_id: value.product_id,
             stock: value.stock,
+            sale_price: value.sale_price,
             business_type: value.business_type,
             shop_order_total_price: Number(value.new_price) * Number(orderShop.shop_order_quantity)
         });
@@ -369,7 +371,7 @@ const AddProductCustomerOrderTransaction = () => {
     const fetchProductList = () => {
         MarkUpPriceService.getAll()
             .then(response => {
-                console.log("prodcut", response.data)
+                console.log("product List: ", response.data)
                 setProducts(response.data);
             })
             .catch(e => {
@@ -609,7 +611,7 @@ const AddProductCustomerOrderTransaction = () => {
                             id="disable-close-on-select"
                             onChange={handleInputChange}
                             groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " + products.packaging : '') + ' - ' + (products.business_type === 'WHOLESALE' ? (" ") + products.weight : Number.isInteger(products.weight / products.quantity) ? products.weight / products.quantity : (products.weight / products.quantity).toPrecision(2)) + products.variation + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock}
+                            getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " + products.packaging : '') + ' - ' + (products.business_type === 'WHOLESALE' ? (" ") + products.weight : Number.isInteger(products.weight / products.quantity) ? products.weight / products.quantity : (products.weight / products.quantity).toPrecision(2)) + products.variation + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock + (products.sale_price > 0 ? " SALE" : "")}
 
                             renderInput={(params) => (
                                 <TextField

@@ -24,6 +24,7 @@ const EditProduct = () => {
         brand_name: '',
         product_name: "",
         price: 0,
+        sale_price: 0,
         stock: 0,
         weight: 0,
         quantity: 0,
@@ -50,36 +51,8 @@ const EditProduct = () => {
         }
     }
 
-    const onChangeProduct = (e) => {
-        setProduct({ ...product, product_name: e.target.value });
-    }
-
-    const onChangeCategory = (e) => {
-        setProduct({ ...product, category_id: e.target.value });
-    }
-
-    const onChangeBrand = (e) => {
-        setProduct({ ...product, brand_id: e.target.value });
-    }
-
-    const onChangePrice = (e) => {
-        setProduct({ ...product, price: e.target.value });
-    }
-
-    const onChangeStock = (e) => {
-        setProduct({ ...product, stock: e.target.value });
-    }
-
-    const onChangeWeight = (e) => {
-        setProduct({ ...product, weight: e.target.value });
-    }
-
-    const onChangeQuantity = (e) => {
-        setProduct({ ...product, quantity: e.target.value });
-    }
-
-    const onChangeStockWarning = (e) => {
-        setProduct({ ...product, stock_warning: e.target.value });
+    const onChange = (e) => {
+        setProduct({ ...product, [e.target.name]: e.target.value });
     }
 
     const updateProduct = () => {
@@ -144,11 +117,11 @@ const EditProduct = () => {
                     label="Product"
                     className="w-25 mb-3"
                 >
-                    <Form.Control type="text" value={product.product_name} name="product_name" onChange={onChangeProduct} />
+                    <Form.Control type="text" value={product.product_name} name="product_name" onChange={onChange} />
                 </FloatingLabel>
 
                 <div class="form-floating">
-                    <Form.Select aria-label="Default select example" id="floatingCategory" defaultValue={product.category_id} className="w-25 mb-3" onChange={onChangeCategory} >
+                    <Form.Select aria-label="Default select example" name="category_id" id="floatingCategory" defaultValue={product.category_id} className="w-25 mb-3" onChange={onChange} >
                         {
                             categeryList.map((category, index) => (
                                 category.id === product.category_id ? <option selected key={category.id} value={category.id}>{category.category_name}</option> :
@@ -160,7 +133,7 @@ const EditProduct = () => {
                 </div>
 
                 <div class="form-floating">
-                    <Form.Select aria-label="Default select example" id="floatingBrand" className="w-25 mb-3" defaultValue={product.brand_id} onChange={onChangeBrand}  >
+                    <Form.Select aria-label="Default select example" name="brand_id" id="floatingBrand" className="w-25 mb-3" defaultValue={product.brand_id} onChange={onChange}  >
                         {
                             brandList.map((brand, index) => (
                                 brand.id === product.brand_id ? <option selected key={brand.id} value={brand.id}>{brand.brand_name}</option> :
@@ -175,9 +148,18 @@ const EditProduct = () => {
                     label="Price"
                     className="w-25 mb-3"
                 >
-                    <Form.Control type="number" value={product.price} onChange={onChangePrice} />
+                    <Form.Control type="number" name="price" value={product.price} onChange={onChange} />
                 </FloatingLabel>
-
+                {product.weight != 1 &&
+                    <FloatingLabel
+                        controlId="floatingInput"
+                        label={"Price per " + product.variation}
+                        className="w-25 mb-3"
+                        disabled
+                    >
+                        <Form.Control type="number" value={product.price / product.quantity} onChange={onChange} disabled />
+                    </FloatingLabel>
+                }
                 {/* <FloatingLabel
                     controlId="floatingInput"
                     label="Stock"
@@ -191,7 +173,7 @@ const EditProduct = () => {
                     label="Weight"
                     className="w-25 mb-3"
                 >
-                    <Form.Control type="number" value={product.weight} onChange={onChangeWeight} />
+                    <Form.Control type="number" name="weight" value={product.weight} onChange={onChange} />
                 </FloatingLabel>
 
                 <FloatingLabel
@@ -199,7 +181,7 @@ const EditProduct = () => {
                     label="Quantity"
                     className="w-25 mb-3"
                 >
-                    <Form.Control type="number" value={product.quantity} onChange={onChangeQuantity} />
+                    <Form.Control type="number" name="quantity" value={product.quantity} onChange={onChange} />
                 </FloatingLabel>
 
                 <FloatingLabel
@@ -207,8 +189,25 @@ const EditProduct = () => {
                     label="Stock Warning"
                     className="w-25 mb-3"
                 >
-                    <Form.Control type="number" value={product.stock_warning} onChange={onChangeStockWarning} />
+                    <Form.Control type="number" name="stock_warning" value={product.stock_warning} onChange={onChange} />
                 </FloatingLabel>
+
+                <FloatingLabel
+                    controlId="floatingInput"
+                    label="Sale Price Wholesale"
+                    className="w-25 mb-3"
+                >
+                    <Form.Control type="number" name="sale_price" value={product.sale_price} onChange={onChange} />
+                </FloatingLabel>
+                {product.sale_price != 0 &&
+                    <FloatingLabel
+                        controlId="floatingInput"
+                        label="Sale Price Retail"
+                        className="w-25 mb-3"
+                    >
+                        <Form.Control type="number" name="sale_price" value={Math.floor(product.sale_price / product.quantity)} disabled />
+                    </FloatingLabel>
+                }
 
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Disabled ? </Form.Label>
