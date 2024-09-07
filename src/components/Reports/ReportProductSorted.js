@@ -130,6 +130,11 @@ const ReportProductSorted = () => {
     }));
 
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
 
     return (
         <div>
@@ -215,7 +220,8 @@ const ReportProductSorted = () => {
                         <th>Product Name</th>
                         <th>Profit</th>
                         <th>Amount</th>
-                        <th>Quantity</th>
+                        <th>Sold</th>
+                        <th>Current Stock</th>
                     </tr>
                 </thead>
                 {sortedQuantity.data.length == 0 ?
@@ -229,10 +235,11 @@ const ReportProductSorted = () => {
                                         <td>{data.id}</td>
                                         <td>{data.business_type}</td>
                                         <td>{data.product_name}</td>
-                                        <td>{data.total_profit}</td>
-                                        {sortedQuantity.id == 3 || sortedQuantity.id == 4 ? <td style={{ fontWeight: 'bold', }}>{data.total_price}</td> : <td >{data.total_price}</td>}
+                                        <td>{numberFormat(data.total_profit)}</td>
+                                        {sortedQuantity.id == 3 || sortedQuantity.id == 4 ? <td style={{ fontWeight: 'bold', }}>{numberFormat(data.total_price)}</td> : <td >{numberFormat(data.total_price)}</td>}
                                         {/* <td style={{ fontWeight: 'bold', }}>{sortedQuantity.total_quantity}</td> */}
                                         {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td style={{ fontWeight: 'bold', }}>{data.total_quantity}</td> : <td >{data.total_quantity}</td>}
+                                        <td>{data.business_type === 'WHOLESALE' ? data.stock : data.stock_pc}</td>
                                     </tr>
                                 )
                                 )
