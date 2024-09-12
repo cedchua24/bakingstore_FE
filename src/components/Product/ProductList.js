@@ -356,7 +356,7 @@ const ProductList = () => {
                                         <td>₱ {product.price}.00</td>
                                         {/* <td>{product.weight}x{product.quantity}kg</td> */}
                                         <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
-                                            : <p >{product.quantity}x{product.weight / product.quantity}kg</p>}
+                                            : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
                                         </td>
                                         <td>{product.stock}</td>
                                         <td>{product.stock_pc}</td>

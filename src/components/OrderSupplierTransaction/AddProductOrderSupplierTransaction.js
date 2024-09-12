@@ -184,7 +184,7 @@ const AddProductOrderSupplierTransaction = () => {
             setOrderSupplier({
                 ...orderSupplier,
                 variation: e.target.value,
-                price: Math.floor(orderSupplier.real_price / orderSupplier.weight)
+                price: Math.floor(orderSupplier.real_price / orderSupplier.quantity)
             });
 
         } else if (e.target.value === 'WHOLESALE') {
