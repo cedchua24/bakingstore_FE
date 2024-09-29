@@ -232,11 +232,11 @@ const PaymentTypeSales = () => {
             >
                 <Box sx={style}>
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Pick Up Status
+                        Status
                     </Typography>
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>is Pick-up ? </Form.Label>
+                        <Form.Label>Payment confirm ? </Form.Label>
 
                         <Checkbox
                             checked={shopOrderTransactionUpdateModal.is_paid === 0 ? false : true}
