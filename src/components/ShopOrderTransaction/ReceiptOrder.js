@@ -114,6 +114,14 @@ const ReceiptOrder = () => {
     }
 
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
+
+
     const print = () => {
 
         setIsPrinting(true);
@@ -178,7 +186,7 @@ const ReceiptOrder = () => {
                     <tr>
                         <td></td>
                         <td></td>
-                        <td>Tax - {`${(TAX_RATE * 100).toFixed(0)} %`}</td>
+                        <td>Vat - {`${(TAX_RATE * 100).toFixed(0)} %`}</td>
                         {/* <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell> */}
                         {/* <td>{`${(TAX_RATE * 100).toFixed(0)} %`}</td> */}
                         <td> {ccyFormat(invoiceTaxes)}</td>
@@ -188,7 +196,7 @@ const ReceiptOrder = () => {
                         <td></td>
                         <td></td>
                         <td style={{ fontWeight: 'bold' }}>Grand Total</td>
-                        <td style={{ fontWeight: 'bold' }}>₱ {ccyFormat(invoiceTotal)}</td>
+                        <td style={{ fontWeight: 'bold' }}>{numberFormat(invoiceTotal)}</td>
                     </tr>
 
                 </table>

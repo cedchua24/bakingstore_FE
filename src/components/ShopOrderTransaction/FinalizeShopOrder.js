@@ -253,32 +253,33 @@ const FinalizeShopOrder = () => {
                 isShow: true,
             });
         } else {
-            if (result == undefined) {
-                setSubmitLoadingAdd(true);
-                ModeOfPaymentService.sanctum().then(response => {
-                    ModeOfPaymentService.create(modeOfPayment)
-                        .then(response => {
-                            fetchPaymentTypeByShopTransactionId(id);
-                            setSubmitLoadingAdd(false);
-                            setValidator({
-                                severity: 'success',
-                                message: 'Sucessfully added!',
-                                isShow: true,
-                            });
-                        })
-                        .catch(e => {
-                            setSubmitLoadingAdd(false);
-                            console.log(e);
+            // if (result == undefined) { 
+            setSubmitLoadingAdd(true);
+            ModeOfPaymentService.sanctum().then(response => {
+                ModeOfPaymentService.create(modeOfPayment)
+                    .then(response => {
+                        fetchPaymentTypeByShopTransactionId(id);
+                        setSubmitLoadingAdd(false);
+                        setValidator({
+                            severity: 'success',
+                            message: 'Sucessfully added!',
+                            isShow: true,
                         });
-                });
-            } else {
-                setValidator({
-                    severity: 'error',
-                    message: 'Please Select other Payment method!',
-                    isShow: true,
-                });
+                    })
+                    .catch(e => {
+                        setSubmitLoadingAdd(false);
+                        console.log(e);
+                    });
+            });
+            // }
+            //  else {
+            //     setValidator({
+            //         severity: 'error',
+            //         message: 'Please Select other Payment method!',
+            //         isShow: true,
+            //     });
 
-            }
+            // }
         }
     }
 
@@ -723,7 +724,6 @@ const FinalizeShopOrder = () => {
                         :
                         (<Div>
                             <Button
-                                disabled={modeOfPaymentDTO.balance != 0}
                                 variant="contained"
                                 onClick={openSubmit}
                                 size="large" >
@@ -822,7 +822,7 @@ const FinalizeShopOrder = () => {
                             type="submit"
                             onClick={updateOrderSupplier}
                             size="large" >
-                            Submits
+                            Submit
                         </Button>
                     </Box>
                 </Box>

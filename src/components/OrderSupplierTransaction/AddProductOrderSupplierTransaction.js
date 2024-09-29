@@ -515,24 +515,9 @@ const AddProductOrderSupplierTransaction = () => {
                     <br></br>
                     {formErrors.product_id && <p style={{ color: "red" }}>{formErrors.product_id}</p>}
                     <FormControl variant="standard" >
-                        {/* <Autocomplete
-                            // {...defaultProps}
-                            // options={products}
-                            options={products.sort((a, b) =>
-                                b.category_name.toString().localeCompare(a.category_name.toString())
-                            )}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleInputChange}
-                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg'}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Choose Product" variant="standard" />
-                            )}
-                        /> */}
-
                         <Autocomplete
                             sx={{
-                                width: 800
+                                '& .MuiTextField-root': { m: 1, width: '65ch' },
                             }}
                             // options={products}
                             options={products.sort((a, b) =>
