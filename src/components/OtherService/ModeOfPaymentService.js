@@ -22,6 +22,9 @@ class ModeOfPaymentService {
     update(id, data) {
         return axios.put(`/api/modeOfPayment/${id}`, data);
     }
+    updatePaidStatus(id, data) {
+        return axios.put(`/api/modeOfPayment/updatePaidStatus/${id}`, data);
+    }
     delete(brand, data) {
         return axios.delete(`/api/modeOfPayment/${brand}`, data);
     }

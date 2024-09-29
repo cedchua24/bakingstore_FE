@@ -23,6 +23,8 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 import LinearProgress from '@mui/material/LinearProgress';
 
@@ -312,6 +314,11 @@ const CustomerOrderTransactionList = () => {
         }
     }
 
+    const filterByPaid = (shopOrderTransaction2) => {
+        return shopOrderTransaction2.filter(s => s.is_paid == 1);
+    };
+
+
     const style = {
         position: 'absolute',
         top: '50%',
@@ -380,11 +387,16 @@ const CustomerOrderTransactionList = () => {
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
+                            <Form.Label> {payment.payment_type} {payment.payment_type_description} </Form.Label>
                             <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
                                 <PageviewIcon color="primary" />
-                            </Link>
+                            </Link> {payment.total_paid_count != payment.total_count ? <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
+                                <span>
+                                    <CloseIcon style={{ color: 'red', }} />
+                                </span>
+                            </Tooltip> : <CheckIcon style={{ color: 'green', }} />}
                             <Form.Control type="text" value={numberFormat(payment.total_amount)} />
+
                         </Form.Group>
                     )
                     )

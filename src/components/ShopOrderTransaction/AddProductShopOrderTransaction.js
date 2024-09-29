@@ -522,14 +522,11 @@ const AddProductCustomerOrderTransaction = () => {
         padding: theme.spacing(1),
     }));
 
-    const formatter = new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-
-        // These options are needed to round to whole numbers if that's what you want.
-        //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
-        //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
-    });
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
 
 
     return (
@@ -879,10 +876,10 @@ const AddProductCustomerOrderTransaction = () => {
                 ))
                 }
                 <br></br>
-                <h6>Total: ₱ {orderShopDTO.shopOrderTransaction.shop_order_transaction_total_price} </h6>
+                <h6>Total: {numberFormat(orderShopDTO.shopOrderTransaction.shop_order_transaction_total_price)} </h6>
 
             </div>
-
+            <br></br>
         </div >
     )
 }

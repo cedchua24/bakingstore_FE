@@ -3,9 +3,16 @@ import { Button } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import ModeOfPaymentService from "../OtherService/ModeOfPaymentService"
 import { Form } from 'react-bootstrap';
 import IconButton from '@mui/material/IconButton';
 import UpdateIcon from '@mui/icons-material/Update';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography'
+import Modal from '@mui/material/Modal';
+import Checkbox from '@mui/material/Checkbox';
 
 const PaymentTypeSales = () => {
 
@@ -16,10 +23,29 @@ const PaymentTypeSales = () => {
         fetchShopOrderTransactionList();
     }, []);
 
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 300,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    };
+
     const [date, setDate] = useState({
         id: 0,
         newDate: ''
     });
+
+    const [count, setCount] = useState(0);
+
+    const [open, setOpen] = React.useState(false);
+    const [openPickUp, setOpenPickUp] = React.useState(false);
+    const handleClosePickUp = () => setOpen(false);
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         data: [],
@@ -29,6 +55,40 @@ const PaymentTypeSales = () => {
         total_price: 0,
         total_profit: 0
     });
+
+    const [shopOrderTransactionUpdateModal, setShopOrderTransactionUpdateModal] = useState({
+        id: 0,
+        payment_type_id: 0,
+        shop_order_transaction_id: 0,
+        amount: 0,
+        is_paid: 0
+    });
+
+
+    const onChangePaymentTypeStatus = (e) => {
+
+        console.log("error", e.target.checked)
+        if (e.target.type === 'checkbox') {
+            if (e.target.checked === true) {
+                setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_paid: 1 });
+            } else {
+                setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_paid: 0 });
+            }
+        } else {
+            setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_paid: e.target.value });
+        }
+    }
+
+    const fetchTransaction = async (id) => {
+        await ModeOfPaymentService.get(id)
+            .then(response => {
+                console.log("fetchTransaction", response.data);
+                setShopOrderTransactionUpdateModal(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
 
 
 
@@ -48,12 +108,36 @@ const PaymentTypeSales = () => {
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
+                setCount(filterByPaid(response.data.data).length)
             })
             .catch(e => {
                 console.log("error", e)
 
             });
     }
+
+    const filterByPaid = (shopOrderTransaction2) => {
+        return shopOrderTransaction2.filter(s => s.is_paid == 1);
+    };
+
+    const handleOpenPickUp = (id, e) => {
+        console.log('e', id);
+        fetchTransaction(id);
+        setOpenPickUp(true);
+    }
+
+    const updateDate = () => {
+        ModeOfPaymentService.updatePaidStatus(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
+            .then(response => {
+                fetchShopOrderTransactionList();
+                setOpen(false);
+                setOpenPickUp(false);
+            })
+            .catch(e => {
+                console.log(e);
+            });
+    }
+
 
 
     return (
@@ -69,6 +153,11 @@ const PaymentTypeSales = () => {
                     )
                     )
                 }
+
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label style={{ fontWeight: 'bold' }}> Count</Form.Label>
+                    <Form.Control type="text" value={filterByPaid(shopOrderTransaction.data).length + "/" + shopOrderTransaction.data.length} />
+                </Form.Group>
 
             </div>
 
@@ -89,6 +178,8 @@ const PaymentTypeSales = () => {
                         <th>Profit</th>
                         <th>Date</th>
                         <th>Status</th>
+                        <th>Payment Record</th>
+                        <th></th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -111,18 +202,63 @@ const PaymentTypeSales = () => {
                                     : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                         <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
                                 <td>
-                                    <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
+                                    {shopOrderTransaction.is_paid === 1 ? <CheckIcon style={{ color: 'green', }} /> :
+                                        <CloseIcon style={{ color: 'red', }} />}
+                                    <IconButton>
+                                        <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
+                                    </IconButton>
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.shop_order_transaction_id}   >
                                         <Button variant="primary" >
                                             View
                                         </Button>
                                     </Link>
                                 </td>
                             </tr>
+
                         )
                         )
                     }
                 </tbody>
             </table>
+
+            <Modal
+                keepMounted
+                open={openPickUp}
+                onClose={handleClosePickUp}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                        Pick Up Status
+                    </Typography>
+
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>is Pick-up ? </Form.Label>
+
+                        <Checkbox
+                            checked={shopOrderTransactionUpdateModal.is_paid === 0 ? false : true}
+                            onChange={onChangePaymentTypeStatus}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                        />
+                    </Form.Group>
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Button variant="primary" onClick={updateDate}>
+                            Submit
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
 
         </div >
     )
