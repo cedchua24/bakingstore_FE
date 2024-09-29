@@ -19,6 +19,8 @@ import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import Tooltip from '@mui/material/Tooltip';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 import LinearProgress from '@mui/material/LinearProgress';
 
@@ -353,6 +355,12 @@ const TransactionReportList = () => {
                             <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
                                 <PageviewIcon color="primary" />
                             </Link>
+                            {payment.total_paid_count != payment.total_count ?
+                                <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
+                                    <span>
+                                        <CloseIcon style={{ color: 'red', }} />
+                                    </span>
+                                </Tooltip> : <CheckIcon style={{ color: 'green', }} />}
                             <Form.Control type="text" value={numberFormat(payment.total_amount)} />
                         </Form.Group>
                     )

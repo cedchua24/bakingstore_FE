@@ -390,11 +390,13 @@ const CustomerOrderTransactionList = () => {
                             <Form.Label> {payment.payment_type} {payment.payment_type_description} </Form.Label>
                             <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
                                 <PageviewIcon color="primary" />
-                            </Link> {payment.total_paid_count != payment.total_count ? <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
-                                <span>
-                                    <CloseIcon style={{ color: 'red', }} />
-                                </span>
-                            </Tooltip> : <CheckIcon style={{ color: 'green', }} />}
+                            </Link>
+                            {payment.total_paid_count != payment.total_count ?
+                                <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
+                                    <span>
+                                        <CloseIcon style={{ color: 'red', }} />
+                                    </span>
+                                </Tooltip> : <CheckIcon style={{ color: 'green', }} />}
                             <Form.Control type="text" value={numberFormat(payment.total_amount)} />
 
                         </Form.Group>
