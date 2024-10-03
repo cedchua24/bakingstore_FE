@@ -43,6 +43,13 @@ const PaymentTypeSales = () => {
 
     const [count, setCount] = useState(0);
 
+    const [paymentDetails, setPaymentDetails] = useState({
+        discrepancy: 0,
+        paid: 0,
+        nonPaid: 0,
+        count: 0
+    });
+
     const [open, setOpen] = React.useState(false);
     const [openPickUp, setOpenPickUp] = React.useState(false);
     const handleClosePickUp = () => setOpen(false);
@@ -106,9 +113,19 @@ const PaymentTypeSales = () => {
 
         ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByIdDate(valueParam[0], valueParam[1])
             .then(response => {
+                console.log('fetchOnlineShopOrderTransactionListByIdDate', response.data)
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
-                setCount(filterByPaid(response.data.data).length)
+                // console.log('filterByPaid', filterByPaid(response.data.data));
+                console.log('filterByPaid', subtotal(filterByPaid(response.data.data)));
+                console.log('filterByNonPaid', subtotal(filterByNonPaid(response.data.data)));
+                setCount(filterByPaid(response.data.data).length);
+                setPaymentDetails({
+                    ...paymentDetails,
+                    paid: subtotal(filterByPaid(response.data.data)),
+                    nonPaid: subtotal(filterByNonPaid(response.data.data)),
+                    count: filterByPaid(response.data.data).length
+                });
             })
             .catch(e => {
                 console.log("error", e)
@@ -119,6 +136,17 @@ const PaymentTypeSales = () => {
     const filterByPaid = (shopOrderTransaction2) => {
         return shopOrderTransaction2.filter(s => s.is_paid == 1);
     };
+
+    const filterByNonPaid = (shopOrderTransaction2) => {
+        return shopOrderTransaction2.filter(s => s.is_paid == 0);
+    };
+
+    function subtotal(items) {
+        console.log(items);
+        return items.reduce((total, currentValue) => total = total + currentValue.amount, 0);
+
+        // return items.map(({ items }) => items.amount).reduce((sum, i) => sum + i, 0);
+    }
 
     const handleOpenPickUp = (id, e) => {
         console.log('e', id);
@@ -144,19 +172,33 @@ const PaymentTypeSales = () => {
         <div>
             <div style={{ width: 300 }}>
 
-                {
-                    shopOrderTransaction.payment.map((payment, index) => (
-                        <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label style={{ fontWeight: 'bold' }}> {payment.payment_type} {payment.payment_type_description}</Form.Label>
-                            <Form.Control type="text" value={"₱ " + payment.total_amount} />
-                        </Form.Group>
-                    )
-                    )
-                }
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label style={{ fontWeight: 'bold' }}> {shopOrderTransaction.payment.payment_type} {shopOrderTransaction.payment.payment_type_description}</Form.Label>
+                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.payment.total_amount} />
+
+                </Form.Group>
+
+
 
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label style={{ fontWeight: 'bold' }}> Count</Form.Label>
+                    {filterByPaid(shopOrderTransaction.data).length == shopOrderTransaction.data.length ? <CheckIcon style={{ color: 'green', }} /> :
+                        <CloseIcon style={{ color: 'red', }} />}
                     <Form.Control type="text" value={filterByPaid(shopOrderTransaction.data).length + "/" + shopOrderTransaction.data.length} />
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label style={{ fontWeight: 'bold' }}> Payment</Form.Label>
+                    {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
+                        <CloseIcon style={{ color: 'red', }} />}
+                    <Form.Control type="text" value={paymentDetails.paid + "/" + shopOrderTransaction.payment.total_amount} />
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label style={{ fontWeight: 'bold' }}> Discrepancy</Form.Label>
+                    {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
+                        <CloseIcon style={{ color: 'red', }} />}
+                    <Form.Control type="text" value={shopOrderTransaction.payment.total_amount - paymentDetails.paid} />
                 </Form.Group>
 
             </div>
@@ -171,11 +213,11 @@ const PaymentTypeSales = () => {
                         <th>Shop Name</th>
                         <th>Customer Type</th>
                         <th>Customer</th>
+                        <th>Amount</th>
                         <th>Total Quantity</th>
                         <th>Total Cash</th>
                         <th>Total Online</th>
                         <th>Total Amount</th>
-                        <th>Profit</th>
                         <th>Date</th>
                         <th>Status</th>
                         <th>Payment Record</th>
@@ -192,11 +234,11 @@ const PaymentTypeSales = () => {
                                 <td>{shopOrderTransaction.shop_name}</td>
                                 <td>{shopOrderTransaction.customer_type}</td>
                                 <td>{shopOrderTransaction.requestor_name}</td>
+                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.amount}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                 <td>{shopOrderTransaction.total_cash}</td>
                                 <td>{shopOrderTransaction.total_online}</td>
-                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
+                                <td >{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                 <td>{shopOrderTransaction.date}</td>
                                 <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :

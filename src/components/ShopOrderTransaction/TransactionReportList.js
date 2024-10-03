@@ -221,9 +221,9 @@ const TransactionReportList = () => {
 
     const handleClose = () => setOpen(false);
 
-    const handleCloseRider = () => setOpen(false);
+    const handleCloseRider = () => setOpenRider(false);
 
-    const handleClosePickUp = () => setOpen(false);
+    const handleClosePickUp = () => setOpenPickUp(false);
 
     const [openRider, setOpenRider] = React.useState(false);
 
