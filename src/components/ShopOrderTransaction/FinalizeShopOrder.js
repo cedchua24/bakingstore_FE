@@ -724,6 +724,7 @@ const FinalizeShopOrder = () => {
                         :
                         (<Div>
                             <Button
+                                disabled={modeOfPaymentDTO.balance != 0}
                                 variant="contained"
                                 onClick={openSubmit}
                                 size="large" >
