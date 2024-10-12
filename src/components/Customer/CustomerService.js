@@ -10,6 +10,12 @@ class CustomerService {
   get(id) {
     return axios.get(`/api/customers/${id}`);
   }
+  fetchCustomerTransaction(id) {
+    return axios.get(`/api/customers/fetchCustomerTransaction/${id}`);
+  }
+  fetchCustomerProduct(id) {
+    return axios.get(`/api/customers/fetchCustomerProduct/${id}`);
+  }
   create(data) {
     return axios.post("/api/customers", data);
   }
