@@ -235,15 +235,15 @@ const CompletedShopOrderTransaction = () => {
                     <TableHead>
                         <TableRow>
                             <TableCell align="left" colSpan={3}>
-                                Details
+
                             </TableCell>
-                            <TableCell align="center" >Price</TableCell>
+                            <TableCell align="center" ></TableCell>
                         </TableRow>
-                        <TableRow>
-                            <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
-                            <TableCell align="right">Unit</TableCell>
-                            <TableCell align="right">Sum</TableCell>
+                        <TableRow >
+                            <TableCell style={{ fontWeight: 'bold', }}>Product</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Qty.</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Unit</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Sum</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

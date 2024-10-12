@@ -23,6 +23,8 @@ const CustomerList = (props) => {
                         <th>Status</th>
                         <th></th>
                         <th></th>
+                        <th></th>
+                        {/* <th></th> */}
                     </tr>
                 </thead>
                 <tbody>
@@ -46,10 +48,26 @@ const CustomerList = (props) => {
                                     </Link>
                                 </td>
                                 <td>
+
+                                    <Link variant="primary" to={"/customers/customerTransactionList/" + customer.id}   >
+                                        <Button variant="primary" >
+                                            View Transaction
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
+
+                                    <Link variant="primary" to={"/customers/customerProductList/" + customer.id}   >
+                                        <Button variant="primary" >
+                                            View Products
+                                        </Button>
+                                    </Link>
+                                </td>
+                                {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteCustomermr(customer.id, e)} >
                                         Delete
                                     </Button>
-                                </td>
+                                </td> */}
                             </tr>
                         )
                         )
