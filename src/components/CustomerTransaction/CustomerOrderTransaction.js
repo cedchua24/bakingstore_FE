@@ -8,7 +8,8 @@ import CustomerService from "../Customer/CustomerService";
 const CustomerOrderTransaction = () => {
 
     useEffect(() => {
-        fetchShopList();
+        // fetchShopList();
+        fetchShopActive();
         fetchUserList();
         fetchCustomerTypeList();
     }, []);
@@ -22,6 +23,17 @@ const CustomerOrderTransaction = () => {
 
     const fetchShopList = () => {
         ShopService.fetchOnlineOrderList()
+            .then(response => {
+                setShopList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+
+    const fetchShopActive = () => {
+        ShopService.fetchShopActive()
             .then(response => {
                 setShopList(response.data);
             })

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
 import CustomerService from "./CustomerService";
 import Checkbox from '@mui/material/Checkbox';
+import LinearProgress from '@mui/material/LinearProgress';
 
 const EditCustomer = () => {
 
@@ -20,6 +21,9 @@ const EditCustomer = () => {
         updated_at: ''
     });
 
+    const [formErrors, setFormErrors] = useState({});
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [message, setMessage] = useState(false);
 
     const onChangeCustomer = (e) => {
@@ -40,15 +44,46 @@ const EditCustomer = () => {
         }
     }
 
+    const validate = (values) => {
+        const errors = {};
+        if (customer.first_name == 0) {
+            errors.first_name = "First Name is Required!";
+        }
+        if (customer.last_name == 0) {
+            errors.last_name = "Last Name is Required!";
+        }
+
+
+
+        return errors;
+    }
+
+
     const saveCustomer = () => {
-        CustomerService.update(customer.id, customer)
-            .then(response => {
-                setCustomer(response.data);
-                setMessage(true);
-            })
-            .catch(e => {
-                console.log(e);
-            });
+        console.log('customer', customer);
+
+        console.log("count: ", Object.keys(validate(customer)).length);
+        console.log("validate: ", validate(customer));
+        setFormErrors(validate(customer));
+        if (Object.keys(validate(customer)).length > 0) {
+            console.log("Has Validation: ");
+
+        } else {
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+            CustomerService.update(customer.id, customer)
+                .then(response => {
+                    setCustomer(response.data);
+                    setMessage(true);
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                })
+                .catch(e => {
+                    console.log(e);
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                });
+        }
     }
 
     const fetchCustomer = (id) => {
@@ -74,10 +109,13 @@ const EditCustomer = () => {
                 </Alert>
             }
             <Form>
+                {formErrors.first_name && <p style={{ color: "red" }}>{formErrors.first_name}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>First Name</Form.Label>
                     <Form.Control type="text" value={customer.first_name} name="first_name" placeholder="Enter First Name" onChange={onChangeCustomer} />
                 </Form.Group>
+
+                {formErrors.last_name && <p style={{ color: "red" }}>{formErrors.last_name}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Last Name</Form.Label>
                     <Form.Control type="text" value={customer.last_name} name="last_name" placeholder="Enter Last Name" onChange={onChangeCustomer} />
@@ -104,9 +142,16 @@ const EditCustomer = () => {
                     />
                 </Form.Group>
 
-                <Button variant="primary" onClick={saveCustomer}>
+                <Button variant="primary"
+                    disabled={isAddDisabled}
+                    onClick={saveCustomer}>
                     Submit
                 </Button>
+                <br></br>
+                <br></br>
+                {submitLoadingAdd &&
+                    <LinearProgress color="warning" />
+                }
             </Form>
         </div>
     )

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form, Alert } from 'react-bootstrap';
 import CustomerServiceService from "./CustomerService";
+import LinearProgress from '@mui/material/LinearProgress';
 
 const AddCustomer = (props) => {
 
@@ -15,23 +16,59 @@ const AddCustomer = (props) => {
     });
 
     const [message, setMessage] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
 
     const onChangeCustomer = (e) => {
         setCustomer({ ...customer, [e.target.name]: e.target.value });
     }
 
+
+    const validate = (values) => {
+        const errors = {};
+        if (customer.first_name == 0) {
+            errors.first_name = "First Name is Required!";
+        }
+        if (customer.last_name == 0) {
+            errors.last_name = "Last Name is Required!";
+        }
+
+
+
+        return errors;
+    }
+
+
     const saveCustomer = () => {
-        console.log(customer);
-        CustomerServiceService.sanctum().then(response => {
-            CustomerServiceService.create(customer)
-                .then(response => {
-                    props.onSaveCustomerData(response.data);
-                    setMessage(true);
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        });
+
+        console.log('customer', customer);
+
+        console.log("count: ", Object.keys(validate(customer)).length);
+        console.log("validate: ", validate(customer));
+        setFormErrors(validate(customer));
+        if (Object.keys(validate(customer)).length > 0) {
+            console.log("Has Validation: ");
+
+        } else {
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+            console.log(customer);
+            CustomerServiceService.sanctum().then(response => {
+                CustomerServiceService.create(customer)
+                    .then(response => {
+                        props.onSaveCustomerData(response.data);
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
+                        setMessage(true);
+                    })
+                    .catch(e => {
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
+                        console.log(e);
+                    });
+            });
+        }
     }
 
     return (
@@ -48,13 +85,16 @@ const AddCustomer = (props) => {
             }
 
             <Form>
+                {formErrors.first_name && <p style={{ color: "red" }}>{formErrors.first_name}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>First Name *</Form.Label>
                     <Form.Control type="text" value={customer.first_name} name="first_name" placeholder="Enter First Name" onChange={onChangeCustomer} />
 
                 </Form.Group>
+
+                {formErrors.last_name && <p style={{ color: "red" }}>{formErrors.last_name}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Last Name</Form.Label>
+                    <Form.Label>Last Name *</Form.Label>
                     <Form.Control type="text" value={customer.last_name} name="last_name" placeholder="Enter Last Name" onChange={onChangeCustomer} />
 
                 </Form.Group>
@@ -74,9 +114,16 @@ const AddCustomer = (props) => {
 
                 </Form.Group>
 
-                <Button variant="primary" onClick={saveCustomer}>
+                <Button variant="primary"
+                    disabled={isAddDisabled}
+                    onClick={saveCustomer}>
                     Submit
                 </Button>
+                <br></br>
+                <br></br>
+                {submitLoadingAdd &&
+                    <LinearProgress color="warning" />
+                }
             </Form>
             <br></br>
 
