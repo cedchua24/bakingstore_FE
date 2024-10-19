@@ -9,6 +9,8 @@ import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
 import PaymentTypeService from "../OtherService/PaymentTypeService";
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
+import CustomerService from "../Customer/CustomerService";
+
 
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -60,13 +62,17 @@ const FinalizeShopOrder = () => {
         fetchShopOrderTransaction(id);
         fetchShopOrderDTO(id);
         fetchPaymentTypeByShopTransactionId(id);
+        fetchUserList();
 
     }, []);
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [submitLoadingCustomerAdd, setSubmitLoadingCustomerAdd] = useState(false);
+
     const [submitLoading, setSubmitLoading] = useState(false);
     const [submitOpenModal, setSubmitOpenModal] = React.useState(false);
     const [errorStock, setErrorStock] = useState(false);
+    const [customerList, setCustomerList] = useState([]);
 
     const handleSubmitCloseModal = () => {
         setSubmitOpenModal(false);
@@ -100,6 +106,22 @@ const FinalizeShopOrder = () => {
         updated_at: ''
     });
 
+    const [shopOrderTransactionV2, setShopOrderTransactionV2] = useState({
+        id: 0,
+        shop_id: 0,
+        shop_type_id: 0,
+        shop_order_transaction_total_quantity: 0,
+        shop_order_transaction_total_price: 0,
+        requestor: 0,
+        date: '',
+        checker: 0,
+        requestor_name: '',
+        status: 0,
+        checker_name: '',
+        created_at: '',
+        updated_at: ''
+    });
+
     const steps = [
         'Created Transaction Details',
         'Add Product Orders',
@@ -118,6 +140,8 @@ const FinalizeShopOrder = () => {
     const [invoiceTotal, setinvoiceTotal] = useState(0);
 
     const [orderList, setOrderList] = useState([]);
+
+    const [formErrors, setFormErrors] = useState({});
 
     const [orderSupplierTransaction, setOrderSupplierTransaction] = useState({
         id: 0,
@@ -178,11 +202,11 @@ const FinalizeShopOrder = () => {
 
 
     const fetchShopOrderTransaction = async (id) => {
-        console.log('test')
-        await ShopOrderTransactionService.fetchShopOrderTransaction(id)
+        await ShopOrderTransactionService.fetchShopOrderChickenTransaction(id)
             .then(response => {
                 console.log('fetchShopOrderTransaction', response.data)
                 setShopOrderTransaction(response.data);
+                setShopOrderTransactionV2(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -262,7 +286,7 @@ const FinalizeShopOrder = () => {
                         setSubmitLoadingAdd(false);
                         setValidator({
                             severity: 'success',
-                            message: 'Sucessfully added!',
+                            message: 'Payment added!',
                             isShow: true,
                         });
                     })
@@ -307,6 +331,15 @@ const FinalizeShopOrder = () => {
             ...modeOfPayment,
             shop_order_transaction_id: shopOrderTransaction.id,
             payment_type_id: value.id,
+        });
+    }
+
+    const handleInputCustomerChange = (e, value) => {
+        e.persist();
+        console.log("value", value)
+        setShopOrderTransactionV2({
+            ...shopOrderTransactionV2,
+            requestor: value.id,
         });
     }
 
@@ -448,6 +481,73 @@ const FinalizeShopOrder = () => {
         // }
     }
 
+    const validate = (values) => {
+        const errors = {};
+
+        if (shopOrderTransactionV2.requestor == 0) {
+            errors.requestor = "Customer Name is Required!";
+        }
+
+
+
+        return errors;
+    }
+
+    const saveOrderTransaction = () => {
+        console.log('orderTransaction', shopOrderTransactionV2);
+
+        console.log("count: ", Object.keys(validate(shopOrderTransactionV2)).length);
+        console.log("validate: ", validate(shopOrderTransactionV2));
+        setFormErrors(validate(shopOrderTransactionV2));
+        if (Object.keys(validate(shopOrderTransactionV2)).length > 0) {
+            console.log("Has Validation: ");
+
+        } else {
+            console.log("Ready for saving: ");
+            setSubmitLoadingCustomerAdd(true);
+            // setSubmitLoadingAdd(true);
+            // setIsAddDisabled(true);
+            // ShopOrderTransactionService.sanctum().then(response => {
+            //     ShopOrderTransactionService.update(shopOrderTransaction)
+            //         .then(response => {
+            //             setSubmitLoadingAdd(false);
+            //             // setIsAddDisabled(false);
+            //             // navigate('/shopOrderTransaction/addProductShopOrderTransaction/' + response.data.id);
+            //         })
+            //         .catch(e => {
+            //             setSubmitLoadingAdd(false);
+            //             // setIsAddDisabled(false);
+            //             console.log(e);
+            //         });
+            // });
+
+            ShopOrderTransactionService.update(shopOrderTransactionV2.id, shopOrderTransactionV2)
+                .then(response => {
+                    setValidator({
+                        severity: 'success',
+                        message: 'Customer Added!',
+                        isShow: true,
+                    });
+                    setSubmitLoadingCustomerAdd(false);
+                    fetchShopOrderTransaction(id);
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+        }
+    }
+
+
+    const fetchUserList = () => {
+        CustomerService.fetchCustomerEnabled()
+            .then(response => {
+                setCustomerList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
 
     const Div = styled('div')(({ theme }) => ({
         ...theme.typography.button,
@@ -519,16 +619,9 @@ const FinalizeShopOrder = () => {
                                 <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
                                 <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
 
-                                {shopOrderTransaction.checker != 0 ?
-                                    <>
-                                        <TableCell align="right" >Checker</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
-                                        <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
-                                    :
-                                    <>    <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
-                                }
+                                <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
+                                <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell>
+
 
                                 <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
                                 <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
@@ -537,9 +630,7 @@ const FinalizeShopOrder = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-                {modeOfPaymentDTO.balance != 0 && shopOrderTransaction.checker == 0 &&
-
-
+                {shopOrderTransaction.requestor == 0 &&
                     <Box
                         sx={{
                             '& .MuiTextField-root': { m: 1, width: '25ch' },
@@ -548,6 +639,46 @@ const FinalizeShopOrder = () => {
                         autoComplete="off"
                     // onSubmit={saveOrderSupplier}
                     >
+                        {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
+                        <FormControl variant="standard" >
+                            <Autocomplete
+                                // {...defaultProps}
+                                options={customerList}
+                                className="mb-3"
+                                id="disable-close-on-select"
+                                onChange={handleInputCustomerChange}
+                                getOptionLabel={(customerList) => customerList.first_name + " " + customerList.last_name}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Choose Customer" variant="standard" />
+                                )}
+                            />
+                        </FormControl>
+                        <br></br>
+                        <Button
+                            variant="contained"
+                            disabled={errorStock}
+                            onClick={saveOrderTransaction}
+                            size="large" >
+                            Add Customer
+                        </Button>
+                        <br></br>
+                        <br></br>
+                        {submitLoadingCustomerAdd &&
+                            <LinearProgress color="warning" />
+                        }
+
+                    </Box>
+                }
+                {modeOfPaymentDTO.balance != 0 && shopOrderTransaction.requestor != 0 &&
+                    <Box
+                        sx={{
+                            '& .MuiTextField-root': { m: 1, width: '25ch' },
+                        }}
+                        noValidate
+                        autoComplete="off"
+                    // onSubmit={saveOrderSupplier}
+                    >
+
                         <FormControl variant="standard" >
                             <Autocomplete
                                 // {...defaultProps}
@@ -586,10 +717,11 @@ const FinalizeShopOrder = () => {
 
                         <Button
                             variant="contained"
+                            color="success"
                             disabled={errorStock}
                             onClick={savePaymentType}
                             size="large" >
-                            Add
+                            Add Payment
                         </Button>
                         <br></br>
                         <br></br>
@@ -601,7 +733,8 @@ const FinalizeShopOrder = () => {
             </Box>
 
             <br></br>
-            {shopOrderTransaction.checker == 0 &&
+            {
+                shopOrderTransaction.checker == 0 &&
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                         <TableHead>
@@ -712,27 +845,16 @@ const FinalizeShopOrder = () => {
                         justifyContent: 'center',
                     }}
                 >
-                    {shopOrderTransaction.checker != 0 ? (
-                        <Div>
-                            <Button
-                                variant="contained"
-                                onClick={openSubmit}
-                                size="large" >
-                                Submit
-                            </Button>
-                        </Div>)
-                        :
-                        (<Div>
-                            <Button
-                                disabled={modeOfPaymentDTO.balance != 0}
-                                variant="contained"
-                                onClick={openSubmit}
-                                size="large" >
-                                Submit
-                            </Button>
-                        </Div>)
-                    }
 
+                    <Div>
+                        <Button
+                            disabled={modeOfPaymentDTO.balance != 0}
+                            variant="contained"
+                            onClick={openSubmit}
+                            size="large" >
+                            Submit
+                        </Button>
+                    </Div>
                 </Box>
             </form>
 

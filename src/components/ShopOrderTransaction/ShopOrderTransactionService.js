@@ -55,6 +55,9 @@ class ShopOrderTransactionService {
     fetchShopOrderTransaction(id) {
         return axios.get(`/api/shopOrderTransaction/fetchShopOrderTransaction/${id}`);
     }
+    fetchShopOrderChickenTransaction(id) {
+        return axios.get(`/api/shopOrderTransaction/fetchShopOrderChickenTransaction/${id}`);
+    }
     updateShopOrderTransactionStatus(id, data) {
         return axios.put(`/api/shopOrderTransaction/updateShopOrderTransactionStatus/${id}`, data);
     }

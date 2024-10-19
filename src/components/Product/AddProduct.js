@@ -404,14 +404,16 @@ const AddProduct = () => {
           <option value="Box">Box</option>
           <option value="Plastic">Plastic</option>
           <option value="Galloon">Galloon</option>
+          <option value="Whole">Whole</option>
 
         </Form.Select>
 
         {formErrors.variation && <p style={{ color: "red" }}>{formErrors.variation}</p>}
         <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangeVariation}  >
           <option>Select Variation</option>
-          <option value="kg">kg</option>
-          <option value="pcs">pcs</option>
+          <option value="Kg">Kg</option>
+          <option value="Pcs">Pc</option>
+          <option value="Quarter">Quarter</option>
 
         </Form.Select>
 

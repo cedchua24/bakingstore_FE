@@ -393,7 +393,6 @@ const AddMarkUpPrice = (props) => {
                                     label="Price"
                                     variant="filled"
                                     name='price'
-                                    disabled
                                     value={markUpPriceRetail.price}
                                     onChange={onChangeInputRetail}
                                     startAdornment={<InputAdornment position="start">₱</InputAdornment>}

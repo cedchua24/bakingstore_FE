@@ -71,9 +71,9 @@ const AddCustomerOrderTransactionV2 = (props) => {
         if (shopOrderTransaction.customer_type_id == 0) {
             errors.customer_type_id = "Customer Type is Required!";
         }
-        if (shopOrderTransaction.requestor == 0) {
-            errors.requestor = "Customer Name is Required!";
-        }
+        // if (shopOrderTransaction.requestor == 0) {
+        //     errors.requestor = "Customer Name is Required!";
+        // }
         if (shopOrderTransaction.date.length == 0) {
             errors.date = "Date is Required!";
         }
@@ -202,7 +202,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
                             }
                         </Select>
                     </FormControl> */}
-                    {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
+                    {/* {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
                     <FormControl variant="standard" >
                         <Autocomplete
                             // {...defaultProps}
@@ -215,7 +215,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
                                 <TextField {...params} label="Choose Customer" variant="standard" />
                             )}
                         />
-                    </FormControl>
+                    </FormControl> */}
                 </Box>
                 {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">

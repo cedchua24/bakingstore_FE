@@ -381,7 +381,7 @@ const AddProductCustomerOrderTransaction = () => {
 
     const fetchShopOrderTransaction = async (id) => {
         console.log('test')
-        await ShopOrderTransactionService.fetchShopOrderTransaction(id)
+        await ShopOrderTransactionService.fetchShopOrderChickenTransaction(id)
             .then(response => {
                 console.log('fetchShopOrderTransaction', response.data)
                 setShopOrderTransaction(response.data);
@@ -566,18 +566,6 @@ const AddProductCustomerOrderTransaction = () => {
                             <TableRow >
                                 <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
                                 <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
-
-                                {shopOrderTransaction.checker != 0 ?
-                                    <>
-                                        <TableCell align="right" >Checker</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
-                                        <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
-                                    :
-                                    <>  <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
-                                }
-
                                 <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
                                 <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
 
@@ -608,7 +596,7 @@ const AddProductCustomerOrderTransaction = () => {
                             id="disable-close-on-select"
                             onChange={handleInputChange}
                             groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " + products.packaging : '') + ' - ' + (products.business_type === 'WHOLESALE' ? (" ") + products.weight : Number.isInteger(products.weight / products.quantity) ? products.weight / products.quantity : (products.weight / products.quantity).toPrecision(2)) + products.variation + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock + (products.sale_price > 0 ? " SALE" : "")}
+                            getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " : '') + '  ' + (products.business_type === 'WHOLESALE' ? (" ") : Number.isInteger(products.weight / products.quantity) ? products.variation : (products.weight / products.quantity).toPrecision(2)) + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock + (products.sale_price > 0 ? " SALE" : "")}
 
                             renderInput={(params) => (
                                 <TextField
