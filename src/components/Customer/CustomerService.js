@@ -13,6 +13,9 @@ class CustomerService {
   fetchCustomerTransaction(id) {
     return axios.get(`/api/customers/fetchCustomerTransaction/${id}`);
   }
+  fetchCustomerTransactionList(id) {
+    return axios.get(`/api/customers/fetchCustomerTransactionList/${id}`);
+  }
   fetchCustomerProduct(id) {
     return axios.get(`/api/customers/fetchCustomerProduct/${id}`);
   }

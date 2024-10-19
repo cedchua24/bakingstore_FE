@@ -11,7 +11,6 @@ class StockOrderService {
     fetchById(id) {
         return axios.get(`/api/stockOrder/fetchById/${id}`);
     }
-
     fetchShopList() {
         return axios.get(`/api/stockOrder/fetchShopList`);
     }

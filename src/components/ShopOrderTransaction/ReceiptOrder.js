@@ -37,6 +37,9 @@ const ReceiptOrder = () => {
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         id: 0,
         shop_id: 0,
+        shop_name: '',
+        address: '',
+        contact_number: '',
         shop_order_transaction_total_quantity: 0,
         shop_order_transaction_total_price: 0,
         requestor: 0,
@@ -143,9 +146,9 @@ const ReceiptOrder = () => {
             }
             <br></br>
             <div>
-                <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}> MDR COFFEE AND MILK TEA SUPPLIES</h3>
-                <p style={{ textAlign: 'center' }}> 1897 Jordan Street Tabon Malaria Bgy 185, Caloocan</p>
-                <p style={{ textAlign: 'center' }}>Contact Number:  0999 514 1775</p>
+                <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}> {shopOrderTransaction.shop_name}</h3>
+                <p style={{ textAlign: 'center' }}> {shopOrderTransaction.address}</p>
+                <p style={{ textAlign: 'center' }}>Contact Number:  {shopOrderTransaction.contact_number}</p>
                 <table class="print-receipt" >
 
                     <tr>
