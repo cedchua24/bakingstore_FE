@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ExpensesService from "../Expenses/ExpensesService";
+import ShopService from "../Shop/ShopService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -50,6 +52,12 @@ const CustomerOrderTransactionList = () => {
         data: [],
         code: '',
         message: '',
+    });
+
+    const [shop, setShop] = useState({
+        id: 0,
+        shop_type_id: 0,
+        shop_name: ''
     });
 
     const [status, setStatus] = useState(0);
@@ -103,6 +111,7 @@ const CustomerOrderTransactionList = () => {
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [submitLoadingReport, setSubmitLoadingReport] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
 
@@ -142,8 +151,19 @@ const CustomerOrderTransactionList = () => {
                 console.log("error", e)
             });
 
+        ShopService.fetchShopCurrent()
+            .then(response => {
+                setShop(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
 
     }
+
+
+
+
 
     const deleteOrderTransaction = (id, e) => {
 
@@ -240,6 +260,45 @@ const CustomerOrderTransactionList = () => {
                     setSubmitLoadingAdd(false);
                     setIsAddDisabled(false);
                 });
+        }
+    }
+
+    const sendReport = () => {
+        console.log('Sending report: ', shopOrderTransaction);
+        setSubmitLoadingReport(true);
+        setIsAddDisabled(true);
+
+        if (shop.shop_type_id == 4) {
+            ShopService.sendReport(shopOrderTransaction)
+                .then(response => {
+                    console.log("data: ", response.data);
+                    setSubmitLoadingReport(false);
+                    setIsAddDisabled(false);
+                })
+                .catch(e => {
+                    console.log("error", e)
+                    setSubmitLoadingReport(false);
+                    setIsAddDisabled(false);
+                });
+        } else if (shop.shop_type_id == 3) {
+            axios.get("https://mdrbakingsupplies.com/sanctum/csrf-cookie").then(async () => {
+                axios.post(`https://mdrbakingsupplies.com/api/shop/sendReport`,
+                    shopOrderTransaction)
+                    .then(res => {
+                        console.log("data: ", res.data);
+                        setSubmitLoadingReport(false);
+                        setIsAddDisabled(false);
+                    })
+                    .catch(e => {
+                        console.log("error", e)
+                        setSubmitLoadingReport(false);
+                        setIsAddDisabled(false);
+                    })
+                    .catch(e => {
+                        console.log(e);
+                    });
+            });
+
         }
     }
 
@@ -343,43 +402,55 @@ const CustomerOrderTransactionList = () => {
     return (
         <div style={{ marginLeft: -100 }}>
 
-            {expenses.total_expenses != 0 &&
-                <div style={{ float: 'right', marginRight: 100 }}>
-                    <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label> Expenses</Form.Label>
-                        <Link variant="primary" to={"../expenses"}   >
-                            <PageviewIcon color="primary" />
-                        </Link>
-                        <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
-                    </Form.Group>
-                    <br></br>
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr class="table-secondary">
-                                <th></th>
-                                <th></th>
 
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr  >
-                                <td>Total Profit: </td>
-                                <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
-                            </tr>
-                            <tr  >
-                                <td>Total Mandatory Expenses: </td>
-                                <td>{numberFormat(expensesMandatory.total_expenses)}</td>
-                            </tr>
-                            <tr  >
-                                <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
-                                <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses)}</td>
-                            </tr>
+            <div style={{ float: 'right', marginRight: 100 }}>
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label> Expenses</Form.Label>
+                    <Link variant="primary" to={"../expenses"}   >
+                        <PageviewIcon color="primary" />
+                    </Link>
+                    <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
+                </Form.Group>
+                <br></br>
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr class="table-secondary">
+                            <th></th>
+                            <th></th>
 
-                        </tbody>
-                    </table>
-                </div>
-
-            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr  >
+                            <td>Total Profit: </td>
+                            <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
+                        </tr>
+                        <tr  >
+                            <td>Total Mandatory Expenses: </td>
+                            <td>{numberFormat(expensesMandatory.total_expenses)}</td>
+                        </tr>
+                        <tr  >
+                            <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
+                            <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses)}</td>
+                        </tr>
+                        <br></br>
+                        <Button
+                            variant="success"
+                            onClick={sendReport}
+                            disabled={isAddDisabled}
+                        >
+                            Send Report
+                        </Button>
+                        <br></br>
+                        <br></br>
+                        {submitLoadingReport &&
+                            <Box sx={{ width: '100%' }}>
+                                <LinearProgress />
+                            </Box>
+                        }
+                    </tbody>
+                </table>
+            </div>
 
 
             <div style={{ float: 'right', marginRight: 100 }}>
