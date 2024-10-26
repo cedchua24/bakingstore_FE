@@ -16,8 +16,14 @@ class ShopService {
     fetchShopActive(id) {
         return axios.get(`/api/shop/fetchShopActive/${id}`);
     }
+    fetchShopCurrent(id) {
+        return axios.get(`/api/shop/fetchShopCurrent/${id}`);
+    }
     fetchPhysicalStoreList(id) {
         return axios.get(`/api/shop/fetchPhysicalStoreList/${id}`);
+    }
+    sendReport(data) {
+        return axios.post("/api/shop/sendReport", data);
     }
     test(id) {
         return axios.get(`/api/shop/test/${id}`);
