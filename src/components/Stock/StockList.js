@@ -103,20 +103,20 @@ const StockList = (props) => {
 
         let v = product.stock + Number(e.target.value);
         let x = product.stock_pc + Number(e.target.value);
-        if (product.pack === 'Box') {
-            if (v < 0) {
-                setErrorStock(true);
-            } else {
-                setErrorStock(false);
-            }
-        } else {
-            if (x < 0) {
-                setErrorStock(true);
-            } else {
-                setErrorStock(false);
-            }
+        // if (product.pack === 'Box') {
+        //     if (v < 0) {
+        //         setErrorStock(true);
+        //     } else {
+        //         setErrorStock(false);
+        //     }
+        // } else {
+        //     if (x < 0) {
+        //         setErrorStock(true);
+        //     } else {
+        //         setErrorStock(false);
+        //     }
 
-        }
+        // }
 
 
     }
