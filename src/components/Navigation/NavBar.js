@@ -81,6 +81,7 @@ const NavBar = () => {
                             <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerHistory">Customer History</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
