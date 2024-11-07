@@ -90,6 +90,7 @@ import CustomerListV2 from "./components/Customer/CustomerListV2";
 import EditCustomer from "./components/Customer/EditCustomer";
 import CustomerTransactionList from "./components/Customer/CustomerTransactionList";
 import CustomerListTransaction from "./components/Customer/CustomerListTransaction";
+import CustomerHistory from "./components/Customer/CustomerHistory";
 import CustomerProductList from "./components/Customer/CustomerProductList";
 
 
@@ -273,6 +274,7 @@ const App = () => {
           <Route exact path="/customers/" element={<Customer />} />
           <Route exact path="/customerListV2" element={<CustomerListV2 />} />
           <Route exact path="/customerListTransaction" element={<CustomerListTransaction />} />
+          <Route exact path="/customerHistory" element={<CustomerHistory />} />
 
           <Route exact path="/customers/:id" element={<EditCustomer />} />
           <Route exact path="/customers/customerTransactionList/:id" element={<CustomerTransactionList />} />
