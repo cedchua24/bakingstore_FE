@@ -104,7 +104,8 @@ const NavBar = () => {
                     </Nav>
                     <Nav className="me-auto">
                         <NavDropdown title="Payment Type" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/paymentType">Add Payment Type</NavDropdown.Item>
+                            <NavDropdown.Item href="/paymentType">Add Payment Type Customer</NavDropdown.Item>
+                            <NavDropdown.Item href="/poPaymentType">Add Payment Type Supplier</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
