@@ -13,6 +13,10 @@ import EditBrand from "./components/Brand/EditBrand";
 import PaymentType from "./components/PaymentType/PaymentType";
 import PaymentTypeList from "./components/PaymentType/PaymentTypeList";
 import EditPaymentType from "./components/PaymentType/EditPaymentType";
+import PoPaymentType from "./components/PaymentType/PoPaymentType";
+import PoPaymentTypeList from "./components/PaymentType/PoPaymentTypeList";
+import PoEditPaymentType from "./components/PaymentType/PoEditPaymentType";
+
 import AddCategory from "./components/Category/AddCategory";
 import CategoryList from "./components/Category/CategoryList";
 import EditCategory from "./components/Category/EditCategory";
@@ -138,6 +142,10 @@ const App = () => {
           <Route path="/paymentType" element={<PaymentType />} />
           <Route path="/paymentTypeList" element={<PaymentTypeList />} />
           <Route exact path="/editPaymentType/:id" element={<EditPaymentType />} />
+
+          <Route path="/poPaymentType" element={<PoPaymentType />} />
+          <Route path="/poPaymentTypeList" element={<PoPaymentTypeList />} />
+          <Route exact path="/poEditPaymentType/:id" element={<PoEditPaymentType />} />
 
           <Route path="/supplier" element={<Supplier />} />
           <Route path="/supplierListV2" element={<SupplierListV2 />} />

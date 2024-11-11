@@ -159,7 +159,7 @@ const SupplierTransactionListV2 = () => {
                                     </Link>
                                 </td>
                                 <td>
-                                    <Link variant="primary" to={"/completedOrder/" + orderTransaction.id}   >
+                                    <Link variant="primary" to={"/finalizeOrder/" + orderTransaction.id}   >
                                         <Button variant="primary" >
                                             View
                                         </Button>
