@@ -1,15 +1,21 @@
 import React, { useState } from "react";
 import { Button, Form, Alert } from 'react-bootstrap';
-import PaymentTypeService from "./PaymentTypeService";
+import PaymentTypePoService from "../OtherService/PaymentTypePoService";
+import FormControl from '@mui/material/FormControl';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+import Box from '@mui/material/Box';
 
-const AddPaymentType = (props) => {
+const AddPoPaymentType = (props) => {
+
+    const paymentTermList = props.paymenTermList;
 
     const [paymentType, setPaymentType] = useState({
         id: 0,
         payment_type: '',
         payment_type_description: '',
         status: 1,
-        type: 2,
+        type: 0,
         created_at: '',
         updated_at: ''
     });
@@ -20,9 +26,21 @@ const AddPaymentType = (props) => {
         setPaymentType({ ...paymentType, [e.target.name]: e.target.value });
     }
 
+    const handlePaymentTermChange = (e, value) => {
+        e.persist();
+        console.log(value)
+
+        setPaymentType({
+            ...paymentType,
+            type: value.id
+        });
+
+
+    }
+
     const savePaymentType = () => {
-        PaymentTypeService.sanctum().then(response => {
-            PaymentTypeService.create(paymentType)
+        PaymentTypePoService.sanctum().then(response => {
+            PaymentTypePoService.create(paymentType)
                 .then(response => {
                     props.onSavePaymentTypeData(response.data);
                     setMessage(true);
@@ -50,9 +68,33 @@ const AddPaymentType = (props) => {
             }
 
             <Form>
+                <Box
+                    sx={{
+                        '& .MuiTextField-root': { m: 1, width: '25ch' },
+                    }}
+                    noValidate
+                    autoComplete="off"
+                // onSubmit={saveOrderSupplier}
+                >
+                    {/* {formErrors.payment_term_id && <p style={{ color: "red" }}>{formErrors.payment_term_id}</p>} */}
+                    <FormControl variant="standard" >
+                        <Autocomplete
+                            // {...defaultProps}
+                            options={paymentTermList}
+                            className="mb-3"
+                            id="disable-close-on-select"
+                            onChange={handlePaymentTermChange}
+                            getOptionLabel={(paymentTermList) => paymentTermList.payment_term}
+                            renderInput={(params) => (
+                                <TextField {...params} label="Choose Type" variant="standard" />
+                            )}
+                        />
+                    </FormControl>
+                    <br></br>
+                </Box>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Bank Name</Form.Label>
-                    <Form.Control type="text" value={paymentType.payment_type} name="payment_type" placeholder="Enter Bank Name" onChange={onChangePaymentType} />
+                    <Form.Control type="text" value={paymentType.payment_type} name="payment_type" placeholder="Enter Payment Type Name" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
                         ..
                     </Form.Text>
@@ -76,4 +118,4 @@ const AddPaymentType = (props) => {
     )
 }
 
-export default AddPaymentType
+export default AddPoPaymentType

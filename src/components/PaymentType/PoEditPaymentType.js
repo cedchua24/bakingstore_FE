@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
-import PaymentTypeService from "./PaymentTypeService";
+import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 
-const EditPaymentType = () => {
+const PoEditPaymentType = () => {
 
 
     const { id } = useParams();
@@ -46,7 +46,7 @@ const EditPaymentType = () => {
 
 
     const savePaymentType = () => {
-        PaymentTypeService.update(paymentType.id, paymentType)
+        PaymentTypePoService.update(paymentType.id, paymentType)
             .then(response => {
                 setPaymentType(response.data);
                 setMessage(true);
@@ -57,7 +57,7 @@ const EditPaymentType = () => {
     }
 
     const fetchPaymentType = (id) => {
-        PaymentTypeService.get(id)
+        PaymentTypePoService.get(id)
             .then(response => {
                 setPaymentType(response.data);
             })
@@ -81,7 +81,7 @@ const EditPaymentType = () => {
             <Form>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Bank Name</Form.Label>
-                    <Form.Control type="text" name="payment_type" value={paymentType.payment_type} placeholder="Enter Bank Namee" onChange={onChangePaymentType} />
+                    <Form.Control type="text" name="payment_type" value={paymentType.payment_type} placeholder="Enter Payment Type" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
                         ..
                     </Form.Text>
@@ -89,7 +89,7 @@ const EditPaymentType = () => {
 
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Account Number</Form.Label>
-                    <Form.Control type="text" name="payment_type_description" value={paymentType.payment_type_description} placeholder="Enter Account Number" onChange={onChangePaymentType} />
+                    <Form.Control type="text" name="payment_type_description" value={paymentType.payment_type_description} placeholder="Enter Payment Type" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
                         ..
                     </Form.Text>
@@ -114,4 +114,4 @@ const EditPaymentType = () => {
     )
 }
 
-export default EditPaymentType
+export default PoEditPaymentType

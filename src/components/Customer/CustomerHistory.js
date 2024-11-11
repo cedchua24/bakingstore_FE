@@ -106,6 +106,10 @@ const CustomerHistory = () => {
             });
     }
 
+    const sortList = ($data) => {
+        return $data.sort((a, b) => (a.last_order > b.last_order) ? 1 : -1)
+    }
+
 
 
 
@@ -167,7 +171,7 @@ const CustomerHistory = () => {
                 <tbody>
 
                     {
-                        customerList.data.map((customer, index) => (
+                        sortList(customerList.data).map((customer, index) => (
                             <tr key={customer.id} >
                                 <td>{customer.id}</td>
                                 <td>{customer.first_name}</td>
