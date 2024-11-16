@@ -13,6 +13,9 @@ class PaymentTypePoService {
     fetchEnablepaymentTypePo(id) {
         return axios.get(`/api/paymentTypePo/fetchEnablepaymentTypePo/${id}`);
     }
+    findByCategory(id) {
+        return axios.get(`/api/paymentTypePo/findByCategory/${id}`);
+    }
     create(data) {
         return axios.post("/api/paymentTypePo", data);
     }
