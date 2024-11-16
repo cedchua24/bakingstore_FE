@@ -54,7 +54,7 @@ const FinalizeOrder = () => {
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
         fetchByOrderSupplierId(id);
-        fetchPaymentTypePo();
+        // fetchPaymentTypePo();
         fetchPaymentTerm();
         fetchPaymentTypePoByShopTransactionId(id);
     }, []);
@@ -280,11 +280,13 @@ const FinalizeOrder = () => {
 
     const handlePaymentTypeChange = (e, value) => {
         e.persist();
-        console.log(e.target.value)
+        console.log('handlePaymentTypeChange', value)
         setModeOfPaymentPo({
             ...modeOfPaymentPo,
             payment_type_po_id: value.id,
         });
+
+
     }
 
     const handlePaymentTermChange = (e, value) => {
@@ -297,21 +299,21 @@ const FinalizeOrder = () => {
                 payment_type_po_id: 1
             });
         }
-        else if (value.id == 4) {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
-                payment_term_id: value.id,
-                amount: modeOfPaymentDTO.balance,
-                payment_type_po_id: 2
-            });
-        }
+        // else if (value.id == 4) {
+        //     setModeOfPaymentPo({
+        //         ...modeOfPaymentPo,
+        //         payment_term_id: value.id,
+        //         amount: modeOfPaymentDTO.balance,
+        //         payment_type_po_id: 2
+        //     });
+        // }
         else {
             setModeOfPaymentPo({
                 ...modeOfPaymentPo,
                 payment_term_id: value.id
             });
         }
-
+        fetchPaymentTypePo(value.id);
     }
 
     const onChangeAmount = (e) => {
@@ -326,8 +328,8 @@ const FinalizeOrder = () => {
         // }
     }
 
-    const fetchPaymentTypePo = () => {
-        PaymentTypePoService.getAll()
+    const fetchPaymentTypePo = ($id) => {
+        PaymentTypePoService.findByCategory($id)
             .then(response => {
                 setPaymentTypePoList(response.data);
             })
@@ -335,6 +337,7 @@ const FinalizeOrder = () => {
                 console.log("error", e)
             });
     }
+
 
     const fetchPaymentTerm = () => {
         PaymentTermService.getAll()
@@ -382,7 +385,7 @@ const FinalizeOrder = () => {
     const updateOrderTransaction = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        OrderSupplierTransactionService.setToCompleteTransaction(id)
+        OrderSupplierTransactionService.setToCompletePaymentTransaction(id)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
@@ -533,6 +536,56 @@ const FinalizeOrder = () => {
                 </TableContainer>
             </Box>
             <br></br>
+
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+
+                        {modeOfPaymentDTO.data.map((row) => (
+                            <TableRow key={row.id}>
+                                <TableCell>{row.payment_type}{" - " + row.payment_type_description}</TableCell>
+                                <TableCell align="right">{row.amount}</TableCell>
+
+
+                                <Dialog
+                                    open={deleteOpenModal}
+                                    onClose={handleDeleteCloseModal}
+                                    aria-labelledby="alert-dialog-title"
+                                    aria-describedby="alert-dialog-description"
+                                >
+
+                                    <DialogTitle id="alert-dialog-title">
+                                        {"Are you sure you want to Delete?"}
+                                    </DialogTitle>
+                                    {submitLoading &&
+                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                            <CircularProgress />
+                                        </div>
+                                    }
+                                    <DialogActions>
+                                        <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                                        <Button onClick={(e) => deleteOrderTransaction(row.id, e)} autoFocus>
+                                            Agree
+                                        </Button>
+                                    </DialogActions>
+                                </Dialog>
+                            </TableRow>
+
+                        ))}
+                        <TableRow>
+                            <TableCell colSpan={1} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <br></br>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
@@ -578,84 +631,9 @@ const FinalizeOrder = () => {
             </TableContainer>
 
             <br></br>
-            {submitLoadingAdd &&
-                <LinearProgress color="warning" />
-            }
-            <br></br>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <br></br>
-
-
-                <br></br>
-                <Button
-                    disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                    variant="contained"
-                    type="submit"
-                    onClick={updateOrderTransaction}
-                    size="large" >
-                    Submit
-                </Button>
-
-            </Box>
-
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Product
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <br></br>
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Amount</InputLabel>
-                        <Input
-                            id="filled-required"
-                            label="Amount"
-                            variant="filled"
-                            name='amount'
-                            value={modeOfPaymentModal.amount}
-                            onChange={onChangeInputPriceModal}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
 
 
 
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            disabled={modeOfPaymentDTO.balance != 0}
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
             <br></br>
             <br></br>
         </div >

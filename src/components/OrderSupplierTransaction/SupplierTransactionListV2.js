@@ -127,9 +127,11 @@ const SupplierTransactionListV2 = () => {
                         <th>With Tax</th>
                         <th>Total Amount</th>
                         <th>Date</th>
-                        <th>Status</th>
+                        <th>Delivery Status</th>
+                        <th>Payment Status</th>
                         <th>Placed Stock Status</th>
                         <th>Organize Stock</th>
+                        <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -149,8 +151,18 @@ const SupplierTransactionListV2 = () => {
                                     : orderTransaction.status === 'IN_PROGRESS' ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                         <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
                                 </td>
+                                <td>{orderTransaction.payment_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
+                                    : <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p>}
+                                </td>
                                 <td>{orderTransaction.date}</td>
                                 <td>{orderTransaction.stock_status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td>
+                                    <Link variant="primary" to={"/paymentOrder/" + orderTransaction.id}   >
+                                        <Button variant="primary" >
+                                            Update Payment
+                                        </Button>
+                                    </Link>
+                                </td>
                                 <td>
                                     <Link variant="primary" to={"/branchStock/" + orderTransaction.id}   >
                                         <Button variant="warning" >
@@ -159,12 +171,13 @@ const SupplierTransactionListV2 = () => {
                                     </Link>
                                 </td>
                                 <td>
-                                    <Link variant="primary" to={"/finalizeOrder/" + orderTransaction.id}   >
+                                    <Link variant="primary" to={"/viewOrder/" + orderTransaction.id}   >
                                         <Button variant="primary" >
                                             View
                                         </Button>
                                     </Link>
                                 </td>
+
                                 {orderTransaction.status != 'COMPLETED' ? <div>
                                     <td>
                                         <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >

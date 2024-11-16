@@ -36,6 +36,8 @@ import ProductSupplierListV2 from "./components/ProductSupplier/ProductSupplierL
 import AddProductOrderSupplierTransaction from "./components/OrderSupplierTransaction/AddProductOrderSupplierTransaction";
 import BranchStock from "./components/OrderSupplierTransaction/BranchStock";
 import FinalizeOrder from "./components/OrderSupplierTransaction/FinalizeOrder";
+import ViewOrder from "./components/OrderSupplierTransaction/ViewOrder";
+import PaymentOrder from "./components/OrderSupplierTransaction/PaymentOrder";
 import CompletedOrder from "./components/OrderSupplierTransaction/CompletedOrder";
 import CompletedCustomerOrder from "./components/OrderCustomerList/CompletedCustomerOrder";
 import UpdateCustomerOrder from "./components/OrderCustomerList/UpdateCustomerOrder";
@@ -164,6 +166,8 @@ const App = () => {
           <Route exact path="/branchStock/:id" element={<BranchStock />} />
 
           <Route exact path="/finalizeOrder/:id" element={<FinalizeOrder />} />
+          <Route exact path="/ViewOrder/:id" element={<ViewOrder />} />
+          <Route exact path="/paymentOrder/:id" element={<PaymentOrder />} />
           <Route exact path="/completedOrder/:id" element={<CompletedOrder />} />
 
           <Route path="/addStock" element={<Stock />} />
