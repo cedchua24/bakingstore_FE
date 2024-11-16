@@ -16,6 +16,9 @@ class OrderSupplierTransactionService {
     setToCompleteTransaction(id) {
         return axios.put(`/api/orderSupplierTransaction/setToCompleteTransaction/${id}`);
     }
+    setToCompletePaymentTransaction(id) {
+        return axios.put(`/api/orderSupplierTransaction/setToCompletePaymentTransaction/${id}`);
+    }
     setToCancelTransaction(id) {
         return axios.put(`/api/orderSupplierTransaction/setToCancelTransaction/${id}`);
     }
