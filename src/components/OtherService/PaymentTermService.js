@@ -13,6 +13,9 @@ class PaymentTermService {
     fetchEnablepaymentTerm(id) {
         return axios.get(`/api/paymentTerm/fetchEnablepaymentTerm/${id}`);
     }
+    fetchNotCashList(id) {
+        return axios.get(`/api/paymentTerm/fetchNotCashList/${id}`);
+    }
     create(data) {
         return axios.post("/api/paymentTerm", data);
     }
