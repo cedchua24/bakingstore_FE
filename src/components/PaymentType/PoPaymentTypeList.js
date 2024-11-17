@@ -9,6 +9,14 @@ const PoPaymentTypeList = (props) => {
     const paymentTypeList = props.paymentTypeList;
     const deletePaymentType = props.deletePaymentType;
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
+
+
     return (
         <div>
             <table class="table table-bordered">
@@ -16,9 +24,14 @@ const PoPaymentTypeList = (props) => {
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Type</th>
-                        <th>Bank Name</th>
                         <th>Account Number</th>
+                        <th>Bank Name</th>
+                        <th>Account Name</th>
+                        <th>Account Description</th>
+                        <th>Due Date</th>
+                        <th>Credit Limit</th>
                         <th>Enable</th>
+                        <th></th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -30,9 +43,13 @@ const PoPaymentTypeList = (props) => {
                             <tr key={paymentType.id}  >
                                 <td >{paymentType.id}</td>
                                 <td>{paymentType.payment_term}</td>
-                                <td>{paymentType.payment_type}</td>
-                                <td>{paymentType.payment_type_description}</td>
-                                <td>{paymentType.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td>{paymentType.account_number}</td>
+                                <td>{paymentType.bank_name}</td>
+                                <td>{paymentType.account_name}</td>
+                                <td>{paymentType.account_description}</td>
+                                <td>{paymentType.due_date}</td>
+                                <td>{numberFormat(paymentType.credit_limit)}</td>
+                                <td>{paymentType.status === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     <Link variant="primary" to={"/poEditPaymentType/" + paymentType.id}   >
                                         <Button variant="primary" >

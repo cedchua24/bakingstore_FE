@@ -15,8 +15,13 @@ const PoEditPaymentType = () => {
 
     const [paymentType, setPaymentType] = useState({
         id: 0,
-        payment_type: '',
-        payment_type_description: '',
+        payment_term_id: 0,
+        bank_id: 0,
+        account_number: 0,
+        account_name: '',
+        account_description: '',
+        due_date: 0,
+        credit_limit: 0,
         status: 0,
         created_at: '',
         updated_at: ''
@@ -79,21 +84,40 @@ const PoEditPaymentType = () => {
                 </Alert>
             }
             <Form>
+
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Bank Name</Form.Label>
-                    <Form.Control type="text" name="payment_type" value={paymentType.payment_type} placeholder="Enter Payment Type" onChange={onChangePaymentType} />
+                    <Form.Label>Acoount Name</Form.Label>
+                    <Form.Control type="text" value={paymentType.account_name} name="account_name" placeholder="Enter Account Name" onChange={onChangePaymentType} />
+                </Form.Group>
+
+
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Acoount Description</Form.Label>
+                    <Form.Control type="text" value={paymentType.account_description} name="account_description" placeholder="Enter Account Description" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
-                        ..
+                        Ex. Platinum
+                    </Form.Text>
+                </Form.Group>
+
+
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Account Number</Form.Label>
+                    <Form.Control type="text" value={paymentType.account_number} name="account_number" placeholder="Enter Account Last 4 Digit Number" onChange={onChangePaymentType} />
+                    <Form.Text className="text-muted"  >
+                        Last 4 Digit Number
                     </Form.Text>
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Account Number</Form.Label>
-                    <Form.Control type="text" name="payment_type_description" value={paymentType.payment_type_description} placeholder="Enter Payment Type" onChange={onChangePaymentType} />
-                    <Form.Text className="text-muted"  >
-                        ..
-                    </Form.Text>
+                    <Form.Label>Due Date</Form.Label>
+                    <Form.Control type="number" value={paymentType.due_date} name="due_date" placeholder="Enter Due Date" onChange={onChangePaymentType} />
                 </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Credit Limit</Form.Label>
+                    <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
+                </Form.Group>
+
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Enabled ? </Form.Label>
 

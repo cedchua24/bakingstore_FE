@@ -1,21 +1,42 @@
 import React, { useState } from "react";
-import { Button, Form, Alert } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
 
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
+
+import LinearProgress from '@mui/material/LinearProgress';
+
 const AddPoPaymentType = (props) => {
 
     const paymentTermList = props.paymenTermList;
+    const bankList = props.bankList;
+
+
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
+
+    const [validator, setValidator] = useState({
+        severity: '',
+        message: '',
+        isShow: false
+    });
 
     const [paymentType, setPaymentType] = useState({
         id: 0,
-        payment_type: '',
-        payment_type_description: '',
-        status: 1,
-        type: 0,
+        payment_term_id: 0,
+        bank_id: 0,
+        account_number: 0,
+        account_name: '',
+        account_description: '',
+        due_date: 0,
+        credit_limit: 0,
+        status: 0,
         created_at: '',
         updated_at: ''
     });
@@ -32,40 +53,86 @@ const AddPoPaymentType = (props) => {
 
         setPaymentType({
             ...paymentType,
-            type: value.id
+            payment_term_id: value.id
         });
+    }
 
+    const handleBankChange = (e, value) => {
+        e.persist();
+        console.log(value)
 
+        setPaymentType({
+            ...paymentType,
+            bank_id: value.id
+        });
+    }
+
+    const validate = (values) => {
+        const errors = {};
+        if (paymentType.bank_id == 0) {
+            errors.bank_id = "Bank is Required!";
+        }
+        if (paymentType.account_name.length == 0) {
+            errors.account_name = "Account Name is Required!";
+        }
+
+        if (paymentType.account_number == 0) {
+            errors.account_number = "Account Number is Required!";
+        }
+        if (paymentType.due_date == 0) {
+            errors.due_date = "Due Date is Required!";
+        }
+        if (paymentType.credit_limit == 0) {
+            errors.credit_limit = "Credit Limit is Required!";
+        }
+        if (paymentType.payment_term_id == 0) {
+            errors.payment_term_id = "Type is Required!";
+        }
+        return errors;
     }
 
     const savePaymentType = () => {
-        PaymentTypePoService.sanctum().then(response => {
-            PaymentTypePoService.create(paymentType)
-                .then(response => {
-                    props.onSavePaymentTypeData(response.data);
-                    setMessage(true);
-                    setPaymentType({
-                        payment_type: ''
+        console.log(paymentType);
+        console.log("validate: ", validate(paymentType));
+        setFormErrors(validate(paymentType));
+        if (Object.keys(validate(paymentType)).length > 0) {
+            console.log("Has Validation: ");
+        } else {
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+            PaymentTypePoService.sanctum().then(response => {
+                PaymentTypePoService.create(paymentType)
+                    .then(response => {
+                        props.onSavePaymentTypeData(response.data);
+                        setMessage(true);
+                        setPaymentType({
+                            payment_type: ''
+                        });
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
+                        setValidator({
+                            severity: 'success',
+                            message: 'Successfuly Added!',
+                            isShow: true,
+                        });
+                    })
+                    .catch(e => {
+                        console.log(e);
+                        setSubmitLoadingAdd(false);
+                        setIsAddDisabled(false);
                     });
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        });
+            });
+        }
     }
 
     return (
         <div>
-            {message &&
-                <Alert variant="success" dismissible>
-                    <Alert.Heading>Successfully Added!</Alert.Heading>
-                    <p>
-                        Change this and that and try again. Duis mollis, est non commodo
-                        luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-                        Cras mattis consectetur purus sit amet fermentum.
-                    </p>
-                </Alert>
-            }
+            <Stack sx={{ width: '100%' }} spacing={2}>
+                {validator.isShow &&
+                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                }
+            </Stack>
+            <br></br>
 
             <Form>
                 <Box
@@ -76,7 +143,7 @@ const AddPoPaymentType = (props) => {
                     autoComplete="off"
                 // onSubmit={saveOrderSupplier}
                 >
-                    {/* {formErrors.payment_term_id && <p style={{ color: "red" }}>{formErrors.payment_term_id}</p>} */}
+                    {formErrors.payment_term_id && <p style={{ color: "red" }}>{formErrors.payment_term_id}</p>}
                     <FormControl variant="standard" >
                         <Autocomplete
                             // {...defaultProps}
@@ -86,31 +153,83 @@ const AddPoPaymentType = (props) => {
                             onChange={handlePaymentTermChange}
                             getOptionLabel={(paymentTermList) => paymentTermList.payment_term}
                             renderInput={(params) => (
-                                <TextField {...params} label="Choose Type" variant="standard" />
+                                <TextField {...params} label="Choose Type *" variant="standard" />
                             )}
                         />
                     </FormControl>
                     <br></br>
                 </Box>
+
+                <Box
+                    sx={{
+                        '& .MuiTextField-root': { m: 1, width: '25ch' },
+                    }}
+                    noValidate
+                    autoComplete="off"
+                // onSubmit={saveOrderSupplier}
+                >
+                    {formErrors.bank_id && <p style={{ color: "red" }}>{formErrors.bank_id}</p>}
+                    <FormControl variant="standard" >
+                        <Autocomplete
+                            // {...defaultProps}
+                            options={bankList}
+                            className="mb-3"
+                            id="disable-close-on-select"
+                            onChange={handleBankChange}
+                            getOptionLabel={(bankList) => bankList.bank_name}
+                            renderInput={(params) => (
+                                <TextField {...params} label="Choose Bank *" variant="standard" />
+                            )}
+                        />
+                    </FormControl>
+                    <br></br>
+                </Box>
+
+                {formErrors.account_name && <p style={{ color: "red" }}>{formErrors.account_name}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Bank Name</Form.Label>
-                    <Form.Control type="text" value={paymentType.payment_type} name="payment_type" placeholder="Enter Payment Type Name" onChange={onChangePaymentType} />
+                    <Form.Label>Acoount Name *</Form.Label>
+                    <Form.Control type="text" value={paymentType.account_name} name="account_name" placeholder="Enter Account Name" onChange={onChangePaymentType} />
+                </Form.Group>
+
+
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Acoount Description</Form.Label>
+                    <Form.Control type="text" value={paymentType.account_description} name="account_description" placeholder="Enter Account Description" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
-                        ..
+                        Ex. Platinum
                     </Form.Text>
                 </Form.Group>
 
+                {formErrors.account_number && <p style={{ color: "red" }}>{formErrors.account_number}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Account Number</Form.Label>
-                    <Form.Control type="text" value={paymentType.payment_type_description} name="payment_type_description" placeholder="Enter Account Number" onChange={onChangePaymentType} />
+                    <Form.Label>Account Number *</Form.Label>
+                    <Form.Control type="text" value={paymentType.account_number} name="account_number" placeholder="Enter Account Last 4 Digit Number" onChange={onChangePaymentType} />
                     <Form.Text className="text-muted"  >
-                        ..
+                        Last 4 Digit Number
                     </Form.Text>
                 </Form.Group>
 
-                <Button variant="primary" onClick={savePaymentType}>
+                {formErrors.due_date && <p style={{ color: "red" }}>{formErrors.due_date}</p>}
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Due Date *</Form.Label>
+                    <Form.Control type="number" value={paymentType.due_date} name="due_date" placeholder="Enter Due Date" onChange={onChangePaymentType} />
+                </Form.Group>
+
+                {formErrors.credit_limit && <p style={{ color: "red" }}>{formErrors.credit_limit}</p>}
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Credit Limit *</Form.Label>
+                    <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
+                </Form.Group>
+
+                <Button variant="primary"
+                    disabled={isAddDisabled}
+                    onClick={savePaymentType}>
                     Submit
                 </Button>
+                <br></br>      <br></br>
+                {submitLoadingAdd &&
+                    <LinearProgress color="warning" />
+                }
             </Form>
             <br></br>
 
