@@ -579,7 +579,7 @@ const FinalizeOrder = () => {
                                         className="mb-3"
                                         id="disable-close-on-select"
                                         onChange={handlePaymentTypeChange}
-                                        getOptionLabel={(paymentTypePoList) => paymentTypePoList.payment_type + " - " + paymentTypePoList.payment_type_description}
+                                        getOptionLabel={(paymentTypePoList) => paymentTypePoList.bank_name + " " + paymentTypePoList.account_name + "  " + paymentTypePoList.account_description + " - " + paymentTypePoList.account_number}
                                         renderInput={(params) => (
                                             <TextField {...params} label="Choose Bank" variant="standard" />
                                         )}
@@ -637,6 +637,7 @@ const FinalizeOrder = () => {
                     <TableHead>
                         <TableRow>
                             <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
+                            <TableCell style={{ fontWeight: 'bold' }}>Term</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
                         </TableRow>
                     </TableHead>
@@ -644,7 +645,8 @@ const FinalizeOrder = () => {
 
                         {modeOfPaymentDTO.data.map((row) => (
                             <TableRow key={row.id}>
-                                <TableCell>{row.payment_type}{" - " + row.payment_type_description}</TableCell>
+                                <TableCell>{row.bank_name}{" - " + row.account_name} {"" + row.account_description}{" - " + row.account_number}</TableCell>
+                                <TableCell align="right">{row.payment_term}</TableCell>
                                 <TableCell align="right">{row.amount}</TableCell>
                                 <TableCell align="right">
                                     <Tooltip title="Update">
