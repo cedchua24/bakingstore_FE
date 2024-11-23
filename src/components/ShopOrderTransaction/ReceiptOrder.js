@@ -149,7 +149,7 @@ const ReceiptOrder = () => {
                 <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}> {shopOrderTransaction.shop_name}</h3>
                 <p style={{ textAlign: 'center' }}> {shopOrderTransaction.address}</p>
                 <p style={{ textAlign: 'center' }}>Contact Number:  {shopOrderTransaction.contact_number}</p>
-                <p style={{ textAlign: 'center' }}>Invoice Number: #{shopOrderTransaction.id}</p>
+                <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}>Invoice Number: #{shopOrderTransaction.id}</h3>
                 <table class="print-receipt" >
 
                     <tr>
