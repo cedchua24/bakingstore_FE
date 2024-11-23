@@ -47,8 +47,16 @@ const PoPaymentTypeList = (props) => {
                                 <td>{paymentType.bank_name}</td>
                                 <td>{paymentType.account_name}</td>
                                 <td>{paymentType.account_description}</td>
-                                <td>{paymentType.due_date}</td>
-                                <td>{numberFormat(paymentType.credit_limit)}</td>
+                                {paymentType.payment_term_id == 4 ?
+                                    <>
+                                        <td>{paymentType.due_date}</td>
+                                        <td>{numberFormat(paymentType.credit_limit)}</td>
+                                    </>
+                                    : <>
+                                        <td></td>
+                                        <td></td>
+                                    </>}
+
                                 <td>{paymentType.status === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     <Link variant="primary" to={"/poEditPaymentType/" + paymentType.id}   >
