@@ -5,9 +5,14 @@ import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
 
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
+
+
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
 
 import LinearProgress from '@mui/material/LinearProgress';
 
@@ -20,6 +25,7 @@ const AddPoPaymentType = (props) => {
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
+
 
     const [validator, setValidator] = useState({
         severity: '',
@@ -79,14 +85,17 @@ const AddPoPaymentType = (props) => {
         if (paymentType.account_number == 0) {
             errors.account_number = "Account Number is Required!";
         }
-        if (paymentType.due_date == 0) {
-            errors.due_date = "Due Date is Required!";
-        }
-        if (paymentType.credit_limit == 0) {
-            errors.credit_limit = "Credit Limit is Required!";
-        }
         if (paymentType.payment_term_id == 0) {
             errors.payment_term_id = "Type is Required!";
+        }
+
+        if (paymentType.payment_term_id == 4) {
+            if (paymentType.due_date == 0) {
+                errors.due_date = "Due Date is Required!";
+            }
+            if (paymentType.credit_limit == 0) {
+                errors.credit_limit = "Credit Limit is Required!";
+            }
         }
         return errors;
     }
@@ -204,23 +213,41 @@ const AddPoPaymentType = (props) => {
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Account Number *</Form.Label>
                     <Form.Control type="text" value={paymentType.account_number} name="account_number" placeholder="Enter Account Last 4 Digit Number" onChange={onChangePaymentType} />
-                    <Form.Text className="text-muted"  >
-                        Last 4 Digit Number
-                    </Form.Text>
+                    {paymentType.payment_term_id == 4 &&
+                        <Form.Text className="text-muted"  >
+                            Last 4 Digit Number
+                        </Form.Text>
+                    }
                 </Form.Group>
 
-                {formErrors.due_date && <p style={{ color: "red" }}>{formErrors.due_date}</p>}
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Due Date *</Form.Label>
-                    <Form.Control type="number" value={paymentType.due_date} name="due_date" placeholder="Enter Due Date" onChange={onChangePaymentType} />
-                </Form.Group>
+                {paymentType.payment_term_id == 4 &&
 
-                {formErrors.credit_limit && <p style={{ color: "red" }}>{formErrors.credit_limit}</p>}
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Credit Limit *</Form.Label>
-                    <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
-                </Form.Group>
+                    <Box sx={{ minWidth: 60 }}>
+                        {formErrors.due_date && <p style={{ color: "red" }}>{formErrors.due_date}</p>}
+                        <FormControl sx={{ m: 0, minWidth: 130, minHeight: 70 }}>
+                            <InputLabel id="demo-simple-select-label">Due Date *</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                label="Due Date"
+                                name="due_date"
+                                onChange={onChangePaymentType}
+                            >
+                                {Array(32).fill(1).map((el, i) =>
+                                    <MenuItem value={i}>{i}</MenuItem>
+                                )}
 
+                            </Select>
+                        </FormControl>
+
+
+                        {formErrors.credit_limit && <p style={{ color: "red" }}>{formErrors.credit_limit}</p>}
+                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label>Credit Limit *</Form.Label>
+                            <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
+                        </Form.Group>
+                    </Box>
+                }
                 <Button variant="primary"
                     disabled={isAddDisabled}
                     onClick={savePaymentType}>
@@ -233,7 +260,7 @@ const AddPoPaymentType = (props) => {
             </Form>
             <br></br>
 
-        </div>
+        </div >
     )
 }
 
