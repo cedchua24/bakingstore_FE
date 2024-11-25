@@ -30,6 +30,8 @@ const PoPaymentTypeList = (props) => {
                         <th>Account Description</th>
                         <th>Due Date</th>
                         <th>Credit Limit</th>
+                        <th>Stement Date</th>
+                        <th>Total Due Balance</th>
                         <th>Enable</th>
                         <th></th>
                         <th></th>
@@ -51,8 +53,12 @@ const PoPaymentTypeList = (props) => {
                                     <>
                                         <td>{paymentType.due_date}</td>
                                         <td>{numberFormat(paymentType.credit_limit)}</td>
+                                        <td>{paymentType.statement_date}</td>
+                                        <td>{numberFormat(paymentType.total_balance_due)}</td>
                                     </>
                                     : <>
+                                        <td></td>
+                                        <td></td>
                                         <td></td>
                                         <td></td>
                                     </>}

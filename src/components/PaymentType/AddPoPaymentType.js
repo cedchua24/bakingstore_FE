@@ -42,6 +42,8 @@ const AddPoPaymentType = (props) => {
         account_description: '',
         due_date: 0,
         credit_limit: 0,
+        total_balance_due: 0,
+        statement_date: 0,
         status: 0,
         created_at: '',
         updated_at: ''
@@ -96,6 +98,10 @@ const AddPoPaymentType = (props) => {
             if (paymentType.credit_limit == 0) {
                 errors.credit_limit = "Credit Limit is Required!";
             }
+            if (paymentType.statement_date == 0) {
+                errors.statement_date = "Statement Date is Required!";
+            }
+
         }
         return errors;
     }
@@ -245,6 +251,28 @@ const AddPoPaymentType = (props) => {
                         <Form.Group className="mb-3" controlId="formBasicEmail">
                             <Form.Label>Credit Limit *</Form.Label>
                             <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
+                        </Form.Group>
+
+                        {formErrors.statement_date && <p style={{ color: "red" }}>{formErrors.statement_date}</p>}
+                        <FormControl sx={{ m: 0, minWidth: 130, minHeight: 70 }}>
+                            <InputLabel id="demo-simple-select-label">Statement Date *</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                label="Statement Date"
+                                name="statement_date"
+                                onChange={onChangePaymentType}
+                            >
+                                {Array(32).fill(1).map((el, i) =>
+                                    <MenuItem value={i}>{i}</MenuItem>
+                                )}
+
+                            </Select>
+                        </FormControl>
+
+                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label>Total Balance Due</Form.Label>
+                            <Form.Control type="number" value={paymentType.total_balance_due} name="total_balance_due" placeholder="Enter Total Balance Due" onChange={onChangePaymentType} />
                         </Form.Group>
                     </Box>
                 }
