@@ -3,6 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
+import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
+import FormControl from '@mui/material/FormControl';
 
 const PoEditPaymentType = () => {
 
@@ -22,6 +27,8 @@ const PoEditPaymentType = () => {
         account_description: '',
         due_date: 0,
         credit_limit: 0,
+        total_balance_due: 0,
+        statement_date: 0,
         status: 0,
         created_at: '',
         updated_at: ''
@@ -108,16 +115,58 @@ const PoEditPaymentType = () => {
                     </Form.Text>
                 </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Due Date</Form.Label>
-                    <Form.Control type="number" value={paymentType.due_date} name="due_date" placeholder="Enter Due Date" onChange={onChangePaymentType} />
-                </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Credit Limit</Form.Label>
-                    <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
-                </Form.Group>
+                {paymentType.payment_term_id == 4 &&
 
+                    <Box sx={{ minWidth: 60 }}>
+                        <FormControl sx={{ m: 0, minWidth: 130, minHeight: 70 }}>
+                            <InputLabel id="demo-simple-select-label">Due Date *</InputLabel>
+                            <Select
+                                value={paymentType.due_date}
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                label="Due Date"
+                                name="due_date"
+                                onChange={onChangePaymentType}
+                            >
+                                {Array(32).fill(1).map((el, i) =>
+                                    <MenuItem value={i}>{i}</MenuItem>
+                                )}
+
+                            </Select>
+                        </FormControl>
+
+
+
+                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label>Credit Limit *</Form.Label>
+                            <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
+                        </Form.Group>
+
+
+                        <FormControl sx={{ m: 0, minWidth: 130, minHeight: 70 }}>
+                            <InputLabel id="demo-simple-select-label">Statement Date *</InputLabel>
+                            <Select
+                                value={paymentType.statement_date}
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                label="Statement Date"
+                                name="statement_date"
+                                onChange={onChangePaymentType}
+                            >
+                                {Array(32).fill(1).map((el, i) =>
+                                    <MenuItem value={i}>{i}</MenuItem>
+                                )}
+
+                            </Select>
+                        </FormControl>
+
+                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label>Total Balance Due</Form.Label>
+                            <Form.Control type="number" value={paymentType.total_balance_due} name="total_balance_due" placeholder="Enter Total Balance Due" onChange={onChangePaymentType} />
+                        </Form.Group>
+                    </Box>
+                }
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Enabled ? </Form.Label>
 
