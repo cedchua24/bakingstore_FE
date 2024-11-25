@@ -89,7 +89,7 @@ const FinalizeOrder = () => {
     const [invoiceTaxes, setinvoiceTaxes] = useState(0);
     const [invoiceTotal, setinvoiceTotal] = useState(0);
 
-    const [dueDay, setDueDay] = useState([31]);
+
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
@@ -127,6 +127,8 @@ const FinalizeOrder = () => {
         order_supplier_transaction_id: id,
         payment_term_id: 0,
         amount: 0,
+        status: 0,
+        type: 0,
         date: '',
         created_at: '',
         updated_at: ''
@@ -169,14 +171,6 @@ const FinalizeOrder = () => {
         setDeleteOpenModal(false);
     };
 
-    const handleInputChange = (e, value) => {
-        e.persist();
-        setModeOfPaymentPo({
-            ...modeOfPaymentPo,
-            order_supplier_transaction_id: orderSupplierTransaction.id,
-            payment_type_po_id: value.id,
-        });
-    }
 
     const onChangeInputPriceModal = (e) => {
         e.persist();
@@ -299,14 +293,13 @@ const FinalizeOrder = () => {
                 payment_type_po_id: 1
             });
         }
-        // else if (value.id == 4) {
-        //     setModeOfPaymentPo({
-        //         ...modeOfPaymentPo,
-        //         payment_term_id: value.id,
-        //         amount: modeOfPaymentDTO.balance,
-        //         payment_type_po_id: 2
-        //     });
-        // }
+        else if (value.id == 4 || value.id == 3) {
+            setModeOfPaymentPo({
+                ...modeOfPaymentPo,
+                payment_term_id: value.id,
+                status: 1
+            });
+        }
         else {
             setModeOfPaymentPo({
                 ...modeOfPaymentPo,
