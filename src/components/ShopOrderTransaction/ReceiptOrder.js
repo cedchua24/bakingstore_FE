@@ -149,7 +149,8 @@ const ReceiptOrder = () => {
                 <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}> {shopOrderTransaction.shop_name}</h3>
                 <p style={{ textAlign: 'center' }}> {shopOrderTransaction.address}</p>
                 <p style={{ textAlign: 'center' }}>Contact Number:  {shopOrderTransaction.contact_number}</p>
-                <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}>Invoice Number: #{shopOrderTransaction.id}</h3>
+                <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}>Reference Number: #{shopOrderTransaction.id}</h3>
+                <br></br>
                 <table class="print-receipt" >
 
                     <tr>
@@ -180,21 +181,21 @@ const ReceiptOrder = () => {
 
                     ))}
                     <br></br>
-                    <tr>
+                    {/* <tr>
                         <td></td>
                         <td></td>
                         <td>Subtotal</td>
                         <td>{invoiceSubtotal}</td>
-                    </tr>
+                    </tr> */}
 
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td>Vat - {`${(TAX_RATE * 100).toFixed(0)} %`}</td>
-                        {/* <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell> */}
-                        {/* <td>{`${(TAX_RATE * 100).toFixed(0)} %`}</td> */}
-                        <td> {ccyFormat(invoiceTaxes)}</td>
-                    </tr>
+                    {/* <tr> */}
+                    {/* <td></td> */}
+                    {/* <td></td> */}
+                    {/* <td>Vat - {`${(TAX_RATE * 100).toFixed(0)} %`}</td> */}
+                    {/* <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell> */}
+                    {/* <td>{`${(TAX_RATE * 100).toFixed(0)} %`}</td> */}
+                    {/* <td> {ccyFormat(invoiceTaxes)}</td> */}
+                    {/* </tr> */}
 
                     <tr>
                         <td></td>
@@ -204,7 +205,10 @@ const ReceiptOrder = () => {
                     </tr>
 
                 </table>
-
+                <br></br>
+                <h5 style={{ textAlign: 'center' }}> THANK YOU FOR YOUR ORDER</h5>
+                <br></br>
+                <h3 style={{ textAlign: 'center' }}> THIS IS NOT AN OFFICAL RECEIPT</h3>
             </div>
             <br></br>
             <div class="hide-on-print">
