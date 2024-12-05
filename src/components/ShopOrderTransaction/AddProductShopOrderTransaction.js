@@ -731,7 +731,7 @@ const AddProductCustomerOrderTransaction = () => {
                             </TableRow>
                         ))}
 
-                        <TableRow>
+                        {/* <TableRow>
                             <TableCell rowSpan={3} />
                             <TableCell colSpan={2}>Subtotal</TableCell>
                             <TableCell align="right">{invoiceSubtotal}</TableCell>
@@ -740,9 +740,10 @@ const AddProductCustomerOrderTransaction = () => {
                             <TableCell>Tax</TableCell>
                             <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow>
+                        </TableRow> */}
+                        <br></br>
                         <TableRow>
-                            <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                            <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
@@ -847,7 +848,7 @@ const AddProductCustomerOrderTransaction = () => {
             </Modal>
             <div>
                 <br></br>
-                <h6>Invoice Number: #{shopOrderTransaction.id} </h6>
+                <h6>Reference Number: #{shopOrderTransaction.id} </h6>
                 <h6> {shopOrderTransaction.requestor_name} </h6>
 
                 <br></br>
