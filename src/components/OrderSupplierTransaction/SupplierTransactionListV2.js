@@ -3,7 +3,7 @@ import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import OrderSupplierTransactionService from "./OrderSupplierTransaction.service";
+import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 
 
 import Dialog from '@mui/material/Dialog';

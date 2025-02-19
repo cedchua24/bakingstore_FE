@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
 import SupplierServiceService from "../Supplier/SupplierService.service";
-import OrderSupplierTransactionService from "./OrderSupplierTransaction.service";
+import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 const EditOrderSupplierTransaction = () => {
 
 

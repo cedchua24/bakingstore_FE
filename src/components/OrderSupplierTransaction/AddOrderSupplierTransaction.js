@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button, Form, Alert } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
-import OrderSupplierTransactionService from "./OrderSupplierTransaction.service";
+import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';

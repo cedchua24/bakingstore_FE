@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import { useParams } from 'react-router-dom';
-import OrderSupplierServiceService from '../OrderSupplierTransaction/OrderSupplierService.service';
+import OrderSupplierServiceService from '../OrderSupplierTransaction/OrderSupplierServiceService';
 import ProductServiceService from "../Product/ProductService.service";
 
 import IconButton from '@mui/material/IconButton';

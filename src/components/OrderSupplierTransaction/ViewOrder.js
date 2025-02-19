@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
-import OrderSupplierTransactionService from "./OrderSupplierTransaction.service";
-import OrderSupplierService from "./OrderSupplierService.service";
+import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
+import OrderSupplierService from "./OrderSupplierServiceService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import ModeOfPaymentPoService from "../OtherService/ModeOfPaymentPoService";
 import PaymentTermService from "../OtherService/PaymentTermService";
@@ -549,7 +549,7 @@ const FinalizeOrder = () => {
 
                         {modeOfPaymentDTO.data.map((row) => (
                             <TableRow key={row.id}>
-                                <TableCell>{row.payment_type}{" - " + row.payment_type_description}</TableCell>
+                                <TableCell>{row.bank_name}{" - " + row.account_name} {"" + row.account_description}{" - " + row.account_number}</TableCell>
                                 <TableCell align="right">{row.amount}</TableCell>
 
 

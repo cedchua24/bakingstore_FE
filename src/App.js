@@ -100,6 +100,45 @@ import CustomerHistory from "./components/Customer/CustomerHistory";
 import CustomerProductList from "./components/Customer/CustomerProductList";
 
 
+import PaymentTermTransaction from "./components/Payment/PaymentTermTransaction";
+import ViewPaymentTermTransaction from "./components/Payment/ViewPaymentTermTransaction";
+import ViewBankTransactionList from "./components/Payment/ViewBankTransactionList";
+import ViewOrderSupplierTransaction from "./components/Payment/ViewOrderSupplierTransaction";
+import ViewCreditCardDueList from "./components/Payment/ViewCreditCardDueList";
+import ViewChequeDueList from "./components/Payment/ViewChequeDueList";
+
+
+import EditCreditCardDue from "./components/Payment/EditCreditCardDue";
+import PayCreditCard from "./components/Payment/PayCreditCard";
+import PromoInstallment from "./components/Payment/PromoInstallment";
+import PayCreditCardHistory from "./components/Payment/PayCreditCardHistory";
+import CreditCardPayHistory from "./components/Payment/CreditCardPayHistory";
+import CreditCardTransactionHistory from "./components/Payment/CreditCardTransactionHistory";
+
+
+
+
+import CreditCardPaymentList from "./components/Payment/CreditCardPaymentList";
+import ChequePaymentList from "./components/Payment/ChequePaymentList";
+
+import InstallmentOrder from "./components/Payment/InstallmentOrder";
+import InstallmentPaymentList from "./components/Payment/InstallmentPaymentList";
+import InstallmentPromo from "./components/Installment/InstallmentPromo";
+import AddInstallment from "./components/Installment/AddInstallment";
+import InstallmentDetails from "./components/Installment/InstallmentDetails";
+import LoanList from "./components/Installment/LoanList";
+import UpcomingLoanList from "./components/Installment/UpcomingLoanList";
+
+
+
+
+
+import PaymentOrderCreditCard from "./components/Payment/PaymentOrderCreditCard";
+
+
+
+
+
 import ExpensesType from "./components/ExpensesType/ExpensesType";
 import EditExpensesType from "./components/ExpensesType/EditExpensesType";
 
@@ -187,6 +226,45 @@ const App = () => {
           <Route path="/warehouse" element={<Warehouse />} />
           <Route path="/warehouseListV2" element={<WarehouseListV2 />} />
           <Route exact path="/warehouseStock/:id" element={<WarehouseStock />} />
+
+          <Route path="/paymentTermTransaction" element={<PaymentTermTransaction />} />
+          <Route path="/viewPaymentTermTransaction/:id" element={<ViewPaymentTermTransaction />} />
+          <Route path="/viewBankTransactionList/:id" element={<ViewBankTransactionList />} />
+          <Route path="/viewOrderSupplierTransaction/:id" element={<ViewOrderSupplierTransaction />} />
+          <Route path="/viewCreditCardDueList" element={<ViewCreditCardDueList />} />
+          <Route path="/viewChequeDueList" element={<ViewChequeDueList />} />
+
+
+          <Route path="/creditCardPaymentList" element={<CreditCardPaymentList />} />
+          <Route path="/chequePaymentList" element={<ChequePaymentList />} />
+
+          <Route path="/installmentOrder/:id" element={<InstallmentOrder />} />
+          <Route path="/installmentPaymentList" element={<InstallmentPaymentList />} />
+          <Route path="/updateCreditCardDue/:id" element={<EditCreditCardDue />} />
+          <Route path="/payCreditCard/:id" element={<PayCreditCard />} />
+          <Route path="/promoInstallment/:id" element={<PromoInstallment />} />
+
+          <Route path="/payCreditCardHistory/:id" element={<PayCreditCardHistory />} />
+          <Route path="/creditCardPayHistory/:id" element={<CreditCardPayHistory />} />
+          <Route path="/creditCardTransactionHistory/:id" element={<CreditCardTransactionHistory />} />
+
+
+
+
+
+
+          <Route path="/installmentPromo" element={<InstallmentPromo />} />
+          <Route path="/addInstallment" element={<AddInstallment />} />
+          <Route path="/loanList" element={<LoanList />} />
+          <Route path="/upcomingLoanList" element={<UpcomingLoanList />} />
+
+
+          <Route path="/installmentDetails/:id" element={<InstallmentDetails />} />
+
+
+          <Route exact path="/paymentOrderCreditCard/:id" element={<PaymentOrderCreditCard />} />
+
+
 
           <Route path="/shop" element={<Shop />} />
           <Route path="/shopListV2" element={<ShopListV2 />} />

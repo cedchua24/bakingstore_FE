@@ -3,10 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
-import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
-import OrderSupplierService from "./OrderSupplierServiceService";
+
+
+import OrderSupplierTransactionService from "../OrderSupplierTransaction/OrderSupplierTransactionService";
+import OrderSupplierService from "../OrderSupplierTransaction/OrderSupplierServiceService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import ModeOfPaymentPoService from "../OtherService/ModeOfPaymentPoService";
+import CreditCardPaymentService from "../OtherService/CreditCardPaymentService";
 import PaymentTermService from "../OtherService/PaymentTermService";
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -45,25 +48,19 @@ import Typography from '@mui/material/Typography'
 
 
 
-const FinalizeOrder = () => {
+const PaymentOrderCreditCard = () => {
 
 
     const { id } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchOrderSupplierTransaction(id);
-        fetchByOrderSupplierId(id);
-        // fetchPaymentTypePo();
         fetchPaymentTerm();
-        fetchPaymentTypePoByShopTransactionId(id);
+        fetchCreditCardByMOP(id);
+        fetchCreditCardPaymentDTO(id);
     }, []);
 
-    const steps = [
-        'Created Transaction Details',
-        'Add Product Orders',
-        'Finalize Orders',
-    ];
+
 
     const style = {
         position: 'absolute',
@@ -134,8 +131,33 @@ const FinalizeOrder = () => {
         updated_at: ''
     });
 
+    const [creditCardPayment, setCreditCardPayment] = useState({
+        payment_type_po_id: 0,
+        mode_of_payment_po_id: id,
+        payment_term_id: 0,
+        amount: 0,
+        status: 0,
+        date: '',
+        interest_amount: 0,
+        is_installment: 0,
+        created_at: '',
+        updated_at: ''
+    });
+
     const [modeOfPaymentDTO, setModeOfPaymentDTO] = useState({
         data: [],
+        code: '',
+        balance: 0,
+        total_payment: 0,
+    });
+    const [creditCardPaymentDTO, setCreditCardPaymentDTO] = useState({
+        data: [],
+        total_payment: 0,
+    });
+
+    const [creditCardDTO, setCreditCardDTO] = useState({
+        data: [],
+        modeOfPaymentPo: {},
         code: '',
         balance: 0,
         total_payment: 0,
@@ -244,8 +266,8 @@ const FinalizeOrder = () => {
     }
     const deleteOrderTransaction = (deleteId, e) => {
         setSubmitLoading(true);
-        console.log("test", modeOfPaymentModal);
-        ModeOfPaymentPoService.delete(deleteId, modeOfPaymentModal)
+        console.log("test", creditCardPayment);
+        CreditCardPaymentService.delete(deleteId, creditCardPayment)
             .then(response => {
                 setSubmitLoading(false);
                 setOpen(false);
@@ -256,7 +278,7 @@ const FinalizeOrder = () => {
                     message: 'Successfuly Deleted!',
                     isShow: true,
                 });
-                fetchPaymentTypePoByShopTransactionId(id);
+                fetchCreditCardPaymentDTO(id);
                 // window.location.reload();
             })
             .catch(e => {
@@ -268,15 +290,15 @@ const FinalizeOrder = () => {
     const [message, setMessage] = useState(false);
 
     const onChangeInput = (e) => {
-        setModeOfPaymentPo({ ...modeOfPaymentPo, [e.target.name]: e.target.value });
-        console.log('modeOfPaymentPo', modeOfPaymentPo);
+        setCreditCardPayment({ ...creditCardPayment, [e.target.name]: e.target.value });
+        console.log('modeOfPaymentPo', creditCardPayment);
     }
 
     const handlePaymentTypeChange = (e, value) => {
         e.persist();
         console.log('handlePaymentTypeChange', value)
-        setModeOfPaymentPo({
-            ...modeOfPaymentPo,
+        setCreditCardPayment({
+            ...creditCardPayment,
             payment_type_po_id: value.id,
         });
 
@@ -287,22 +309,31 @@ const FinalizeOrder = () => {
         e.persist();
         console.log(value)
         if (value.id == 1) {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
+            setCreditCardPayment({
+                ...creditCardPayment,
                 payment_term_id: value.id,
                 payment_type_po_id: 1
             });
         }
         else if (value.id == 4 || value.id == 3) {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
+            setCreditCardPayment({
+                ...creditCardPayment,
                 payment_term_id: value.id,
                 status: 1
             });
         }
+        else if (value.id == 5) {
+            setCreditCardPayment({
+                ...creditCardPayment,
+                payment_term_id: value.id,
+                payment_type_po_id: modeOfPaymentDTO.data[0].payment_type_po_id,
+                is_installment: 1,
+                status: 1
+            });
+        }
         else {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
+            setCreditCardPayment({
+                ...creditCardPayment,
                 payment_term_id: value.id
             });
         }
@@ -333,7 +364,7 @@ const FinalizeOrder = () => {
 
 
     const fetchPaymentTerm = () => {
-        PaymentTermService.getAll()
+        PaymentTermService.fetchPaymentTermCreditCard()
             .then(response => {
                 setPaymentTermList(response.data);
             })
@@ -378,11 +409,11 @@ const FinalizeOrder = () => {
     const updateOrderTransaction = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        OrderSupplierTransactionService.setToCompletePaymentTransaction(id)
+        ModeOfPaymentPoService.setToCompleteCreditCard(id)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-                navigate('/supplierTransactionList/');
+                navigate('/creditCardPaymentList/');
             })
             .catch(e => {
                 setSubmitLoadingAdd(false);
@@ -394,22 +425,22 @@ const FinalizeOrder = () => {
 
     const validate = (values) => {
         const errors = {};
-        if (modeOfPaymentPo.payment_term_id == 0) {
+        if (creditCardPayment.payment_term_id == 0) {
             errors.payment_term_id = "Payment Term is Required!";
         }
 
-        if (modeOfPaymentPo.payment_term_id == 2 || modeOfPaymentPo.payment_term_id == 3) {
-            if (modeOfPaymentPo.payment_type_po_id == 0) {
+        if (creditCardPayment.payment_term_id == 2 || creditCardPayment.payment_term_id == 3) {
+            if (creditCardPayment.payment_type_po_id == 0) {
                 errors.payment_type_po_id = "Bank is Required!";
             }
         }
 
-        if (modeOfPaymentPo.payment_term_id != 4) {
-            if (modeOfPaymentPo.amount == 0) {
+        if (creditCardPayment.payment_term_id != 4) {
+            if (creditCardPayment.amount == 0) {
                 errors.amount = "Amount is Required!";
             }
         }
-        if (modeOfPaymentPo.date == 0) {
+        if (creditCardPayment.date == 0) {
             errors.date = "Date is Required!";
         }
 
@@ -420,23 +451,23 @@ const FinalizeOrder = () => {
 
 
     const savePaymentType = () => {
-        console.log('modeOfPaymentPo:', modeOfPaymentPo);
-        console.log("count: ", Object.keys(validate(modeOfPaymentPo)).length);
-        console.log("validate: ", validate(modeOfPaymentPo));
-        setFormErrors(validate(modeOfPaymentPo));
-        if (Object.keys(validate(modeOfPaymentPo)).length > 0) {
+        console.log('creditCardPayment:', creditCardPayment);
+        console.log("count: ", Object.keys(validate(creditCardPayment)).length);
+        console.log("validate: ", validate(creditCardPayment));
+        setFormErrors(validate(creditCardPayment));
+        if (Object.keys(validate(creditCardPayment)).length > 0) {
             console.log("Has Validation: ");
         } else {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
             setErrorStock(true);
-            ModeOfPaymentPoService.sanctum().then(response => {
-                ModeOfPaymentPoService.create(modeOfPaymentPo)
+            CreditCardPaymentService.sanctum().then(response => {
+                CreditCardPaymentService.create(creditCardPayment)
                     .then(response => {
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
                         setErrorStock(false);
-                        fetchPaymentTypePoByShopTransactionId(id);
+                        fetchCreditCardPaymentDTO(id);
                     })
                     .catch(e => {
                         setSubmitLoadingAdd(false);
@@ -449,12 +480,12 @@ const FinalizeOrder = () => {
     }
     const fetchPaymentTypePoByShopTransactionId = (id) => {
 
-        ModeOfPaymentPoService.fetchPaymentTypePoByShopTransactionId(id)
+        ModeOfPaymentPoService.fetchCreditCardPaymentDTO(id)
             .then(response => {
                 setModeOfPaymentDTO(response.data);
                 console.log('balance', response.data)
-                setModeOfPaymentPo({
-                    ...modeOfPaymentPo,
+                setCreditCardPayment({
+                    ...creditCardPayment,
                     amount: response.data.balance,
                 });
 
@@ -463,6 +494,41 @@ const FinalizeOrder = () => {
                 console.log("error", e)
             });
     }
+
+    const fetchCreditCardByMOP = (id) => {
+
+        CreditCardPaymentService.fetchCreditCardByMOP(id)
+            .then(response => {
+                setCreditCardPaymentDTO(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const fetchCreditCardPaymentDTO = (id) => {
+
+        ModeOfPaymentPoService.fetchCreditCardPaymentDTO(id)
+            .then(response => {
+                setCreditCardDTO(response.data);
+                console.log('balance', response.data)
+                setModeOfPaymentPo({
+                    ...modeOfPaymentPo,
+                    amount: response.data.balance,
+                });
+
+                fetchOrderSupplierTransaction(response.data.modeOfPaymentPo.order_supplier_transaction_id);
+                fetchByOrderSupplierId(response.data.modeOfPaymentPo.order_supplier_transaction_id);
+                fetchPaymentTypePoByShopTransactionId(id);
+                fetchCreditCardByMOP(id);
+
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+
 
     const numberFormat = (value) =>
         new Intl.NumberFormat('en-us', {
@@ -498,19 +564,12 @@ const FinalizeOrder = () => {
                 noValidate
                 autoComplete="off"
             >
-                <Stepper activeStep={2} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
 
-
-                        </Step>
-                    ))}
-                </Stepper>
                 <br></br>
 
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+
                         <TableBody>
                             <TableRow >
                                 <TableCell style={{ fontWeight: 'bold' }}>Supplier Name:</TableCell>
@@ -529,7 +588,7 @@ const FinalizeOrder = () => {
                 </TableContainer>
             </Box>
             <br></br>
-            {modeOfPaymentDTO.balance != 0 ? (
+            {creditCardDTO.balance != 0 ? (
                 <Box
                     sx={{
                         '& .MuiTextField-root': { m: 1, width: '25ch' },
@@ -554,9 +613,9 @@ const FinalizeOrder = () => {
                     </FormControl>
                     <br></br>
 
-                    {modeOfPaymentPo.payment_term_id != 0 ? (<>
+                    {creditCardPayment.payment_term_id != 0 ? (<>
 
-                        {modeOfPaymentPo.payment_term_id == 2 || modeOfPaymentPo.payment_term_id == 3 || modeOfPaymentPo.payment_term_id == 4 ? (<>
+                        {creditCardPayment.payment_term_id == 2 || creditCardPayment.payment_term_id == 3 || creditCardPayment.payment_term_id == 4 ? (<>
                             {formErrors.payment_type_po_id && <p style={{ color: "red" }}>{formErrors.payment_type_po_id}</p>}
                             <Box
                                 sx={{
@@ -580,7 +639,7 @@ const FinalizeOrder = () => {
                                 </FormControl>
                             </Box>
                         </>) : ""}
-                        {modeOfPaymentPo.payment_term_id == 1 || modeOfPaymentPo.payment_term_id == 2 || modeOfPaymentPo.payment_term_id == 3 || modeOfPaymentPo.payment_term_id == 4 ? (<>
+                        {creditCardPayment.payment_term_id == 1 || creditCardPayment.payment_term_id == 2 || creditCardPayment.payment_term_id == 5 ? (<>
                             {formErrors.amount && <p style={{ color: "red" }}>{formErrors.amount}</p>}
                             <FormControl fullWidth sx={{ m: 1 }} variant="standard">
                                 <InputLabel htmlFor="standard-adornment-amount">Enter Amount</InputLabel>
@@ -591,10 +650,10 @@ const FinalizeOrder = () => {
                                     variant="filled"
                                     name='amount'
                                     errorText='{this.state.password_error_text}'
-                                    max={modeOfPaymentPo.amount}
+                                    max={creditCardPayment.amount}
                                     // value={product.stock}
                                     onChange={onChangeInput}
-                                    value={modeOfPaymentPo.amount}
+                                    value={creditCardPayment.amount}
                                 // helperText="Incorrect entry."
                                 />
                             </FormControl>
@@ -602,7 +661,7 @@ const FinalizeOrder = () => {
                         <br></br>
                         {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
                         <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                            <Form.Label>{modeOfPaymentPo.payment_term_id == 3 ? "Due Date" : "Date"}</Form.Label>
+                            <Form.Label>Date</Form.Label>
                             <Form.Control type="date" name="date" onChange={onChangeInput} />
                         </Form.Group>
 
@@ -624,12 +683,77 @@ const FinalizeOrder = () => {
             ) : ""
             }
             <br></br>
+            {creditCardPaymentDTO.data.length != 0 &&
+                <TableContainer component={Paper}>
+                    <h3 style={{ textAlign: "center" }}>Credit Card Payment</h3>
+                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+
+                        <TableHead>
+
+                            <TableRow>
+                                <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>Term</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+
+                            {creditCardPaymentDTO.data.map((row) => (
+                                <TableRow key={row.id}>
+                                    <TableCell>{row.bank_name}{" - " + row.account_name} {"" + row.account_description}{" - " + row.account_number}</TableCell>
+                                    <TableCell align="right">{row.is_installment == 1 ? "Installment" : row.payment_term}</TableCell>
+                                    <TableCell align="right">{row.amount}</TableCell>
+                                    <TableCell align="right">
+                                        <Tooltip title="Delete">
+                                            <IconButton>
+                                                <DeleteIcon color="error" onClick={(e) => openDelete()} />
+                                            </IconButton>
+                                        </Tooltip>
+                                    </TableCell>
+
+
+                                    <Dialog
+                                        open={deleteOpenModal}
+                                        onClose={handleDeleteCloseModal}
+                                        aria-labelledby="alert-dialog-title"
+                                        aria-describedby="alert-dialog-description"
+                                    >
+
+                                        <DialogTitle id="alert-dialog-title">
+                                            {"Are you sure you want to Delete?"}
+                                        </DialogTitle>
+                                        {submitLoading &&
+                                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                <CircularProgress />
+                                            </div>
+                                        }
+                                        <DialogActions>
+                                            <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                                            <Button onClick={(e) => deleteOrderTransaction(row.id, e)} autoFocus>
+                                                Agree
+                                            </Button>
+                                        </DialogActions>
+                                    </Dialog>
+                                </TableRow>
+
+                            ))}
+                            <TableRow>
+                                <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            }
+            <br></br>
 
             <TableContainer component={Paper}>
+                <h3 style={{ textAlign: "center" }}>Credit Card Balance</h3>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+
                     <TableHead>
                         <TableRow>
-                            <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
+                            <TableCell style={{ fontWeight: 'bold' }}>Bank</TableCell>
                             <TableCell style={{ fontWeight: 'bold' }}>Term</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
                         </TableRow>
@@ -641,54 +765,18 @@ const FinalizeOrder = () => {
                                 <TableCell>{row.bank_name}{" - " + row.account_name} {"" + row.account_description}{" - " + row.account_number}</TableCell>
                                 <TableCell align="right">{row.payment_term}</TableCell>
                                 <TableCell align="right">{row.amount}</TableCell>
-                                <TableCell align="right">
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCell>
-                                <TableCell align="right">
-                                    <Tooltip title="Delete">
-                                        <IconButton>
-                                            <DeleteIcon color="error" onClick={(e) => openDelete()} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCell>
-
-                                <Dialog
-                                    open={deleteOpenModal}
-                                    onClose={handleDeleteCloseModal}
-                                    aria-labelledby="alert-dialog-title"
-                                    aria-describedby="alert-dialog-description"
-                                >
-
-                                    <DialogTitle id="alert-dialog-title">
-                                        {"Are you sure you want to Delete?"}
-                                    </DialogTitle>
-                                    {submitLoading &&
-                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <CircularProgress />
-                                        </div>
-                                    }
-                                    <DialogActions>
-                                        <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                                        <Button onClick={(e) => deleteOrderTransaction(row.id, e)} autoFocus>
-                                            Agree
-                                        </Button>
-                                    </DialogActions>
-                                </Dialog>
                             </TableRow>
 
                         ))}
                         <TableRow>
-                            <TableCell colSpan={1} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                            <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>
             <br></br>
+            <h3 style={{ textAlign: "center" }}>Order Details</h3>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
@@ -734,7 +822,8 @@ const FinalizeOrder = () => {
             </TableContainer>
 
             <br></br>
-            {submitLoadingAdd &&
+            {
+                submitLoadingAdd &&
                 <LinearProgress color="warning" />
             }
             <br></br>
@@ -751,7 +840,7 @@ const FinalizeOrder = () => {
 
                 <br></br>
                 <Button
-                    disabled={modeOfPaymentDTO.balance != 0}
+                    disabled={creditCardDTO.balance != 0}
                     variant="contained"
                     type="submit"
                     onClick={updateOrderTransaction}
@@ -818,7 +907,7 @@ const FinalizeOrder = () => {
     )
 }
 
-export default FinalizeOrder
+export default PaymentOrderCreditCard
 
 
 
