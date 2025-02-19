@@ -109,6 +109,22 @@ const NavBar = () => {
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
+                        <NavDropdown title="Payment" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/paymentTermTransaction">Payment Type List</NavDropdown.Item>
+                            <NavDropdown.Item href="/creditCardPaymentList">Credit Card Payment List</NavDropdown.Item>
+                            <NavDropdown.Item href="/viewCreditCardDueList">Upcoming Credit Card Due List</NavDropdown.Item>
+                            <NavDropdown.Item href="/chequePaymentList">Cheque Payment List</NavDropdown.Item>
+                            <NavDropdown.Item href="/viewChequeDueList">Upcoming Cheque Payment Due List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Loan" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/addInstallment">Add Loan</NavDropdown.Item>
+                            <NavDropdown.Item href="/loanList">Loan List</NavDropdown.Item>
+                            <NavDropdown.Item href="/upcomingLoanList">Upcoming Loan Due Date</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
                         <NavDropdown title="MarkUpPrice" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/markUpPrice">Add MarkUpPrice</NavDropdown.Item>
                             <NavDropdown.Item href="/markUpPriceListV2">MarkUpPrice List</NavDropdown.Item>

@@ -19,11 +19,17 @@ class ModeOfPaymentPoService {
     fetchPaymentTypePoByShopTransactionId(id) {
         return axios.get(`/api/modeOfPaymentPo/fetchPaymentTypePoByShopTransactionId/${id}`);
     }
+    fetchCreditCardPaymentDTO(id) {
+        return axios.get(`/api/modeOfPaymentPo/fetchCreditCardPaymentDTO/${id}`);
+    }
     fetchPaymentTypePoByShopTransactionId(id) {
         return axios.get(`/api/modeOfPaymentPo/fetchPaymentTypePoByShopTransactionId/${id}`);
     }
     update(id, data) {
         return axios.put(`/api/modeOfPaymentPo/${id}`, data);
+    }
+    setToCompleteCreditCard(id) {
+        return axios.put(`/api/modeOfPaymentPo/setToCompleteCreditCard/${id}`);
     }
     delete(brand, data) {
         return axios.delete(`/api/modeOfPaymentPo/${brand}`, data);

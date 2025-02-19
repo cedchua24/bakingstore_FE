@@ -185,6 +185,10 @@ const AddProductCustomerOrderTransaction = () => {
                 const index = orderCustomerDTO.shopOrderList.filter(obj => {
                     return obj.product_id === orderCustomer.product_id;
                 });
+
+                orderCustomerDTO.shopOrderList.filter(obj => {
+                    return obj.product_id === orderCustomer.product_id;
+                });
                 console.log('orderCustomer', orderCustomer);
                 console.log('orderCustomerDTO', orderCustomerDTO);
                 if (index.length === 0) {

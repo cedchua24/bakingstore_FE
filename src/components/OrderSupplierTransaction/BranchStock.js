@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import WarehouseService from "../Warehouse/WarehouseService";
-import OrderSupplierService from "./OrderSupplierService.service";
+import OrderSupplierService from "./OrderSupplierServiceService";
 import BranchStockService from "./BranchStockService.";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
-import OrderSupplierTransactionService from "./OrderSupplierTransaction.service";
-import OrderSupplierService from "./OrderSupplierService.service";
+import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
+import OrderSupplierService from "./OrderSupplierServiceService";
 import ProductServiceService from "../Product/ProductService.service";
 import ProductSupplierService from "../ProductSupplier/ProductSupplierService";
 import Autocomplete from '@mui/material/Autocomplete';
@@ -679,6 +679,7 @@ const AddProductOrderSupplierTransaction = () => {
             >
                 <Button
                     variant="contained"
+                    disabled={orderList.length === 0 ? true : false}
                     type="submit"
                     onClick={finalizeOrder}
                     size="large" >

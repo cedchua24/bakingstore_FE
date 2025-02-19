@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-import OrderSupplierTransactionService from "./OrderSupplierTransaction.service";
+import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import AddOrderSupplierTransaction from "./AddOrderSupplierTransaction";
 import SupplierServiceService from "../Supplier/SupplierService.service";
 
