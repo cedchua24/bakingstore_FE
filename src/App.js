@@ -49,6 +49,8 @@ import ViewStockTransactionList from "./components/Stock/ViewStockTransactionLis
 
 import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
 import MarkUpPriceListV2 from "./components/MarkUpPrice/MarkUpPriceListV2";
+import MarkUpNewPrice from "./components/MarkUpPrice/MarkUpNewPrice";
+
 
 import OrderCustomerTransaction from "./components/OrderCustomerTransaction/OrderCustomerTransaction";
 import OrderCustomerList from "./components/OrderCustomerList/OrderCustomerList";
@@ -71,6 +73,8 @@ import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
 import CustomerSorted from "./components/ShopOrderTransaction/CustomerSorted";
 import ReportCustomerSorted from "./components/Reports/ReportCustomerSorted";
 import ReportProductSorted from "./components/Reports/ReportProductSorted";
+import ProductValueReport from "./components/Reports/ProductValueReport";
+
 
 import TransactionReportList from "./components/ShopOrderTransaction/TransactionReportList";
 import PendingTransactionList from "./components/ShopOrderTransaction/PendingTransactionList";
@@ -217,6 +221,7 @@ const App = () => {
 
           <Route exact path="/markUpPrice/" element={<MarkUpPrice />} />
           <Route exact path="/markUpPriceListV2/" element={<MarkUpPriceListV2 />} />
+          <Route exact path="/markUpNewPrice/" element={<MarkUpNewPrice />} />
 
           <Route exact path="/orderCustomerTransaction/" element={<OrderCustomerTransaction />} />
           <Route exact path="/orderCustomerList/" element={<OrderCustomerList />} />
@@ -359,6 +364,7 @@ const App = () => {
           <Route exact path="/reports/reportExpensesView/:id" element={<ReportExpensesView />} />
           <Route exact path="/reports/reportCustomerSorted/" element={<ReportCustomerSorted />} />
           <Route exact path="/reports/reportProductSorted/" element={<ReportProductSorted />} />
+          <Route exact path="/reports/productValueReport/" element={<ProductValueReport />} />
 
 
           <Route exact path="/customers/" element={<Customer />} />

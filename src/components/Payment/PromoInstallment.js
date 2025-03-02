@@ -175,9 +175,10 @@ const PromoInstallment = () => {
     const savecreditCardDue = () => {
         CreditCardInstallmentDtailsService.create(creditCardDue)
             .then(response => {
-                // fetchCreditCardDue(id);
-                // fetchCreditCardDetail(id);
-                // fetchPaymentHistory(id);
+                fetchCreditCardDue(id);
+                fetchCreditCardDetail(id);
+                fetchCreditCardInstallmentDetail(id);
+                fetchPaymentHistory(id);
                 setMessage(true);
             })
             .catch(e => {
@@ -355,7 +356,7 @@ const PromoInstallment = () => {
             </>) : <>
             </>}
             <br></br>
-            {installmentDetails.length != 0 ? (<>
+            {installmentDetails.id ? (<>
                 <TableContainer component={Paper}>
                     <legend>Installment Details</legend>
                     <Table sx={{ minWidth: 700 }} aria-label="spanning table">
@@ -384,7 +385,8 @@ const PromoInstallment = () => {
             </>) : <>
             </>}
             <br></br>
-            {installmentDetails.length == 0 &&
+
+            {!installmentDetails.id ? (<>
                 <Box
                     sx={{
                         '& .MuiTextField-root': { m: 1, width: '25ch' },
@@ -479,7 +481,8 @@ const PromoInstallment = () => {
                         </Button>
                     </Form>
                 </Box>
-            }
+            </>) : <>
+            </>}
             <br></br>
             {
                 paymentHistoryList.length != 0 &&

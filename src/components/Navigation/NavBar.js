@@ -128,6 +128,8 @@ const NavBar = () => {
                         <NavDropdown title="MarkUpPrice" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/markUpPrice">Add MarkUpPrice</NavDropdown.Item>
                             <NavDropdown.Item href="/markUpPriceListV2">MarkUpPrice List</NavDropdown.Item>
+                            <NavDropdown.Item href="/markUpNewPrice">Mark Up New Price</NavDropdown.Item>
+
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
@@ -171,7 +173,8 @@ const NavBar = () => {
                             <NavDropdown.Item href="/shopOrderTransaction/pendingTransactionList">Pending Transaction List</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/cancelTransactionList">Cancel Transaction List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportCustomerSorted">Customer Record List</NavDropdown.Item>
-                            <NavDropdown.Item href="/reports/reportProductSorted">Product Record List</NavDropdown.Item>
+                            <NavDropdown.Item href="/reports/reportProductSorted">Product Sold Record List</NavDropdown.Item>
+                            <NavDropdown.Item href="/reports/productValueReport">Product Capital Record List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportsList">Online Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/shopBranchReportList">Shop Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportExpenses">Expenses Reports</NavDropdown.Item>

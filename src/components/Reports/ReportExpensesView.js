@@ -2,8 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import ExpensesService from "../Expenses/ExpensesService";
 import { styled } from '@mui/material/styles';
+import { Button } from 'react-bootstrap';
+import { Link } from "react-router-dom";
 
 const ReportExpensesView = () => {
+
+    useEffect(() => {
+        fetchProductTransactionList();
+        fetchExpensesList();
+        fetchExpensesNonList();
+    }, []);
+
 
     const { id } = useParams();
     const [expensesList, setExpensesList] = useState({
@@ -48,11 +57,7 @@ const ReportExpensesView = () => {
 
 
     const [productName, setProductName] = useState('');
-    useEffect(() => {
-        fetchProductTransactionList();
-        fetchExpensesList();
-        fetchExpensesNonList();
-    }, []);
+
 
     const fetchProductTransactionList = async () => {
         await ExpensesService.fetchExpensesTransactionById(id)
@@ -62,6 +67,19 @@ const ReportExpensesView = () => {
             })
             .catch(e => {
                 console.log("error", e)
+            });
+    }
+
+
+    const deleteExpenses = (id, e) => {
+        ExpensesService.delete(id)
+            .then(response => {
+                fetchProductTransactionList();
+                fetchExpensesList();
+                fetchExpensesNonList();
+            })
+            .catch(e => {
+                console.log('error', e);
             });
     }
 
@@ -139,6 +157,18 @@ const ReportExpensesView = () => {
                                     <td>{expenses.amount}</td>
                                     <td>{expenses.details}</td>
                                     <td>{expenses.date}</td>
+                                    <td>
+                                        <Link variant="primary" to={"/editExpenses/" + expenses.id}   >
+                                            <Button variant="primary" >
+                                                Update
+                                            </Button>
+                                        </Link>
+                                    </td>
+                                    <td>
+                                        <Button variant="danger" onClick={(e) => deleteExpenses(expenses.id, e)} >
+                                            Delete
+                                        </Button>
+                                    </td>
                                 </tr>
                             )
                             )

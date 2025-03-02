@@ -62,8 +62,14 @@ const CreditCardPaymentList = () => {
         d.setMonth(month + 1);
         d.setDate(day);
 
+        var dd = new Date('2025-03-10');
+        console.log('new_date', new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(dd));
 
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
+    }
 
+    const covertDateString = (day) => {
+        var d = new Date(day);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
@@ -87,7 +93,7 @@ const CreditCardPaymentList = () => {
                         <th>Bank</th>
                         <th>Account Name</th>
                         <th>Account Number</th>
-                        <th>Statement Date</th>
+                        {/* <th>Statement Date</th> */}
                         <th>Due Date</th>
                         <th>Credit Limit</th>
                         <th>Available Balance</th>
@@ -107,8 +113,9 @@ const CreditCardPaymentList = () => {
                                 <td >{paymentTerm.bank_name}{" " + paymentTerm.account_description}</td>
                                 <td >{paymentTerm.account_name}</td>
                                 <td >{paymentTerm.account_number}</td>
-                                <td>{formatStatementDate(paymentTerm.statement_date)}</td>
-                                <td>{formatDueDate(paymentTerm.due_date)}</td>
+                                {/* <td>{formatStatementDate(paymentTerm.statement_date)}</td> */}
+                                {/* <td>{formatDueDate(paymentTerm.due_date)}</td> */}
+                                <td>{covertDateString(paymentTerm.due)}</td>
                                 <td >{numberFormat(paymentTerm.credit_limit)}</td>
                                 <td>{numberFormat(paymentTerm.credit_limit - paymentTerm.total_balance_due)}</td>
                                 <td>{numberFormat(paymentTerm.amount_due)}</td>

@@ -30,7 +30,7 @@ import Select from '@mui/material/Select';
 
 
 
-const ProductList = () => {
+const MarkUpNewPrice = () => {
 
     useEffect(() => {
         fetchProductList();
@@ -157,7 +157,9 @@ const ProductList = () => {
     const [message, setMessage] = useState(false);
 
     const [productList, setProductList] = useState({
-        total_value: '',
+        total_value: 0,
+        total_profit: 0,
+        total_new_price: 0,
         data: []
     });
 
@@ -168,7 +170,7 @@ const ProductList = () => {
 
 
     const fetchProductList = () => {
-        ProductServiceService.fetchProductListV2()
+        ProductServiceService.fetchProductValue(0)
             .then(response => {
                 setProductList(response.data);
             })
@@ -215,7 +217,7 @@ const ProductList = () => {
     const fetchProductByCategoryId = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ProductServiceService.fetchProductByCategoryId(categoryId)
+        ProductServiceService.fetchProductValue(categoryId)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
@@ -238,6 +240,7 @@ const ProductList = () => {
     return (
         <div>
             <Form>
+                <legend>Mark Up New Price</legend>
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -256,19 +259,7 @@ const ProductList = () => {
                             }
                         </Select>
                     </FormControl>
-                    <br></br>
-                    <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Total Value</InputLabel>
-                        <Input
-                            type='text'
-                            id="filled-"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            value={numberFormat(productList.total_value.total_price)}
-                            disabled
-                        />
-                    </FormControl>
+
 
                 </Box>
 
@@ -287,61 +278,7 @@ const ProductList = () => {
             </Form>
 
             <br></br>
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Add Stocks
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <TextField
-                        disabled
-                        id="filled-required"
-                        label="Product Name"
-                        variant="filled"
-                        name='product_name'
-                        value={orderSupplierModal.product_name}
-                    />
 
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
-                        <Input
-                            type='number'
-                            id="filled-required"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            onChange={onChangeInputQuantityModal}
-                        />
-                    </FormControl>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -349,81 +286,54 @@ const ProductList = () => {
                         <th>Product</th>
                         <th>Brand</th>
                         <th>Category</th>
-                        <th>Price</th>
+                        <th>Old Price</th>
+                        <th>New Price</th>
+                        <th>Match</th>
                         <th>Quantity / Weight</th>
                         <th>Stock</th>
-                        <th>Stock / Per Piece</th>
                         <th>Packaging</th>
-                        <th>Stock Warning</th>
                         <th>Status</th>
-                        <th>Value</th>
-                        <th>Transaction</th>
-                        <th>Action</th>
-                        <th>Action</th>
                     </tr>
                 </thead>
-                {productList.length == 0 ?
+
+
+
+                {productList.data.length == 0 ?
                     (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
                     :
                     (
                         <tbody>
-
                             {
-                                productList.data.map((product, index) => (
-                                    <tr key={product.id} >
-                                        <td>{product.id}</td>
-                                        <td>{product.product_name}</td>
-                                        <td>{product.brand_name}</td>
-                                        <td>{product.category_name}</td>
-                                        <td>{numberFormat(product.price)}</td>
-                                        {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                        <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
-                                            : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                        </td>
-                                        <td>{product.stock}</td>
-                                        <td>{product.stock_pc}</td>
-                                        <td>{product.packaging}</td>
-                                        <td>{product.stock_warning}</td>
-                                        <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                        <td>{numberFormat(product.price * product.stock)}</td>
-                                        {/* <td>
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </td> */}
-                                        <td>
-                                            <Link variant="primary" to={"/productTransactionList/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
+                                productList.data
+                                    .filter(d => d.price != d.mup_price)
+                                    .map(product => (
+                                        <tr key={product.id} >
+                                            <td>{product.id}</td>
+                                            <td>{product.product_name}</td>
+                                            <td>{product.brand_name}</td>
+                                            <td>{product.category_name}</td>
+                                            <td>{numberFormat(product.mup_price)}</td>
+                                            <td>{numberFormat(product.price)}</td>
+                                            <td>{product.price == product.mup_price ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
 
-                                        <td>
-                                            <Link variant="primary" to={"/editProduct/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    Update
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            <Button disabled variant="contained" color="error" onClick={(e) => deleteProduct(product.id, e)} >
-                                                Delete
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                )
-                                )
+                                            {/* <td>{product.weight}x{product.quantity}kg</td> */}
+                                            <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
+                                                : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
+                                            </td>
+                                            <td>{product.stock}</td>
+                                            <td>{product.packaging}</td>
+                                            <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                        </tr>
+                                    ))
                             }
-                        </tbody>)}
-            </table>
+                        </tbody>)
+                }
+            </table >
 
 
 
-        </div>
+        </div >
     )
 }
 
-export default ProductList
+export default MarkUpNewPrice

@@ -30,7 +30,7 @@ import Select from '@mui/material/Select';
 
 
 
-const ProductList = () => {
+const ProductValueReport = () => {
 
     useEffect(() => {
         fetchProductList();
@@ -157,7 +157,9 @@ const ProductList = () => {
     const [message, setMessage] = useState(false);
 
     const [productList, setProductList] = useState({
-        total_value: '',
+        total_value: 0,
+        total_profit: 0,
+        total_new_price: 0,
         data: []
     });
 
@@ -168,7 +170,7 @@ const ProductList = () => {
 
 
     const fetchProductList = () => {
-        ProductServiceService.fetchProductListV2()
+        ProductServiceService.fetchProductValue(0)
             .then(response => {
                 setProductList(response.data);
             })
@@ -215,7 +217,7 @@ const ProductList = () => {
     const fetchProductByCategoryId = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ProductServiceService.fetchProductByCategoryId(categoryId)
+        ProductServiceService.fetchProductValue(categoryId)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
@@ -238,6 +240,7 @@ const ProductList = () => {
     return (
         <div>
             <Form>
+                <legend>Product Capital Record</legend>
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -258,7 +261,7 @@ const ProductList = () => {
                     </FormControl>
                     <br></br>
                     <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Total Value</InputLabel>
+                        <InputLabel htmlFor="standard-adornment-amount">Capital</InputLabel>
                         <Input
                             type='text'
                             id="filled-"
@@ -266,6 +269,33 @@ const ProductList = () => {
                             variant="filled"
                             name='shop_order_quantity'
                             value={numberFormat(productList.total_value.total_price)}
+                            disabled
+                        />
+                    </FormControl>
+                    <br></br>
+                    <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
+                        <InputLabel htmlFor="standard-adornment-amount">Capital with Profit</InputLabel>
+                        <Input
+                            type='text'
+                            id="filled-"
+                            label="Quantity"
+                            variant="filled"
+                            name='shop_order_quantity'
+                            value={numberFormat(productList.total_value.total_new_value)}
+                            disabled
+                        />
+                    </FormControl>
+
+                    <br></br>
+                    <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
+                        <InputLabel htmlFor="standard-adornment-amount">Expected Profit</InputLabel>
+                        <Input
+                            type='text'
+                            id="filled-"
+                            label="Quantity"
+                            variant="filled"
+                            name='shop_order_quantity'
+                            value={numberFormat(productList.total_value.total_profit)}
                             disabled
                         />
                     </FormControl>
@@ -349,81 +379,59 @@ const ProductList = () => {
                         <th>Product</th>
                         <th>Brand</th>
                         <th>Category</th>
-                        <th>Price</th>
+                        <th>Old Price</th>
+                        <th>New Price</th>
+                        <th>Match</th>
                         <th>Quantity / Weight</th>
                         <th>Stock</th>
-                        <th>Stock / Per Piece</th>
                         <th>Packaging</th>
-                        <th>Stock Warning</th>
                         <th>Status</th>
-                        <th>Value</th>
-                        <th>Transaction</th>
-                        <th>Action</th>
-                        <th>Action</th>
+                        <th>Capital</th>
+                        <th>Capital with Profit</th>
+                        <th>Expected Profit</th>
                     </tr>
                 </thead>
-                {productList.length == 0 ?
+
+
+
+                {productList.data.length == 0 ?
                     (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
                     :
                     (
                         <tbody>
-
                             {
-                                productList.data.map((product, index) => (
-                                    <tr key={product.id} >
-                                        <td>{product.id}</td>
-                                        <td>{product.product_name}</td>
-                                        <td>{product.brand_name}</td>
-                                        <td>{product.category_name}</td>
-                                        <td>{numberFormat(product.price)}</td>
-                                        {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                        <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
-                                            : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                        </td>
-                                        <td>{product.stock}</td>
-                                        <td>{product.stock_pc}</td>
-                                        <td>{product.packaging}</td>
-                                        <td>{product.stock_warning}</td>
-                                        <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                        <td>{numberFormat(product.price * product.stock)}</td>
-                                        {/* <td>
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </td> */}
-                                        <td>
-                                            <Link variant="primary" to={"/productTransactionList/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
+                                productList.data
+                                    .map(product => (
+                                        <tr key={product.id} >
+                                            <td>{product.id}</td>
+                                            <td>{product.product_name}</td>
+                                            <td>{product.brand_name}</td>
+                                            <td>{product.category_name}</td>
+                                            <td>{numberFormat(product.mup_price)}</td>
+                                            <td>{numberFormat(product.price)}</td>
+                                            <td>{product.price == product.mup_price ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
 
-                                        <td>
-                                            <Link variant="primary" to={"/editProduct/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    Update
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            <Button disabled variant="contained" color="error" onClick={(e) => deleteProduct(product.id, e)} >
-                                                Delete
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                )
-                                )
+                                            {/* <td>{product.weight}x{product.quantity}kg</td> */}
+                                            <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
+                                                : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
+                                            </td>
+                                            <td>{product.stock}</td>
+                                            <td>{product.packaging}</td>
+                                            <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                            <td>{numberFormat(product.price * product.stock)}</td>
+                                            <td>{numberFormat(product.new_price * product.stock)}</td>
+                                            <td>{numberFormat(product.profit * product.stock)}</td>
+                                        </tr>
+                                    ))
                             }
-                        </tbody>)}
-            </table>
+                        </tbody>)
+                }
+            </table >
 
 
 
-        </div>
+        </div >
     )
 }
 
-export default ProductList
+export default ProductValueReport
