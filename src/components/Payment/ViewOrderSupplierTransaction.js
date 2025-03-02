@@ -168,7 +168,7 @@ const ViewOrderSupplierTransaction = () => {
                         <th>Action</th>
                         <th></th>
                         <th></th>
-
+                        <th></th>
 
                     </tr>
                 </thead>

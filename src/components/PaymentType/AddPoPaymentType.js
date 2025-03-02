@@ -97,9 +97,9 @@ const AddPoPaymentType = (props) => {
             if (paymentType.due_date == 0) {
                 errors.due_date = "Due Date is Required!";
             }
-            if (paymentType.buffer_days == 0) {
-                errors.buffer_days = "Buffer Days is Required!";
-            }
+            // if (paymentType.buffer_days == 0) {
+            //     errors.buffer_days = "Buffer Days is Required!";
+            // }
             if (paymentType.credit_limit == 0) {
                 errors.credit_limit = "Credit Limit is Required!";
             }
@@ -251,32 +251,9 @@ const AddPoPaymentType = (props) => {
                             </Select>
                         </FormControl>
                         <br></br>
-                        {formErrors.buffer_days && <p style={{ color: "red" }}>{formErrors.buffer_days}</p>}
-                        <FormControl sx={{ m: 0, minWidth: 130, minHeight: 70 }}>
-                            <InputLabel id="demo-simple-select-label">Buffer Days *</InputLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                label="Buffer Days"
-                                name="buffer_days"
-                                onChange={onChangePaymentType}
-                            >
-                                {Array(15).fill(1).map((el, i) =>
-                                    <MenuItem value={i}>{i}</MenuItem>
-                                )}
-
-                            </Select>
-                        </FormControl>
-
-
-                        {formErrors.credit_limit && <p style={{ color: "red" }}>{formErrors.credit_limit}</p>}
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Credit Limit *</Form.Label>
-                            <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
-                        </Form.Group>
 
                         {formErrors.statement_date && <p style={{ color: "red" }}>{formErrors.statement_date}</p>}
-                        <FormControl sx={{ m: 0, minWidth: 130, minHeight: 70 }}>
+                        <FormControl sx={{ m: 0, minWidth: 170, minHeight: 70 }}>
                             <InputLabel id="demo-simple-select-label">Statement Date *</InputLabel>
                             <Select
                                 labelId="demo-simple-select-label"
@@ -291,6 +268,31 @@ const AddPoPaymentType = (props) => {
 
                             </Select>
                         </FormControl>
+
+                        {/* {formErrors.buffer_days && <p style={{ color: "red" }}>{formErrors.buffer_days}</p>}
+                        <FormControl sx={{ m: 0, minWidth: 130, minHeight: 70 }}>
+                            <InputLabel id="demo-simple-select-label">Buffer Days *</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                label="Buffer Days"
+                                name="buffer_days"
+                                onChange={onChangePaymentType}
+                            >
+                                {Array(15).fill(1).map((el, i) =>
+                                    <MenuItem value={i}>{i}</MenuItem>
+                                )}
+
+                            </Select>
+                        </FormControl> */}
+
+
+                        {formErrors.credit_limit && <p style={{ color: "red" }}>{formErrors.credit_limit}</p>}
+                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label>Credit Limit *</Form.Label>
+                            <Form.Control type="number" value={paymentType.credit_limit} name="credit_limit" placeholder="Enter Credit Limit" onChange={onChangePaymentType} />
+                        </Form.Group>
+
 
                         <Form.Group className="mb-3" controlId="formBasicEmail">
                             <Form.Label>Total Balance Due</Form.Label>
