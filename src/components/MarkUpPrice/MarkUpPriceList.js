@@ -157,6 +157,7 @@ const MarkUpPriceList = (props) => {
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Product Name </th>
+                        <th>Details </th>
                         <th>Warehouse Name </th>
                         <th>Supplier Price </th>
                         {/* <th>Mark Up Type</th> */}
@@ -164,8 +165,8 @@ const MarkUpPriceList = (props) => {
                         {/* <th>Descrepancy</th> */}
                         <th>New Price</th>
                         <th></th>
-                        <th></th>
-                        <th></th>
+
+
                     </tr>
                 </thead>
                 <tbody>
@@ -175,6 +176,10 @@ const MarkUpPriceList = (props) => {
                             <tr key={mark_up.id} >
                                 <td>{mark_up.id}</td>
                                 <td>{mark_up.product_name}</td>
+                                <td>{
+                                    mark_up.business_type === 'WHOLESALE' ? <> ({mark_up.weight / mark_up.quantity}{mark_up.variation} x {mark_up.quantity}) {mark_up.packaging}</>
+                                        : < >({Number.isInteger(mark_up.weight / mark_up.quantity) ? (mark_up.weight / mark_up.quantity) : (mark_up.weight / mark_up.quantity).toPrecision(2)}{mark_up.variation})</>
+                                }</td>
                                 <td>{mark_up.warehouse_name}</td>
                                 <td>{'₱ ' + mark_up.price + '.00'}</td>
                                 {/* <td>{mark_up.mark_up_option}</td> */}
@@ -188,18 +193,12 @@ const MarkUpPriceList = (props) => {
                                         </IconButton>
                                     </Tooltip>
                                 </td>
-                                <td>
-                                    <Link variant="primary" to={"/editMarkUp/" + mark_up.id}   >
-                                        <Button variant="primary" >
-                                            Update
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
+
+                                {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteMarkUpPrice(mark_up.id, e)} >
                                         Delete
                                     </Button>
-                                </td>
+                                </td> */}
                             </tr>
                         )
                         )

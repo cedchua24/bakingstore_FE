@@ -176,6 +176,7 @@ const NavBar = () => {
                             <NavDropdown.Item href="/reports/reportProductSorted">Product Sold Record List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/productValueReport">Product Capital Record List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportsList">Online Order Reports</NavDropdown.Item>
+                            <NavDropdown.Item href="/reports/reportPurchaseOrder">Purchase Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/shopBranchReportList">Shop Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportExpenses">Expenses Reports</NavDropdown.Item>
                         </NavDropdown>
