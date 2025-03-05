@@ -112,7 +112,7 @@ const ReportPurchaseOrder = () => {
         <div >
 
 
-            <div style={{ float: 'left', width: 700 }}>
+            <div style={{ float: 'left', }}>
                 <Div>{"Purchase Order Report"}
                 </Div>
 
@@ -160,6 +160,7 @@ const ReportPurchaseOrder = () => {
                     )
                     )
                 }
+
 
             </div>
 
