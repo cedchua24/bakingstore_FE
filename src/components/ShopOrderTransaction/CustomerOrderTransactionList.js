@@ -69,9 +69,7 @@ const CustomerOrderTransactionList = () => {
         payment: [],
         code: '',
         message: '',
-        total_price: 0,
-        total_count: 0,
-        total_profit: 0
+        total_sales: 0
     });
 
     const [shopOrderTransactionUpdate, setShopOrderTransactionUpdate] = useState({
