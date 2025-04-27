@@ -393,6 +393,7 @@ const ProductList = () => {
                                         </IconButton>
                                     </Tooltip>
                                 </td> */}
+
                                         <td>
                                             <Link variant="primary" to={"/productTransactionList/" + product.id}   >
                                                 <Button variant="contained" >
@@ -400,7 +401,13 @@ const ProductList = () => {
                                                 </Button>
                                             </Link>
                                         </td>
-
+                                        <td>
+                                            <Link variant="contained" to={"/supplierProductList/" + product.id}   >
+                                                <Button variant="contained" >
+                                                    Supplier List
+                                                </Button>
+                                            </Link>
+                                        </td>
                                         <td>
                                             <Link variant="primary" to={"/editProduct/" + product.id}   >
                                                 <Button variant="contained" >

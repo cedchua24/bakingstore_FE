@@ -10,6 +10,9 @@ class SupplierService {
     create(data) {
         return axios.post("/api/suppliers", data);
     }
+    fetchSupplierProduct(id) {
+        return axios.get(`/api/suppliers/fetchSupplierProduct/${id}`);
+    }
     update(id, data) {
         return axios.put(`/api/suppliers/${id}`, data);
     }

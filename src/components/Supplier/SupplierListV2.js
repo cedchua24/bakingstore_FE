@@ -11,9 +11,6 @@ const SupplierListV2 = () => {
 
     const [supplierList, setSupplierList] = useState([]);
 
-    const saveSupplierDataHandler = (supplier) => {
-        setSupplierList([...supplierList, supplier]);
-    }
 
 
     const fetchSupplierList = () => {
