@@ -7,6 +7,8 @@ import NavBar2 from "./components/Navigation/NavBar2";
 import AddProduct from "./components/Product/AddProduct";
 import ProductList from "./components/Product/ProductList";
 import EditProduct from "./components/Product/EditProduct";
+import EditSupplierTransaction from "./components/OrderSupplierTransaction/EditSupplierTransaction";
+
 import Brand from "./components/Brand/Brand";
 import BrandListV2 from "./components/Brand/BrandListV2";
 import EditBrand from "./components/Brand/EditBrand";
@@ -28,6 +30,8 @@ import AdminPrivateRoute from "./components/AdminPrivateRoute";
 import Supplier from "./components/Supplier/Supplier";
 import SupplierListV2 from "./components/Supplier/SupplierListV2";
 import EditSupplier from "./components/Supplier/EditSupplier";
+import SupplierProductList from "./components/Product/SupplierProductList";
+
 import OrderSupplierTransaction from "./components/OrderSupplierTransaction/OrderSupplierTransaction";
 import SupplierTransactionListV2 from "./components/OrderSupplierTransaction/SupplierTransactionListV2";
 import EditOrderSupplierTransaction from "./components/OrderSupplierTransaction/EditOrderSupplierTransaction";
@@ -199,6 +203,8 @@ const App = () => {
           <Route path="/supplier" element={<Supplier />} />
           <Route path="/supplierListV2" element={<SupplierListV2 />} />
           <Route exact path="/editSupplier/:id" element={<EditSupplier />} />
+          <Route exact path="/supplierProductList/:id" element={<SupplierProductList />} />
+
 
           <Route path="/productSupplier" element={<ProductSupplier />} />
           <Route path="/productSupplierList" element={<ProductSupplierListV2 />} />
@@ -208,9 +214,10 @@ const App = () => {
           <Route exact path="/editCategory/:id" element={<EditCategory />} />
 
           {/* <Route path="/OrderSupplierTransaction" element={<OrderSupplierTransaction />} /> */}
-          <Route exact path="/editOrderSupplierTransaction/:id" element={<EditOrderSupplierTransaction />} />.
+          <Route exact path="/editOrderSupplierTransaction/:id" element={<EditOrderSupplierTransaction />} />
           <Route exact path="/addProductOrderSupplierTransaction/:id" element={<AddProductOrderSupplierTransaction />} />
           <Route exact path="/branchStock/:id" element={<BranchStock />} />
+          <Route exact path="/editSupplierTransaction/:id" element={<EditSupplierTransaction />} />
 
           <Route exact path="/finalizeOrder/:id" element={<FinalizeOrder />} />
           <Route exact path="/ViewOrder/:id" element={<ViewOrder />} />

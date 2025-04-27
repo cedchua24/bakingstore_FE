@@ -8,6 +8,8 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
 import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import Input from '@mui/material/Input';
 
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -27,6 +29,7 @@ const AddProductSupplier = (props) => {
         product_id: 0,
         product_name: '',
         supplier_name: '',
+        price: 0,
         status: 1,
         created_at: '',
         updated_at: ''
@@ -47,7 +50,10 @@ const AddProductSupplier = (props) => {
         isShow: false
     });
 
-
+    const handlePrice = (e) => {
+        console.log(e.target.value);
+        setProductSupplier({ ...productSupplier, [e.target.name]: e.target.value });
+    }
 
     const handleInputProductChange = (e, value) => {
         e.persist();
@@ -55,7 +61,8 @@ const AddProductSupplier = (props) => {
         setProductSupplier({
             ...productSupplier,
             product_id: value.id,
-            product_name: value.product_name
+            product_name: value.product_name,
+            price: value.price
 
         });
     }
@@ -196,6 +203,22 @@ const AddProductSupplier = (props) => {
                             )}
                         />
                     </FormControl>
+
+                    <br></br>
+
+                    <FormControl sx={{ m: 1 }} variant="standard">
+                        <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
+                        <Input
+                            type='number'
+                            id="filled-required"
+                            label="Price"
+                            variant="filled"
+                            name='price'
+                            value={productSupplier.price}
+                            onChange={handlePrice}
+                        />
+                    </FormControl>
+
 
                     <br></br>
 

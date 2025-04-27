@@ -123,6 +123,7 @@ const SupplierTransactionListV2 = () => {
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
+                        <th>Invoice Number</th>
                         <th>Supplier Name</th>
                         <th>With Tax</th>
                         <th>Total Amount</th>
@@ -135,6 +136,7 @@ const SupplierTransactionListV2 = () => {
                         <th></th>
                         <th></th>
                         <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -143,6 +145,7 @@ const SupplierTransactionListV2 = () => {
                         orderTransactionList.map((orderTransaction, index) => (
                             <tr key={orderTransaction.id} >
                                 <td>{orderTransaction.id}</td>
+                                <td>{orderTransaction.invoice_number}</td>
                                 <td>{orderTransaction.supplier_name}</td>
                                 <td>{orderTransaction.withTax === 1 ? <CheckIcon style={{ color: 'black', }} /> : <CloseIcon style={{ color: 'black', }} />}</td>
                                 <td>{numberFormat(orderTransaction.total_transaction_price)}</td>
@@ -156,6 +159,13 @@ const SupplierTransactionListV2 = () => {
                                 </td>
                                 <td>{orderTransaction.date}</td>
                                 <td>{orderTransaction.stock_status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td>
+                                    <Link variant="primary" to={"/editSupplierTransaction/" + orderTransaction.id}   >
+                                        <Button variant="warning" >
+                                            Update
+                                        </Button>
+                                    </Link>
+                                </td>
                                 <td>
                                     <Link variant="primary" to={"/paymentOrder/" + orderTransaction.id}   >
                                         <Button variant="primary" >
@@ -182,7 +192,7 @@ const SupplierTransactionListV2 = () => {
                                     <td>
                                         <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >
                                             <Button variant="success" >
-                                                Update
+                                                Update Order
                                             </Button>
                                         </Link>
                                     </td>
