@@ -21,7 +21,7 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 
 
-const ViewChequeDueList = () => {
+const ViewPaidCreditCardDueList = () => {
 
 
     useEffect(() => {
@@ -58,7 +58,7 @@ const ViewChequeDueList = () => {
 
 
     const fetchOrderTransactionList = (id) => {
-        CreditCardDueService.fetchCreditCardDueList(3)
+        CreditCardDueService.fetchCreditCardPaidList(4)
             .then(response => {
                 setOrderTransactionList(response.data);
             })
@@ -87,12 +87,11 @@ const ViewChequeDueList = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+
     const formatStatementDate = (date) => {
         var d = new Date(date);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
-
-
 
 
     return (
@@ -104,7 +103,7 @@ const ViewChequeDueList = () => {
             </Stack>
 
             <br></br>
-            <legend> Upcoming Cheque Due</legend>
+            <legend> Paid Credit Card </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -113,9 +112,11 @@ const ViewChequeDueList = () => {
                         <th>Bank</th>
                         <th>Account</th>
                         <th>Account Number</th>
+                        <th>Min Amount</th>
                         <th>Due Amount</th>
+                        <th>Amount Paid</th>
                         <th>Interest / Penalty</th>
-                        <th>Due Date</th>
+                        <th>Installment</th>
                         <th>Payment Status</th>
                         <th>Action</th>
                         <th></th>
@@ -134,9 +135,11 @@ const ViewChequeDueList = () => {
                                 <td>{orderTransaction.account_name}</td>
                                 <td>{orderTransaction.bank_name + " " + orderTransaction.account_description}</td>
                                 <td>{orderTransaction.account_number}</td>
+                                <td>{numberFormat(orderTransaction.min_amount)} </td>
                                 <td>{numberFormat(orderTransaction.amount)}</td>
+                                <td>{numberFormat(orderTransaction.amount_paid)}</td>
                                 <td>{orderTransaction.interest_amount}</td>
-                                <td>{orderTransaction.due_date}</td>
+                                <td>{orderTransaction.is_installment === 1 ? <CheckIcon style={{ color: 'black', }} /> : <CloseIcon style={{ color: 'black', }} />}</td>
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     {orderTransaction.status != 1 &&
@@ -179,4 +182,4 @@ const ViewChequeDueList = () => {
     )
 }
 
-export default ViewChequeDueList
+export default ViewPaidCreditCardDueList

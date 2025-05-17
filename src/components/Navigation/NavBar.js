@@ -88,6 +88,7 @@ const NavBar = () => {
                         <NavDropdown title="Product" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/addProduct">Add Product</NavDropdown.Item>
                             <NavDropdown.Item href="/productList">Product List</NavDropdown.Item>
+                            <NavDropdown.Item href="/productListV2">Product List V2</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
@@ -113,8 +114,21 @@ const NavBar = () => {
                             <NavDropdown.Item href="/paymentTermTransaction">Payment Type List</NavDropdown.Item>
                             <NavDropdown.Item href="/creditCardPaymentList">Credit Card Payment List</NavDropdown.Item>
                             <NavDropdown.Item href="/viewCreditCardDueList">Upcoming Credit Card Due List</NavDropdown.Item>
-                            <NavDropdown.Item href="/chequePaymentList">Cheque Payment List</NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Credit Card" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/creditCardPaymentList">Credit Card Payment List</NavDropdown.Item>
+                            <NavDropdown.Item href="/viewCreditCardDueList">Upcoming Credit Card Due List</NavDropdown.Item>
+                            <NavDropdown.Item href="/viewPaidCreditCardDueList">Paid Credit Card List</NavDropdown.Item>
+
+                        </NavDropdown>
+                    </Nav>
+                    <Nav className="me-auto">
+                        <NavDropdown title="Cheque" id="basic-nav-dropdown">
+                            <NavDropdown.Item href="/chequePaymentList">Cheque Bank List</NavDropdown.Item>
                             <NavDropdown.Item href="/viewChequeDueList">Upcoming Cheque Payment Due List</NavDropdown.Item>
+                            <NavDropdown.Item href="/viewPaidChequeDueList">Paid Cheque Payment Due List</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
@@ -157,8 +171,6 @@ const NavBar = () => {
                             <NavDropdown.Item href="/shopOrderTransaction/customerOrderTransactionList">Customer Order List</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Sorted Product List</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Sorted Customer List</NavDropdown.Item>
-
-
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">

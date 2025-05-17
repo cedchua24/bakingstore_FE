@@ -93,7 +93,7 @@ const MarkUpPriceList = (props) => {
     }
 
     const onChangeMarkUpPercentage = (e) => {
-        const divisible = (markUpModal.price / 100) * e.target.value;
+        const divisible = markUpModal.price * e.target.value;
         setMarkUpModal({
             ...markUpModal,
             mark_up_price: Number(e.target.value),

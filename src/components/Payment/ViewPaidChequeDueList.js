@@ -21,7 +21,7 @@ import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 
 
-const ViewChequeDueList = () => {
+const ViewPaidChequeDueList = () => {
 
 
     useEffect(() => {
@@ -58,7 +58,7 @@ const ViewChequeDueList = () => {
 
 
     const fetchOrderTransactionList = (id) => {
-        CreditCardDueService.fetchCreditCardDueList(3)
+        CreditCardDueService.fetchCreditCardPaidList(3)
             .then(response => {
                 setOrderTransactionList(response.data);
             })
@@ -104,7 +104,7 @@ const ViewChequeDueList = () => {
             </Stack>
 
             <br></br>
-            <legend> Upcoming Cheque Due</legend>
+            <legend> Paid Cheque </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -114,6 +114,7 @@ const ViewChequeDueList = () => {
                         <th>Account</th>
                         <th>Account Number</th>
                         <th>Due Amount</th>
+                        <th>Paid Amount</th>
                         <th>Interest / Penalty</th>
                         <th>Due Date</th>
                         <th>Payment Status</th>
@@ -135,18 +136,10 @@ const ViewChequeDueList = () => {
                                 <td>{orderTransaction.bank_name + " " + orderTransaction.account_description}</td>
                                 <td>{orderTransaction.account_number}</td>
                                 <td>{numberFormat(orderTransaction.amount)}</td>
+                                <td>{numberFormat(orderTransaction.amount_paid)}</td>
                                 <td>{orderTransaction.interest_amount}</td>
                                 <td>{orderTransaction.due_date}</td>
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                <td>
-                                    {orderTransaction.status != 1 &&
-                                        <Link variant="primary" to={"/payCreditCard/" + orderTransaction.id}   >
-                                            <Button variant="primary" >
-                                                Pay
-                                            </Button>
-                                        </Link>
-                                    }
-                                </td>
                                 <td>
                                     {orderTransaction.status != 1 &&
                                         <Link variant="primary" to={"/updateCreditCardDue/" + orderTransaction.id}   >
@@ -179,4 +172,4 @@ const ViewChequeDueList = () => {
     )
 }
 
-export default ViewChequeDueList
+export default ViewPaidChequeDueList

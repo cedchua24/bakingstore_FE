@@ -83,6 +83,7 @@ const PayCreditCard = () => {
 
 
     const onChangecreditCardDue = (e) => {
+
         setCreditCardDue({ ...creditCardDue, [e.target.name]: e.target.value });
     }
 
@@ -162,7 +163,7 @@ const PayCreditCard = () => {
     const fetchCreditCardDue = (id) => {
         CreditCardDueService.get(id)
             .then(response => {
-                setCreditCardDue(response.data);
+                console.log("fetchCreditCardDue", response.data)
                 setCreditCardDue({
                     id: response.data.id,
                     payment_term_id: response.data.payment_term_id,
@@ -176,6 +177,8 @@ const PayCreditCard = () => {
                     status: response.data.status,
                     constant_amount: response.data.amount - response.data.amount_paid,
                 });
+
+
             })
 
             .catch(e => {
@@ -342,19 +345,38 @@ const PayCreditCard = () => {
                         </Form.Group>
 
                         {/* {formErrors.payment_term_id && <p style={{ color: "red" }}>{formErrors.payment_term_id}</p>} */}
-                        <FormControl variant="standard" >
-                            <Autocomplete
-                                // {...defaultProps}
-                                options={paymentTermList}
-                                className="mb-3"
-                                id="disable-close-on-select"
-                                onChange={handlePaymentTermChange}
-                                getOptionLabel={(paymentTermList) => paymentTermList.payment_term}
-                                renderInput={(params) => (
-                                    <TextField {...params} label="Choose Payment Term" variant="standard" />
-                                )}
-                            />
-                        </FormControl>
+
+
+                        {creditCardDueDetails.payment_term_id != 3 ? (<>
+                            <FormControl variant="standard" >
+                                <Autocomplete
+                                    // {...defaultProps}
+                                    options={paymentTermList}
+                                    className="mb-3"
+                                    id="disable-close-on-select"
+                                    onChange={handlePaymentTermChange}
+                                    getOptionLabel={(paymentTermList) => paymentTermList.payment_term}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Choose Payment Term" variant="standard" />
+                                    )}
+                                />
+                            </FormControl>
+                            <Form.Control type="text" value={creditCardDue.due_date} name="details" onChange={onChangecreditCardDue} disabled />
+                        </>) : <>
+                            {/* <FormControl variant="standard" >
+                                <Autocomplete
+                                    // {...defaultProps}
+                                    options={paymentTermList}
+                                    className="mb-3"
+                                    id="disable-close-on-select"
+                                    onChange={handlePaymentTermChange}
+                                    getOptionLabel={(paymentTermList) => paymentTermList.payment_term}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Choose Payment Term" variant="standard" />
+                                    )}
+                                />
+                            </FormControl> */}
+                        </>}
                         <br></br>
                         {creditCardDue.payment_term_id == 2 ? (<>
                             {/* {formErrors.payment_type_po_id && <p style={{ color: "red" }}>{formErrors.payment_type_po_id}</p>} */}
@@ -381,14 +403,33 @@ const PayCreditCard = () => {
                             </Box>
                         </>) : ""}
 
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Amount</Form.Label>
-                            <Form.Control type="text" name="amount_paid" placeholder="Enter Amount" onChange={onChangecreditCardDue} />
-                        </Form.Group>
+                        {creditCardDueDetails.payment_term_id != 3 ? (<>
+                            <Form.Group className="mb-3" controlId="formBasicEmail">
+                                <Form.Label>Amount</Form.Label>
+                                <Form.Control type="text" name="amount_paid" placeholder="Enter Amount" onChange={onChangecreditCardDue} />
+                            </Form.Group>
+                        </>) :
+                            <>
 
-                        <Button variant="primary" onClick={savecreditCardDue}>
-                            Submit
-                        </Button>
+                            </>
+
+                        }
+                        {creditCardDueDetails.payment_term_id != 3 ? (<>
+
+                            <Button variant="primary" onClick={savecreditCardDue}>
+                                Submit
+                            </Button>
+                        </>) :
+                            <>
+
+                                <Button variant="primary" onClick={savecreditCardDue}>
+                                    Pay
+                                </Button>
+                            </>
+
+                        }
+
+
                     </Form>
                 </Box>
             }

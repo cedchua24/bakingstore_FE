@@ -13,3 +13,29 @@
   max-width: 300px;
   margin: auto;
 }
+
+.nav-link {
+  display: block;
+  padding: .5rem 1rem;
+  color: white;
+  text-decoration: none;
+  transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
+}
+
+a:hover {
+  color: black;
+}
+
+link:hover {
+  color: black;
+}
+
+a {
+  color: black;
+}
+
+.css-1qbth3v-MuiTypography-root-MuiLink-root-MuiListItem-root {
+  margin: 0;
+  font: inherit;
+  color: black;
+}
