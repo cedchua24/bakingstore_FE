@@ -3,9 +3,10 @@ import { BrowserRouter as Router, Redirect, Routes, Route, Link } from "react-ro
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import NavBar from "./components/Navigation/NavBar";
-import NavBar2 from "./components/Navigation/NavBar2";
+import NewNavBar from "./components/Navigation/NewNavBar";
 import AddProduct from "./components/Product/AddProduct";
 import ProductList from "./components/Product/ProductList";
+import ProductListV2 from "./components/Product/ProductListV2";
 import EditProduct from "./components/Product/EditProduct";
 import EditSupplierTransaction from "./components/OrderSupplierTransaction/EditSupplierTransaction";
 
@@ -113,7 +114,11 @@ import ViewPaymentTermTransaction from "./components/Payment/ViewPaymentTermTran
 import ViewBankTransactionList from "./components/Payment/ViewBankTransactionList";
 import ViewOrderSupplierTransaction from "./components/Payment/ViewOrderSupplierTransaction";
 import ViewCreditCardDueList from "./components/Payment/ViewCreditCardDueList";
+import ViewPaidCreditCardDueList from "./components/Payment/ViewPaidCreditCardDueList";
+
 import ViewChequeDueList from "./components/Payment/ViewChequeDueList";
+
+import ViewPaidChequeDueList from "./components/Payment/ViewPaidChequeDueList";
 
 
 import EditCreditCardDue from "./components/Payment/EditCreditCardDue";
@@ -179,13 +184,19 @@ const App = () => {
 
   return (
     <div>
-      <NavBar />
+      {/* <NavBar /> */}
+      <NewNavBar />
+      <br></br>
+      <br></br>
+      <br></br>
       <div className="container mt-3">
         <Routes>
           <Route path="/" element={<Home />} />
 
           <Route path="/addProduct" element={<AddProduct />} />
           <Route path="/productList" element={<ProductList />} />
+          <Route path="/ProductListV2" element={<ProductListV2 />} />
+
           <Route exact path="/editProduct/:id" element={<EditProduct />} />
 
           <Route path="/brand" element={<Brand />} />
@@ -248,7 +259,11 @@ const App = () => {
           <Route path="/viewBankTransactionList/:id" element={<ViewBankTransactionList />} />
           <Route path="/viewOrderSupplierTransaction/:id" element={<ViewOrderSupplierTransaction />} />
           <Route path="/viewCreditCardDueList" element={<ViewCreditCardDueList />} />
+          <Route path="/viewPaidCreditCardDueList" element={<ViewPaidCreditCardDueList />} />
+
           <Route path="/viewChequeDueList" element={<ViewChequeDueList />} />
+          <Route path="/viewPaidChequeDueList" element={<ViewPaidChequeDueList />} />
+
 
 
           <Route path="/creditCardPaymentList" element={<CreditCardPaymentList />} />

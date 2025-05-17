@@ -32,17 +32,6 @@ const CreditCardPaymentList = () => {
             .then(response => {
                 setPaymentTermList(response.data);
                 console.log('log', response.data)
-                var d = new Date();
-                d.setMonth(1);
-                d.setDate(8);
-                console.log('day', d);
-
-                console.log('days', d.getDate())
-                console.log('month', d.getMonth())
-                console.log('days', d.getFullYear())
-                const today = Date.now();
-
-                console.log(new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d));
             })
             .catch(e => {
                 console.log("error", e)
@@ -113,9 +102,8 @@ const CreditCardPaymentList = () => {
                                 <td >{paymentTerm.bank_name}{" " + paymentTerm.account_description}</td>
                                 <td >{paymentTerm.account_name}</td>
                                 <td >{paymentTerm.account_number}</td>
-                                {/* <td>{formatStatementDate(paymentTerm.statement_date)}</td> */}
-                                {/* <td>{formatDueDate(paymentTerm.due_date)}</td> */}
-                                <td>{covertDateString(paymentTerm.due)}</td>
+
+                                <td>{paymentTerm.due == 0 ? '' : covertDateString(paymentTerm.due)}</td>
                                 <td >{numberFormat(paymentTerm.credit_limit)}</td>
                                 <td>{numberFormat(paymentTerm.credit_limit - paymentTerm.total_balance_due)}</td>
                                 <td>{numberFormat(paymentTerm.amount_due)}</td>

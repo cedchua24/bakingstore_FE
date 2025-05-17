@@ -130,6 +130,7 @@ const SupplierTransactionListV2 = () => {
                         <th>Date</th>
                         <th>Delivery Status</th>
                         <th>Payment Status</th>
+                        <th>Bank</th>
                         <th>Placed Stock Status</th>
                         <th>Organize Stock</th>
                         <th></th>

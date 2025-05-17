@@ -82,6 +82,11 @@ const NavBarV2 = () => {
                     </Link>
                 </li>
                 <li className="nav-item">
+                    <Link to={"/productListV2"} className="nav-link">
+                        Product List V2
+                    </Link>
+                </li>
+                <li className="nav-item">
                     <Link to={"/warehouse"} className="nav-link">
                         Warehouse
                     </Link>
