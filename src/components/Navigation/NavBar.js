@@ -113,7 +113,6 @@ const NavBar = () => {
                         <NavDropdown title="Payment" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/paymentTermTransaction">Payment Type List</NavDropdown.Item>
                             <NavDropdown.Item href="/creditCardPaymentList">Credit Card Payment List</NavDropdown.Item>
-                            <NavDropdown.Item href="/viewCreditCardDueList">Upcoming Credit Card Due List</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
