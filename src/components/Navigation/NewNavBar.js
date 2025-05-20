@@ -333,13 +333,8 @@ export default function PersistentDrawerLeft() {
             "icon": ""
         },
         {
-            "name": "Credit Card Payment List",
-            "url": "/creditCardPaymentList",
-            "icon": ""
-        },
-        {
-            "name": "Upcoming Credit Card Due List",
-            "url": "/viewCreditCardDueList",
+            "name": "Online Payment List",
+            "url": "/viewPaymentTermTransaction/2",
             "icon": ""
         }
     ]);
@@ -760,7 +755,7 @@ export default function PersistentDrawerLeft() {
                         <ListItemIcon>
                             <InboxIcon />
                         </ListItemIcon>
-                        <ListItemText primary="Warehouse" />
+                        <ListItemText primary="Shop" />
                         {open7 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open7} timeout="auto" unmountOnExit>
@@ -787,7 +782,7 @@ export default function PersistentDrawerLeft() {
                         <ListItemIcon>
                             <InboxIcon />
                         </ListItemIcon>
-                        <ListItemText primary="Payment Type" />
+                        <ListItemText primary="Bank" />
                         {open8 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open8} timeout="auto" unmountOnExit>
@@ -814,7 +809,7 @@ export default function PersistentDrawerLeft() {
                         <ListItemIcon>
                             <InboxIcon />
                         </ListItemIcon>
-                        <ListItemText primary="Payment Type List" />
+                        <ListItemText primary="Online Payment" />
                         {open9 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open9} timeout="auto" unmountOnExit>
@@ -896,7 +891,7 @@ export default function PersistentDrawerLeft() {
                             <InboxIcon />
                         </ListItemIcon>
                         <ListItemText primary="Loan" />
-                        {setOpen12 ? <ExpandLess /> : <ExpandMore />}
+                        {open12 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open12} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
@@ -923,7 +918,7 @@ export default function PersistentDrawerLeft() {
                             <InboxIcon />
                         </ListItemIcon>
                         <ListItemText primary="Stock" />
-                        {setOpen13 ? <ExpandLess /> : <ExpandMore />}
+                        {open13 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open13} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
@@ -950,7 +945,7 @@ export default function PersistentDrawerLeft() {
                             <InboxIcon />
                         </ListItemIcon>
                         <ListItemText primary="Purchase Order" />
-                        {setOpen14 ? <ExpandLess /> : <ExpandMore />}
+                        {open14 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open14} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
@@ -977,7 +972,7 @@ export default function PersistentDrawerLeft() {
                             <InboxIcon />
                         </ListItemIcon>
                         <ListItemText primary="Shop Order" />
-                        {setOpen15 ? <ExpandLess /> : <ExpandMore />}
+                        {open15 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open15} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
@@ -1004,7 +999,7 @@ export default function PersistentDrawerLeft() {
                             <InboxIcon />
                         </ListItemIcon>
                         <ListItemText primary="Customer Order" />
-                        {setOpen16 ? <ExpandLess /> : <ExpandMore />}
+                        {open16 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open16} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
@@ -1031,7 +1026,7 @@ export default function PersistentDrawerLeft() {
                             <InboxIcon />
                         </ListItemIcon>
                         <ListItemText primary="Report" />
-                        {setOpen17 ? <ExpandLess /> : <ExpandMore />}
+                        {open17 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open17} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
