@@ -180,6 +180,11 @@ export default function PersistentDrawerLeft() {
         setOpen17(!open17);
     };
 
+    const [open18, setOpen18] = React.useState(false);
+    const handleClick18 = () => {
+        setOpen18(!open18);
+    };
+
 
 
 
@@ -498,6 +503,25 @@ export default function PersistentDrawerLeft() {
             "icon": ""
         },
 
+    ]);
+
+    const [markup, setMarkUp] = useState([
+        {
+            "name": "Mark-Up Price List",
+            "url": "/markUpPriceListV2",
+            "icon": ""
+        },
+        {
+            "name": "Add Mark-Up Price",
+            "url": "/markUpPrice",
+            "icon": ""
+        }
+        ,
+        {
+            "name": "Mark-Up New Price",
+            "url": "/markUpNewPrice",
+            "icon": ""
+        }
     ]);
 
 
@@ -923,6 +947,33 @@ export default function PersistentDrawerLeft() {
                     <Collapse in={open13} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {stock.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton>
+                                        <ListItemIcon>
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
+
+                <List
+                    sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                >
+                    <ListItemButton onClick={handleClick18}>
+                        <ListItemIcon>
+                            <InboxIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Mark Up" />
+                        {open18 ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={open18} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {markup.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton>
                                         <ListItemIcon>
