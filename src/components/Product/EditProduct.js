@@ -29,6 +29,7 @@ const EditProduct = () => {
         weight: 0,
         quantity: 0,
         stock_warning: 0,
+        note: '',
         disabled: 0
     });
 
@@ -190,6 +191,14 @@ const EditProduct = () => {
                     className="w-25 mb-3"
                 >
                     <Form.Control type="number" name="stock_warning" value={product.stock_warning} onChange={onChange} />
+                </FloatingLabel>
+
+                <FloatingLabel
+                    controlId="floatingInput"
+                    label="Note"
+                    className="w-25 mb-3"
+                >
+                    <Form.Control type="text" name="note" value={product.note} onChange={onChange} />
                 </FloatingLabel>
 
                 <FloatingLabel

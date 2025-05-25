@@ -376,14 +376,7 @@ const ProductListV2 = () => {
                         <th>Transaction</th>
                         <th>Action</th>
                         <th>Action</th>
-                        {
-                            supllierList.map((supplier, index) => (
-
-                                <th>{supplier.supplier_name}</th>
-
-                            )
-                            )
-                        }
+                        <th></th>
                     </tr>
                 </thead>
                 {productList.length == 0 ?

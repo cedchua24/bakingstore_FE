@@ -668,7 +668,7 @@ const CustomerOrderTransactionList = () => {
                                                             disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
                                                             color="error"
                                                         >
-                                                            Cancel
+                                                            Delete
                                                         </Button>
                                                     </span>
                                                 </Tooltip>

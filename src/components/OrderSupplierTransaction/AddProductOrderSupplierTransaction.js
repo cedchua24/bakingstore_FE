@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
+import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
@@ -44,6 +45,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
+
 
 
 const AddProductOrderSupplierTransaction = () => {
@@ -147,6 +149,8 @@ const AddProductOrderSupplierTransaction = () => {
         quantity: 0,
         quantity_order: 0,
         total_price: 0,
+        expiration: '',
+        enable: 0,
         variation: ''
     });
 
@@ -157,6 +161,7 @@ const AddProductOrderSupplierTransaction = () => {
         product_name: '',
         price: 0,
         quantity: 0,
+        expiration: '',
         total_price: 0
     });
 
@@ -196,6 +201,11 @@ const AddProductOrderSupplierTransaction = () => {
 
         }
 
+    }
+
+    const onchangeModal = (e) => {
+        e.persist();
+        setOrderSupplierModal({ ...orderSupplierModal, [e.target.name]: e.target.value });
     }
 
     const onChangeInputQuantityModal = (e) => {
@@ -459,6 +469,12 @@ const AddProductOrderSupplierTransaction = () => {
         navigate('/finalizeOrder/' + id);
     }
 
+    const formatStatementDate = (date) => {
+        var d = new Date(date);
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
+    }
+
+
 
 
     return (
@@ -591,6 +607,12 @@ const AddProductOrderSupplierTransaction = () => {
                         />
                     </FormControl>
                     <br></br>
+
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Expiration</Form.Label>
+                        <Form.Control type="date" name="expiration" onChange={onChangeInput} />
+                    </Form.Group>
+                    <br></br>
                     {submitLoadingAdd &&
                         <LinearProgress color="warning" />
                     }
@@ -616,6 +638,7 @@ const AddProductOrderSupplierTransaction = () => {
                                 Details
                             </TableCell>
                             <TableCell align="center" >Price</TableCell>
+                            <TableCell align="center" >Expiration</TableCell>
                             <TableCell align="center" colSpan={2}>Action</TableCell>
                         </TableRow>
                         <TableRow>
@@ -623,6 +646,7 @@ const AddProductOrderSupplierTransaction = () => {
                             <TableCell align="right">Qty.</TableCell>
                             <TableCell align="right">Unit</TableCell>
                             <TableCell align="right">Sum</TableCell>
+                            <TableCell align="right"></TableCell>
                             <TableCell align="right"></TableCell>
                             <TableCell align="right"></TableCell>
                         </TableRow>
@@ -634,6 +658,7 @@ const AddProductOrderSupplierTransaction = () => {
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
+                                <TableCell align="right">{formatStatementDate(row.expiration)}</TableCell>
                                 <TableCell align="right">
                                     <Tooltip title="Update">
                                         <IconButton>
@@ -705,6 +730,7 @@ const AddProductOrderSupplierTransaction = () => {
                         </div>
                     }
 
+
                     <TextField
                         disabled
                         id="filled-required"
@@ -749,6 +775,13 @@ const AddProductOrderSupplierTransaction = () => {
                         startAdornment={<InputAdornment position="start">₱</InputAdornment>}
                         value={'₱ ' + orderSupplierModal.total_price}
                     />
+                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+                        <Form.Group controlId="formBasicEmail">
+                            <Form.Label>Expiration</Form.Label>
+                            <Form.Control type="date" name="expiration" value={orderSupplierModal.expiration} onChange={onchangeModal} />
+                        </Form.Group>
+                    </FormControl>
+                    <br></br>
                     <Box
                         sx={{
                             display: 'flex',

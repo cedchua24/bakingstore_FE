@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import ProductServiceService from "../Product/ProductService.service";
+import ProductServiceService from "./ProductService.service";
 import ProductTransactionService from "../OtherService/ProductTransactionService";
 import BrandServiceService from "../Brand/BrandService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
+import SupplierService from "../Supplier/SupplierService.service";
 import { Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
@@ -30,12 +31,13 @@ import Select from '@mui/material/Select';
 
 
 
-const ProductList = () => {
+const ProductExpirationList = () => {
 
     useEffect(() => {
         fetchProductList();
         fetchBrandList();
         fetchCategoryList();
+        fetchSupplierList();
     }, []);
 
     const [categoryId, setCategoryId] = useState(0);
@@ -153,11 +155,13 @@ const ProductList = () => {
 
     const [brandList, setBrandList] = useState([]);
     const [categeryList, setCategoryList] = useState([]);
+    const [supllierList, setSupllierList] = useState([]);
 
     const [message, setMessage] = useState(false);
 
     const [productList, setProductList] = useState({
         total_value: '',
+        today: '',
         data: []
     });
 
@@ -168,7 +172,8 @@ const ProductList = () => {
 
 
     const fetchProductList = () => {
-        ProductServiceService.fetchProductListV2()
+
+        ProductServiceService.fetchProductListExpiration()
             .then(response => {
                 setProductList(response.data);
             })
@@ -176,6 +181,16 @@ const ProductList = () => {
                 console.log("error", e)
             });
     }
+
+    const compareDate = ($date1, $date2) => {
+        const dateDiff = (date, cDate) => Math.ceil(Math.abs(date - cDate) / (1000 * 60 * 60 * 24));
+        const days = dateDiff(new Date($date1), new Date($date2));
+        if (new Date($date1) > new Date($date2)) {
+            return 0;
+        }
+        return days;
+    }
+
 
     const fetchBrandList = () => {
         BrandServiceService.getAll()
@@ -196,6 +211,19 @@ const ProductList = () => {
                 console.log("error", e)
             });
     }
+
+    const fetchSupplierList = () => {
+        SupplierService.getAll()
+            .then(response => {
+                setSupllierList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+
+
 
     const deleteProduct = (id, e) => {
 
@@ -234,10 +262,14 @@ const ProductList = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    const formatStatementDate = (date) => {
+        var d = new Date(date);
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
+    }
 
     return (
         <div>
-            <Form>
+            {/* <Form>
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -256,19 +288,7 @@ const ProductList = () => {
                             }
                         </Select>
                     </FormControl>
-                    <br></br>
-                    <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Total Value</InputLabel>
-                        <Input
-                            type='text'
-                            id="filled-"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            value={numberFormat(productList.total_value.total_price)}
-                            disabled
-                        />
-                    </FormControl>
+
 
                 </Box>
 
@@ -284,7 +304,7 @@ const ProductList = () => {
                 {submitLoadingAdd &&
                     <LinearProgress color="warning" />
                 }
-            </Form>
+            </Form> */}
 
             <br></br>
             <Modal
@@ -357,9 +377,11 @@ const ProductList = () => {
                         <th>Stock Warning</th>
                         <th>Status</th>
                         <th>Value</th>
-                        <th>Note</th>
-                        <th>Action</th>
-                        <th>Action</th>
+                        <th>Expiration</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -387,19 +409,23 @@ const ProductList = () => {
                                         <td>{product.stock_warning}</td>
                                         <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                         <td>{numberFormat(product.price * product.stock)}</td>
-                                        <td><p>{product.note}</p></td>
-                                        {/* <td>
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </td> */}
+                                        {
+                                            compareDate(productList.today, product.expiration) < 90 ?
+                                                <td style={{ color: 'red', }}>{formatStatementDate(product.expiration)}</td> :
+                                                <td >{formatStatementDate(product.expiration)}</td>
+                                        }
+                                        <td>
+                                            <Link variant="contained" to={"/expirationEditList/" + product.id}   >
+                                                <Button variant="contained" >
+                                                    Expiration List
+                                                </Button>
+                                            </Link>
+                                        </td>
 
                                         <td>
                                             <Link variant="primary" to={"/productTransactionList/" + product.id}   >
                                                 <Button variant="contained" >
-                                                    View
+                                                    Transaction List
                                                 </Button>
                                             </Link>
                                         </td>
@@ -412,7 +438,7 @@ const ProductList = () => {
                                         </td>
                                         <td>
                                             <Link variant="primary" to={"/editProduct/" + product.id}   >
-                                                <Button variant="contained" >
+                                                <Button variant="contained" color="success" >
                                                     Update
                                                 </Button>
                                             </Link>
@@ -435,4 +461,4 @@ const ProductList = () => {
     )
 }
 
-export default ProductList
+export default ProductExpirationList

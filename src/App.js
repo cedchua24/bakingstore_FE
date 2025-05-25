@@ -6,6 +6,8 @@ import NavBar from "./components/Navigation/NavBar";
 import NewNavBar from "./components/Navigation/NewNavBar";
 import AddProduct from "./components/Product/AddProduct";
 import ProductList from "./components/Product/ProductList";
+import ProductExpirationList from "./components/Product/ProductExpirationList";
+
 import ProductListV2 from "./components/Product/ProductListV2";
 import EditProduct from "./components/Product/EditProduct";
 import EditSupplierTransaction from "./components/OrderSupplierTransaction/EditSupplierTransaction";
@@ -32,6 +34,8 @@ import Supplier from "./components/Supplier/Supplier";
 import SupplierListV2 from "./components/Supplier/SupplierListV2";
 import EditSupplier from "./components/Supplier/EditSupplier";
 import SupplierProductList from "./components/Product/SupplierProductList";
+import ExpirationEditList from "./components/Product/ExpirationEditList";
+
 
 import OrderSupplierTransaction from "./components/OrderSupplierTransaction/OrderSupplierTransaction";
 import SupplierTransactionListV2 from "./components/OrderSupplierTransaction/SupplierTransactionListV2";
@@ -196,6 +200,9 @@ const App = () => {
           <Route path="/addProduct" element={<AddProduct />} />
           <Route path="/productList" element={<ProductList />} />
           <Route path="/ProductListV2" element={<ProductListV2 />} />
+          <Route path="/productExpirationList" element={<ProductExpirationList />} />
+
+
 
           <Route exact path="/editProduct/:id" element={<EditProduct />} />
 
@@ -215,6 +222,8 @@ const App = () => {
           <Route path="/supplierListV2" element={<SupplierListV2 />} />
           <Route exact path="/editSupplier/:id" element={<EditSupplier />} />
           <Route exact path="/supplierProductList/:id" element={<SupplierProductList />} />
+          <Route exact path="/expirationEditList/:id" element={<ExpirationEditList />} />
+
 
 
           <Route path="/productSupplier" element={<ProductSupplier />} />

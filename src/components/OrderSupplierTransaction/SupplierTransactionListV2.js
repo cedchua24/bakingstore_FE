@@ -199,7 +199,7 @@ const SupplierTransactionListV2 = () => {
                                     </td>
                                 </div> : <td>
                                     <Button variant="danger" onClick={(e) => openDelete(orderTransaction.id, e)} >
-                                        Cancel
+                                        Delete
                                     </Button>
                                 </td>}
 

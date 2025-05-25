@@ -12,6 +12,9 @@ class OrderSupplierService {
     update(id, data) {
         return axios.put(`/api/orderSuppliers/${id}`, data);
     }
+    setToActiveExpiration(data) {
+        return axios.post("/api/orderSuppliers/setToActiveExpiration", data);
+    }
     delete(brand) {
         return axios.delete(`/api/orderSuppliers/${brand}`);
     }

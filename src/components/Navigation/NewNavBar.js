@@ -125,6 +125,11 @@ export default function PersistentDrawerLeft() {
         setOpen6(!open6);
     };
 
+    const [open66, setOpen66] = React.useState(false);
+    const handleClick66 = () => {
+        setOpen66(!open66);
+    };
+
     const [open7, setOpen7] = React.useState(false);
     const handleClick7 = () => {
         setOpen7(!open7);
@@ -204,36 +209,32 @@ export default function PersistentDrawerLeft() {
 
     const [categoryList, setCategoryList] = useState([
         {
-            "name": "Category List",
-            "url": "/categoryList",
+            "name": "Add Category",
+            "url": "/addCategory",
             "icon": ""
         },
         {
-            "name": "Add Category",
-            "url": "/addCategory",
+            "name": "Category List",
+            "url": "/categoryList",
             "icon": ""
         }
     ]);
 
     const [brandList, setBrandList] = useState([
         {
+            "name": "Add Brand",
+            "url": "/brand",
+            "icon": ""
+        },
+        {
             "name": "Brand List",
             "url": "/brandListV2",
             "icon": ""
         },
-        {
-            "name": "Add Brand",
-            "url": "/brand",
-            "icon": ""
-        }
+
     ]);
 
     const [supplierList, setSupplierList] = useState([
-        {
-            "name": "Supplier",
-            "url": "/supplierListV2",
-            "icon": ""
-        },
         {
             "name": "Add Supplier",
             "url": "/supplier",
@@ -245,6 +246,12 @@ export default function PersistentDrawerLeft() {
             "icon": ""
         },
         {
+            "name": "Supplier List",
+            "url": "/supplierListV2",
+            "icon": ""
+        },
+
+        {
             "name": "Product Supplier List",
             "url": "/productSupplierList",
             "icon": ""
@@ -253,13 +260,13 @@ export default function PersistentDrawerLeft() {
 
     const [customerList, setCustomerList] = useState([
         {
-            "name": "Customer",
-            "url": "/customerListV2",
+            "name": "Add Customer",
+            "url": "/customers",
             "icon": ""
         },
         {
-            "name": "Add Customer",
-            "url": "/customers",
+            "name": "Customer List",
+            "url": "/customerListV2",
             "icon": ""
         },
         {
@@ -276,44 +283,46 @@ export default function PersistentDrawerLeft() {
 
     const [productList, setProductList] = useState([
         {
-            "name": "Product",
-            "url": "/productList",
-            "icon": ""
-        },
-        {
             "name": "Add Product",
             "url": "/addProduct",
             "icon": ""
         },
         {
-            "name": "Product List V2",
-            "url": "/productListV2",
+            "name": "Product List",
+            "url": "/productList",
+            "icon": ""
+        },
+
+        {
+            "name": "Product List Expiration",
+            "url": "/productExpirationList",
             "icon": ""
         }
     ]);
 
     const [warehouseList, setWareHouseList] = useState([
         {
+            "name": "Add Warehouse",
+            "url": "/warehouse",
+            "icon": ""
+        },
+        {
             "name": "Warehouse",
             "url": "/warehouseListV2",
             "icon": ""
         },
-        {
-            "name": "Add Warehouse",
-            "url": "/warehouse",
-            "icon": ""
-        }
+
     ]);
 
     const [shopList, setShopList] = useState([
         {
-            "name": "Shop",
-            "url": "/shopListV2",
+            "name": "Add Shop",
+            "url": "/shop",
             "icon": ""
         },
         {
-            "name": "Add Shop",
-            "url": "/shop",
+            "name": "Shop List",
+            "url": "/shopListV2",
             "icon": ""
         }
     ]);
@@ -382,15 +391,16 @@ export default function PersistentDrawerLeft() {
 
     const [loan, setLoan] = useState([
         {
-            "name": "Loan List",
-            "url": "/loanList",
-            "icon": ""
-        },
-        {
             "name": "Add Loan",
             "url": "/addInstallment",
             "icon": ""
         },
+        {
+            "name": "Loan List",
+            "url": "/loanList",
+            "icon": ""
+        },
+
         {
             "name": "Upcoming Loan Due Date",
             "url": "/upcomingLoanList",
@@ -507,16 +517,16 @@ export default function PersistentDrawerLeft() {
 
     const [markup, setMarkUp] = useState([
         {
-            "name": "Mark-Up Price List",
-            "url": "/markUpPriceListV2",
-            "icon": ""
-        },
-        {
             "name": "Add Mark-Up Price",
             "url": "/markUpPrice",
             "icon": ""
         }
         ,
+        {
+            "name": "Mark-Up Price List",
+            "url": "/markUpPriceListV2",
+            "icon": ""
+        },
         {
             "name": "Mark-Up New Price",
             "url": "/markUpNewPrice",
@@ -689,7 +699,7 @@ export default function PersistentDrawerLeft() {
                 </List>
 
 
-                <List
+                {/* <List
                     sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
@@ -714,7 +724,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </List>
                     </Collapse>
-                </List>
+                </List> */}
 
                 <List
                     sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
@@ -748,14 +758,14 @@ export default function PersistentDrawerLeft() {
                     component="nav"
                     aria-labelledby="nested-list-subheader"
                 >
-                    <ListItemButton onClick={handleClick6}>
+                    <ListItemButton onClick={handleClick66}>
                         <ListItemIcon>
                             <InboxIcon />
                         </ListItemIcon>
                         <ListItemText primary="Warehouse" />
-                        {open6 ? <ExpandLess /> : <ExpandMore />}
+                        {open66 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
-                    <Collapse in={open6} timeout="auto" unmountOnExit>
+                    <Collapse in={open66} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {warehouseList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
@@ -1040,7 +1050,7 @@ export default function PersistentDrawerLeft() {
                     </Collapse>
                 </List>
 
-                <List
+                {/* <List
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
@@ -1065,7 +1075,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </List>
                     </Collapse>
-                </List>
+                </List> */}
 
                 <List
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
