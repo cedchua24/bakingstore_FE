@@ -65,9 +65,6 @@ const ChequePaymentList = () => {
         var month = d.getMonth();
         d.setMonth(month + 1);
         d.setDate(day);
-
-
-
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 

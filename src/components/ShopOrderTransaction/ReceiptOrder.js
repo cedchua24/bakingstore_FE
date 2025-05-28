@@ -45,6 +45,7 @@ const ReceiptOrder = () => {
         requestor: 0,
         checker: 0,
         requestor_name: '',
+        customer_type: '',
         status: 0,
         checker_name: '',
         created_at: '',
@@ -149,6 +150,7 @@ const ReceiptOrder = () => {
                 <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}> {shopOrderTransaction.shop_name}</h3>
                 <p style={{ textAlign: 'center' }}> {shopOrderTransaction.address}</p>
                 <p style={{ textAlign: 'center' }}>Contact Number:  {shopOrderTransaction.contact_number}</p>
+                <p style={{ textAlign: 'center' }}>Customer Type:  {shopOrderTransaction.customer_type}</p>
                 <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}>Reference Number: #{shopOrderTransaction.id}</h3>
                 <br></br>
                 <table class="print-receipt" >
@@ -157,6 +159,7 @@ const ReceiptOrder = () => {
                         <th>{shopOrderTransaction.requestor_name}</th>
                         <th>{shopOrderTransaction.created_at}</th>
                     </tr>
+
                     <br></br>
 
                 </table>

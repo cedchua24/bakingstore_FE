@@ -409,10 +409,11 @@ const ProductExpirationList = () => {
                                         <td>{product.stock_warning}</td>
                                         <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                         <td>{numberFormat(product.price * product.stock)}</td>
-                                        {
+                                        {product.expiration != null ?
                                             compareDate(productList.today, product.expiration) < 90 ?
                                                 <td style={{ color: 'red', }}>{formatStatementDate(product.expiration)}</td> :
                                                 <td >{formatStatementDate(product.expiration)}</td>
+                                            : ""
                                         }
                                         <td>
                                             <Link variant="contained" to={"/expirationEditList/" + product.id}   >

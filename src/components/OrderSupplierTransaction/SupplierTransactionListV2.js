@@ -158,6 +158,19 @@ const SupplierTransactionListV2 = () => {
                                 <td>{orderTransaction.payment_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p>}
                                 </td>
+                                <td>{
+
+                                    orderTransaction.mode_of_payment.map((sot, index) => (
+                                        <>
+                                            <tr>
+                                                <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
+                                                <td><p style={{ fontSize: 12 }}>{sot.bank_name + " " + sot.account_description + " - " + sot.account_number}</p></td>
+                                            </tr>
+                                        </>
+                                    )
+                                    )
+
+                                }</td>
                                 <td>{orderTransaction.date}</td>
                                 <td>{orderTransaction.stock_status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
