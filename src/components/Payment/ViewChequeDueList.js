@@ -58,7 +58,7 @@ const ViewChequeDueList = () => {
 
 
     const fetchOrderTransactionList = (id) => {
-        CreditCardDueService.fetchCreditCardDueList(3)
+        CreditCardDueService.fetchChequeDueList(3)
             .then(response => {
                 setOrderTransactionList(response.data);
             })
@@ -93,6 +93,20 @@ const ViewChequeDueList = () => {
     }
 
 
+    const compareDate = ($date2) => {
+        var d = new Date();
+        var month = d.getMonth();
+        d.setMonth(month + 1);
+        const date1 = d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate();
+
+        const dateDiff = (date, cDate) => Math.ceil(Math.abs(date - cDate) / (1000 * 60 * 60 * 24));
+        const days = dateDiff(new Date(date1), new Date($date2));
+        if (new Date(date1) > new Date($date2)) {
+            return 0;
+        }
+        console.log('dayz', days)
+        return days;
+    }
 
 
     return (
@@ -105,17 +119,20 @@ const ViewChequeDueList = () => {
 
             <br></br>
             <legend> Upcoming Cheque Due</legend>
+            <p style={{ color: 'red', }}>Red = Less than 3 days</p>
+            <p style={{ color: 'orange', }}>Orange = Less than 7 days</p>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Due Date</th>
+                        <th>Invoice Number</th>
+                        <th>Supplier</th>
                         <th>Bank</th>
-                        <th>Account</th>
+                        <th>Details</th>
                         <th>Account Number</th>
                         <th>Due Amount</th>
                         <th>Interest / Penalty</th>
-                        <th>Due Date</th>
                         <th>Payment Status</th>
                         <th>Action</th>
                         <th></th>
@@ -130,19 +147,38 @@ const ViewChequeDueList = () => {
                         orderTransactionList.map((orderTransaction, index) => (
                             <tr key={orderTransaction.id} >
                                 <td>{orderTransaction.id}</td>
-                                <td>{formatStatementDate(orderTransaction.due_date)}</td>
+                                <td>{
+                                    compareDate(orderTransaction.due_date) <= 3 ?
+                                        <td style={{ color: 'red', }}>{formatStatementDate(orderTransaction.due_date)}</td>
+                                        : compareDate(orderTransaction.due_date) <= 7 ?
+                                            <td style={{ color: 'orange', }}>{formatStatementDate(orderTransaction.due_date)}</td>
+                                            :
+                                            <td >{formatStatementDate(orderTransaction.due_date)}</td>
+                                }
+                                </td>
+
+                                <td>{orderTransaction.invoice_number}</td>
+                                <td>{orderTransaction.supplier_name}</td>
                                 <td>{orderTransaction.account_name}</td>
                                 <td>{orderTransaction.bank_name + " " + orderTransaction.account_description}</td>
                                 <td>{orderTransaction.account_number}</td>
                                 <td>{numberFormat(orderTransaction.amount)}</td>
                                 <td>{orderTransaction.interest_amount}</td>
-                                <td>{orderTransaction.due_date}</td>
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     {orderTransaction.status != 1 &&
                                         <Link variant="primary" to={"/payCreditCard/" + orderTransaction.id}   >
                                             <Button variant="primary" >
                                                 Pay
+                                            </Button>
+                                        </Link>
+                                    }
+                                </td>
+                                <td>
+                                    {orderTransaction.status != 1 &&
+                                        <Link variant="primary" to={"/viewOrder/" + orderTransaction.transaction_id}   >
+                                            <Button variant="primary" >
+                                                Transaction
                                             </Button>
                                         </Link>
                                     }

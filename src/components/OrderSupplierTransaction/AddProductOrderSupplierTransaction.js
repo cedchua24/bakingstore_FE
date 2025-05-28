@@ -658,7 +658,7 @@ const AddProductOrderSupplierTransaction = () => {
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
-                                <TableCell align="right">{formatStatementDate(row.expiration)}</TableCell>
+                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">
                                     <Tooltip title="Update">
                                         <IconButton>

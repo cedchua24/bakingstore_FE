@@ -93,6 +93,21 @@ const ViewCreditCardDueList = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const compareDate = ($date2) => {
+        var d = new Date();
+        var month = d.getMonth();
+        d.setMonth(month + 1);
+        const date1 = d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate();
+
+        const dateDiff = (date, cDate) => Math.ceil(Math.abs(date - cDate) / (1000 * 60 * 60 * 24));
+        const days = dateDiff(new Date(date1), new Date($date2));
+        if (new Date(date1) > new Date($date2)) {
+            return 0;
+        }
+        console.log('dayz', days)
+        return days;
+    }
+
 
     return (
         <div>
@@ -131,7 +146,14 @@ const ViewCreditCardDueList = () => {
                         orderTransactionList.map((orderTransaction, index) => (
                             <tr key={orderTransaction.id} >
                                 <td>{orderTransaction.id}</td>
-                                <td>{formatStatementDate(orderTransaction.due_date)}</td>
+                                {
+                                    compareDate(orderTransaction.due_date) <= 3 ?
+                                        <td style={{ color: 'red', }}>{formatStatementDate(orderTransaction.due_date)}</td>
+                                        : compareDate(orderTransaction.due_date) <= 7 ?
+                                            <td style={{ color: 'orange', }}>{formatStatementDate(orderTransaction.due_date)}</td>
+                                            :
+                                            <td >{formatStatementDate(orderTransaction.due_date)}</td>
+                                }
                                 <td>{orderTransaction.account_name}</td>
                                 <td>{orderTransaction.bank_name + " " + orderTransaction.account_description}</td>
                                 <td>{orderTransaction.account_number}</td>

@@ -58,7 +58,7 @@ const ViewPaidChequeDueList = () => {
 
 
     const fetchOrderTransactionList = (id) => {
-        CreditCardDueService.fetchCreditCardPaidList(3)
+        CreditCardDueService.fetchChequePaidList(3)
             .then(response => {
                 setOrderTransactionList(response.data);
             })
@@ -110,13 +110,14 @@ const ViewPaidChequeDueList = () => {
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Due Date</th>
+                        <th>Invoice Number</th>
+                        <th>Supplier</th>
                         <th>Bank</th>
-                        <th>Account</th>
+                        <th>Details</th>
                         <th>Account Number</th>
                         <th>Due Amount</th>
                         <th>Paid Amount</th>
                         <th>Interest / Penalty</th>
-                        <th>Due Date</th>
                         <th>Payment Status</th>
                         <th>Action</th>
                         <th></th>
@@ -132,13 +133,14 @@ const ViewPaidChequeDueList = () => {
                             <tr key={orderTransaction.id} >
                                 <td>{orderTransaction.id}</td>
                                 <td>{formatStatementDate(orderTransaction.due_date)}</td>
+                                <td>{orderTransaction.invoice_number}</td>
+                                <td>{orderTransaction.supplier_name}</td>
+                                <td>{orderTransaction.bank_name}</td>
                                 <td>{orderTransaction.account_name}</td>
-                                <td>{orderTransaction.bank_name + " " + orderTransaction.account_description}</td>
                                 <td>{orderTransaction.account_number}</td>
                                 <td>{numberFormat(orderTransaction.amount)}</td>
                                 <td>{numberFormat(orderTransaction.amount_paid)}</td>
                                 <td>{orderTransaction.interest_amount}</td>
-                                <td>{orderTransaction.due_date}</td>
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     {orderTransaction.status != 1 &&
@@ -148,6 +150,13 @@ const ViewPaidChequeDueList = () => {
                                             </Button>
                                         </Link>
                                     }
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"/viewOrder/" + orderTransaction.transaction_id}   >
+                                        <Button variant="primary" >
+                                            Transaction
+                                        </Button>
+                                    </Link>
                                 </td>
                                 <td>
                                     {orderTransaction.amount_paid != 0 &&

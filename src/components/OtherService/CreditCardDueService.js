@@ -16,6 +16,12 @@ class CreditCardDueService {
     fetchCreditCardPaidList(id) {
         return axios.get(`/api/creditCardDue/fetchCreditCardPaidList/${id}`);
     }
+    fetchChequePaidList(id) {
+        return axios.get(`/api/creditCardDue/fetchChequePaidList/${id}`);
+    }
+    fetchChequeDueList(id) {
+        return axios.get(`/api/creditCardDue/fetchChequeDueList/${id}`);
+    }
     fetchCreditCardDetail(id) {
         return axios.get(`/api/creditCardDue/fetchCreditCardDetail/${id}`);
     }
