@@ -150,7 +150,7 @@ const CustomerHistory = () => {
                 <br></br>
             </Form >
 
-
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer History List </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

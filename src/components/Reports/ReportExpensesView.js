@@ -98,6 +98,7 @@ const ReportExpensesView = () => {
             <div>
                 <Div>{"Mandatory"}
                 </Div>
+                <legend align="center" style={{ fontWeight: 'bold' }} > Expense Report   </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">
@@ -135,6 +136,7 @@ const ReportExpensesView = () => {
 
                 <Div>{"Non Mandatory"}
                 </Div>
+                <legend align="center" style={{ fontWeight: 'bold' }} > Expense   </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">

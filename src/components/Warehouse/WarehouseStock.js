@@ -28,7 +28,7 @@ const WarehouseStock = () => {
 
     return (
         <div>
-            <h1>{warehouseName}</h1>
+            <legend align="center" style={{ fontWeight: 'bold' }} > {warehouseName}  </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

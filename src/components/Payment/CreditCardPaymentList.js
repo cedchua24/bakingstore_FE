@@ -73,7 +73,8 @@ const CreditCardPaymentList = () => {
     return (
         <div>
             <br></br>
-            <legend>Credit Card List</legend>
+
+            <legend align="center" style={{ fontWeight: 'bold' }} > Credit Card List </legend>
             <table class="table table-bordered">
 
                 <thead class="table-dark">

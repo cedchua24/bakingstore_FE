@@ -166,7 +166,7 @@ const ReportPurchaseOrder = () => {
 
 
 
-
+            <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order Report   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

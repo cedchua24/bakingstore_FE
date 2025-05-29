@@ -487,7 +487,8 @@ const PromoInstallment = () => {
             {
                 paymentHistoryList.length != 0 &&
                 <>
-                    <legend>Credit Card Due</legend>
+
+                    <legend align="center" style={{ fontWeight: 'bold' }} > Credit Card Due </legend>
                     <table class="table table-bordered">
                         <thead class="table-dark">
                             <tr class="table-secondary">

@@ -79,7 +79,8 @@ const ChequePaymentList = () => {
     return (
         <div>
             <br></br>
-            <legend>Cheque Payment List</legend>
+
+            <legend align="center" style={{ fontWeight: 'bold' }} > Cheque Payment List </legend>
             <table class="table table-bordered">
 
                 <thead class="table-dark">

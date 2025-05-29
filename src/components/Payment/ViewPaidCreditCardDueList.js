@@ -102,8 +102,7 @@ const ViewPaidCreditCardDueList = () => {
                 }
             </Stack>
 
-            <br></br>
-            <legend> Paid Credit Card </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Paid Credit Card   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

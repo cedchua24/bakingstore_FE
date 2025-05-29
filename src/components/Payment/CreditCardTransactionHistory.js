@@ -104,6 +104,7 @@ const CreditCardTransactionHistory = () => {
                 </Table>
             </TableContainer>
             <br></br>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Credit Card Transaction List </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

@@ -42,6 +42,7 @@ const OrderCustomeList = () => {
 
     return (
         <div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Order Customer List </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

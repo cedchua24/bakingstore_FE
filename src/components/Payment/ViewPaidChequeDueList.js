@@ -104,7 +104,7 @@ const ViewPaidChequeDueList = () => {
             </Stack>
 
             <br></br>
-            <legend> Paid Cheque </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Paid Cheque  </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

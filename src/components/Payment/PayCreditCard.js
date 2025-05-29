@@ -436,7 +436,7 @@ const PayCreditCard = () => {
             <br></br>
             {paymentHistoryList.length != 0 &&
                 <>
-                    <legend>Payment History</legend>
+                    <legend align="center" style={{ fontWeight: 'bold' }} > Payment History </legend>
                     <table class="table table-bordered">
                         <thead class="table-dark">
                             <tr class="table-secondary">

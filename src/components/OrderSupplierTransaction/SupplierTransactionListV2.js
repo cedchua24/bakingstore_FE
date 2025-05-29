@@ -119,6 +119,7 @@ const SupplierTransactionListV2 = () => {
             </Stack>
             <br></br>
 
+            <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order List </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -176,7 +177,7 @@ const SupplierTransactionListV2 = () => {
                                 <td>
                                     <Link variant="primary" to={"/editSupplierTransaction/" + orderTransaction.id}   >
                                         <Button variant="warning" >
-                                            Update
+                                            Update Invoice
                                         </Button>
                                     </Link>
                                 </td>

@@ -97,6 +97,7 @@ const ViewTransaction = () => {
 
     return (
         <div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Transaction List   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

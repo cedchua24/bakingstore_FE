@@ -9,6 +9,7 @@ const WarehouseList = (props) => {
 
     return (
         <div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Warehouse List   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

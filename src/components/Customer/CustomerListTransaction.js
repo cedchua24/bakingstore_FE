@@ -34,6 +34,7 @@ const CustomerListTransaction = () => {
 
     return (
         <div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer List Transaction </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

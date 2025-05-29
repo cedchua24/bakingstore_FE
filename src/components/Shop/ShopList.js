@@ -9,6 +9,7 @@ const ShopList = (props) => {
 
     return (
         <div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Shop List   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

@@ -33,7 +33,7 @@ const ProductTransactionList = () => {
 
     return (
         <div>
-            <Div>{productName}</Div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > {productName} </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

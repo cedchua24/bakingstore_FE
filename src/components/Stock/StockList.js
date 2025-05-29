@@ -228,6 +228,7 @@ const StockList = (props) => {
             </Form>
             <br></br>
 
+            <legend align="center" style={{ fontWeight: 'bold' }} > Stock List   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

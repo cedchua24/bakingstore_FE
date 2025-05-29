@@ -410,6 +410,7 @@ const CustomerOrderTransactionList = () => {
                     <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
                 </Form.Group>
                 <br></br>
+                <legend align="center" style={{ fontWeight: 'bold' }} > Expense Report   </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">
@@ -548,10 +549,9 @@ const CustomerOrderTransactionList = () => {
                     <br></br>
                 </Form >
             </div>
-            <Div>{"Online Orders"}
-            </Div>
 
 
+            <legend align="center" style={{ fontWeight: 'bold' }} > Online Orders  </legend>
 
 
             <table class="table table-bordered" >

@@ -118,7 +118,7 @@ const ViewChequeDueList = () => {
             </Stack>
 
             <br></br>
-            <legend> Upcoming Cheque Due</legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Upcoming Cheque Due </legend>
             <p style={{ color: 'red', }}>Red = Less than 3 days</p>
             <p style={{ color: 'orange', }}>Orange = Less than 7 days</p>
             <table class="table table-bordered">

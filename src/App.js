@@ -7,6 +7,8 @@ import NewNavBar from "./components/Navigation/NewNavBar";
 import AddProduct from "./components/Product/AddProduct";
 import ProductList from "./components/Product/ProductList";
 import ProductExpirationList from "./components/Product/ProductExpirationList";
+import ProductNoteList from "./components/Product/ProductNoteList";
+
 
 import ProductListV2 from "./components/Product/ProductListV2";
 import EditProduct from "./components/Product/EditProduct";
@@ -201,6 +203,8 @@ const App = () => {
           <Route path="/productList" element={<ProductList />} />
           <Route path="/ProductListV2" element={<ProductListV2 />} />
           <Route path="/productExpirationList" element={<ProductExpirationList />} />
+          <Route path="/productNoteList" element={<ProductNoteList />} />
+
 
 
 

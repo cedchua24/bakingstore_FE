@@ -69,6 +69,7 @@ const SupplierProductList = () => {
 
             </Form>
             <div>
+                <legend align="center" style={{ fontWeight: 'bold' }} > Product Supplier   </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">

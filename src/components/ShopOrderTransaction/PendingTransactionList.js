@@ -286,9 +286,9 @@ const PendingTransactionList = () => {
                     </Button>
                 </Form > */}
             </div>
-            <Div>{"Pending Transaction"}
-            </Div>
 
+
+            <legend align="center" style={{ fontWeight: 'bold' }} > Pending Transaction   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

@@ -152,6 +152,7 @@ const MarkUpPriceList = (props) => {
 
     return (
         <div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Mark Up List </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
