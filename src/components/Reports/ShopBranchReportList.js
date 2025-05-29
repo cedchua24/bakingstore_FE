@@ -84,9 +84,9 @@ const ShopBranchReportList = () => {
                     Find
                 </Button>
             </Form >
-            <Div>{"Online Orders"}
-            </Div>
 
+
+            <legend align="center" style={{ fontWeight: 'bold' }} > Shop Branch Report   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

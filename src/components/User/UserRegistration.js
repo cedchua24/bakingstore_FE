@@ -166,6 +166,7 @@ const UserRegistration = () => {
                 </Button>
             </Form>
             <br></br>
+            <legend align="center" style={{ fontWeight: 'bold' }} > User Registration   </legend>
 
             <table class="table table-bordered">
                 <thead class="table-dark">

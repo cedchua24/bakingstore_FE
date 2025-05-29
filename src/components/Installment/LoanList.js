@@ -117,6 +117,7 @@ const LoanList = () => {
     return (
         <div>
             <br></br>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Loan  </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

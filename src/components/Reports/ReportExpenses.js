@@ -82,9 +82,8 @@ const ReportExpenses = () => {
                     Find
                 </Button>
             </Form >
-            <Div>{"Online Orders"}
-            </Div>
 
+            <legend align="center" style={{ fontWeight: 'bold' }} > Expenses Report   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

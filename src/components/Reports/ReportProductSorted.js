@@ -212,6 +212,7 @@ const ReportProductSorted = () => {
                 }
                 <br></br>
             </Form>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Product Sorted   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

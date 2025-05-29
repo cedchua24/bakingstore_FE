@@ -19,6 +19,9 @@ class ProductService {
     fetchProductListV2(id) {
         return axios.get(`/api/products/fetchProductListV2/${id}`);
     }
+    fetchProductListNote(id) {
+        return axios.get(`/api/products/fetchProductListNote/${id}`);
+    }
     fetchProductListExpiration(id) {
         return axios.get(`/api/products/fetchProductListExpiration/${id}`);
     }

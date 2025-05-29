@@ -104,6 +104,7 @@ const CreditCardPayHistory = () => {
                 </Table>
             </TableContainer>
             <br></br>
+            <legend>Credit Card Pay </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

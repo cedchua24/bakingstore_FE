@@ -19,6 +19,7 @@ const PoPaymentTypeList = (props) => {
 
     return (
         <div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Payment Type  Supplier </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

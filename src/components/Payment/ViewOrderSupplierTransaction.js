@@ -154,6 +154,7 @@ const ViewOrderSupplierTransaction = () => {
                 </Table>
             </TableContainer>
             <br></br> */}
+            <legend align="center" style={{ fontWeight: 'bold' }} > Order Supplier </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

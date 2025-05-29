@@ -94,6 +94,7 @@ const AddCategory = () => {
             </Form>
             <br></br>
 
+            <legend align="center" style={{ fontWeight: 'bold' }} > Category List </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

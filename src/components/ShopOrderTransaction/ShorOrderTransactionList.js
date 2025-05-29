@@ -112,7 +112,8 @@ const ShorOrderTransactionList = () => {
                     Find
                 </Button>
             </Form >
-            <Div>{"Shop Branch Order"}</Div>
+
+            <legend align="center" style={{ fontWeight: 'bold' }} > Shop Branch Order   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

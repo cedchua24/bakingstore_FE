@@ -211,7 +211,7 @@ const ReceiptOrder = () => {
                 <br></br>
                 <h5 style={{ textAlign: 'center' }}> THANK YOU FOR YOUR ORDER</h5>
                 <br></br>
-                <h3 style={{ textAlign: 'center' }}> THIS IS NOT AN OFFICAL RECEIPT</h3>
+                <h3 style={{ textAlign: 'center' }}> THIS IS NOT AN OFFICIAL RECEIPT</h3>
             </div>
             <br></br>
             <div class="hide-on-print">

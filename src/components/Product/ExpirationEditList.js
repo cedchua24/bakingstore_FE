@@ -187,6 +187,7 @@ const ExpirationEditList = () => {
 
             </Form>
             <div>
+                <legend align="center" style={{ fontWeight: 'bold' }} > Product Expiration   </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">

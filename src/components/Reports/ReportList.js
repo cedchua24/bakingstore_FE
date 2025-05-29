@@ -187,9 +187,7 @@ const ReportList = () => {
 
 
 
-            <Div>{"Online Orders"}
-            </Div>
-
+            <legend align="center" style={{ fontWeight: 'bold' }} > Online Orders  </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

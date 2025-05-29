@@ -118,7 +118,8 @@ const ViewCreditCardDueList = () => {
             </Stack>
 
             <br></br>
-            <legend> Upcoming Credit Card Due</legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Upcoming Credit Card Due </legend>
+
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

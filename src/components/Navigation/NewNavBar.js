@@ -292,6 +292,12 @@ export default function PersistentDrawerLeft() {
             "url": "/productList",
             "icon": ""
         },
+        {
+            "name": "Product Note List",
+            "url": "/productNoteList",
+            "icon": ""
+        },
+
 
         {
             "name": "Product List Expiration",

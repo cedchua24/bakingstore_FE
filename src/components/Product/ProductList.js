@@ -342,6 +342,7 @@ const ProductList = () => {
                     </Box>
                 </Box>
             </Modal>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Product List </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
