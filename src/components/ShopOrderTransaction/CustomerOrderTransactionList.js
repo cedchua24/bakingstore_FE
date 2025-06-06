@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ExpensesService from "../Expenses/ExpensesService";
 import ShopService from "../Shop/ShopService";
+import SpoilageService from "../Spoilage/SpoilageService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -43,6 +44,12 @@ const CustomerOrderTransactionList = () => {
     });
 
     const [expenses, setExpenses] = useState({
+        data: [],
+        code: '',
+        message: '',
+    });
+
+    const [spoilage, setSpoilage] = useState({
         data: [],
         code: '',
         message: '',
@@ -156,6 +163,16 @@ const CustomerOrderTransactionList = () => {
             .catch(e => {
                 console.log("error", e)
             });
+
+        SpoilageService.fetchSpoilageToday()
+            .then(response => {
+                setSpoilage(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+
 
     }
 
@@ -410,6 +427,14 @@ const CustomerOrderTransactionList = () => {
                     <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
                 </Form.Group>
                 <br></br>
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label> Spoilage</Form.Label>
+                    <Link variant="primary" to={"../spoilageList/"}   >
+                        <PageviewIcon color="primary" />
+                    </Link>
+                    <Form.Control type="text" value={numberFormat(spoilage.total_cost)} />
+                </Form.Group>
+                <br></br>
                 <legend align="center" style={{ fontWeight: 'bold' }} > Expense Report   </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
@@ -429,8 +454,12 @@ const CustomerOrderTransactionList = () => {
                             <td>{numberFormat(expensesMandatory.total_expenses)}</td>
                         </tr>
                         <tr  >
+                            <td>Total Spoilage: </td>
+                            <td>{numberFormat(spoilage.total_cost)}</td>
+                        </tr>
+                        <tr  >
                             <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
-                            <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses)}</td>
+                            <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses - spoilage.total_cost)}</td>
                         </tr>
                         <br></br>
                         <Button

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
-import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
-import OrderSupplierTransactionService from "../OrderSupplierTransaction/OrderSupplierTransactionService";
+
+import SpoilageService from "../Spoilage/SpoilageService";
 
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
@@ -10,7 +10,7 @@ import { Form } from 'react-bootstrap';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import LinearProgress from '@mui/material/LinearProgress';
 
-const ReportPurchaseOrder = () => {
+const ReportSpoilage = () => {
 
 
     useEffect(() => {
@@ -36,7 +36,7 @@ const ReportPurchaseOrder = () => {
     });
 
     const fetchShopOrderTransactionList = () => {
-        OrderSupplierTransactionService.fetchOrderSupplierReport()
+        SpoilageService.fetchSpoilageReport()
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -86,7 +86,7 @@ const ReportPurchaseOrder = () => {
             console.log("Ready for saving: ");
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            OrderSupplierTransactionService.fetchOrderSupplierReport(customerOrderDate)
+            SpoilageService.fetchSpoilageReport(customerOrderDate)
                 .then(response => {
                     setShopOrderTransaction(response.data);
                     setSubmitLoadingAdd(false);
@@ -127,7 +127,7 @@ const ReportPurchaseOrder = () => {
                     </Form.Group>
                     <Form.Group className="w-15 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Amount: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_sales)} />
+                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cost)} />
                     </Form.Group>
                     <Button variant="primary" onClick={saveOrderTransaction} disabled={isAddDisabled}>
                         Find
@@ -142,29 +142,7 @@ const ReportPurchaseOrder = () => {
 
             </div>
 
-
-            <div style={{ float: 'right', marginRight: 300 }}>
-
-                {
-                    shopOrderTransaction.payment.map((payment, index) => (
-                        <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.bank_name + " - "} {payment.account_name} {payment.account_number} </Form.Label>
-                            {/* <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
-                                <PageviewIcon color="primary" />
-                            </Link> */}
-                            <Form.Control type="text" value={numberFormat(payment.total_amount)} />
-
-                        </Form.Group>
-                    )
-                    )
-                }
-
-
-            </div>
-
-
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order Report   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Spoilage Report   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -181,9 +159,9 @@ const ReportPurchaseOrder = () => {
                             <tr  >
                                 <td>{shopOrderTransaction.date}</td>
                                 <td>{shopOrderTransaction.total_count}</td>
-                                <td>{numberFormat(shopOrderTransaction.total_sales)}</td>
+                                <td>{numberFormat(shopOrderTransaction.total_cost)}</td>
                                 <td>
-                                    <Link variant="primary" to={"../reports/purchaseOrderList/" + shopOrderTransaction.date}   >
+                                    <Link variant="primary" to={"../reports/viewSpoilageReport/" + shopOrderTransaction.date}   >
                                         <Button variant="primary" >
                                             View
                                         </Button>
@@ -198,4 +176,4 @@ const ReportPurchaseOrder = () => {
     )
 }
 
-export default ReportPurchaseOrder
+export default ReportSpoilage

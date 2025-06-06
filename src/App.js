@@ -9,6 +9,10 @@ import ProductList from "./components/Product/ProductList";
 import ProductExpirationList from "./components/Product/ProductExpirationList";
 import ProductNoteList from "./components/Product/ProductNoteList";
 
+import ProductSpoilageList from "./components/Spoilage/ProductSpoilageList";
+import SpoilageList from "./components/Spoilage/SpoilageList";
+
+
 
 import ProductListV2 from "./components/Product/ProductListV2";
 import EditProduct from "./components/Product/EditProduct";
@@ -167,6 +171,8 @@ import EditExpenses from "./components/Expenses/EditExpenses";
 import ReportList from "./components/Reports/ReportList";
 import ReportPurchaseOrder from "./components/Reports/ReportPurchaseOrder";
 import PurchaseOrderList from "./components/Reports/PurchaseOrderList";
+import ReportSpoilage from "./components/Reports/ReportSpoilage";
+import ViewSpoilageReport from "./components/Reports/ViewSpoilageReport";
 
 
 import ReportExpenses from "./components/Reports/ReportExpenses";
@@ -206,7 +212,8 @@ const App = () => {
           <Route path="/productNoteList" element={<ProductNoteList />} />
 
 
-
+          <Route path="/productSpoilageList" element={<ProductSpoilageList />} />
+          <Route path="/spoilageList" element={<SpoilageList />} />
 
           <Route exact path="/editProduct/:id" element={<EditProduct />} />
 
@@ -399,7 +406,11 @@ const App = () => {
 
           <Route exact path="/reports/reportsList" element={<ReportList />} />
           <Route exact path="/reports/reportPurchaseOrder" element={<ReportPurchaseOrder />} />
+          <Route exact path="/reports/reportSpoilage" element={<ReportSpoilage />} />
+
           <Route exact path="/reports/purchaseOrderList/:id" element={<PurchaseOrderList />} />
+          <Route exact path="/reports/viewSpoilageReport/:id" element={<ViewSpoilageReport />} />
+
 
 
           <Route exact path="/reports/shopBranchReportList" element={<ShopBranchReportList />} />
