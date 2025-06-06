@@ -459,7 +459,7 @@ const CustomerOrderTransactionList = () => {
                         </tr>
                         <tr  >
                             <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
-                            <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses - spoilage.total_cost)}</td>
+                            <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses + spoilage.total_cost)}</td>
                         </tr>
                         <br></br>
                         <Button
