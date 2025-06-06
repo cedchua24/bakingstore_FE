@@ -2,8 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
-import StockOrderService from "../OtherService/StockOrderService";
+
 import CategoryServiceService from "../Category/CategoryService.service";
+import { useNavigate } from "react-router-dom";
+import SpoilageService from "./SpoilageService";
+
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
 
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
@@ -24,7 +29,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 
 
-const StockList = (props) => {
+const ProductSpoilageList = (props) => {
 
     // const productList = props.productList;
     useEffect(() => {
@@ -32,7 +37,16 @@ const StockList = (props) => {
         fetchCategoryList();
     }, []);
 
-    const [productList, setProductList] = useState([]);
+    const [validator, setValidator] = useState({
+        severity: '',
+        message: '',
+        isShow: false
+    });
+    const navigate = useNavigate();
+    const [productList, setProductList] = useState({
+        total_value: '',
+        data: []
+    });
     const [categoryId, setCategoryId] = useState(0);
     const [categeryList, setCategoryList] = useState([]);
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -63,6 +77,7 @@ const StockList = (props) => {
     const [product, setProduct] = useState({
         id: 0,
         product_name: '',
+        reason: '',
         stock: 0,
         stock_pc: 0,
         newStocks: 0,
@@ -70,7 +85,8 @@ const StockList = (props) => {
     });
 
     const [realStock, setRealStock] = useState(0);
-    const [errorStock, setErrorStock] = useState(false);
+    const [errorStock, setErrorStock] = useState(true);
+    const [errorStock2, setErrorStock2] = useState(true);
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
@@ -85,6 +101,21 @@ const StockList = (props) => {
         // setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
     }
 
+
+    const onChange = (e) => {
+        setProduct({ ...product, [e.target.name]: e.target.value });
+
+        if (e.target.value.length == 0) {
+            setErrorStock2(true);
+            console.log('true')
+        } else {
+            console.log('false')
+            setErrorStock2(false);
+        }
+    }
+
+
+
     const onChangePackaging = (e) => {
         console.log(e.target.value)
         setProduct({
@@ -94,29 +125,18 @@ const StockList = (props) => {
     }
 
     const onChangeStock = (e) => {
-        // const realStock = product.stock;
-        // const totalStock = Number(realStock) + Number(e.target.value);
         setProduct({
             ...product,
             newStocks: e.target.value,
         });
 
-        let v = product.stock + Number(e.target.value);
-        let x = product.stock_pc + Number(e.target.value);
-        // if (product.pack === 'Box') {
-        //     if (v < 0) {
-        //         setErrorStock(true);
-        //     } else {
-        //         setErrorStock(false);
-        //     }
-        // } else {
-        //     if (x < 0) {
-        //         setErrorStock(true);
-        //     } else {
-        //         setErrorStock(false);
-        //     }
-
-        // }
+        if (e.target.value > 0) {
+            setErrorStock(true);
+            console.log('true')
+        } else {
+            console.log('false')
+            setErrorStock(false);
+        }
 
 
     }
@@ -144,27 +164,39 @@ const StockList = (props) => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
-        setErrorStock(true);
-        ProductServiceService.update(product.id, product)
+        SpoilageService.create(product)
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
                 setOpen(false);
                 setErrorStock(false);
                 // updateOrderTransaction();
+                window.scrollTo(0, 0);
+                setValidator({
+                    severity: 'success',
+                    message: 'Successfuly Added!',
+                    isShow: true,
+                });
+                navigate('/spoilageList');
             })
             .catch(e => {
-                console.log(e);
+                console.log("error");
                 setSubmitLoading(false);
                 setOpen(false);
                 setErrorStock(false);
+                window.scrollTo(0, 0);
+                setValidator({
+                    severity: 'error',
+                    message: 'Error!',
+                    isShow: true,
+                });
             });
 
     }
 
 
     const fetchProductList = () => {
-        ProductServiceService.getAll()
+        ProductServiceService.fetchProductByCategoryId(2)
             .then(response => {
                 setProductList(response.data);
             })
@@ -192,7 +224,7 @@ const StockList = (props) => {
 
     return (
         <div>
-            {/* <Form>
+            <Form>
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -202,6 +234,7 @@ const StockList = (props) => {
                             // value={shopOrderTransaction.shop_id}
                             label="Shop Name"
                             name="category_id"
+                            defaultValue={2}
                             onChange={onChangeInput}
                         >
                             {
@@ -225,10 +258,14 @@ const StockList = (props) => {
                 {submitLoadingAdd &&
                     <LinearProgress color="warning" />
                 }
-            </Form> */}
+            </Form>
             <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Stock List   </legend>
+            <Stack sx={{ width: '100%' }} spacing={2}>
+                {validator.isShow &&
+                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                }
+            </Stack>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Add Spoilage </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -240,8 +277,7 @@ const StockList = (props) => {
                         <th>Stock</th>
                         <th>Stock/Pc</th>
                         <th>Quantity / Weight</th>
-                        <th>Update Stock</th>
-                        <th>Transaction</th>
+                        <th>Add Spoilage</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -253,7 +289,7 @@ const StockList = (props) => {
 
 
                             {
-                                productList.map((product, index) => (
+                                productList.data.map((product, index) => (
                                     <tr key={product.id} >
                                         <td>{product.id}</td>
                                         <td>{product.product_name}</td>
@@ -273,13 +309,6 @@ const StockList = (props) => {
                                             <IconButton>
                                                 <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
                                             </IconButton>
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"/viewStockTransactionList/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    View
-                                                </Button>
-                                            </Link>
                                         </td>
                                         <td>
                                             <Link variant="primary" to={"/viewTransaction/" + product.id}   >
@@ -344,7 +373,7 @@ const StockList = (props) => {
                     </FormControl>
 
                     <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Add Stocks</InputLabel>
+                        <InputLabel htmlFor="standard-adornment-amount">Quantity (must be negative)</InputLabel>
                         <Input
                             type='number'
                             id="filled-required"
@@ -360,16 +389,21 @@ const StockList = (props) => {
                         />
                     </FormControl>
 
-                    {/* <FormControl fullWidth sx={{ m: 0 }} variant="standard">
-                        <TextField
-                            disabled
+
+                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+                        <InputLabel htmlFor="standard-adornment-amount">Reason</InputLabel>
+                        <Input
+                            type='text'
                             id="filled-required"
-                            label="Stock"
+                            label="Reason"
                             variant="filled"
-                            name='product_name'
-                            value={product.stock}
+                            name='reason'
+                            error={errorStock2}
+                            onChange={onChange}
                         />
-                    </FormControl> */}
+                    </FormControl>
+
+
 
                     <Box
                         sx={{
@@ -394,4 +428,4 @@ const StockList = (props) => {
     )
 }
 
-export default StockList
+export default ProductSpoilageList

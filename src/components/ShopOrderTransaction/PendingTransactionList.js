@@ -357,7 +357,7 @@ const PendingTransactionList = () => {
                                     </Link>
                                 </td>
                                 <td>
-                                    <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction}   >
+                                    <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
                                         <Button variant="primary" >
                                             Print Receipt
                                         </Button>

@@ -190,8 +190,15 @@ export default function PersistentDrawerLeft() {
         setOpen18(!open18);
     };
 
+    const [open19, setOpen19] = React.useState(false);
+    const handleClick19 = () => {
+        setOpen19(!open19);
+    };
 
-
+    const [open20, setOpen20] = React.useState(false);
+    const handleClick20 = () => {
+        setOpen20(!open20);
+    };
 
 
 
@@ -453,14 +460,14 @@ export default function PersistentDrawerLeft() {
         }
     ]);
 
-    const [customerOrder, setCustomerOrder] = useState([
+    const [expense, setExpense] = useState([
         {
-            "name": "Expenses",
+            "name": "Add Expense",
             "url": "/expenses",
             "icon": ""
         },
         {
-            "name": "Expenses Type",
+            "name": "Add Expense Type",
             "url": "/expensesType",
             "icon": ""
         },
@@ -514,6 +521,11 @@ export default function PersistentDrawerLeft() {
             "icon": ""
         },
         {
+            "name": "Spoilage Reports",
+            "url": "/reports/reportSpoilage",
+            "icon": ""
+        },
+        {
             "name": "Expenses Reports",
             "url": "/reports/reportExpenses",
             "icon": ""
@@ -539,6 +551,22 @@ export default function PersistentDrawerLeft() {
             "icon": ""
         }
     ]);
+
+    const [spoilage, setSpoilage] = useState([
+        {
+            "name": "Add Spoilage",
+            "url": "/productSpoilageList",
+            "icon": ""
+        }
+        ,
+        {
+            "name": "Spoilage List",
+            "url": "/spoilageList",
+            "icon": ""
+        }
+    ]);
+
+
 
 
 
@@ -1056,21 +1084,21 @@ export default function PersistentDrawerLeft() {
                     </Collapse>
                 </List>
 
-                {/* <List
+                <List
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
                 >
-                    <ListItemButton onClick={handleClick16}>
+                    <ListItemButton onClick={handleClick19}>
                         <ListItemIcon>
                             <InboxIcon />
                         </ListItemIcon>
-                        <ListItemText primary="Customer Order" />
-                        {open16 ? <ExpandLess /> : <ExpandMore />}
+                        <ListItemText primary="Expense" />
+                        {open19 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
-                    <Collapse in={open16} timeout="auto" unmountOnExit>
+                    <Collapse in={open19} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
-                            {customerOrder.map((nav, index) => (
+                            {expense.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton>
                                         <ListItemIcon>
@@ -1081,7 +1109,34 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </List>
                     </Collapse>
-                </List> */}
+                </List>
+
+                <List
+                    sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                >
+                    <ListItemButton onClick={handleClick20}>
+                        <ListItemIcon>
+                            <InboxIcon />
+                        </ListItemIcon>
+                        <ListItemText primary="Spoilage" />
+                        {open20 ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={open20} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {spoilage.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton>
+                                        <ListItemIcon>
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
 
                 <List
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}

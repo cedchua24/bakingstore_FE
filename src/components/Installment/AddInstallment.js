@@ -862,6 +862,7 @@ const AddInstallment = () => {
                                 onChange={onChangeInput}
                             />
                         </FormControl>
+
                         <br></br>
                         <br></br>
                     </>) : ""}

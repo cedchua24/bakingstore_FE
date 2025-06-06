@@ -184,21 +184,7 @@ const ReceiptOrder = () => {
 
                     ))}
                     <br></br>
-                    {/* <tr>
-                        <td></td>
-                        <td></td>
-                        <td>Subtotal</td>
-                        <td>{invoiceSubtotal}</td>
-                    </tr> */}
 
-                    {/* <tr> */}
-                    {/* <td></td> */}
-                    {/* <td></td> */}
-                    {/* <td>Vat - {`${(TAX_RATE * 100).toFixed(0)} %`}</td> */}
-                    {/* <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell> */}
-                    {/* <td>{`${(TAX_RATE * 100).toFixed(0)} %`}</td> */}
-                    {/* <td> {ccyFormat(invoiceTaxes)}</td> */}
-                    {/* </tr> */}
 
                     <tr>
                         <td></td>
