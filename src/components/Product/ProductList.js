@@ -362,6 +362,8 @@ const ProductList = () => {
                         <th>Action</th>
                         <th>Action</th>
                         <th></th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 {productList.length == 0 ?
@@ -408,6 +410,13 @@ const ProductList = () => {
                                             <Link variant="contained" to={"/supplierProductList/" + product.id}   >
                                                 <Button variant="contained" >
                                                     Supplier List
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        <td>
+                                            <Link variant="contained" to={"/productOrderTransactionList/" + product.id}   >
+                                                <Button variant="contained" >
+                                                    Order Transaction
                                                 </Button>
                                             </Link>
                                         </td>
