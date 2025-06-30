@@ -116,6 +116,7 @@ const ProductOrderTransactionList = () => {
                             <th>Profit</th>
                             <th>Date</th>
                             <th>Payment Status</th>
+                            <th style={{ color: "red" }}>{product.product_name} Quantity</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -155,11 +156,11 @@ const ProductOrderTransactionList = () => {
                                             <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                                 : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                                     <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
-
+                                            <td style={{ color: "red" }}>{shopOrderTransaction.shop_order_quantity}</td>
                                             <td>
                                                 <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
                                                     <Button variant="primary" >
-                                                        View
+                                                        View Transaction
                                                     </Button>
                                                 </Link>
                                             </td>
