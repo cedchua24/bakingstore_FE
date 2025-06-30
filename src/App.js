@@ -40,6 +40,10 @@ import Supplier from "./components/Supplier/Supplier";
 import SupplierListV2 from "./components/Supplier/SupplierListV2";
 import EditSupplier from "./components/Supplier/EditSupplier";
 import SupplierProductList from "./components/Product/SupplierProductList";
+import ProductOrderTransactionList from "./components/Product/ProductOrderTransactionList";
+
+
+
 import ExpirationEditList from "./components/Product/ExpirationEditList";
 
 
@@ -165,6 +169,10 @@ import PaymentOrderCreditCard from "./components/Payment/PaymentOrderCreditCard"
 import ExpensesType from "./components/ExpensesType/ExpensesType";
 import EditExpensesType from "./components/ExpensesType/EditExpensesType";
 
+import ExpensesTransactionList from "./components/ExpensesType/ExpensesTransactionList";
+
+
+
 import Expenses from "./components/Expenses/Expenses";
 import EditExpenses from "./components/Expenses/EditExpenses";
 
@@ -233,6 +241,8 @@ const App = () => {
           <Route path="/supplierListV2" element={<SupplierListV2 />} />
           <Route exact path="/editSupplier/:id" element={<EditSupplier />} />
           <Route exact path="/supplierProductList/:id" element={<SupplierProductList />} />
+          <Route exact path="/productOrderTransactionList/:id" element={<ProductOrderTransactionList />} />
+
           <Route exact path="/expirationEditList/:id" element={<ExpirationEditList />} />
 
 
@@ -434,6 +444,8 @@ const App = () => {
           <Route exact path="/expensesType/" element={<ExpensesType />} />
           {/* <Route exact path="/customerListV2" element={<CustomerListV2 />} /> */}
           <Route exact path="/expensesType/:id" element={<EditExpensesType />} />
+
+          <Route exact path="/expensesTransactionList/:id" element={<ExpensesTransactionList />} />
 
           <Route exact path="/expenses/" element={<Expenses />} />
           {/* <Route exact path="/customerListV2" element={<CustomerListV2 />} /> */}

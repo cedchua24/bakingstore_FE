@@ -13,6 +13,9 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionList(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionList/${id}`);
     }
+    fetctProductOrderTransaction(id) {
+        return axios.get(`/api/shopOrderTransaction/fetctProductOrderTransaction/${id}`);
+    }
     fetchSortedProduct(id) {
         return axios.get(`/api/shopOrderTransaction/fetchSortedProduct/${id}`);
     }

@@ -11,6 +11,9 @@ class ExpensesTypeService {
         // return axios.get(`/api/expensesType/getExpensesCategory/${id}`);
         return axios.get("/api/expensesType/getExpensesCategory");
     }
+    fetchExpenseTypeTransaction(id) {
+        return axios.get(`/api/expensesType/fetchExpenseTypeTransaction/${id}`);
+    }
     create(data) {
         return axios.post("/api/expensesType", data);
     }

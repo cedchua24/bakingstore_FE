@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button } from 'react-bootstrap';
+import Button from '@mui/material/Button';
 import { Link } from "react-router-dom";
 
 const ExpensesTypeList = (props) => {
@@ -9,6 +9,7 @@ const ExpensesTypeList = (props) => {
 
     return (
         <div>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Expense Type   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -16,6 +17,7 @@ const ExpensesTypeList = (props) => {
                         <th>Expenses Name</th>
                         <th>Expenses Category</th>
                         <th>Details</th>
+                        <th></th>
                         <th></th>
                         <th></th>
                     </tr>
@@ -30,14 +32,21 @@ const ExpensesTypeList = (props) => {
                                 <td>{expensesType.expenses_name}</td>
                                 <td>{expensesType.details}</td>
                                 <td>
+                                    <Link variant="primary" to={"/expensesTransactionList/" + expensesType.id}   >
+                                        <Button variant="contained" >
+                                            View Transaction
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
                                     <Link variant="primary" to={expensesType.id}   >
-                                        <Button variant="primary" >
+                                        <Button variant="contained" disabled>
                                             Update
                                         </Button>
                                     </Link>
                                 </td>
                                 <td>
-                                    <Button variant="danger" onClick={(e) => deleteExpensesType(expensesType.id, e)} >
+                                    <Button variant="contained" onClick={(e) => deleteExpensesType(expensesType.id, e)} disabled>
                                         Delete
                                     </Button>
                                 </td>
