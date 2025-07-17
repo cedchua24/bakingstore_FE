@@ -341,10 +341,20 @@ const AddProduct = () => {
       });
   }
 
+  const testController = () => {
+    ProductServiceService.testController()
+      .then(response => {
+      })
+      .catch(e => {
+        console.log("error", e)
+      });
+  }
+
 
 
   return (
     <div>
+
       <Form onSubmit={saveProduct}>
         <Stack sx={{ width: '100%' }} spacing={2}>
           {validator.isShow &&
@@ -597,6 +607,16 @@ const AddProduct = () => {
           }
         </tbody>
       </table>
+      <br></br>
+      <Button
+        variant="error"
+
+        type="submit"
+        onClick={testController}
+        size="large" >
+        Dont Click
+      </Button>
+      <br></br>
     </div >
   )
 }

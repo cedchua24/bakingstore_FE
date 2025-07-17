@@ -38,6 +38,9 @@ class ProductService {
     create(data) {
         return axios.post("/api/products", data);
     }
+    testController(data) {
+        return axios.post("/api/products/testController", data);
+    }
     update(id, data) {
         return axios.put(`/api/products/${id}`, data);
     }

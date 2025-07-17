@@ -22,6 +22,10 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography'
 import UpdateIcon from '@mui/icons-material/Update';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+
+import CheckIcon from '@mui/icons-material/Check';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -93,6 +97,10 @@ const AddProductCustomerOrderTransaction = () => {
         stock: 0,
         sale_price: 0,
         shop_order_total_price: 0,
+        fixed_price: 0,
+        discount_percentage: 0,
+        discount: '',
+        discount_amount: 0,
         created_at: ''
     });
 
@@ -203,6 +211,18 @@ const AddProductCustomerOrderTransaction = () => {
                     message: 'Quantity is more than to Stocks',
                     isShow: true,
                 });
+            } else if (orderShop.discount == 'AMOUNT' && orderShop.discount_percentage == 0) {
+                setValidator({
+                    severity: 'error',
+                    message: 'Required Discounted Amount',
+                    isShow: true,
+                });
+            } else if (orderShop.discount == 'PERCENTAGE' && orderShop.discount_percentage == 0) {
+                setValidator({
+                    severity: 'error',
+                    message: 'Required Discounted Percentage',
+                    isShow: true,
+                });
             } else if (orderShop.shop_order_profit < 1 && orderShop.sale_price < 1) {
                 setValidator({
                     severity: 'error',
@@ -279,6 +299,19 @@ const AddProductCustomerOrderTransaction = () => {
         });
     }
 
+    const onChangeDiscount = (e) => {
+        console.log(e.target.name)
+        setOrderShop({
+            ...orderShop,
+            discount: e.target.value,
+            shop_order_price: 0,
+            shop_order_profit: 0,
+            shop_order_total_price: Number(orderShop.fixed_price) * Number(orderShop.shop_order_quantity),
+            discount_percentage: 0,
+            discount_amount: 0,
+        });
+    }
+
     const onChangePrice = (e) => {
         e.persist();
         console.log(e.target.name)
@@ -309,6 +342,39 @@ const AddProductCustomerOrderTransaction = () => {
             shop_order_quantity: e.target.value,
             shop_order_profit: computeProfit(Number(orderShop.shop_order_price)) * Number(e.target.value),
             shop_order_total_price: Number(orderShop.shop_order_price) * Number(e.target.value)
+        });
+    }
+
+    const onChangeMarkUpPercentage = (e) => {
+        console.log('disc', e.target.value);
+        const discountedPrice = (orderShop.fixed_price / 100) * e.target.value;
+        const discountedPriceNewPrice = Number(orderShop.fixed_price) - discountedPrice;
+        const shop_order_total_price = discountedPriceNewPrice * orderShop.shop_order_quantity;
+        setOrderShop({
+            ...orderShop,
+            discount_percentage: e.target.value,
+            discount_amount: discountedPrice,
+            shop_order_price: discountedPriceNewPrice,
+            shop_order_profit: computeProfit(shop_order_total_price),
+            shop_order_total_price: shop_order_total_price
+        });
+    }
+
+    const onChangeMarkUpPrice = (e) => {
+        console.log('disc', e.target.value);
+        console.log('shop_order_price', Number(orderShop.fixed_price));
+
+        const discountedPriceNewPrice = Number(orderShop.fixed_price) - e.target.value;
+        console.log('discountedPriceNewPrice', discountedPriceNewPrice);
+        const shop_order_total_price = discountedPriceNewPrice * orderShop.shop_order_quantity;
+        console.log('shop_order_total_price', shop_order_total_price);
+        setOrderShop({
+            ...orderShop,
+            discount_percentage: e.target.value,
+            discount_amount: e.target.value,
+            shop_order_price: discountedPriceNewPrice,
+            shop_order_profit: computeProfit(shop_order_total_price),
+            shop_order_total_price: shop_order_total_price
         });
     }
 
@@ -356,13 +422,20 @@ const AddProductCustomerOrderTransaction = () => {
             shop_transaction_id: id,
             branch_stock_transaction_id: value.branch_stock_transaction_id,
             shop_order_price: value.new_price,
+            fixed_price: value.new_price,
             mark_up_product_id: value.id,
             order_profit: value.profit,
             product_id: value.product_id,
             stock: value.stock,
             sale_price: value.sale_price,
             business_type: value.business_type,
-            shop_order_total_price: Number(value.new_price) * Number(orderShop.shop_order_quantity)
+            shop_order_total_price: Number(value.new_price) * Number(orderShop.shop_order_quantity),
+            shop_order_quantity: 0, // start of empty
+            shop_order_profit: 0,
+            shop_order_total_price: 0,
+            discount_percentage: 0,
+            discount: '',
+            discount_amount: 0,
         });
         setOrigPrice(value.new_price)
         setProfit(value.profit)
@@ -618,25 +691,7 @@ const AddProductCustomerOrderTransaction = () => {
                     </FormControl>
 
                     <br></br>
-
-                    <FormControl variant="standard" >
-                        <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
-                        <Input
-                            type='number'
-                            className="mb-3"
-                            id="filled-required"
-                            label="Price"
-                            variant="filled"
-                            name='shop_order_price'
-                            value={orderShop.shop_order_price}
-                            // onChange={onChangeInput}
-                            onChange={onChangePrice}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                            disabled={orderShop.product_id === 0 ? true : false}
-                        />
-                    </FormControl>
-                    <br></br>
-                    <FormControl variant="standard">
+                    <FormControl sx={{ minWidth: 210 }}>
                         <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
                         <Input
                             type='number'
@@ -650,6 +705,122 @@ const AddProductCustomerOrderTransaction = () => {
                             disabled={orderShop.product_id === 0 ? true : false}
                         />
                     </FormControl>
+                    <br></br>
+
+                    <FormControl sx={{ minWidth: 210 }}>
+                        <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
+                        <Input
+                            type='number'
+                            className="mb-3"
+                            id="filled-required"
+                            label="Price"
+                            variant="filled"
+                            name='fixed_price'
+                            value={orderShop.fixed_price}
+                            // onChange={onChangeInput}
+                            onChange={onChangePrice}
+                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                            disabled={orderShop.product_id === 0 ? true : false}
+                        />
+                    </FormControl>
+
+                    {orderShop.discount == 'AMOUNT' && orderShop.discount == 'PERCENTAGE' &&
+
+                        <FormControl variant="standard" style={{ float: 'right', color: "red", marginRight: 800 }}>
+                            <InputLabel htmlFor="standard-adornment-amount" style={{ color: "red" }}>Discounted Price</InputLabel>
+                            <Input
+                                className="mb-3"
+                                id="filled-required"
+                                label="Total Price"
+                                variant="filled"
+                                name='discount_newshop_order_price_amount'
+                                value={orderShop.shop_order_price}
+                                startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                                disabled
+                            />
+                        </FormControl>
+
+                    }
+                    <br></br>
+                    <FormControl sx={{ minWidth: 210 }}>
+                        <InputLabel id="demo-simple-select-label">Discount</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            className="mb-3"
+                            id="demo-simple-select"
+                            value={orderShop.discount}
+                            name='discount'
+                            label="Mark Up Option"
+                            onChange={onChangeDiscount}
+                        >
+                            <MenuItem value='PERCENTAGE'>PERCENTAGE</MenuItem>
+                            <MenuItem value='AMOUNT'>AMOUNT</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    {orderShop.discount === 'PERCENTAGE' ? (
+
+                        <div>
+                            <FormControl variant="standard" >
+                                <InputLabel htmlFor="standard-adornment-amount">Discounted Percentage</InputLabel>
+                                <Input
+                                    className="mb-3"
+                                    id="filled-required"
+                                    label="Mark Up Price"
+                                    variant="filled"
+                                    name='discount_percentage'
+                                    value={orderShop.discount_percentage}
+                                    onChange={onChangeMarkUpPercentage}
+                                    endAdornment={<InputAdornment position="end">%</InputAdornment>}
+                                />
+                            </FormControl>
+
+                            <FormControl variant="standard" style={{ float: 'right', color: "red", marginRight: 800 }}>
+                                <InputLabel htmlFor="standard-adornment-amount" style={{ color: "red" }}>Discounted Amount</InputLabel>
+                                <Input
+                                    className="mb-3"
+                                    id="filled-required"
+                                    label="Total Price"
+                                    variant="filled"
+                                    value={orderShop.discount_amount}
+                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                                    disabled
+                                />
+                            </FormControl>
+
+                        </div>
+                    ) : orderShop.discount === 'AMOUNT' ? (
+                        <div>
+                            <FormControl variant="standard" >
+                                <InputLabel htmlFor="standard-adornment-amount">Discounted Amount</InputLabel>
+                                <Input
+                                    className="mb-3"
+                                    id="filled-required"
+                                    label="Mark Up Price"
+                                    variant="filled"
+                                    name='discount_percentage'
+                                    value={orderShop.discount_percentage}
+                                    onChange={onChangeMarkUpPrice}
+                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                                />
+                            </FormControl>
+                            <FormControl variant="standard" style={{ float: 'right', color: "red", marginRight: 800 }}>
+                                <InputLabel htmlFor="standard-adornment-amount" style={{ color: "red" }}>Discounted Amount</InputLabel>
+                                <Input
+                                    className="mb-3"
+                                    id="filled-required"
+                                    label="Total Price"
+                                    variant="filled"
+                                    value={orderShop.discount_amount}
+                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                                    disabled
+                                />
+                            </FormControl>
+                        </div>
+                    ) : (
+                        <div></div>
+                    )}
+
                     <br></br>
                     <FormControl variant="standard" >
                         <InputLabel htmlFor="standard-adornment-amount">Total Price</InputLabel>
@@ -691,7 +862,10 @@ const AddProductCustomerOrderTransaction = () => {
                             <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Sum</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit Price</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Discount</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Total Cost</TableCell>
                             <TableCell align="right"></TableCell>
                             <TableCell align="right"></TableCell>
                         </TableRow>
@@ -701,8 +875,11 @@ const AddProductCustomerOrderTransaction = () => {
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.shop_order_quantity}</TableCell>
-                                <TableCell align="right">{row.shop_order_price}</TableCell>
-                                <TableCell align="right">{row.shop_order_total_price}</TableCell>
+                                <TableCell align="right">{row.variation}</TableCell>
+                                <TableCell align="right">{numberFormat(row.fixed_price)}</TableCell>
+                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
+                                <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
+                                <TableCell align="right">{numberFormat(row.shop_order_total_price)}</TableCell>
                                 <TableCell align="right">
                                     <Tooltip title="Update">
                                         <IconButton>
@@ -755,7 +932,7 @@ const AddProductCustomerOrderTransaction = () => {
                         </TableRow> */}
                         <br></br>
                         <TableRow>
-                            <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                            <TableCell colSpan={6} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
@@ -867,7 +1044,7 @@ const AddProductCustomerOrderTransaction = () => {
                 {orderShopDTO.shopOrderList.map((row) => (
                     <>
                         <h6>{row.shop_order_quantity} x {row.shop_order_price} -
-                            &nbsp;{row.product_name} {
+                            &nbsp;{row.product_name} {row.discount == 'PERCENTAGE' ? ",Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''} {
                                 row.business_type === 'WHOLESALE' ? <>{row.packaging} ({row.weight / row.quantity}{row.variation} x {row.quantity})</>
                                     : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation})</>
                             }

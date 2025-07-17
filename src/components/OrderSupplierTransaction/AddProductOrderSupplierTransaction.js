@@ -50,6 +50,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 
 const AddProductOrderSupplierTransaction = () => {
 
+    useEffect(() => {
+        fetchOrderSupplierTransaction(id);
+        fetchByOrderSupplierId(id);
+        fetchProductList();
+    }, []);
+
+
     const { id } = useParams();
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
@@ -78,11 +85,6 @@ const AddProductOrderSupplierTransaction = () => {
     });
 
 
-    useEffect(() => {
-        fetchOrderSupplierTransaction(id);
-        fetchByOrderSupplierId(id);
-        fetchProductList();
-    }, []);
 
     const style = {
         position: 'absolute',
