@@ -233,7 +233,7 @@ const StockWarning = (props) => {
                                 </td>
                                 <td>
                                     <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
+                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} disabled />
                                     </IconButton>
                                 </td>
                                 <td>

@@ -174,7 +174,7 @@ const ReceiptOrder = () => {
                     {orderShopDTO.shopOrderList.map((row) => (
                         <tr>
                             <td>{row.shop_order_quantity}</td>
-                            <td>{row.product_name} {
+                            <td>{row.product_name}{row.discount == 'PERCENTAGE' ? " ,Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''} {
                                 row.business_type === 'WHOLESALE' ? <p > {row.packaging}({row.weight / row.quantity}{row.variation} x {row.quantity})</p>
                                     : <p >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation})</p>
                             }</td>

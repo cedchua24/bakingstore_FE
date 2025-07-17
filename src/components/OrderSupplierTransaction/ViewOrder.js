@@ -478,6 +478,10 @@ const FinalizeOrder = () => {
         }).format(value).replace(/(\.|,)00$/g, '');
 
 
+    const formatStatementDate = (date) => {
+        var d = new Date(date);
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
+    }
 
 
 
@@ -590,7 +594,7 @@ const FinalizeOrder = () => {
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
                         <TableRow>
-                            <TableCell align="left" colSpan={3}>
+                            <TableCell align="left" colSpan={4}>
                                 Details
                             </TableCell>
                             <TableCell align="center" >Price</TableCell>
@@ -599,6 +603,7 @@ const FinalizeOrder = () => {
                             <TableCell>Product</TableCell>
                             <TableCell align="right">Qty.</TableCell>
                             <TableCell align="right">Unit</TableCell>
+                            <TableCell align="center" >Expiration</TableCell>
                             <TableCell align="right">Sum</TableCell>
                         </TableRow>
                     </TableHead>
@@ -608,10 +613,12 @@ const FinalizeOrder = () => {
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
+                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
+
                             </TableRow>
                         ))}
-
+                        <br></br>
                         <TableRow>
                             <TableCell rowSpan={3} />
                             <TableCell colSpan={2}>Subtotal</TableCell>
