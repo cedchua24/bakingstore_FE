@@ -717,8 +717,7 @@ const AddProductCustomerOrderTransaction = () => {
                             variant="filled"
                             name='fixed_price'
                             value={orderShop.fixed_price}
-                            // onChange={onChangeInput}
-                            onChange={onChangePrice}
+                            // onChange={onChangePrice}
                             startAdornment={<InputAdornment position="start">₱</InputAdornment>}
                             disabled={orderShop.product_id === 0 ? true : false}
                         />
