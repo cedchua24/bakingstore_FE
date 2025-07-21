@@ -325,28 +325,20 @@ const AddProductCustomerOrderTransaction = () => {
         });
     }
 
-    const computeProfit = ($newPrice) => {
-        console.log('origPrice', origPrice);
-        console.log('newPrice', $newPrice);
-        console.log('profit', profit);
-        const $diffPrice = origPrice - $newPrice;
-        console.log('total:', profit - $diffPrice);
-        return profit - $diffPrice
 
-    }
 
     const onChangeQuantity = (e) => {
         setOrderShop({
             ...orderShop,
             shop_transaction_id: id,
             shop_order_quantity: e.target.value,
-            shop_order_profit: computeProfit(Number(orderShop.shop_order_price)) * Number(e.target.value),
+            shop_order_profit: computeProfit2(orderShop.discount_amount, e.target.value),
             shop_order_total_price: Number(orderShop.shop_order_price) * Number(e.target.value)
         });
     }
 
     const onChangeMarkUpPercentage = (e) => {
-        console.log('disc', e.target.value);
+        console.log('disc precentage', e.target.value);
         const discountedPrice = (orderShop.fixed_price / 100) * e.target.value;
         const discountedPriceNewPrice = Number(orderShop.fixed_price) - discountedPrice;
         const shop_order_total_price = discountedPriceNewPrice * orderShop.shop_order_quantity;
@@ -355,7 +347,7 @@ const AddProductCustomerOrderTransaction = () => {
             discount_percentage: e.target.value,
             discount_amount: discountedPrice,
             shop_order_price: discountedPriceNewPrice,
-            shop_order_profit: computeProfit(shop_order_total_price),
+            shop_order_profit: computeProfit2(discountedPrice, orderShop.shop_order_quantity),
             shop_order_total_price: shop_order_total_price
         });
     }
@@ -373,10 +365,39 @@ const AddProductCustomerOrderTransaction = () => {
             discount_percentage: e.target.value,
             discount_amount: e.target.value,
             shop_order_price: discountedPriceNewPrice,
-            shop_order_profit: computeProfit(shop_order_total_price),
+            shop_order_profit: computeProfit2(e.target.value, orderShop.shop_order_quantity),
             shop_order_total_price: shop_order_total_price
         });
     }
+
+    const computeProfit = ($newPrice) => {
+        console.log('origPrice', origPrice);
+        console.log('newPrice', $newPrice);
+        console.log('profit', profit);
+        const $diffPrice = origPrice - $newPrice;
+        console.log('profit', $diffPrice);
+        console.log('total:', profit - $diffPrice);
+        return profit - $diffPrice
+
+    }
+
+    const computeProfit2 = ($disc, $quantity) => {
+        console.log('disc', $disc);
+        console.log('quantity', $quantity);
+        console.log('profit', profit);
+
+        const $newdisc = $disc * $quantity;
+        const $profit = profit * $quantity;
+
+
+
+        const $diffPrice = $profit - $newdisc;
+        console.log('diffPrice', $diffPrice);
+
+        return $profit - $newdisc
+
+    }
+
 
 
     const onChangeInputQuantityModal = (e) => {
@@ -384,7 +405,7 @@ const AddProductCustomerOrderTransaction = () => {
         setOrderSupplierModal({
             ...orderSupplierModal,
             shop_order_quantity: e.target.value,
-            shop_order_profit: computeProfit(Number(orderSupplierModal.shop_order_price)) * Number(e.target.value),
+            shop_order_profit: computeProfit2(orderShop.discount_amount, e.target.value),
             shop_order_total_price: orderSupplierModal.shop_order_price * e.target.value
         });
     }
@@ -400,11 +421,11 @@ const AddProductCustomerOrderTransaction = () => {
 
     const onChangeInputPriceModal = (e) => {
         e.persist();
-        console.log(computeProfit(e.target.value))
+        console.log('onChangeInputPriceModal', e.target.value)
         setOrderSupplierModal({
             ...orderSupplierModal,
             shop_order_price: e.target.value,
-            shop_order_profit: computeProfit(e.target.value) * Number(orderSupplierModal.shop_order_quantity),
+            shop_order_profit: computeProfit2(e.target.value, orderSupplierModal.shop_order_quantity),
             shop_order_total_price: e.target.value * Number(orderSupplierModal.shop_order_quantity)
         });
     }
@@ -879,13 +900,13 @@ const AddProductCustomerOrderTransaction = () => {
                                 <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
                                 <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
                                 <TableCell align="right">{numberFormat(row.shop_order_total_price)}</TableCell>
-                                <TableCell align="right">
+                                {/* <TableCell align="right">
                                     <Tooltip title="Update">
                                         <IconButton>
                                             <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
                                         </IconButton>
                                     </Tooltip>
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell align="right">
                                     <Tooltip title="Delete">
                                         <IconButton>
