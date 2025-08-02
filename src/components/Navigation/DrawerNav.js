@@ -27,6 +27,8 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 
+
+
 import DraftsIcon from '@mui/icons-material/Drafts';
 import SendIcon from '@mui/icons-material/Send';
 import ExpandLess from '@mui/icons-material/ExpandLess';
@@ -578,9 +580,6 @@ export default function PersistentDrawerLeft() {
 
 
 
-
-
-
     const handleDrawerOpen = () => {
         setOpen(true);
     };
@@ -588,6 +587,7 @@ export default function PersistentDrawerLeft() {
     const handleDrawerClose = () => {
         setOpen(false);
     };
+
 
 
     const [auth, setAuth] = React.useState(true);
@@ -625,10 +625,11 @@ export default function PersistentDrawerLeft() {
 
     }
 
+
     return (
         <Box sx={{ display: 'flex' }} >
             <CssBaseline />
-            <AppBar position="fixed" open={open} sx={{ bgcolor: "maroon" }} >
+            <AppBar position="fixed" open={open} sx={{ bgcolor: "black" }} >
                 <Toolbar>
 
                     <IconButton
@@ -646,8 +647,8 @@ export default function PersistentDrawerLeft() {
                         <MenuIcon />
                     </IconButton>
 
-                    <Typography variant="h5" noWrap component="div" >
-                        MDR Baking
+                    <Typography variant="h5" noWrap component="div" sx={{ color: "#bfbfbf" }}>
+                        MDR Commonwealth
                     </Typography>
 
                     <Nav >
@@ -735,9 +736,9 @@ export default function PersistentDrawerLeft() {
                 anchor="left"
                 open={open}
             >
-                <DrawerHeader sx={{ bgcolor: "maroon" }}>
+                <DrawerHeader sx={{ bgcolor: "black" }}>
                     <IconButton onClick={handleDrawerClose}>
-                        {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+                        {theme.direction === 'ltr' ? <ChevronLeftIcon sx={{ color: "white" }} /> : <ChevronRightIcon sx={{ color: "white" }} />}
                     </IconButton>
                 </DrawerHeader>
                 <Divider />
