@@ -10,6 +10,9 @@ class ShopService {
     fetchShopList(id) {
         return axios.get(`/api/shop/fetchShopList/${id}`);
     }
+    fetchCurrentShop(id) {
+        return axios.get(`/api/shop/fetchCurrentShop/${id}`);
+    }
     fetchOnlineOrderList(id) {
         return axios.get(`/api/shop/fetchOnlineOrderList/${id}`);
     }
