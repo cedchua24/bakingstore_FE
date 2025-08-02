@@ -17,7 +17,7 @@ const CustomerListV2 = () => {
 
 
     const fetchCustomerList = () => {
-        CustomerService.getAll()
+        CustomerService.fetchAllCustomer()
             .then(response => {
                 setCustomerList(response.data);
             })
