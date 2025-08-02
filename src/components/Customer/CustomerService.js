@@ -16,6 +16,9 @@ class CustomerService {
   fetchCustomerTransactionList(id) {
     return axios.get(`/api/customers/fetchCustomerTransactionList/${id}`);
   }
+  fetchAllCustomer(id) {
+    return axios.get(`/api/customers/fetchAllCustomer/${id}`);
+  }
   customerLastOrderList(id, data) {
     // return axios.post("/api/customers/customerLastOrderList", data);
     return axios.post(`/api/customers/customerLastOrderList/${id}`, data);
