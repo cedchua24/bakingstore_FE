@@ -211,7 +211,18 @@ const App = () => {
       <br></br>
       <div className="container mt-3">
         <Routes>
-          <Route path="/" element={<Home />} />
+          {/* <Route path="/" element={<UserLogin />} /> */}
+          <Route
+            exact
+            path="/"
+            element={
+              localStorage.getItem('auth_token')
+                // items !== null
+                ? <CustomerOrderTransaction />
+                : <UserLogin />
+            }
+          />
+
 
           <Route path="/addProduct" element={<AddProduct />} />
           <Route path="/productList" element={<ProductList />} />
@@ -356,7 +367,6 @@ const App = () => {
           />
           <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
-          <Route exact path="/shopOrderTransaction/customerOrderTransactionList/" element={<CustomerOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/quantitySortedList/" element={<QuantitySorted />} />
           <Route exact path="/shopOrderTransaction/customerSortedList/" element={<CustomerSorted />} />
 
@@ -378,8 +388,19 @@ const App = () => {
                 : <UserLogin />
             }
           />
+          <Route
+            exact
+            path="/shopOrderTransaction/customerOrderTransactionList/"
+            element={
+              localStorage.getItem('auth_token')
+                // items !== null
+                ? <CustomerOrderTransactionList />
+                : <UserLogin />
+            }
+          />
+
+
           <Route exact path="/customerOrderTransaction/addProductCustomerOrderTransaction/:id" element={<AddProductCustomerOrderTransaction />} />
-          {/* <Route exact path="/customerOrderTransaction/addProductCustomerTransaction/:id" element={<AddProductCustomerTransaction />} /> */}
           <Route
             exact
             path="/supplierTransactionList"
@@ -414,15 +435,13 @@ const App = () => {
           {/* <AdminPrivateRoute path="/admin" name="Admin" /> */}
           <Route exact path="/admin" element={<AdminPrivateRoute />} />
 
+
+
           <Route exact path="/reports/reportsList" element={<ReportList />} />
           <Route exact path="/reports/reportPurchaseOrder" element={<ReportPurchaseOrder />} />
           <Route exact path="/reports/reportSpoilage" element={<ReportSpoilage />} />
-
           <Route exact path="/reports/purchaseOrderList/:id" element={<PurchaseOrderList />} />
           <Route exact path="/reports/viewSpoilageReport/:id" element={<ViewSpoilageReport />} />
-
-
-
           <Route exact path="/reports/shopBranchReportList" element={<ShopBranchReportList />} />
           <Route exact path="/reports/reportExpenses" element={<ReportExpenses />} />
           <Route exact path="/reports/reportExpensesView/:id" element={<ReportExpensesView />} />

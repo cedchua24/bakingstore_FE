@@ -39,7 +39,7 @@ const UserLogin = (props) => {
                     if (response.data.role === 'admin') {
                         navigate('/orderSupplierTransaction');
                     } else if (response.data.role === 'user') {
-                        navigate('/');
+                        navigate('/customerOrderTransaction');
                     }
                     window.location.reload();
 
