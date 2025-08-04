@@ -16,6 +16,10 @@ class OrderSupplierTransactionService {
     setToCompleteTransaction(id) {
         return axios.put(`/api/orderSupplierTransaction/setToCompleteTransaction/${id}`);
     }
+    fetchOrderSupplierByDateV2(id) {
+        return axios.get(`/api/orderSupplierTransaction/fetchOrderSupplierByDateV2/${id}`);
+    }
+
     fetchOrderSupplierByDate(id) {
         return axios.get(`/api/orderSupplierTransaction/fetchSpoilageReportByDate/${id}`);
     }

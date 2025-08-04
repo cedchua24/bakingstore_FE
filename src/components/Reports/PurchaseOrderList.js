@@ -14,6 +14,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
+import { Form } from 'react-bootstrap';
 
 
 const PurchaseOrderList = () => {
@@ -24,7 +25,7 @@ const PurchaseOrderList = () => {
         fetchOrderTransactionList(id);
     }, []);
 
-    const [orderTransactionList, setOrderTransactionList] = useState([]);
+
     const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
     const [deleteId, setDeleteId] = useState(0)
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -39,11 +40,20 @@ const PurchaseOrderList = () => {
         isShow: false
     });
 
+    const [orderTransactionList, setOrderTransactionList] = useState({
+        data: [],
+        payment: [],
+        total_balance: {},
+        code: '',
+        message: '',
+        total_sales: 0
+    });
+
 
 
 
     const fetchOrderTransactionList = ($date) => {
-        OrderSupplierTransactionService.fetchOrderSupplierByDate($date)
+        OrderSupplierTransactionService.fetchOrderSupplierByDateV2($date)
             .then(response => {
                 setOrderTransactionList(response.data);
             })
@@ -119,7 +129,12 @@ const PurchaseOrderList = () => {
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                 }
             </Stack>
+            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                <Form.Label>Total Balance: </Form.Label>
+                <Form.Control type="text" value={numberFormat(orderTransactionList.total_balance.total_balance)} />
+            </Form.Group>
             <br></br>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order </legend>
             <legend align="center" style={{ fontWeight: 'bold' }} > {id} </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
@@ -142,7 +157,7 @@ const PurchaseOrderList = () => {
                 <tbody>
 
                     {
-                        orderTransactionList.map((orderTransaction, index) => (
+                        orderTransactionList.data.map((orderTransaction, index) => (
                             <tr key={orderTransaction.id} >
                                 <td>{orderTransaction.id}</td>
                                 <td>{orderTransaction.supplier_name}</td>
