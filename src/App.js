@@ -178,6 +178,7 @@ import EditExpenses from "./components/Expenses/EditExpenses";
 
 import ReportList from "./components/Reports/ReportList";
 import ReportPurchaseOrder from "./components/Reports/ReportPurchaseOrder";
+import ReportPurchaseOrderList from "./components/Reports/ReportPurchaseOrderList";
 import PurchaseOrderList from "./components/Reports/PurchaseOrderList";
 import ReportSpoilage from "./components/Reports/ReportSpoilage";
 import ViewSpoilageReport from "./components/Reports/ViewSpoilageReport";
@@ -439,6 +440,7 @@ const App = () => {
 
           <Route exact path="/reports/reportsList" element={<ReportList />} />
           <Route exact path="/reports/reportPurchaseOrder" element={<ReportPurchaseOrder />} />
+          <Route exact path="/reports/reportPurchaseOrderList" element={<ReportPurchaseOrderList />} />
           <Route exact path="/reports/reportSpoilage" element={<ReportSpoilage />} />
           <Route exact path="/reports/purchaseOrderList/:id" element={<PurchaseOrderList />} />
           <Route exact path="/reports/viewSpoilageReport/:id" element={<ViewSpoilageReport />} />

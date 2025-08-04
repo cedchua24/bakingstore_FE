@@ -526,6 +526,11 @@ export default function PersistentDrawerLeft() {
             "icon": ""
         },
         {
+            "name": "Purchase Order Report List",
+            "url": "/reports/reportPurchaseOrderList",
+            "icon": ""
+        },
+        {
             "name": "Shop Order Reports",
             "url": "/reports/shopBranchReportList",
             "icon": ""

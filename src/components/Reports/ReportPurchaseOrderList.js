@@ -1,22 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
+import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+import OrderSupplierTransactionService from "../OrderSupplierTransaction/OrderSupplierTransactionService";
+
+import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
-import LinearProgress from '@mui/material/LinearProgress';
-import CircularProgress from '@mui/material/CircularProgress';
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
-
-const SupplierTransactionListV2 = () => {
-
+const ReportPurchaseOrderList = () => {
 
     useEffect(() => {
         fetchOrderTransactionList();
@@ -49,7 +43,7 @@ const SupplierTransactionListV2 = () => {
 
 
     const fetchOrderTransactionList = () => {
-        OrderSupplierTransactionService.fetchOrderSupplierByDateV2(0)
+        OrderSupplierTransactionService.getAll()
             .then(response => {
                 setOrderTransactionList(response.data);
             })
@@ -114,24 +108,20 @@ const SupplierTransactionListV2 = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
-
-
-
-
     return (
-        <div>
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
+        <div >
+
+
+
             <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                 <Form.Label>Total Balance: </Form.Label>
                 <Form.Control type="text" value={numberFormat(orderTransactionList.total_balance.total_balance)} />
             </Form.Group>
+
+
+
             <div >
-                <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order List </legend>
+                <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order Report List </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">
@@ -237,30 +227,8 @@ const SupplierTransactionListV2 = () => {
                     </tbody>
                 </table>
             </div>
-            <Dialog
-                open={deleteOpenModal}
-                onClose={handleDeleteCloseModal}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-
-                <DialogTitle id="alert-dialog-title">
-                    {"Are you sure you want to Cancel?"}
-                </DialogTitle>
-                {submitLoading &&
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <CircularProgress />
-                    </div>
-                }
-                <DialogActions>
-                    <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                    <Button onClick={(e) => submitCancel(deleteId, e)} autoFocus>
-                        Agree
-                    </Button>
-                </DialogActions>
-            </Dialog>
         </div >
     )
 }
 
-export default SupplierTransactionListV2
+export default ReportPurchaseOrderList
