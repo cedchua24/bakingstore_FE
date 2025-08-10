@@ -28,6 +28,7 @@ const AddShopOrderTransaction = (props) => {
         date: '',
         requestor: 0,
         checker: 0,
+        type: 1,
         created_at: '',
         updated_at: ''
     });

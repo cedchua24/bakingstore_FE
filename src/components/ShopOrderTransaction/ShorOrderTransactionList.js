@@ -27,7 +27,7 @@ const ShorOrderTransactionList = () => {
 
 
     const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.getAll()
+        ShopOrderTransactionService.fetchBranchOrder()
             .then(response => {
                 setShopOrderTransaction(response.data);
             })

@@ -74,9 +74,9 @@ export default function PersistentDrawerLeft() {
                             <ListItemButton sx={{ textAlign: 'center', marginLeft: 10 }} onClick={loginSubmit}>
                                 <ListItemText primary="Login" />
                             </ListItemButton>
-                            <ListItemButton sx={{ textAlign: 'center' }} onClick={registerSubmit}>
+                            {/* <ListItemButton sx={{ textAlign: 'center' }} onClick={registerSubmit}>
                                 <ListItemText primary="Register" />
-                            </ListItemButton>
+                            </ListItemButton> */}
                         </ListItem>
 
                     </List>
