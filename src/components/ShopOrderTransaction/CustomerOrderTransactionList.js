@@ -450,7 +450,7 @@ const CustomerOrderTransactionList = () => {
                             <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
                         </tr>
                         <tr  >
-                            <td>Total Mandatory Expenses: </td>
+                            <td>Total Expenses: </td>
                             <td>{numberFormat(expensesMandatory.total_expenses)}</td>
                         </tr>
                         <tr  >

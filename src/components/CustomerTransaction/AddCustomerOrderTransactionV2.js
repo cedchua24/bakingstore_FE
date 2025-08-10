@@ -30,6 +30,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
         checker: 0,
         customer_type_id: 0,
         date: '',
+        type: 0,
         created_at: '',
         updated_at: ''
     });

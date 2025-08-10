@@ -130,6 +130,11 @@ const ReportCustomerSorted = () => {
     }));
 
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
 
     return (
         <div>
@@ -222,8 +227,8 @@ const ReportCustomerSorted = () => {
                                     <tr key={data.id} >
                                         <td>{data.id}</td>
                                         <td>{data.first_name}</td>
-                                        <td>{data.total_profit}</td>
-                                        <td style={{ fontWeight: 'bold', }}>{data.total_price}</td>
+                                        <td>{numberFormat(data.total_profit)}</td>
+                                        <td style={{ fontWeight: 'bold', }}>{numberFormat(data.total_price)}</td>
                                     </tr>
                                 )
                                 )

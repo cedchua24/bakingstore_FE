@@ -461,12 +461,12 @@ export default function PersistentDrawerLeft() {
 
     const [shopOrder, setShopOrder] = useState([
         {
-            "name": "Shop Order List",
+            "name": "Shop Branch Order List",
             "url": "/shopOrderTransaction/shorOrderTransactionList",
             "icon": ""
         },
         {
-            "name": "Add Shop Order Stock",
+            "name": "Add Branch Shop Order",
             "url": "/shopOrderTransaction",
             "icon": ""
         }
@@ -533,7 +533,7 @@ export default function PersistentDrawerLeft() {
             "icon": ""
         },
         {
-            "name": "Shop Order Reports",
+            "name": "Shop Branch Order Reports",
             "url": "/reports/shopBranchReportList",
             "icon": ""
         },
@@ -1172,7 +1172,7 @@ export default function PersistentDrawerLeft() {
                         <ListItemIcon>
                             <InboxIcon />
                         </ListItemIcon>
-                        <ListItemText primary="Shop Order" />
+                        <ListItemText primary="Shop Branch Order" />
                         {open15 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open15} timeout="auto" unmountOnExit>

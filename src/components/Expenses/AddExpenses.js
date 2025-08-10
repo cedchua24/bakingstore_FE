@@ -84,7 +84,7 @@ const AddExpenses = (props) => {
                             className="mb-3"
                             id="disable-close-on-select"
                             onChange={handleInputChange}
-                            groupBy={(expensesTypeList) => expensesTypeList.expenses_category_name}
+                            // groupBy={(expensesTypeList) => expensesTypeList.expenses_category_name}
                             getOptionLabel={(expensesTypeList) => expensesTypeList.expenses_name}
 
 
