@@ -662,7 +662,7 @@ export default function PersistentDrawerLeft() {
                     </IconButton>
 
                     <Typography variant="h5" noWrap component="div" >
-                        MDR Baking
+                        MDR Caloocan
                     </Typography>
 
                     <Nav >

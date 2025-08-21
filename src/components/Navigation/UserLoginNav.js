@@ -66,7 +66,7 @@ export default function PersistentDrawerLeft() {
 
 
                     <Typography variant="h5" noWrap component="div">
-                        MDR Baking
+                        MDR Caloocan
                     </Typography>
                     <List>
 
