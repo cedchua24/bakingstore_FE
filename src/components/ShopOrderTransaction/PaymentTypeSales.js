@@ -13,6 +13,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import Checkbox from '@mui/material/Checkbox';
+import moment from "moment";
 
 const PaymentTypeSales = () => {
 
@@ -100,13 +101,16 @@ const PaymentTypeSales = () => {
 
 
     const fetchShopOrderTransactionList = () => {
+
+        var dateToday = moment().format("YYYY-MM-DD")
+        console.log('test: ', dateToday);
         var valueParam = id.split("+");
         console.log('pieces', valueParam);
         console.log('date', valueParam[1]);
 
         if (valueParam[1] === '') {
             console.log('empty');
-            valueParam[1] = 0;
+            valueParam[1] = dateToday;
         } else {
             console.log('non empty');
         }

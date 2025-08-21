@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 import { useParams } from 'react-router-dom';
-
+import { Form } from 'react-bootstrap';
 
 import SpoilageService from "../Spoilage/SpoilageService";
 
@@ -50,11 +50,17 @@ const ViewSpoilageReport = (props) => {
         <div>
 
             <br></br>
+            <Form>
+                <Form.Group className="w-15 mb-2" controlId="formBasicEmail" disabled>
+                    <Form.Label>Total Spoilage: </Form.Label>
+                    <Form.Control type="text" value={numberFormat(productList.total_cost.total_cost)} />
+                </Form.Group>
+                <br></br>
+            </Form >
 
 
-            <legend > {covertDateString(id)}    </legend>
-            <legend > Total Cost {numberFormat(productList.total_cost.total_cost)}    </legend>
             <legend align="center" style={{ fontWeight: 'bold' }} > Spoilage    </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} ><h6>{covertDateString(id)}  </h6></legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

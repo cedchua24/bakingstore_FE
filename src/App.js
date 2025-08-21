@@ -101,6 +101,8 @@ import CancelTransactionList from "./components/ShopOrderTransaction/CancelTrans
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
 import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
 import PaymentTypeSales from "./components/ShopOrderTransaction/PaymentTypeSales";
+import ViewDiscount from "./components/ShopOrderTransaction/ViewDiscount";
+import ViewDiscountLoss from "./components/ShopOrderTransaction/ViewDiscountLoss";
 import ReceiptOrder from "./components/ShopOrderTransaction/ReceiptOrder";
 
 import CustomerOrderTransaction from "./components/CustomerTransaction/CustomerOrderTransaction";
@@ -181,6 +183,10 @@ import ReportPurchaseOrder from "./components/Reports/ReportPurchaseOrder";
 import ReportPurchaseOrderList from "./components/Reports/ReportPurchaseOrderList";
 import PurchaseOrderList from "./components/Reports/PurchaseOrderList";
 import ReportSpoilage from "./components/Reports/ReportSpoilage";
+import ReportDiscount from "./components/Reports/ReportDiscount";
+import ReportDiscountLoss from "./components/Reports/ReportDiscountLoss";
+
+
 import ViewSpoilageReport from "./components/Reports/ViewSpoilageReport";
 
 
@@ -378,6 +384,9 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
           <Route exact path="/shopOrderTransaction/completedShopOrderTransaction/:id" element={<CompletedShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/paymentTypeSales/:id" element={<PaymentTypeSales />} />
+          <Route exact path="/shopOrderTransaction/viewDiscount/:id" element={<ViewDiscount />} />
+          <Route exact path="/shopOrderTransaction/viewDiscountLoss/:id" element={<ViewDiscountLoss />} />
+
           <Route exact path="/shopOrderTransaction/receiptOrder/:id" element={<ReceiptOrder />} />
           <Route
             exact
@@ -442,6 +451,10 @@ const App = () => {
           <Route exact path="/reports/reportPurchaseOrder" element={<ReportPurchaseOrder />} />
           <Route exact path="/reports/reportPurchaseOrderList" element={<ReportPurchaseOrderList />} />
           <Route exact path="/reports/reportSpoilage" element={<ReportSpoilage />} />
+          <Route exact path="/reports/reportDiscount" element={<ReportDiscount />} />
+          <Route exact path="/reports/reportDiscountLoss" element={<ReportDiscountLoss />} />
+
+
           <Route exact path="/reports/purchaseOrderList/:id" element={<PurchaseOrderList />} />
           <Route exact path="/reports/viewSpoilageReport/:id" element={<ViewSpoilageReport />} />
           <Route exact path="/reports/shopBranchReportList" element={<ShopBranchReportList />} />

@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ExpensesService from "../Expenses/ExpensesService";
 import ShopService from "../Shop/ShopService";
+import DiscountService from "../OtherService/DiscountService";
 import SpoilageService from "../Spoilage/SpoilageService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
@@ -28,6 +29,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import moment from "moment";
 
 import LinearProgress from '@mui/material/LinearProgress';
 
@@ -55,6 +57,20 @@ const CustomerOrderTransactionList = () => {
         message: '',
     });
 
+    const [discount, setDiscount] = useState({
+        data: [],
+        total_amount: 0,
+        code: '',
+        message: '',
+    });
+
+    const [discountLoss, setDiscountLoss] = useState({
+        data: [],
+        code: '',
+        total_amount: 0,
+        message: '',
+    });
+
     const [expensesMandatory, setExpensesMandatory] = useState({
         data: [],
         code: '',
@@ -70,6 +86,10 @@ const CustomerOrderTransactionList = () => {
     const [status, setStatus] = useState(0);
 
     const [date, setDate] = useState('');
+
+    const [dateToday, setDateToday] = useState({
+        today: moment().format("YYYY-MM-DD")
+    });
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         data: [],
@@ -167,6 +187,22 @@ const CustomerOrderTransactionList = () => {
         SpoilageService.fetchSpoilageToday()
             .then(response => {
                 setSpoilage(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+        DiscountService.fetchDiscountReport(dateToday)
+            .then(response => {
+                setDiscount(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+        DiscountService.fetchDiscountLossReport(dateToday)
+            .then(response => {
+                setDiscountLoss(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -429,10 +465,24 @@ const CustomerOrderTransactionList = () => {
                 <br></br>
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label> Spoilage</Form.Label>
-                    <Link variant="primary" to={"../spoilageList/"}   >
+                    <Link variant="primary" to={"../reports/viewSpoilageReport/" + dateToday.today}   >
                         <PageviewIcon color="primary" />
                     </Link>
                     <Form.Control type="text" value={numberFormat(spoilage.total_cost)} />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label> Discount</Form.Label>
+                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscount/" + dateToday.today}   >
+                        <PageviewIcon color="primary" />
+                    </Link>
+                    <Form.Control type="text" value={numberFormat(discount.total_amount)} />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label> Discount Loss</Form.Label>
+                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscountLoss/" + dateToday.today}   >
+                        <PageviewIcon color="primary" />
+                    </Link>
+                    <Form.Control type="text" value={numberFormat(discountLoss.total_amount)} />
                 </Form.Group>
                 <br></br>
                 <legend align="center" style={{ fontWeight: 'bold' }} > Expense Report   </legend>
@@ -450,6 +500,10 @@ const CustomerOrderTransactionList = () => {
                             <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
                         </tr>
                         <tr  >
+                            <td>Total Discount Loss: </td>
+                            <td>{numberFormat(discountLoss.total_amount)}</td>
+                        </tr>
+                        <tr  >
                             <td>Total Expenses: </td>
                             <td>{numberFormat(expensesMandatory.total_expenses)}</td>
                         </tr>
@@ -459,7 +513,7 @@ const CustomerOrderTransactionList = () => {
                         </tr>
                         <tr  >
                             <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
-                            <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses + spoilage.total_cost)}</td>
+                            <td style={{ fontWeight: 'bold', }}>{numberFormat(discountLoss.total_amount + shopOrderTransaction.total_profit - expensesMandatory.total_expenses + spoilage.total_cost)}</td>
                         </tr>
                         <br></br>
                         <Button

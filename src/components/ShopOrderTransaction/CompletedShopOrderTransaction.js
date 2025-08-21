@@ -243,6 +243,7 @@ const CompletedShopOrderTransaction = () => {
                             <TableCell style={{ fontWeight: 'bold', }}>Product</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Qty.</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Unit</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Discount</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Sum</TableCell>
                         </TableRow>
                     </TableHead>
@@ -252,22 +253,24 @@ const CompletedShopOrderTransaction = () => {
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.shop_order_quantity}</TableCell>
                                 <TableCell align="right">{row.shop_order_price}</TableCell>
+                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
                                 <TableCell align="right">{row.shop_order_total_price}</TableCell>
                             </TableRow>
                         ))}
 
                         <TableRow>
                             <TableCell rowSpan={3} />
-                            <TableCell colSpan={2}>Subtotal</TableCell>
+                            <TableCell colSpan={3}>Subtotal</TableCell>
                             <TableCell align="right">{invoiceSubtotal}</TableCell>
                         </TableRow>
                         <TableRow>
+                            <TableCell rowSpan={1} />
                             <TableCell>Tax</TableCell>
                             <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                            <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
