@@ -543,6 +543,16 @@ export default function PersistentDrawerLeft() {
             "icon": ""
         },
         {
+            "name": "Discount Reports",
+            "url": "/reports/reportDiscount",
+            "icon": ""
+        },
+        {
+            "name": "Discount Loss Reports",
+            "url": "/reports/reportDiscountLoss",
+            "icon": ""
+        },
+        {
             "name": "Expenses Reports",
             "url": "/reports/reportExpenses",
             "icon": ""

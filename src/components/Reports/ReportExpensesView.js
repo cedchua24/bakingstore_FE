@@ -94,21 +94,18 @@ const ReportExpensesView = () => {
     return (
 
         <div>
-            <Div>{id}</Div>
+
             <div>
-                <Div>{"Mandatory"}
-                </Div>
-                <legend align="center" style={{ fontWeight: 'bold' }} > Expense Report   </legend>
+
+                <legend align="center" style={{ fontWeight: 'bold' }} > Expense  </legend>
+                <legend align="center" style={{ fontWeight: 'bold' }} > <h6>{id} </h6>  </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">
                             <th>ID</th>
                             <th>Expenses Name</th>
-                            <th>Amount</th>
                             <th>Details</th>
-                            <th>Date</th>
-                            <th></th>
-                            <th></th>
+                            <th>Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -118,84 +115,22 @@ const ReportExpensesView = () => {
                                 <tr key={expenses.id} >
                                     <td>{expenses.id}</td>
                                     <td>{expenses.expenses_name}</td>
-                                    <td>{expenses.amount}</td>
                                     <td>{expenses.details}</td>
-                                    <td>{expenses.date}</td>
+                                    <td>{expenses.amount}</td>
                                 </tr>
                             )
                             )
                         }
                         <tr >
+                            <td></td>
                             <td></td>
                             <td style={{ fontWeight: 'bold', }}>Total Amount: </td>
                             <td style={{ fontWeight: 'bold', }}>₱ {expensesMandatoryList.total_expenses}</td>
-                            <td></td>
                         </tr>
                     </tbody>
                 </table>
 
-                <Div>{"Non Mandatory"}
-                </Div>
-                <legend align="center" style={{ fontWeight: 'bold' }} > Expense   </legend>
-                <table class="table table-bordered">
-                    <thead class="table-dark">
-                        <tr class="table-secondary">
-                            <th>ID</th>
-                            <th>Expenses Name</th>
-                            <th>Amount</th>
-                            <th>Details</th>
-                            <th>Date</th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
 
-                        {
-                            expensesNonList.data.map((expenses, index) => (
-                                <tr key={expenses.id} >
-                                    <td>{expenses.id}</td>
-                                    <td>{expenses.expenses_name}</td>
-                                    <td>{expenses.amount}</td>
-                                    <td>{expenses.details}</td>
-                                    <td>{expenses.date}</td>
-                                    <td>
-                                        <Link variant="primary" to={"/editExpenses/" + expenses.id}   >
-                                            <Button variant="primary" >
-                                                Update
-                                            </Button>
-                                        </Link>
-                                    </td>
-                                    <td>
-                                        <Button variant="danger" onClick={(e) => deleteExpenses(expenses.id, e)} >
-                                            Delete
-                                        </Button>
-                                    </td>
-                                </tr>
-                            )
-                            )
-                        }
-                        <tr >
-                            <td></td>
-                            <td style={{ fontWeight: 'bold', }}>Total Amount: </td>
-                            <td style={{ fontWeight: 'bold', }}>₱ {expensesNonList.total_expenses}</td>
-                            <td></td>
-                        </tr>
-                        <tr >
-                            <td></td>
-                            <td style={{ fontWeight: 'bold', }}></td>
-                            <td style={{ fontWeight: 'bold', }}></td>
-                            <td></td>
-                        </tr>
-
-                        <tr >
-                            <td></td>
-                            <td style={{ fontWeight: 'bold', }}>Grand Total: </td>
-                            <td style={{ fontWeight: 'bold', }}>₱ {expensesNonList.total_expenses + expensesMandatoryList.total_expenses}</td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
             </div>
         </div>
     )
