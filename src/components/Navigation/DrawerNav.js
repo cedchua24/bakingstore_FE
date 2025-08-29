@@ -26,6 +26,7 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import UserService from '../User/UserService.service'
 
 
 
@@ -622,16 +623,14 @@ export default function PersistentDrawerLeft() {
 
     const logoutSubmit = (e) => {
         e.preventDefault();
-        axios.get('/sanctum/csrf-cookie').then(response => {
-            axios.post(`api/logout/`).then(response => {
+        UserService.sanctum().then(response => {
+            UserService.logout().then(response => {
                 if (response.data.status === 200) {
                     localStorage.removeItem('auth_token');
                     localStorage.removeItem('name');
                     localStorage.removeItem('auth_user_id');
                     localStorage.removeItem('role_as');
 
-                    // swal("Success", response.data.message, "success");
-                    // window.location.reload();
                     navigate('/login');
                     window.location.reload();
 
