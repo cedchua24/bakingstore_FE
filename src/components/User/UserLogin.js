@@ -31,10 +31,10 @@ const UserLogin = (props) => {
                 if (response.data.status === 200) {
                     setErrorMessage('');
                     localStorage.setItem('auth_token', response.data.token);
-                    localStorage.setItem('auth_name', response.data.email);
                     localStorage.setItem('auth_user_id', response.data.id);
-                    localStorage.setItem('auth_name', response.data.name);
-                    swal("Success", response.data.message, "success")
+                    localStorage.setItem('name', response.data.name);
+                    localStorage.setItem('role_as', response.data.role_as);
+                    // swal("Success", response.data.message, "success")
 
                     if (response.data.role === 'admin') {
                         navigate('/orderSupplierTransaction');

@@ -41,6 +41,9 @@ const CustomerOrderTransactionList = () => {
         fetchExpensesList();
     }, []);
 
+
+    const [role, setRole] = useState(localStorage.getItem('role_as'));
+
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: ""
     });
@@ -86,6 +89,8 @@ const CustomerOrderTransactionList = () => {
     const [status, setStatus] = useState(0);
 
     const [date, setDate] = useState('');
+
+
 
     const [dateToday, setDateToday] = useState({
         today: moment().format("YYYY-MM-DD")
@@ -146,6 +151,7 @@ const CustomerOrderTransactionList = () => {
         let newDate = new Date().toLocaleDateString();
         let nDate = newDate.replaceAll("/", "-");
         console.log('nDate', nDate);
+        console.log('role_as: ', localStorage.getItem('role_as'));
         // console.log('date', new Date().toLocaleDateString().replace("/", "-"));
         ShopOrderTransactionService.fetchOnlineShopOrderTransactionList()
             .then(response => {
@@ -495,10 +501,15 @@ const CustomerOrderTransactionList = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr  >
-                            <td>Total Profit: </td>
-                            <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
-                        </tr>
+                        {
+                            role == 2 && (
+                                <tr  >
+                                    <td>Total Profit: </td>
+                                    <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
+                                </tr>
+                            )
+                        }
+
                         <tr  >
                             <td>Total Discount Loss: </td>
                             <td>{numberFormat(discountLoss.total_amount)}</td>
@@ -511,10 +522,15 @@ const CustomerOrderTransactionList = () => {
                             <td>Total Spoilage: </td>
                             <td>{numberFormat(spoilage.total_cost)}</td>
                         </tr>
-                        <tr  >
-                            <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
-                            <td style={{ fontWeight: 'bold', }}>{numberFormat(discountLoss.total_amount + shopOrderTransaction.total_profit - expensesMandatory.total_expenses + spoilage.total_cost)}</td>
-                        </tr>
+                        {
+                            role == 2 && (
+                                <tr  >
+                                    <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
+                                    <td style={{ fontWeight: 'bold', }}>{numberFormat(discountLoss.total_amount + shopOrderTransaction.total_profit - expensesMandatory.total_expenses + spoilage.total_cost)}</td>
+                                </tr>
+                            )
+                        }
+
                         <br></br>
                         <Button
                             variant="success"
@@ -611,10 +627,15 @@ const CustomerOrderTransactionList = () => {
                         <Form.Label>Total Sales: </Form.Label>
                         <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_price)} />
                     </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Profit: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
-                    </Form.Group>
+                    {
+                        role == 2 && (
+                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label>Total Profit: </Form.Label>
+                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
+                            </Form.Group>
+                        )
+                    }
+
 
 
 
@@ -649,7 +670,11 @@ const CustomerOrderTransactionList = () => {
                         <th>Total Online</th>
                         <th>Bank</th>
                         <th>Total Amount</th>
-                        <th>Profit</th>
+                        {
+                            role == 2 && (
+                                <th>Profit</th>
+                            )
+                        }
                         <th>Date</th>
                         <th>Payment Status</th>
                         <th>Rider</th>
@@ -693,7 +718,11 @@ const CustomerOrderTransactionList = () => {
                                         }</td>
 
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price != 0 ? numberFormat(shopOrderTransaction.shop_order_transaction_total_price) : ""}</td>
-                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}</td>
+                                        {
+                                            role == 2 && (
+                                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}</td>
+                                            )
+                                        }
                                         <td>{shopOrderTransaction.date}</td>
                                         <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                             : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :

@@ -62,6 +62,14 @@ const ReportExpenses = () => {
     }
 
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
+
+
 
     return (
         <div>
@@ -76,7 +84,7 @@ const ReportExpenses = () => {
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label>Total Expenses </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_expenses} />
+                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_expenses)} />
                 </Form.Group>
                 <Button variant="primary" onClick={saveOrderTransaction}>
                     Find
@@ -98,7 +106,7 @@ const ReportExpenses = () => {
                         shopOrderTransaction.data.map((shopOrderTransaction, index) => (
                             <tr  >
                                 <td>{shopOrderTransaction.date}</td>
-                                <td>{shopOrderTransaction.total_expenses}</td>
+                                <td>{numberFormat(shopOrderTransaction.total_expenses)}</td>
                                 <td>
                                     <Link variant="primary" to={"/reports/reportExpensesView/" + shopOrderTransaction.date}   >
                                         <Button variant="primary" >

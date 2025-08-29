@@ -478,6 +478,7 @@ const FinalizeOrder = () => {
         }).format(value).replace(/(\.|,)00$/g, '');
 
 
+
     const formatStatementDate = (date) => {
         var d = new Date(date);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
@@ -613,7 +614,7 @@ const FinalizeOrder = () => {
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
-                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
+                                <TableCell align="right">{row.expiration != '0000-00-00' ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
 
                             </TableRow>
