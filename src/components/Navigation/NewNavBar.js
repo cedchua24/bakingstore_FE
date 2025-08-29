@@ -12,29 +12,6 @@ import swal from 'sweetalert';
 
 const NewNavBar = (props) => {
 
-    const navigate = useNavigate();
-
-    const logoutSubmit = (e) => {
-        e.preventDefault();
-        axios.get('/sanctum/csrf-cookie').then(response => {
-            axios.post(`api/logout/`).then(response => {
-                if (response.data.status === 200) {
-                    localStorage.removeItem('auth_token', response.data.token);
-                    localStorage.removeItem('auth_name', response.data.email);
-                    // swal("Success", response.data.message, "success");
-                    // window.location.reload();
-                    navigate('/login');
-                    window.location.reload();
-
-                } else if (response.data.status === 401) {
-                    swal("warning", response.data.message, "warning")
-                }
-            });
-        });
-
-
-    }
-
     var AuthButtons = '';
     if (!localStorage.getItem('auth_token')) {
         AuthButtons = (
@@ -47,23 +24,23 @@ const NewNavBar = (props) => {
             //         </Nav>
             //     </Navbar.Collapse>
             // </>
-         <UserLoginNav />
+            <UserLoginNav />
         );
 
 
     }
     else {
         AuthButtons = (
-             <DrawerNav />
-        ); 
+            <DrawerNav />
+        );
     }
 
 
     return (
         <div>
-        <Box sx={{ display: 'flex' }} >
-           {AuthButtons}
-        </Box >
+            <Box sx={{ display: 'flex' }} >
+                {AuthButtons}
+            </Box >
         </div>
     )
 }

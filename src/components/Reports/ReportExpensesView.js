@@ -90,6 +90,13 @@ const ReportExpensesView = () => {
         padding: theme.spacing(1),
     }));
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
+
 
     return (
 
@@ -116,7 +123,7 @@ const ReportExpensesView = () => {
                                     <td>{expenses.id}</td>
                                     <td>{expenses.expenses_name}</td>
                                     <td>{expenses.details}</td>
-                                    <td>{expenses.amount}</td>
+                                    <td>{numberFormat(expenses.amount)}</td>
                                 </tr>
                             )
                             )
@@ -125,7 +132,7 @@ const ReportExpensesView = () => {
                             <td></td>
                             <td></td>
                             <td style={{ fontWeight: 'bold', }}>Total Amount: </td>
-                            <td style={{ fontWeight: 'bold', }}>₱ {expensesMandatoryList.total_expenses}</td>
+                            <td style={{ fontWeight: 'bold', }}>{numberFormat(expensesMandatoryList.total_expenses)}</td>
                         </tr>
                     </tbody>
                 </table>

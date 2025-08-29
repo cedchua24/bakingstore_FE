@@ -15,6 +15,8 @@ const ReportList = () => {
         fetchShopOrderTransactionList();
     }, []);
 
+    const [role, setRole] = useState(localStorage.getItem('role_as'));
+
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
@@ -112,18 +114,28 @@ const ReportList = () => {
                         </tr>
                     </thead>
                     <tbody>
+                        {
+                            role == 2 && (
+                                <tr  >
+                                    <td>Total Profit: </td>
+                                    <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
+                                </tr>
+                            )
+                        }
+
                         <tr  >
-                            <td>Total Profit: </td>
-                            <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
-                        </tr>
-                        <tr  >
-                            <td>Total Mandatory Expenses: </td>
+                            <td>Total Expenses: </td>
                             <td>{numberFormat(shopOrderTransaction.expenses_mandatory)}</td>
                         </tr>
-                        <tr  >
-                            <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
-                            <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - shopOrderTransaction.expenses_mandatory)}</td>
-                        </tr>
+                        {
+                            role == 2 && (
+                                <tr  >
+                                    <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
+                                    <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - shopOrderTransaction.expenses_mandatory)}</td>
+                                </tr>
+                            )
+                        }
+
 
                     </tbody>
                 </table>
@@ -132,16 +144,8 @@ const ReportList = () => {
                 <Form>
 
                     <Form.Group className="w-10 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Mandatory Expenses: </Form.Label>
+                        <Form.Label> Expenses: </Form.Label>
                         <Form.Control type="text" value={numberFormat(shopOrderTransaction.expenses_mandatory)} />
-                    </Form.Group>
-                    <Form.Group className="w-10 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Non Mandatory Expenses: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.expenses_non_mandatory)} />
-                    </Form.Group>
-                    <Form.Group className="w-10 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Expenses: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_expenses)} />
                     </Form.Group>
                 </Form >
             </div>
@@ -169,10 +173,15 @@ const ReportList = () => {
                         <Form.Label>Total Sales: </Form.Label>
                         <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_sales)} />
                     </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Profit: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
-                    </Form.Group>
+                    {
+                        role == 2 && (
+                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label>Total Profit: </Form.Label>
+                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
+                            </Form.Group>
+                        )
+                    }
+
                     <Button variant="primary" onClick={saveOrderTransaction} disabled={isAddDisabled}>
                         Find
                     </Button>
@@ -195,7 +204,12 @@ const ReportList = () => {
                         <th>Total Cash</th>
                         <th>Total Online</th>
                         <th>Total Sales</th>
-                        <th>Total Profit</th>
+                        {
+                            role == 2 && (
+                                <th>Total Profit</th>
+                            )
+                        }
+
                     </tr>
                 </thead>
                 <tbody>
@@ -207,7 +221,11 @@ const ReportList = () => {
                                 <td>{numberFormat(shopOrderTransaction.total_cash)}</td>
                                 <td>{numberFormat(shopOrderTransaction.total_online)}</td>
                                 <td>{numberFormat(shopOrderTransaction.total_sales)}</td>
-                                <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
+                                {
+                                    role == 2 && (
+                                        <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
+                                    )
+                                }
                             </tr>
                         )
                         )

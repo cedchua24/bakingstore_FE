@@ -17,6 +17,7 @@ const UserRegistration = () => {
     const [user, setUser] = useState({
         id: 0,
         name: '',
+        role_as: 1,
         email: '',
         password: ''
     });
@@ -54,10 +55,12 @@ const UserRegistration = () => {
                     setErrorMessage('');
                     setMessage(true);
                     localStorage.setItem('auth_token', response.data.token);
-                    localStorage.setItem('auth_name', response.data.email);
+                    localStorage.setItem('name', response.data.name);
                     localStorage.setItem('auth_user_id', response.data.id);
+                    localStorage.setItem('role_as', response.data.role_as);
+                    navigate('/customerOrderTransaction');
+                    window.location.reload();
                     swal("Success", response.data.message, "success")
-                    navigate('/');
                 }
                 else {
                     setErrorMessage(response.data.validator_errors);

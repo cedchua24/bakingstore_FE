@@ -625,8 +625,11 @@ export default function PersistentDrawerLeft() {
         axios.get('/sanctum/csrf-cookie').then(response => {
             axios.post(`api/logout/`).then(response => {
                 if (response.data.status === 200) {
-                    localStorage.removeItem('auth_token', response.data.token);
-                    localStorage.removeItem('auth_name', response.data.email);
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('name');
+                    localStorage.removeItem('auth_user_id');
+                    localStorage.removeItem('role_as');
+
                     // swal("Success", response.data.message, "success");
                     // window.location.reload();
                     navigate('/login');
@@ -684,9 +687,12 @@ export default function PersistentDrawerLeft() {
                         </NavDropdown>
                     </Nav>
 
+                    <Typography variant="h6" noWrap component="div" sx={{ color: "LightGray", marginLeft: 100 }}>
+                        {localStorage.getItem('name')}
+                    </Typography>
                     <div >
                         <IconButton
-                            sx={{ textAlign: 'center', marginLeft: 120 }}
+                            sx={{ textAlign: 'center' }}
                             size="large"
                             aria-label="account of current user"
                             aria-controls="menu-appbar"
