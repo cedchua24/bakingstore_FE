@@ -72,6 +72,12 @@ const AddProductCustomerOrderTransaction = () => {
         isShow: false
     });
 
+    const [validatorModal, setValidatorModal] = useState({
+        severity: '',
+        message: '',
+        isShow: false
+    });
+
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
 
@@ -95,6 +101,7 @@ const AddProductCustomerOrderTransaction = () => {
         shop_order_price: 0,
         business_type: '',
         stock: 0,
+        profit: 0,
         sale_price: 0,
         shop_order_total_price: 0,
         fixed_price: 0,
@@ -134,12 +141,18 @@ const AddProductCustomerOrderTransaction = () => {
         mark_up_product_id: 0,
         business_type: '',
         product_name: '',
+        constant_shop_order_price: 0,
         shop_order_price: 0,
+        fixed_price: 0,
+        mup_profit: 0,
+        stock: 0,
         shop_order_profit: 0,
         shop_order_quantity: 0,
-        shop_order_total_price: 0
+        shop_order_total_price: 0,
+        discount: '',
+        discount_percentage: 0,
+        discount_amount: 0
     });
-
 
 
 
@@ -199,7 +212,14 @@ const AddProductCustomerOrderTransaction = () => {
             });
 
         } else
-            if (orderShop.shop_order_quantity === 0) {
+            if (orderShop.shop_order_price < 1) {
+                setValidator({
+                    severity: 'warning',
+                    message: 'Please input Valid Price',
+                    isShow: true,
+                });
+            }
+            else if (orderShop.shop_order_quantity < 1) {
                 setValidator({
                     severity: 'warning',
                     message: 'Please insert Quantity',
@@ -312,27 +332,13 @@ const AddProductCustomerOrderTransaction = () => {
         });
     }
 
-    const onChangePrice = (e) => {
-        e.persist();
-        console.log(e.target.name)
-        console.log(computeProfit(e.target.value))
-        setOrderShop({
-            ...orderShop,
-            shop_transaction_id: id,
-            shop_order_price: e.target.value,
-            shop_order_profit: computeProfit(e.target.value) * Number(orderShop.shop_order_quantity),
-            shop_order_total_price: e.target.value * Number(orderShop.shop_order_quantity)
-        });
-    }
-
-
 
     const onChangeQuantity = (e) => {
         setOrderShop({
             ...orderShop,
             shop_transaction_id: id,
             shop_order_quantity: e.target.value,
-            shop_order_profit: computeProfit2(orderShop.discount_amount, e.target.value),
+            shop_order_profit: computeProfit2(orderShop.discount_amount, e.target.value, orderShop.profit),
             shop_order_total_price: Number(orderShop.shop_order_price) * Number(e.target.value)
         });
     }
@@ -347,7 +353,7 @@ const AddProductCustomerOrderTransaction = () => {
             discount_percentage: e.target.value,
             discount_amount: discountedPrice,
             shop_order_price: discountedPriceNewPrice,
-            shop_order_profit: computeProfit2(discountedPrice, orderShop.shop_order_quantity),
+            shop_order_profit: computeProfit2(discountedPrice, orderShop.shop_order_quantity, orderShop.profit),
             shop_order_total_price: shop_order_total_price
         });
     }
@@ -365,39 +371,25 @@ const AddProductCustomerOrderTransaction = () => {
             discount_percentage: e.target.value,
             discount_amount: e.target.value,
             shop_order_price: discountedPriceNewPrice,
-            shop_order_profit: computeProfit2(e.target.value, orderShop.shop_order_quantity),
+            shop_order_profit: computeProfit2(e.target.value, orderShop.shop_order_quantity, orderShop.profit),
             shop_order_total_price: shop_order_total_price
         });
     }
 
-    const computeProfit = ($newPrice) => {
-        console.log('origPrice', origPrice);
-        console.log('newPrice', $newPrice);
-        console.log('profit', profit);
-        const $diffPrice = origPrice - $newPrice;
-        console.log('profit', $diffPrice);
-        console.log('total:', profit - $diffPrice);
-        return profit - $diffPrice
-
-    }
-
-    const computeProfit2 = ($disc, $quantity) => {
+    const computeProfit2 = ($disc, $quantity, $profit) => {
         console.log('disc', $disc);
         console.log('quantity', $quantity);
-        console.log('profit', profit);
+        console.log('profit', $profit);
 
         const $newdisc = $disc * $quantity;
-        const $profit = profit * $quantity;
+        const $newprofit = $profit * $quantity;
 
-
-
-        const $diffPrice = $profit - $newdisc;
+        const $diffPrice = $newprofit - $newdisc;
         console.log('diffPrice', $diffPrice);
 
-        return $profit - $newdisc
+        return $diffPrice;
 
     }
-
 
 
     const onChangeInputQuantityModal = (e) => {
@@ -405,29 +397,43 @@ const AddProductCustomerOrderTransaction = () => {
         setOrderSupplierModal({
             ...orderSupplierModal,
             shop_order_quantity: e.target.value,
-            shop_order_profit: computeProfit2(orderShop.discount_amount, e.target.value),
+            shop_order_profit: computeProfitModal(Number(orderSupplierModal.fixed_price), Number(orderSupplierModal.shop_order_price),
+                e.target.value, orderSupplierModal.mup_profit),
             shop_order_total_price: orderSupplierModal.shop_order_price * e.target.value
         });
     }
 
-    // const onChangeInputPriceModal = (e) => {
-    //     e.persist();
-    //     setOrderSupplierModal({
-    //         ...orderSupplierModal,
-    //         shop_order_price: e.target.value,
-    //         shop_order_total_price: e.target.value * orderSupplierModal.shop_order_quantity
-    //     });
-    // }
-
     const onChangeInputPriceModal = (e) => {
         e.persist();
-        console.log('onChangeInputPriceModal', e.target.value)
+
+        console.log('orderSupplierModal', orderSupplierModal);
+        console.log('disc', e.target.value);
+        console.log('shop_order_price', Number(orderSupplierModal.fixed_price));
+
+        const discountedPriceNewPrice = Number(orderSupplierModal.fixed_price) - e.target.value;
+        console.log('discountedPriceNewPrice', discountedPriceNewPrice);
+        const shop_order_total_price = discountedPriceNewPrice * orderSupplierModal.shop_order_quantity;
+        console.log('shop_order_total_price', shop_order_total_price);
         setOrderSupplierModal({
             ...orderSupplierModal,
+            discount: e.target.value != orderSupplierModal.constant_shop_order_price ? 'AMOUNT' : orderSupplierModal.discount,
             shop_order_price: e.target.value,
-            shop_order_profit: computeProfit2(e.target.value, orderSupplierModal.shop_order_quantity),
+            discount_amount: Number(orderSupplierModal.fixed_price) - e.target.value,
+            shop_order_profit: computeProfitModal(Number(orderSupplierModal.fixed_price), e.target.value,
+                orderSupplierModal.shop_order_quantity, orderSupplierModal.mup_profit),
             shop_order_total_price: e.target.value * Number(orderSupplierModal.shop_order_quantity)
         });
+    }
+
+
+    const computeProfitModal = ($fixed_price, $new_price, $quantity, $profit) => {
+
+        const $diff_price = $fixed_price - $new_price;
+
+        const $newProfit = $profit - $diff_price
+
+        return $newProfit * $quantity;
+
     }
 
     const handleInputChange = (e, value) => {
@@ -446,6 +452,7 @@ const AddProductCustomerOrderTransaction = () => {
             fixed_price: value.new_price,
             mark_up_product_id: value.id,
             order_profit: value.profit,
+            profit: value.profit,
             product_id: value.product_id,
             stock: value.stock,
             sale_price: value.sale_price,
@@ -488,10 +495,33 @@ const AddProductCustomerOrderTransaction = () => {
     const fetchShopOrder = async (id) => {
         await ShopOrderService.fetchShopOrder(id)
             .then(response => {
-                setOrderSupplierModal(response.data);
+                // setOrderSupplierModal(response.data);
                 console.log(response.data)
                 setOrigPrice(response.data.shop_order_price);
                 setProfit(response.data.shop_order_profit / response.data.shop_order_quantity)
+
+                setOrderSupplierModal({
+                    ...orderSupplierModal,
+                    id: response.data.id,
+                    shop_transaction_id: response.data.shop_transaction_id,
+                    shop_order_price: response.data.shop_order_price,
+                    constant_shop_order_price: response.data.shop_order_price,
+                    fixed_price: response.data.new_price,
+                    mup_profit: response.data.profit,
+                    mark_up_product_id: response.data.id,
+                    order_profit: response.data.shop_order_profit,
+                    product_id: response.data.product_id,
+                    stock: response.data.business_type == 'WHOLESALE' ? response.data.stock : response.data.stock_pc,
+                    sale_price: response.data.sale_price,
+                    business_type: response.data.business_type,
+                    shop_order_total_price: response.data.shop_order_total_price,
+                    shop_order_quantity: response.data.shop_order_quantity, // start of empty
+                    discount: response.data.discount,
+                    discount_amount: response.data.discount_amount,
+                    discount_percentage: response.data.discount_percentage
+                });
+
+
             })
             .catch(e => {
                 console.log("error", e)
@@ -567,41 +597,66 @@ const AddProductCustomerOrderTransaction = () => {
 
     const updateOrderSupplier = () => {
         setSubmitLoading(true);
-        ShopOrderService.update(orderSupplierModal.id, orderSupplierModal)
-            .then(response => {
-                console.log(response.data);
-                if (response.data.code == 200) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'success',
-                        message: 'Successfuly Added!',
-                        isShow: true,
-                    });
-                    fetchShopOrderDTO(id);
-                } else if (response.data.code == 400) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'error',
-                        message: response.data.message,
-                        isShow: true,
-                    });
-                } else {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    setValidator({
-                        severity: 'error',
-                        message: "Unknown Error",
-                        isShow: true,
-                    });
-                }
-            })
-            .catch(e => {
-                console.log(e);
+        if (orderSupplierModal.shop_order_price < 1) {
+            setValidatorModal({
+                severity: 'warning',
+                message: 'Please input Valid Price',
+                isShow: true,
             });
+            setSubmitLoading(false);
+        }
+        else if (orderSupplierModal.shop_order_quantity > orderSupplierModal.stock) {
+            setValidatorModal({
+                severity: 'warning',
+                message: 'Quantity is more than to Stocks',
+                isShow: true,
+            });
+            setSubmitLoading(false);
+        } else if (orderSupplierModal.shop_order_profit < 1 && orderSupplierModal.sale_price < 1) {
+            setValidatorModal({
+                severity: 'error',
+                message: 'Price is less than to Capital',
+                isShow: true,
+            });
+            setSubmitLoading(false);
+        } else {
+
+            ShopOrderService.update(orderSupplierModal.id, orderSupplierModal)
+                .then(response => {
+                    console.log(response.data);
+                    if (response.data.code == 200) {
+                        setSubmitLoading(false);
+                        setOpen(false);
+                        window.scrollTo(0, 0);
+                        setValidator({
+                            severity: 'success',
+                            message: 'Successfuly Added!',
+                            isShow: true,
+                        });
+                        fetchShopOrderDTO(id);
+                    } else if (response.data.code == 400) {
+                        setSubmitLoading(false);
+                        setOpen(false);
+                        window.scrollTo(0, 0);
+                        setValidator({
+                            severity: 'error',
+                            message: response.data.message,
+                            isShow: true,
+                        });
+                    } else {
+                        setSubmitLoading(false);
+                        setOpen(false);
+                        setValidator({
+                            severity: 'error',
+                            message: "Unknown Error",
+                            isShow: true,
+                        });
+                    }
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+        }
     }
 
     const finalizeOrder = () => {
@@ -900,13 +955,13 @@ const AddProductCustomerOrderTransaction = () => {
                                 <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
                                 <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
                                 <TableCell align="right">{numberFormat(row.shop_order_total_price)}</TableCell>
-                                {/* <TableCell align="right">
+                                <TableCell align="right">
                                     <Tooltip title="Update">
                                         <IconButton>
                                             <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
                                         </IconButton>
                                     </Tooltip>
-                                </TableCell> */}
+                                </TableCell>
                                 <TableCell align="right">
                                     <Tooltip title="Delete">
                                         <IconButton>
@@ -988,6 +1043,9 @@ const AddProductCustomerOrderTransaction = () => {
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
                         Update Product
                     </Typography>
+                    {validatorModal.isShow &&
+                        <Alert variant="filled" severity={validatorModal.severity}>{validatorModal.message}</Alert>
+                    }
                     {submitLoading &&
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                             <CircularProgress />
