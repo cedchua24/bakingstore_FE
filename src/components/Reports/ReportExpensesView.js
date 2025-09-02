@@ -10,7 +10,6 @@ const ReportExpensesView = () => {
     useEffect(() => {
         fetchProductTransactionList();
         fetchExpensesList();
-        fetchExpensesNonList();
     }, []);
 
 
@@ -45,25 +44,10 @@ const ReportExpensesView = () => {
             });
     }
 
-    const fetchExpensesNonList = () => {
-        ExpensesService.fetchExpensesNonMandatoryToday(id)
-            .then(response => {
-                setExpensesNonList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-
-    const [productName, setProductName] = useState('');
-
-
     const fetchProductTransactionList = async () => {
         await ExpensesService.fetchExpensesTransactionById(id)
             .then(response => {
                 setExpensesList(response.data);
-                setProductName(response.data[0].date);
             })
             .catch(e => {
                 console.log("error", e)
@@ -71,17 +55,7 @@ const ReportExpensesView = () => {
     }
 
 
-    const deleteExpenses = (id, e) => {
-        ExpensesService.delete(id)
-            .then(response => {
-                fetchProductTransactionList();
-                fetchExpensesList();
-                fetchExpensesNonList();
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
-    }
+
 
     const Div = styled('div')(({ theme }) => ({
         ...theme.typography.button,
