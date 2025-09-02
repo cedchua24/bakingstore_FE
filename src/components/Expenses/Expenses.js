@@ -9,7 +9,6 @@ const Expenses = () => {
 
     useEffect(() => {
         fetchExpensesList();
-        fetchExpensesNonList();
         fetchExpenseTypeList();
     }, []);
 
@@ -44,15 +43,6 @@ const Expenses = () => {
             });
     }
 
-    const fetchExpensesNonList = () => {
-        ExpensesService.fetchExpensesNonMandatoryToday()
-            .then(response => {
-                setExpensesNonList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
 
     const fetchExpenseTypeList = (id) => {
         ExpensesTypeService.getAll()
@@ -74,7 +64,6 @@ const Expenses = () => {
             .then(response => {
                 setExpensesList(newExpensesType);
                 fetchExpensesList();
-                fetchExpensesNonList();
             })
             .catch(e => {
                 console.log('error', e);

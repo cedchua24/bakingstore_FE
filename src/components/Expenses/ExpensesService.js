@@ -34,9 +34,7 @@ class ExpensesService {
     fetchExpensesByDate(id) {
         return axios.get(`/api/expenses/fetchExpensesByDate/${id}`);
     }
-    fetchExpensesNonMandatoryToday(id) {
-        return axios.get(`/api/expenses/fetchExpensesNonMandatoryToday/${id}`);
-    }
+
     fetchExpensesMandatoryToday(id) {
         return axios.get(`/api/expenses/fetchExpensesMandatoryToday/${id}`);
     }
