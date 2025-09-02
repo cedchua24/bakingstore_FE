@@ -503,6 +503,7 @@ const AddProductCustomerOrderTransaction = () => {
                 setOrderSupplierModal({
                     ...orderSupplierModal,
                     id: response.data.id,
+                    product_name: response.data.product_name,
                     shop_transaction_id: response.data.shop_transaction_id,
                     shop_order_price: response.data.shop_order_price,
                     constant_shop_order_price: response.data.shop_order_price,
