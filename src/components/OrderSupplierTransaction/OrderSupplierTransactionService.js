@@ -19,7 +19,12 @@ class OrderSupplierTransactionService {
     fetchOrderSupplierByDateV2(id) {
         return axios.get(`/api/orderSupplierTransaction/fetchOrderSupplierByDateV2/${id}`);
     }
-
+    fetchPendingOrderSupplier(data) {
+        return axios.post("/api/orderSupplierTransaction/fetchPendingOrderSupplier", data);
+    }
+    fetchAllOrderSupplier(data) {
+        return axios.post("/api/orderSupplierTransaction/fetchAllOrderSupplier", data);
+    }
     fetchOrderSupplierByDate(id) {
         return axios.get(`/api/orderSupplierTransaction/fetchSpoilageReportByDate/${id}`);
     }

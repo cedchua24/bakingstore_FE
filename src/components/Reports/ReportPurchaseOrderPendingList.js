@@ -1,34 +1,23 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
-
 import OrderSupplierTransactionService from "../OrderSupplierTransaction/OrderSupplierTransactionService";
-
-import LinearProgress from '@mui/material/LinearProgress';
-import Box from '@mui/material/Box';
 import { Form } from 'react-bootstrap';
-
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
 
-const ReportPurchaseOrderList = () => {
+const ReportPurchaseOrderPendingList = () => {
 
     useEffect(() => {
         fetchOrderTransactionList();
     }, []);
 
-    const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
-    const [deleteId, setDeleteId] = useState(0)
-
-
-    const handleDeleteCloseModal = () => {
-        setDeleteOpenModal(false);
-    };
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
-
 
     const [orderTransactionList, setOrderTransactionList] = useState({
         data: [],
@@ -46,8 +35,9 @@ const ReportPurchaseOrderList = () => {
     });
 
 
+
     const fetchOrderTransactionList = () => {
-        OrderSupplierTransactionService.fetchAllOrderSupplier()
+        OrderSupplierTransactionService.fetchPendingOrderSupplier()
             .then(response => {
                 setOrderTransactionList(response.data);
             })
@@ -70,7 +60,6 @@ const ReportPurchaseOrderList = () => {
         return errors;
     }
 
-
     const onChangeInput = (e) => {
         console.log(e.target.value);
         setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
@@ -86,7 +75,7 @@ const ReportPurchaseOrderList = () => {
             console.log("Ready for saving: ");
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            OrderSupplierTransactionService.fetchAllOrderSupplier(customerOrderDate)
+            OrderSupplierTransactionService.fetchPendingOrderSupplier(customerOrderDate)
                 .then(response => {
                     setOrderTransactionList(response.data);
                     setSubmitLoadingAdd(false);
@@ -100,11 +89,7 @@ const ReportPurchaseOrderList = () => {
         }
     }
 
-    const openDelete = (id) => {
-        console.log('delete', id);
-        setDeleteId(id)
-        setDeleteOpenModal(true);
-    }
+
 
     const numberFormat = (value) =>
         new Intl.NumberFormat('en-us', {
@@ -114,10 +99,10 @@ const ReportPurchaseOrderList = () => {
 
     return (
         <div >
-            <Box sx={{ minWidth: 20 }}>
+            <Box >
                 <Form >
                     {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
-                    <Form.Group className="w-15 mb-3" controlId="formBasicEmail" sx={{ minWidth: 20 }}>
+                    <Form.Group className="w-15 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date From:</Form.Label>
                         <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
                     </Form.Group>
@@ -128,14 +113,10 @@ const ReportPurchaseOrderList = () => {
                     </Form.Group>
 
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Paid: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(orderTransactionList.total_paid.total_paid)} />
-                    </Form.Group>
-
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Balance: </Form.Label>
                         <Form.Control type="text" value={numberFormat(orderTransactionList.total_balance.total_balance)} />
                     </Form.Group>
+
                     <Button variant="primary" onClick={saveOrderTransaction} disabled={isAddDisabled}>
                         Find
                     </Button>
@@ -148,8 +129,10 @@ const ReportPurchaseOrderList = () => {
                 </Form >
             </Box>
 
+
+
             <div >
-                <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order Report List </legend>
+                <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order Pending Payment List </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">
@@ -162,9 +145,8 @@ const ReportPurchaseOrderList = () => {
                             <th>Delivery Status</th>
                             <th>Payment Status</th>
                             <th>Bank</th>
-                            {/* <th>Placed Stock Status</th>
-                            <th>Organize Stock</th> */}
-                            <th></th>
+                            {/* <th>Placed Stock Status</th> */}
+                            {/* <th>Organize Stock</th> */}
                             <th></th>
                             <th></th>
                             <th></th>
@@ -217,13 +199,7 @@ const ReportPurchaseOrderList = () => {
                                             </Button>
                                         </Link>
                                     </td>
-                                    {/* <td>
-                                        <Link variant="primary" to={"/branchStock/" + orderTransaction.id}   >
-                                            <Button variant="warning" >
-                                                {orderTransaction.stock_status === 1 ? 'View Stock' : 'Place Stock'}
-                                            </Button>
-                                        </Link>
-                                    </td> */}
+
                                     <td>
                                         <Link variant="primary" to={"/viewOrder/" + orderTransaction.id}   >
                                             <Button variant="primary" >
@@ -231,21 +207,6 @@ const ReportPurchaseOrderList = () => {
                                             </Button>
                                         </Link>
                                     </td>
-
-                                    {orderTransaction.status != 'COMPLETED' ? <div>
-                                        <td>
-                                            <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >
-                                                <Button variant="success" >
-                                                    Update Order
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                    </div> : <td>
-                                        <Button variant="danger" onClick={(e) => openDelete(orderTransaction.id, e)} >
-                                            Delete
-                                        </Button>
-                                    </td>}
-
 
                                 </tr>
                             )
@@ -258,4 +219,4 @@ const ReportPurchaseOrderList = () => {
     )
 }
 
-export default ReportPurchaseOrderList
+export default ReportPurchaseOrderPendingList

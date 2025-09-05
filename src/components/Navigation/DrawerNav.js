@@ -41,7 +41,35 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
 
-const drawerWidth = 240;
+
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import CategoryIcon from '@mui/icons-material/Category';
+import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
+import StoreIcon from '@mui/icons-material/Store';
+import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import LocalCafeIcon from '@mui/icons-material/LocalCafe';
+import PageviewIcon from '@mui/icons-material/Pageview';
+import RemoveModeratorIcon from '@mui/icons-material/RemoveModerator';
+import CardTravelIcon from '@mui/icons-material/CardTravel';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import PriceCheckIcon from '@mui/icons-material/PriceCheck';
+import CreditCardIcon from '@mui/icons-material/CreditCard';
+import PaymentIcon from '@mui/icons-material/Payment';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import CreditScoreIcon from '@mui/icons-material/CreditScore';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
+import TodayIcon from '@mui/icons-material/Today';
+import PersonIcon from '@mui/icons-material/Person';
+import DiscountIcon from '@mui/icons-material/Discount';
+import AddIcon from '@mui/icons-material/Add';
+import ListIcon from '@mui/icons-material/List';
+
+const drawerWidth = 300;
 
 
 
@@ -213,41 +241,33 @@ export default function PersistentDrawerLeft() {
 
 
 
-    const [navList, setNavList] = useState([
-        {
-            "name": "Prod`1`cts",
-            "url": "/addProduct"
-        },
-        {
-            "name": "Brand",
-            "url": "/addBrand"
-        },
-
-    ]);
-
-    const [categoryList, setCategoryList] = useState([
-        {
-            "name": "Add Category",
-            "url": "/addCategory",
-            "icon": ""
-        },
-        {
-            "name": "Category List",
-            "url": "/categoryList",
-            "icon": ""
-        }
-    ]);
+    const [categoryList, setCategoryList] = useState({
+        "nameCategory": "Category",
+        "iconCategory": <CategoryIcon color="primary" />,
+        "data": [
+            {
+                "name": "Add Category",
+                "url": "/addCategory",
+                "icon": <AddIcon />
+            },
+            {
+                "name": "Category List",
+                "url": "/categoryList",
+                "icon": <ListIcon />
+            }
+        ]
+    });
 
     const [brandList, setBrandList] = useState([
         {
             "name": "Add Brand",
             "url": "/brand",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Brand List",
             "url": "/brandListV2",
-            "icon": ""
+            "icon": <ListIcon />
         },
 
     ]);
@@ -256,23 +276,23 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Supplier",
             "url": "/supplier",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Add Product Supplier",
             "url": "/productSupplier",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Supplier List",
             "url": "/supplierListV2",
-            "icon": ""
+            "icon": <ListIcon />
         },
 
         {
             "name": "Product Supplier List",
             "url": "/productSupplierList",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -280,22 +300,22 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Customer",
             "url": "/customers",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Customer List",
             "url": "/customerListV2",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Customer List Transaction",
             "url": "/customerListTransaction",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Customer History",
             "url": "/customerHistory",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -303,24 +323,24 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Product",
             "url": "/addProduct",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Product List",
             "url": "/productList",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Product Note List",
             "url": "/productNoteList",
-            "icon": ""
+            "icon": <ListIcon />
         },
 
 
         {
             "name": "Product List Expiration",
             "url": "/productExpirationList",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -328,12 +348,12 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Warehouse",
             "url": "/warehouse",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Warehouse",
             "url": "/warehouseListV2",
-            "icon": ""
+            "icon": <ListIcon />
         },
 
     ]);
@@ -342,12 +362,12 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Shop",
             "url": "/shop",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Shop List",
             "url": "/shopListV2",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -355,12 +375,12 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Payment Type Customer",
             "url": "/paymentType",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Add Payment Type Supplier",
             "url": "/poPaymentType",
-            "icon": ""
+            "icon": <AddIcon />
         }
     ]);
 
@@ -368,12 +388,12 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Payment Type List",
             "url": "/paymentTermTransaction",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Online Payment List",
             "url": "/viewPaymentTermTransaction/2",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -381,17 +401,17 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Credit Card Payment List",
             "url": "/creditCardPaymentList",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Upcoming Credit Card Due List",
             "url": "/viewCreditCardDueList",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Paid Credit Card List",
             "url": "/viewPaidCreditCardDueList",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -399,17 +419,17 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Cheque Bank List",
             "url": "/chequePaymentList",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Upcoming Cheque Payment Due List",
             "url": "/viewChequeDueList",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Paid Cheque Payment Due List",
             "url": "/viewPaidChequeDueList",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -417,18 +437,18 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Loan",
             "url": "/addInstallment",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Loan List",
             "url": "/loanList",
-            "icon": ""
+            "icon": <ListIcon />
         },
 
         {
             "name": "Upcoming Loan Due Date",
             "url": "/upcomingLoanList",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -436,38 +456,39 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Stock List",
             "url": "/addStock",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Stock Warning",
             "url": "/stockWarning",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
     const [purchaseOrder, setPurchaseOrder] = useState([
         {
-            "name": "Purchase Order List",
-            "url": "/supplierTransactionList",
-            "icon": ""
-        },
-        {
             "name": "Add Purchase Order Stock",
             "url": "/orderSupplierTransaction",
-            "icon": ""
+            "icon": <AddIcon />
+        },
+        {
+            "name": "Purchase Order List",
+            "url": "/supplierTransactionList",
+            "icon": <ListIcon />
         }
+
     ]);
 
     const [shopOrder, setShopOrder] = useState([
         {
             "name": "Shop Branch Order List",
             "url": "/shopOrderTransaction/shorOrderTransactionList",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Add Branch Shop Order",
             "url": "/shopOrderTransaction",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -475,106 +496,33 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Expense",
             "url": "/expenses",
-            "icon": ""
+            "icon": <AddIcon />
         },
         {
             "name": "Add Expense Type",
             "url": "/expensesType",
-            "icon": ""
+            "icon": <ListIcon />
         },
 
     ]);
 
-    const [report, setReport] = useState([
-        {
-            "name": "Transaction Report List",
-            "url": "/shopOrderTransaction/transactionReportList",
-            "icon": ""
-        },
-        {
-            "name": "Pending Transaction List",
-            "url": "/shopOrderTransaction/pendingTransactionList",
-            "icon": ""
-        },
-        {
-            "name": "Cancel Transaction List",
-            "url": "/shopOrderTransaction/cancelTransactionList",
-            "icon": ""
-        },
-        {
-            "name": "Customer Record List",
-            "url": "/reports/reportCustomerSorted",
-            "icon": ""
-        },
-        {
-            "name": "Product Sold Record List",
-            "url": "/reports/reportProductSorted",
-            "icon": ""
-        },
-        {
-            "name": "Product Capital Record List",
-            "url": "/reports/productValueReport",
-            "icon": ""
-        },
-        {
-            "name": "Online Order Reports",
-            "url": "/reports/reportsList",
-            "icon": ""
-        },
-        {
-            "name": "Purchase Order Reports",
-            "url": "/reports/reportPurchaseOrder",
-            "icon": ""
-        },
-        {
-            "name": "Purchase Order Report List",
-            "url": "/reports/reportPurchaseOrderList",
-            "icon": ""
-        },
-        {
-            "name": "Shop Branch Order Reports",
-            "url": "/reports/shopBranchReportList",
-            "icon": ""
-        },
-        {
-            "name": "Spoilage Reports",
-            "url": "/reports/reportSpoilage",
-            "icon": ""
-        },
-        {
-            "name": "Discount Reports",
-            "url": "/reports/reportDiscount",
-            "icon": ""
-        },
-        {
-            "name": "Discount Loss Reports",
-            "url": "/reports/reportDiscountLoss",
-            "icon": ""
-        },
-        {
-            "name": "Expenses Reports",
-            "url": "/reports/reportExpenses",
-            "icon": ""
-        },
-
-    ]);
 
     const [markup, setMarkUp] = useState([
         {
             "name": "Add Mark-Up Price",
             "url": "/markUpPrice",
-            "icon": ""
+            "icon": <AddIcon />
         }
         ,
         {
             "name": "Mark-Up Price List",
             "url": "/markUpPriceListV2",
-            "icon": ""
+            "icon": <ListIcon />
         },
         {
             "name": "Mark-Up New Price",
             "url": "/markUpNewPrice",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
@@ -582,17 +530,128 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Add Spoilage",
             "url": "/productSpoilageList",
-            "icon": ""
+            "icon": <AddIcon />
         }
         ,
         {
             "name": "Spoilage List",
             "url": "/spoilageList",
-            "icon": ""
+            "icon": <ListIcon />
         }
     ]);
 
+    const [transactionReportList, setTransactionReportList] = useState([
+        {
+            "name": "Transaction Daily",
+            "url": "/shopOrderTransaction/transactionReportList",
+            "icon": <TodayIcon />
+        },
+        {
+            "name": "Transaction List",
+            "url": "/reports/reportsList",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Pending Transaction List",
+            "url": "/shopOrderTransaction/pendingTransactionList",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Cancel Transaction List",
+            "url": "/shopOrderTransaction/cancelTransactionList",
+            "icon": <ListIcon />
+        }
+    ]);
 
+    const [purchaseOrderReportList, setPurchaseOrderReportList] = useState([
+        {
+            "name": "PO Daily",
+            "url": "/reports/reportPurchaseOrder",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "PO All List",
+            "url": "/reports/reportPurchaseOrderList",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "PO Pending Payment List",
+            "url": "/reports/ReportPurchaseOrderPendingList",
+            "icon": <ListIcon />
+        }
+
+    ]);
+
+    const [discountReportList, setDiscountReportList] = useState([
+        {
+            "name": "Discount List",
+            "url": "/reports/reportDiscount",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Discount/Sale Loss List",
+            "url": "/reports/reportDiscountLoss",
+            "icon": <ListIcon />
+        },
+    ]);
+
+    const [expenseReportList, setExpenseReportList] = useState([
+        {
+            "name": "Expenses List",
+            "url": "/reports/reportExpenses",
+            "icon": <ListIcon />
+        },
+    ]);
+
+    const [productReportList, setProductReportList] = useState([
+        {
+            "name": "Product Sold Record List",
+            "url": "/reports/reportProductSorted",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Product Capital Record List",
+            "url": "/reports/productValueReport",
+            "icon": <ListIcon />
+        },
+    ]);
+
+    const [spoilageReportList, setSpoilageReportList] = useState([
+        {
+            "name": "Spoilage List",
+            "url": "/reports/reportSpoilage",
+            "icon": <ListIcon />
+        }
+    ]);
+
+    const [customerReportList, setCustomerReportList] = useState([
+        {
+            "name": "Customer Record List",
+            "url": "/reports/reportCustomerSorted",
+            "icon": <ListIcon />
+        },
+    ]);
+
+    const [shopBranchOrderReportList, setShopBranchOrderReportList] = useState([
+        {
+            "name": "Shop Branch Order Reports",
+            "url": "/reports/shopBranchReportList",
+            "icon": <ListIcon />
+        },
+    ]);
+
+
+    const [report, setReport] = useState([
+
+
+        {
+            "name": "Shop Branch Order Reports",
+            "url": "/reports/shopBranchReportList",
+            "icon": ""
+        },
+
+
+    ]);
 
 
 
@@ -641,6 +700,62 @@ export default function PersistentDrawerLeft() {
         });
 
     }
+
+    //Report
+    const [openReport, setOpenReport] = React.useState(false);
+    const handleClickReport = () => {
+        setOpenReport(!openReport);
+    };
+
+    // Purchase Order Report
+    const [openPurchaseOrderReport, setOpenPurchaseOrderReport] = React.useState(false);
+    const handleClickPurchaseOrderReport = () => {
+        setOpenPurchaseOrderReport(!openPurchaseOrderReport);
+    };
+
+
+    // Transaction Report
+    const [openTransactionReport, setOpenTransactionReport] = React.useState(false);
+    const handleClickTransactionReport = () => {
+        setOpenTransactionReport(!openTransactionReport);
+    };
+
+    // Discount Report
+    const [openDiscountReport, setOpenDiscountReport] = React.useState(false);
+    const handleClickDiscountReport = () => {
+        setOpenDiscountReport(!openDiscountReport);
+    };
+
+    // Expense Report
+    const [openExpenseReport, setOpenExpenseReport] = React.useState(false);
+    const handleClickExpenseReport = () => {
+        setOpenExpenseReport(!openExpenseReport);
+    };
+
+    // Product Report
+    const [openProductReport, setOpenProductReport] = React.useState(false);
+    const handleClickProductReport = () => {
+        setOpenProductReport(!openProductReport);
+    };
+
+    // Spoilage Report
+    const [openSpoilageReport, setOpenSpoilageReport] = React.useState(false);
+    const handleClickSpoilageReport = () => {
+        setOpenSpoilageReport(!openSpoilageReport);
+    };
+
+    const [openCustomerReport, setOpenCustomerReport] = React.useState(false);
+    const handleClickCustomerReport = () => {
+        setOpenCustomerReport(!openCustomerReport);
+    };
+
+    // ShopBranchOrder Report
+    const [openShopBranchOrderReport, setOpenShopBranchOrderReport] = React.useState(false);
+    const handleClickShopBranchOrderReport = () => {
+        setOpenShopBranchOrderReport(!openShopBranchOrderReport);
+    };
+
+
 
     return (
         <Box sx={{ display: 'flex' }} >
@@ -720,24 +835,7 @@ export default function PersistentDrawerLeft() {
                         </Menu>
                     </div>
 
-                    {/* <Menu
-                        anchorEl={anchorEl}
-                        anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                        }}
-                        // id={menuId}
-                        keepMounted
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                        }}
-                        open={isMenuOpen}
-                        onClose={handleMenuClose}
-                    >
-                        <MenuItem >Profile</MenuItem>
-                        <MenuItem>My account</MenuItem>
-                    </Menu> */}
+
 
                 </Toolbar>
             </AppBar>
@@ -762,37 +860,36 @@ export default function PersistentDrawerLeft() {
                 </DrawerHeader>
                 <Divider />
 
-                <List
-                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
-                    component="nav"
-                    aria-labelledby="nested-list-subheader"
-                // subheader={
-                //     <ListSubheader component="div" id="nested-list-subheader">
-                //         Nested List Items
-                //     </ListSubheader>
-                // }
-                >
-                    <ListItemButton onClick={handleClick2}>
-                        <ListItemIcon>
-                            <InboxIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Category" />
-                        {open2 ? <ExpandLess /> : <ExpandMore />}
-                    </ListItemButton>
-                    <Collapse in={open2} timeout="auto" unmountOnExit>
-                        <List component="div" disablePadding>
-                            {categoryList.map((nav, index) => (
-                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
-                                        <ListItemIcon>
-                                        </ListItemIcon>
-                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Collapse>
-                </List>
+                <div>
+                    <List
+                        sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                        component="nav"
+                        aria-labelledby="nested-list-subheader"
+                    >
+                        <ListItemButton onClick={handleClick2}>
+                            <ListItemIcon>
+                                {categoryList.iconCategory}
+                            </ListItemIcon>
+                            <ListItemText primary={categoryList.nameCategory} />
+                            {open2 ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+                        <Collapse in={open2} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding>
+                                {categoryList.data.map((nav, index) => (
+                                    <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                        <ListItemButton sx={{ pl: 6 }}>
+                                            <ListItemIcon>
+                                                {nav.icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Collapse>
+                    </List>
+
+                </div>
 
                 <List
                     sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
@@ -801,7 +898,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick3}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <BrandingWatermarkIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Brand" />
                         {open3 ? <ExpandLess /> : <ExpandMore />}
@@ -810,8 +907,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {brandList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -829,7 +927,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick4}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <StoreIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Supplier" />
                         {open4 ? <ExpandLess /> : <ExpandMore />}
@@ -838,8 +936,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {supplierList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -884,7 +983,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick6}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <LocalCafeIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Product" />
                         {open6 ? <ExpandLess /> : <ExpandMore />}
@@ -893,8 +992,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {productList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -914,7 +1014,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick66}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <WarehouseIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Warehouse" />
                         {open66 ? <ExpandLess /> : <ExpandMore />}
@@ -923,8 +1023,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {warehouseList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -941,7 +1042,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick7}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <StorefrontIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Shop" />
                         {open7 ? <ExpandLess /> : <ExpandMore />}
@@ -950,8 +1051,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {shopList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -968,7 +1070,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick8}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <AccountBalanceIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Bank" />
                         {open8 ? <ExpandLess /> : <ExpandMore />}
@@ -977,8 +1079,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {paymentType.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -995,7 +1098,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick9}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <PaymentIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Online Payment" />
                         {open9 ? <ExpandLess /> : <ExpandMore />}
@@ -1004,8 +1107,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {paymentTypeList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1022,7 +1126,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick10}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <CreditCardIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Credit Card" />
                         {open10 ? <ExpandLess /> : <ExpandMore />}
@@ -1031,8 +1135,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {creditCard.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1049,7 +1154,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick11}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <ReceiptIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Cheque" />
                         {open11 ? <ExpandLess /> : <ExpandMore />}
@@ -1058,8 +1163,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {cheque.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1076,7 +1182,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick12}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <CreditScoreIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Loan" />
                         {open12 ? <ExpandLess /> : <ExpandMore />}
@@ -1085,8 +1191,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {loan.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1103,7 +1210,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick13}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <InventoryIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Stock" />
                         {open13 ? <ExpandLess /> : <ExpandMore />}
@@ -1112,8 +1219,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {stock.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1130,7 +1238,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick18}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <PriceCheckIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Mark Up" />
                         {open18 ? <ExpandLess /> : <ExpandMore />}
@@ -1139,8 +1247,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {markup.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1157,7 +1266,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick14}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <ShoppingCartIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Purchase Order" />
                         {open14 ? <ExpandLess /> : <ExpandMore />}
@@ -1166,8 +1275,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {purchaseOrder.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1184,7 +1294,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick15}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <StorefrontIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Shop Branch Order" />
                         {open15 ? <ExpandLess /> : <ExpandMore />}
@@ -1193,8 +1303,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {shopOrder.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1211,7 +1322,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick19}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <CardTravelIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Expense" />
                         {open19 ? <ExpandLess /> : <ExpandMore />}
@@ -1220,8 +1331,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {expense.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1238,7 +1350,7 @@ export default function PersistentDrawerLeft() {
                 >
                     <ListItemButton onClick={handleClick20}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <RemoveModeratorIcon color="primary" />
                         </ListItemIcon>
                         <ListItemText primary="Spoilage" />
                         {open20 ? <ExpandLess /> : <ExpandMore />}
@@ -1247,8 +1359,9 @@ export default function PersistentDrawerLeft() {
                         <List component="div" disablePadding>
                             {spoilage.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
@@ -1259,52 +1372,193 @@ export default function PersistentDrawerLeft() {
                 </List>
 
                 <List
-                    sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
+                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
                 >
-                    <ListItemButton onClick={handleClick17}>
+
+
+                    <ListItemButton onClick={handleClickReport}>
                         <ListItemIcon>
-                            <InboxIcon />
+                            <LeaderboardIcon color="secondary" />
                         </ListItemIcon>
-                        <ListItemText primary="Report" />
-                        {open17 ? <ExpandLess /> : <ExpandMore />}
+                        <ListItemText primary="Reports" />
+                        {openReport ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
-                    <Collapse in={open17} timeout="auto" unmountOnExit>
-                        <List component="div" disablePadding>
-                            {report.map((nav, index) => (
+                    <Collapse in={openReport} timeout="auto" unmountOnExit>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickTransactionReport}>
+                            <ListItemIcon>
+                                <PointOfSaleIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Transaction Report" />
+                            {openTransactionReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+
+                        <Collapse in={openTransactionReport} timeout="auto" unmountOnExit>
+                            {transactionReportList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton>
+                                    <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
+                                            {nav.icon}
                                         </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
                                 </ListItem>
                             ))}
-                        </List>
+                        </Collapse>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickPurchaseOrderReport}>
+                            <ListItemIcon>
+                                <ShoppingCartIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Purchase Order Report" />
+                            {openPurchaseOrderReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openPurchaseOrderReport} timeout="auto" unmountOnExit>
+                            {purchaseOrderReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickDiscountReport}>
+                            <ListItemIcon>
+                                <DiscountIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Discount Report" />
+                            {openDiscountReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openDiscountReport} timeout="auto" unmountOnExit>
+                            {discountReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickExpenseReport}>
+                            <ListItemIcon>
+                                <CardTravelIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Expense Report" />
+                            {openExpenseReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openExpenseReport} timeout="auto" unmountOnExit>
+                            {expenseReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickProductReport}>
+                            <ListItemIcon>
+                                <LocalCafeIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Product Report" />
+                            {openProductReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openProductReport} timeout="auto" unmountOnExit>
+                            {productReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickSpoilageReport}>
+                            <ListItemIcon>
+                                <RemoveModeratorIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Spoilage Report" />
+                            {openSpoilageReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openSpoilageReport} timeout="auto" unmountOnExit>
+                            {spoilageReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickCustomerReport}>
+                            <ListItemIcon>
+                                <PersonIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Customer Report" />
+                            {openCustomerReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openSpoilageReport} timeout="auto" unmountOnExit>
+                            {customerReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickShopBranchOrderReport}>
+                            <ListItemIcon>
+                                <StorefrontIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Shop Branch Order Report" />
+                            {openShopBranchOrderReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openShopBranchOrderReport} timeout="auto" unmountOnExit>
+                            {shopBranchOrderReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
                     </Collapse>
                 </List>
 
-
-
-
-
-                {/* <List>
-                    {['All mail', 'Trash', 'Spam'].map((text, index) => (
-                        <ListItem key={text} disablePadding>
-                            <ListItemButton>
-                                <ListItemIcon>
-
-
-                                    {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-
-                                </ListItemIcon>
-                                <ListItemText primary={text} />
-                            </ListItemButton>
-
-                        </ListItem>
-                    ))}
-                </List> */}
             </Drawer>
 
         </Box >
