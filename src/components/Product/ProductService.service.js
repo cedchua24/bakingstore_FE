@@ -34,7 +34,9 @@ class ProductService {
     fetchByStockWarning(id) {
         return axios.get(`/api/products/fetchByStockWarning/${id}`);
     }
-
+    fetchModifiedStockDaily(id) {
+        return axios.get(`/api/products/fetchModifiedStockDaily/${id}`);
+    }
     create(data) {
         return axios.post("/api/products", data);
     }

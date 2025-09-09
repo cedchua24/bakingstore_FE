@@ -62,6 +62,9 @@ class CreditCardDueService {
     create(data) {
         return axios.post("/api/creditCardDue", data);
     }
+    createCreditDueYearly(data) {
+        return axios.post("/api/creditCardDue/createCreditDueYearly", data);
+    }
     update(id, data) {
         return axios.put(`/api/creditCardDue/${id}`, data);
     }
