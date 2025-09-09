@@ -743,7 +743,7 @@ const AddProductCustomerOrderTransaction = () => {
                     <FormControl variant="standard"  >
                         <Autocomplete
                             sx={{
-                                width: 500
+                                width: 700
                             }}
                             // options={products}
                             options={products.sort((a, b) =>

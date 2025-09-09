@@ -34,6 +34,7 @@ const ViewStockTransactionList = () => {
                         <th>Product Name</th>
                         <th>Packaging</th>
                         <th>Restock Type</th>
+                        <th>Reason</th>
                         <th>Stock</th>
                         <th>Date</th>
                     </tr>
@@ -46,6 +47,7 @@ const ViewStockTransactionList = () => {
                                 <td> {product.product_name}</td>
                                 <td> {product.stock_type}</td>
                                 <td>{product.pack}</td>
+                                <td>{product.stock_reason}</td>
                                 <td>{product.stock}</td>
                                 <td>{product.updated_at}</td>
                             </tr>

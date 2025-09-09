@@ -70,6 +70,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import DiscountIcon from '@mui/icons-material/Discount';
 import AddIcon from '@mui/icons-material/Add';
 import ListIcon from '@mui/icons-material/List';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { pink } from '@mui/material/colors';
 
 const drawerWidth = 300;
 
@@ -458,7 +460,12 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Stock List",
             "url": "/addStock",
-            "icon": <AddIcon />
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Modifed Stock Daily",
+            "url": "/modifiedStock",
+            "icon": <ListIcon />
         },
         {
             "name": "Stock Warning",
@@ -642,9 +649,16 @@ export default function PersistentDrawerLeft() {
         },
     ]);
 
+    const [settingList, setSettingsList] = useState([
+        {
+            "name": "Credit Card Due",
+            "url": "/settings/creditCardDueSettings",
+            "icon": <AddIcon />
+        },
+    ]);
+
 
     const [report, setReport] = useState([
-
 
         {
             "name": "Shop Branch Order Reports",
@@ -756,6 +770,12 @@ export default function PersistentDrawerLeft() {
     const [openShopBranchOrderReport, setOpenShopBranchOrderReport] = React.useState(false);
     const handleClickShopBranchOrderReport = () => {
         setOpenShopBranchOrderReport(!openShopBranchOrderReport);
+    };
+
+    // Settings
+    const [settings, setSettings] = React.useState(false);
+    const handleSettings = () => {
+        setSettings(!settings);
     };
 
 
@@ -1361,6 +1381,34 @@ export default function PersistentDrawerLeft() {
                     <Collapse in={open20} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {spoilage.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
+
+                <List
+                    sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                >
+                    <ListItemButton onClick={handleSettings}>
+                        <ListItemIcon>
+                            <SettingsIcon sx={{ color: pink[500] }} />
+                        </ListItemIcon>
+                        <ListItemText primary="Settings" />
+                        {settings ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={settings} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {settingList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>

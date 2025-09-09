@@ -131,6 +131,25 @@ const ViewOrderSupplierTransaction = () => {
                 </Table>
             </TableContainer>
             <br></br>
+            <TableContainer component={Paper}>
+                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                    <TableBody>
+                        <TableRow >
+                            <TableCell style={{ fontWeight: 'bold' }}>Credit Limit</TableCell>
+                            <TableCell align="right">{numberFormat(creditCardDue.credit_limit)}</TableCell>
+                            <TableCell style={{ fontWeight: 'bold' }}>Available Balance</TableCell>
+                            <TableCell align="right">{numberFormat(creditCardDue.credit_limit - creditCardDue.total_balance_due)}</TableCell>
+
+
+                            <TableCell style={{ fontWeight: 'bold' }}>Total Due Amount:</TableCell>
+                            <TableCell align="right">{numberFormat(creditCardDue.total_balance_due)}</TableCell>
+
+
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <br></br>
             {/* <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableBody>

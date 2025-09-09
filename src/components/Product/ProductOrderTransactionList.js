@@ -99,6 +99,7 @@ const ProductOrderTransactionList = () => {
             </Form>
             <div>
                 <legend align="center" style={{ fontWeight: 'bold' }} > Online Orders  </legend>
+                <legend align="center" style={{ fontWeight: 'bold', color: 'orange' }} > Note! Quantity is compute by per piece! </legend>
 
 
                 <table class="table table-bordered" >
@@ -156,7 +157,8 @@ const ProductOrderTransactionList = () => {
                                             <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                                 : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                                     <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
-                                            <td style={{ color: "red" }}>{shopOrderTransaction.shop_order_quantity}</td>
+                                            {/* <td style={{ color: "red" }}>{shopOrderTransaction.shop_order_quantity}</td> */}
+                                            <td style={{ color: "red" }}>{shopOrderTransaction.business_type == 'WHOLESALE' ? shopOrderTransaction.shop_order_quantity * shopOrderTransaction.quantity : shopOrderTransaction.shop_order_quantity}</td>
                                             <td>
                                                 <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
                                                     <Button variant="primary" >
