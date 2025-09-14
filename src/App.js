@@ -93,6 +93,8 @@ import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrd
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
 import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
 import CustomerSorted from "./components/ShopOrderTransaction/CustomerSorted";
+import PendingDelivery from "./components/ShopOrderTransaction/PendingDelivery";
+
 import ReportCustomerSorted from "./components/Reports/ReportCustomerSorted";
 import ReportProductSorted from "./components/Reports/ReportProductSorted";
 import ProductValueReport from "./components/Reports/ProductValueReport";
@@ -188,6 +190,10 @@ import ReportPurchaseOrderPendingList from "./components/Reports/ReportPurchaseO
 import PurchaseOrderList from "./components/Reports/PurchaseOrderList";
 import ReportSpoilage from "./components/Reports/ReportSpoilage";
 import ReportDiscount from "./components/Reports/ReportDiscount";
+import ReportDelivery from "./components/Reports/ReportDelivery";
+import ReportPendingDelivery from "./components/Reports/ReportPendingDelivery";
+
+
 import ReportDiscountLoss from "./components/Reports/ReportDiscountLoss";
 
 
@@ -384,6 +390,8 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/quantitySortedList/" element={<QuantitySorted />} />
           <Route exact path="/shopOrderTransaction/customerSortedList/" element={<CustomerSorted />} />
+          <Route exact path="/shopOrderTransaction/PendingDelivery/" element={<PendingDelivery />} />
+
 
 
           <Route exact path="/shopOrderTransaction/transactionReportList/" element={<TransactionReportList />} />
@@ -461,6 +469,9 @@ const App = () => {
           <Route exact path="/reports/ReportPurchaseOrderPendingList" element={<ReportPurchaseOrderPendingList />} />
           <Route exact path="/reports/reportSpoilage" element={<ReportSpoilage />} />
           <Route exact path="/reports/reportDiscount" element={<ReportDiscount />} />
+          <Route exact path="/reports/reportDelivery" element={<ReportDelivery />} />
+          <Route exact path="/reports/reportPendingDelivery" element={<ReportPendingDelivery />} />
+
           <Route exact path="/reports/reportDiscountLoss" element={<ReportDiscountLoss />} />
 
 

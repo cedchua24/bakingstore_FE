@@ -451,6 +451,7 @@ const TransactionReportList = () => {
 
                         <th>Date</th>
                         <th>Payment Status</th>
+                        <th>For Trucking</th>
                         <th>Rider</th>
                         <th >Pick Up Status</th>
                         <th>Update Date</th>
@@ -501,7 +502,18 @@ const TransactionReportList = () => {
                                         <td>{shopOrderTransaction.date}</td>
                                         <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                             : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
+                                        </td>
+                                        <td>
+                                            <td>
+                                                <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
+                                                    shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 ? <>
+                                                        <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING DELIVERY</p></>
+                                                        : ''}</p>
+
+                                            </td>
+
+                                        </td>
                                         <td>
                                             <p>{shopOrderTransaction.rider_name}</p>
                                             <IconButton>
