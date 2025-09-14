@@ -6,6 +6,7 @@ import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ExpensesService from "../Expenses/ExpensesService";
 import ShopService from "../Shop/ShopService";
 import DiscountService from "../OtherService/DiscountService";
+import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
 import SpoilageService from "../Spoilage/SpoilageService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
@@ -13,6 +14,7 @@ import Checkbox from '@mui/material/Checkbox';
 
 import CircularProgress from '@mui/material/CircularProgress';
 
+import DeleteIcon from '@mui/icons-material/Delete';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -137,6 +139,17 @@ const CustomerOrderTransactionList = () => {
         updated_at: ''
     });
 
+    const [deliveryModal, setDeliveryModal] = useState({
+        id: 0,
+        shop_order_transaction_id: 0,
+        name: '',
+        date: '',
+        note: '',
+        contact_number: '',
+        address: '',
+        status: 0,
+        address: ''
+    });
 
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
 
@@ -144,11 +157,15 @@ const CustomerOrderTransactionList = () => {
     const [submitLoadingReport, setSubmitLoadingReport] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
+    const [formDeliveryErrors, setFormDeliveryErrors] = useState({});
+
+    const [isDeliveryDisabled, setIsDeliveryDisabled] = useState(false);
+    const [submitDeliveryLoadingDisabled, setSubmitDeliveryLoadingDisabled] = useState(false);
 
 
 
+    let newDate = new Date().toLocaleDateString();
     const fetchShopOrderTransactionList = () => {
-        let newDate = new Date().toLocaleDateString();
         let nDate = newDate.replaceAll("/", "-");
         console.log('nDate', nDate);
         console.log('role_as: ', localStorage.getItem('role_as'));
@@ -218,19 +235,37 @@ const CustomerOrderTransactionList = () => {
 
     }
 
+    const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
+
+    const handleDeleteCloseModal = () => {
+        setDeleteOpenModal(false);
+    };
+
+    const [deleteId, setDeleteId] = useState(0)
+    const openDelete = (id) => {
+        console.log('delete', id);
+        setDeleteId(id)
+        setDeleteOpenModal(true);
+    }
 
 
 
-
-    const deleteOrderTransaction = (id, e) => {
-
-        const index = shopOrderTransactionList.findIndex(shopOrderTransaction => shopOrderTransaction.id === id);
-        const newShopOrderTransaction = [...shopOrderTransactionList];
-        newShopOrderTransaction.splice(index, 1);
-
-        ShopOrderTransactionService.delete(id)
+    const deleteOrderTransaction = (deleteId, e) => {
+        setSubmitLoading(true);
+        console.log("deleteId", deleteId);
+        DeliveryCustomerService.deleteTransaction(deleteId)
             .then(response => {
-                setShopOrderTransactionList(newShopOrderTransaction);
+                setSubmitLoading(false);
+                setOpen(false);
+                setDeleteOpenModal(false);
+                window.scrollTo(0, 0);
+                // setValidator({
+                //     severity: 'success',
+                //     message: 'Successfuly Deleted!',
+                //     isShow: true,
+                // });
+                fetchShopOrderTransactionList();
+                // window.location.reload();
             })
             .catch(e => {
                 console.log('error', e);
@@ -370,12 +405,21 @@ const CustomerOrderTransactionList = () => {
     const handleClose = () => setOpen(false);
 
     const handleCloseRider = () => setOpenRider(false);
+    const hanldeCloseDelivery = () => setOpenDelivery(false);
 
     const handleClosePickUp = () => setOpenPickUp(false);
 
     const [openRider, setOpenRider] = React.useState(false);
 
     const [openPickUp, setOpenPickUp] = React.useState(false);
+
+    const [openDelivery, setOpenDelivery] = React.useState(false);
+
+    const handleOpenDelivery = (id, e) => {
+        console.log('e', id);
+        fetchDelivery(id);
+        setOpenDelivery(true);
+    }
 
     const handleOpenRider = (id, e) => {
         console.log('e', id);
@@ -399,6 +443,34 @@ const CustomerOrderTransactionList = () => {
             });
     }
 
+    const fetchDelivery = async (shop_order_transaction_id) => {
+        await DeliveryCustomerService.fetchDeliveryById(shop_order_transaction_id)
+            .then(response => {
+                if (JSON.stringify(response.data) === '{}') {
+                    setDeliveryModal({
+                        shop_order_transaction_id: shop_order_transaction_id,
+                        id: 0,
+                        name: '',
+                        date: '',
+                        note: '',
+                        contact_number: '',
+                        address: '',
+                        status: 0,
+                        address: ''
+                    });
+
+                    console.log('wla', response.data)
+                } else {
+                    console.log('meron', response.data)
+                    setDeliveryModal(response.data);
+                }
+
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
     const updateDate = () => {
         ShopOrderTransactionService.update(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
             .then(response => {
@@ -412,9 +484,59 @@ const CustomerOrderTransactionList = () => {
             });
     }
 
+    const validateDelivery = (values) => {
+        const errors = {};
+        if (deliveryModal.name.length == 0) {
+            errors.name = "Name is Required!";
+        }
+        if (deliveryModal.address.length == 0) {
+            errors.name = "Address is Required!";
+        }
+        if (deliveryModal.contact_number.length == 0) {
+            errors.name = "Contact Number is Required!";
+        }
+        if (deliveryModal.date.length == 0) {
+            errors.name = "Date is Required!";
+        }
+
+        return errors;
+    }
+
+    const updateDelivery = () => {
+        console.log('status: ', deliveryModal);
+        console.log("count: ", Object.keys(validateDelivery(deliveryModal)).length);
+        console.log("validate: ", validateDelivery(deliveryModal));
+        setFormDeliveryErrors(validateDelivery(deliveryModal));
+        if (Object.keys(validateDelivery(deliveryModal)).length > 0) {
+            console.log("Has Validation: ");
+        } else {
+            console.log("Ready for saving: ");
+            setSubmitDeliveryLoadingDisabled(true);
+            setIsDeliveryDisabled(true);
+            DeliveryCustomerService.create(deliveryModal)
+                .then(response => {
+                    fetchShopOrderTransactionList();
+                    setOpenDelivery(false);
+                    setSubmitDeliveryLoadingDisabled(false);
+                    setIsDeliveryDisabled(false);
+                })
+                .catch(e => {
+                    setOpenDelivery(false);
+                    setSubmitDeliveryLoadingDisabled(false);
+                    setIsDeliveryDisabled(false);
+                    console.log(e);
+                });
+        }
+    }
+    const onChangeDelivery = (e) => {
+        setDeliveryModal({ ...deliveryModal, [e.target.name]: e.target.value });
+    }
+
     const onChangeDate = (e) => {
         setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, [e.target.name]: e.target.value });
     }
+
+
 
     const onChangePaymentTypeStatus = (e) => {
 
@@ -427,6 +549,18 @@ const CustomerOrderTransactionList = () => {
             }
         } else {
             setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_pickup: e.target.value });
+        }
+    }
+
+    const onChangeDeliveryStatus = (e) => {
+
+        console.log("error", e.target.checked)
+        if (e.target.type === 'checkbox') {
+            if (e.target.checked === true) {
+                setDeliveryModal({ ...deliveryModal, status: 1 });
+            } else {
+                setDeliveryModal({ ...deliveryModal, status: 0 });
+            }
         }
     }
 
@@ -677,10 +811,9 @@ const CustomerOrderTransactionList = () => {
                         }
                         <th>Date</th>
                         <th>Payment Status</th>
+                        <th>For Trucking</th>
                         <th>Rider</th>
                         <th >Pick Up Status</th>
-                        <th>Update Date</th>
-                        <th></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -720,19 +853,38 @@ const CustomerOrderTransactionList = () => {
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price != 0 ? numberFormat(shopOrderTransaction.shop_order_transaction_total_price) : ""}</td>
                                         {
                                             role == 2 && (
-                                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}</td>
+                                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
+                                                </td>
                                             )
                                         }
-                                        <td>{shopOrderTransaction.date}</td>
+                                        <td>{shopOrderTransaction.date}
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
+                                            </IconButton>
+                                        </td>
                                         <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                             : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
+                                        </td>
+                                        <td>
+                                            <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
+                                                shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 ? <>                                    <Tooltip title="Delete">
+                                                    <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING DELIVERY</p>
+                                                    <IconButton>
+                                                        <DeleteIcon color="error" onClick={(e) => openDelete(shopOrderTransaction.id, e)} />
+                                                    </IconButton>
+                                                </Tooltip></> : ''}</p>
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(shopOrderTransaction.id, e)} />
+                                            </IconButton>
+                                        </td>
                                         <td>
                                             <p>{shopOrderTransaction.rider_name}</p>
                                             <IconButton>
                                                 <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
                                             </IconButton>
                                         </td>
+
                                         <td>
                                             <p>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DONE</p> :
                                                 <p style={{ fontWeight: 'bold', color: 'orange', }}>WAITING</p>}</p>
@@ -740,11 +892,7 @@ const CustomerOrderTransactionList = () => {
                                                 <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
                                             </IconButton>
                                         </td>
-                                        <td>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
-                                            </IconButton>
-                                        </td>
+
                                         <td>
                                             <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
                                                 <Button variant="primary" >
@@ -786,17 +934,6 @@ const CustomerOrderTransactionList = () => {
                                                 </Tooltip>
                                             }
                                         </td>
-                                        {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
-                                        deleteShopOrderTransaction
-                                    </Button>
-                                </td> */}
-
-                                        {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteOrderTransaction(shopOrderTransaction.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td> */}
                                     </tr>
                                 )
                                 )
@@ -856,6 +993,77 @@ const CustomerOrderTransactionList = () => {
                         <Button variant="primary" onClick={updateDate}>
                             Submit
                         </Button>
+                    </Box>
+                </Box>
+            </Modal>
+
+            <Modal
+                keepMounted
+                open={openDelivery}
+                onClose={hanldeCloseDelivery}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="keep-mounted-modal-title" variant="h4" align="center" component="h2">
+                        For Delivery
+                    </Typography>
+                    <br></br>
+                    {formDeliveryErrors.name && <p style={{ color: "red" }}>{formDeliveryErrors.name}</p>}
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Receiver Name</Form.Label>
+                        <Form.Control type="text" value={deliveryModal.name} name="name" onChange={onChangeDelivery} />
+                    </Form.Group>
+                    {formDeliveryErrors.address && <p style={{ color: "red" }}>{formDeliveryErrors.address}</p>}
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Address</Form.Label>
+                        <Form.Control type="text" value={deliveryModal.address} name="address" onChange={onChangeDelivery} />
+                    </Form.Group>
+                    {formDeliveryErrors.contact_number && <p style={{ color: "red" }}>{formDeliveryErrors.contact_number}</p>}
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Contact Number</Form.Label>
+                        <Form.Control type="text" value={deliveryModal.contact_number} name="contact_number" onChange={onChangeDelivery} />
+                    </Form.Group>
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Note</Form.Label>
+                        <Form.Control type="text" value={deliveryModal.note} name="note" onChange={onChangeDelivery} />
+                    </Form.Group>
+                    {formDeliveryErrors.date && <p style={{ color: "red" }}>{formDeliveryErrors.date}</p>}
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Date</Form.Label>
+                        <Form.Control type="date" value={deliveryModal.date} name="date" onChange={onChangeDelivery} />
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>is Delivered ? </Form.Label>
+                        <Checkbox
+                            checked={deliveryModal.status === 0 ? false : true}
+                            onChange={onChangeDeliveryStatus}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                        />
+                    </Form.Group>
+                    <br></br>
+                    <br></br>
+                    {submitDeliveryLoadingDisabled &&
+                        <LinearProgress color="warning" />
+                    }
+                    <br></br>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Button variant="primary"
+                            onClick={updateDelivery}
+                            disabled={isDeliveryDisabled}
+                        >
+                            Submit
+                        </Button>
+
+
                     </Box>
                 </Box>
             </Modal>
@@ -929,6 +1137,29 @@ const CustomerOrderTransactionList = () => {
                     </Box>
                 </Box>
             </Modal>
+
+            <Dialog
+                open={deleteOpenModal}
+                onClose={handleDeleteCloseModal}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+
+                <DialogTitle id="alert-dialog-title">
+                    {"Are you sure you want to Delete?"}
+                </DialogTitle>
+                {submitLoading &&
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress />
+                    </div>
+                }
+                <DialogActions>
+                    <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                    <Button onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
+                        Agree
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div >
     )
 }

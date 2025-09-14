@@ -25,6 +25,12 @@ class ShopOrderTransactionService {
     fetchPendingTransactionList(data) {
         return axios.post("/api/shopOrderTransaction/fetchPendingTransactionList", data);
     }
+    fetchPendingDeliveryTransaction(data) {
+        return axios.post("/api/shopOrderTransaction/fetchPendingDeliveryTransaction", data);
+    }
+    fetchDeliveryTransaction(data) {
+        return axios.post("/api/shopOrderTransaction/fetchDeliveryTransaction", data);
+    }
     fetchOnlineShopOrderTransactionListByIdDate(id, date) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByIdDate/${id}/${date}`);
     }

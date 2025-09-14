@@ -138,8 +138,6 @@ const ReportCustomerSorted = () => {
 
     return (
         <div>
-            <Div>{"Customer Sorted Report"}
-            </Div>
             <Form>
                 {formErrors.status && <p style={{ color: "red" }}>{formErrors.status}</p>}
                 {/* <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
@@ -207,7 +205,7 @@ const ReportCustomerSorted = () => {
                 }
                 <br></br>
             </Form>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Product Sorted   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Sales Report   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

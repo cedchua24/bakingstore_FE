@@ -71,6 +71,8 @@ import DiscountIcon from '@mui/icons-material/Discount';
 import AddIcon from '@mui/icons-material/Add';
 import ListIcon from '@mui/icons-material/List';
 import SettingsIcon from '@mui/icons-material/Settings';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+
 import { pink } from '@mui/material/colors';
 
 const drawerWidth = 300;
@@ -604,6 +606,19 @@ export default function PersistentDrawerLeft() {
         },
     ]);
 
+    const [deliveryList, setDeliveryList] = useState([
+        {
+            "name": "Delivery List",
+            "url": "/reports/reportDelivery",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Pending Delivery",
+            "url": "/reports/reportPendingDelivery",
+            "icon": <ListIcon />
+        },
+    ]);
+
     const [expenseReportList, setExpenseReportList] = useState([
         {
             "name": "Expenses List",
@@ -737,6 +752,12 @@ export default function PersistentDrawerLeft() {
         setOpenTransactionReport(!openTransactionReport);
     };
 
+    // Delivery Report
+    const [openDeliveryReport, setOpenDeliveryReport] = React.useState(false);
+    const handleClickDeliveryReport = () => {
+        setOpenDeliveryReport(!openDeliveryReport);
+    };
+
     // Discount Report
     const [openDiscountReport, setOpenDiscountReport] = React.useState(false);
     const handleClickDiscountReport = () => {
@@ -818,6 +839,7 @@ export default function PersistentDrawerLeft() {
                         <NavDropdown title="Customer Order" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/customerOrderTransactionList">Customer Order List</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/pendingDelivery">For Delivery</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Sorted Product List</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Sorted Customer List</NavDropdown.Item>
                         </NavDropdown>
@@ -1460,6 +1482,28 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickDeliveryReport}>
+                            <ListItemIcon>
+                                <LocalShippingIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Delivery Report" />
+                            {openDeliveryReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+
+                        <Collapse in={openDeliveryReport} timeout="auto" unmountOnExit>
+                            {deliveryList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
                         <ListItemButton sx={{ pl: 4 }} onClick={handleClickPurchaseOrderReport}>
                             <ListItemIcon>
                                 <ShoppingCartIcon color="success" />
@@ -1574,7 +1618,7 @@ export default function PersistentDrawerLeft() {
                             {openCustomerReport ? <ExpandLess /> : <ExpandMore />}
                         </ListItemButton>
 
-                        <Collapse in={openSpoilageReport} timeout="auto" unmountOnExit>
+                        <Collapse in={openCustomerReport} timeout="auto" unmountOnExit>
                             {customerReportList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton sx={{ pl: 6 }}>
