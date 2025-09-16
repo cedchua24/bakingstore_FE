@@ -1632,7 +1632,7 @@ export default function PersistentDrawerLeft() {
                         </ListItemButton>
 
                         <Collapse in={openCategoryReport} timeout="auto" unmountOnExit>
-                            {stockReportList.map((nav, index) => (
+                            {categoryReportList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
