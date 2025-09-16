@@ -98,6 +98,8 @@ import PendingDelivery from "./components/ShopOrderTransaction/PendingDelivery";
 import ReportCustomerSorted from "./components/Reports/ReportCustomerSorted";
 import ReportProductSorted from "./components/Reports/ReportProductSorted";
 import ProductValueReport from "./components/Reports/ProductValueReport";
+import ReportCategorySales from "./components/Reports/ReportCategorySales";
+
 
 
 import TransactionReportList from "./components/ShopOrderTransaction/TransactionReportList";
@@ -126,6 +128,7 @@ import CustomerListV2 from "./components/Customer/CustomerListV2";
 import EditCustomer from "./components/Customer/EditCustomer";
 import CustomerTransactionList from "./components/Customer/CustomerTransactionList";
 import CustomerListTransaction from "./components/Customer/CustomerListTransaction";
+import CustomerAds from "./components/Customer/CustomerAds";
 import CustomerHistory from "./components/Customer/CustomerHistory";
 import CustomerProductList from "./components/Customer/CustomerProductList";
 
@@ -191,6 +194,8 @@ import PurchaseOrderList from "./components/Reports/PurchaseOrderList";
 import ReportSpoilage from "./components/Reports/ReportSpoilage";
 import ReportDiscount from "./components/Reports/ReportDiscount";
 import ReportDelivery from "./components/Reports/ReportDelivery";
+import ReportModifiedStock from "./components/Reports/ReportModifiedStock";
+
 import ReportPendingDelivery from "./components/Reports/ReportPendingDelivery";
 
 
@@ -470,6 +475,8 @@ const App = () => {
           <Route exact path="/reports/reportSpoilage" element={<ReportSpoilage />} />
           <Route exact path="/reports/reportDiscount" element={<ReportDiscount />} />
           <Route exact path="/reports/reportDelivery" element={<ReportDelivery />} />
+          <Route exact path="/reports/reportModifiedStock" element={<ReportModifiedStock />} />
+
           <Route exact path="/reports/reportPendingDelivery" element={<ReportPendingDelivery />} />
 
           <Route exact path="/reports/reportDiscountLoss" element={<ReportDiscountLoss />} />
@@ -482,12 +489,16 @@ const App = () => {
           <Route exact path="/reports/reportExpensesView/:id" element={<ReportExpensesView />} />
           <Route exact path="/reports/reportCustomerSorted/" element={<ReportCustomerSorted />} />
           <Route exact path="/reports/reportProductSorted/" element={<ReportProductSorted />} />
+          <Route exact path="/reports/reportCategorySales/" element={<ReportCategorySales />} />
+
           <Route exact path="/reports/productValueReport/" element={<ProductValueReport />} />
 
 
           <Route exact path="/customers/" element={<Customer />} />
           <Route exact path="/customerListV2" element={<CustomerListV2 />} />
           <Route exact path="/customerListTransaction" element={<CustomerListTransaction />} />
+          <Route exact path="/customerAds" element={<CustomerAds />} />
+
           <Route exact path="/customerHistory" element={<CustomerHistory />} />
 
           <Route exact path="/customers/:id" element={<EditCustomer />} />

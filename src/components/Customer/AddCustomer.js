@@ -1,16 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import CustomerService from "../Customer/CustomerService";
 import { Button, Form, Alert } from 'react-bootstrap';
 import CustomerServiceService from "./CustomerService";
 import LinearProgress from '@mui/material/LinearProgress';
+import Checkbox from '@mui/material/Checkbox';
+import { Link } from "react-router-dom";
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
 
 const AddCustomer = (props) => {
 
+    useEffect(() => {
+        fetchCustomerList();
+    }, []);
+
+    const [customerList, setCustomerList] = useState([]);
     const [customer, setCustomer] = useState({
         id: 0,
         first_name: '',
         last_name: '',
         contact_number: '',
         email: '',
+        ads: 0,
         address: '',
         updated_at: ''
     });
@@ -22,6 +33,31 @@ const AddCustomer = (props) => {
 
     const onChangeCustomer = (e) => {
         setCustomer({ ...customer, [e.target.name]: e.target.value });
+    }
+
+    const fetchCustomerList = () => {
+        CustomerService.getAll()
+            .then(response => {
+                setCustomerList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+
+    const onChangeAds = (e) => {
+
+        console.log("error", e.target.checked)
+        if (e.target.type === 'checkbox') {
+            if (e.target.checked === true) {
+                setCustomer({ ...customer, ads: 1 });
+            } else {
+                setCustomer({ ...customer, ads: 0 });
+            }
+        } else {
+            setCustomer({ ...customer, ads: e.target.value });
+        }
     }
 
 
@@ -57,7 +93,7 @@ const AddCustomer = (props) => {
             CustomerServiceService.sanctum().then(response => {
                 CustomerServiceService.create(customer)
                     .then(response => {
-                        props.onSaveCustomerData(response.data);
+                        fetchCustomerList();
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
                         setMessage(true);
@@ -70,6 +106,12 @@ const AddCustomer = (props) => {
             });
         }
     }
+
+    const formatStatementDate = (date) => {
+        var d = new Date(date);
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
+    }
+
 
     return (
         <div>
@@ -114,6 +156,17 @@ const AddCustomer = (props) => {
 
                 </Form.Group>
 
+
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Facebook Ads ? </Form.Label>
+
+                    <Checkbox
+                        checked={customer.ads === 0 ? false : true}
+                        onChange={onChangeAds}
+                        inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                </Form.Group>
+
                 <Button variant="primary"
                     disabled={isAddDisabled}
                     onClick={saveCustomer}>
@@ -126,6 +179,62 @@ const AddCustomer = (props) => {
                 }
             </Form>
             <br></br>
+
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer List </legend>
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr class="table-secondary">
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Contact Number</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>Facebook Ads</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        {/* <th></th> */}
+                    </tr>
+                </thead>
+                <tbody>
+
+                    {
+                        customerList.map((customer, index) => (
+                            <tr key={customer.id} >
+                                <td>{index}</td>
+                                <td>{customer.id}</td>
+                                <td>{customer.first_name}</td>
+                                <td>{customer.last_name}</td>
+                                <td>{customer.contact_number}</td>
+                                <td>{customer.email}</td>
+                                <td>{customer.address}</td>
+                                <td>{customer.ads === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td>{customer.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td>      {formatStatementDate(customer.created_at)}</td>
+                                <td>
+
+                                    <Link variant="primary" to={"/customers/" + customer.id}   >
+                                        <Button variant="primary" >
+                                            Update
+                                        </Button>
+                                    </Link>
+                                </td>
+
+                                {/* <td>
+                                    <Button variant="danger" onClick={(e) => deleteCustomermr(customer.id, e)} >
+                                        Delete
+                                    </Button>
+                                </td> */}
+                            </tr>
+                        )
+                        )
+                    }
+                </tbody>
+            </table>
 
         </div>
     )

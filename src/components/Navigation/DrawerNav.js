@@ -314,6 +314,11 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
+            "name": "Customer Ads",
+            "url": "/customerAds",
+            "icon": <ListIcon />
+        },
+        {
             "name": "Customer List Transaction",
             "url": "/customerListTransaction",
             "icon": <ListIcon />
@@ -640,6 +645,24 @@ export default function PersistentDrawerLeft() {
         },
     ]);
 
+    const [categoryReportList, setCategoryReportList] = useState([
+        {
+            "name": "Category Sales List",
+            "url": "/reports/reportCategorySales",
+            "icon": <ListIcon />
+        }
+    ]);
+
+
+
+    const [stockReportList, setStockReportList] = useState([
+        {
+            "name": "Modified Stock List",
+            "url": "/reports/reportModifiedStock",
+            "icon": <ListIcon />
+        }
+    ]);
+
     const [spoilageReportList, setSpoilageReportList] = useState([
         {
             "name": "Spoilage List",
@@ -776,6 +799,17 @@ export default function PersistentDrawerLeft() {
         setOpenProductReport(!openProductReport);
     };
 
+    const [openCategoryReport, setOpenCategoryReport] = React.useState(false);
+    const handleClickCategoryReport = () => {
+        setOpenCategoryReport(!openCategoryReport);
+    };
+
+    // Stock Report
+    const [openStockReport, setOpenStockReport] = React.useState(false);
+    const handleClickStockReport = () => {
+        setOpenStockReport(!openStockReport);
+    };
+
     // Spoilage Report
     const [openSpoilageReport, setOpenSpoilageReport] = React.useState(false);
     const handleClickSpoilageReport = () => {
@@ -830,6 +864,7 @@ export default function PersistentDrawerLeft() {
                         <NavDropdown title="Customer" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
                             <NavDropdown.Item href="/customerHistory">Customer History</NavDropdown.Item>
                         </NavDropdown>
@@ -1577,6 +1612,48 @@ export default function PersistentDrawerLeft() {
 
                         <Collapse in={openProductReport} timeout="auto" unmountOnExit>
                             {productReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickCategoryReport}>
+                            <ListItemIcon>
+                                <CategoryIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Category Report" />
+                            {openCategoryReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openCategoryReport} timeout="auto" unmountOnExit>
+                            {stockReportList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </Collapse>
+
+                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickStockReport}>
+                            <ListItemIcon>
+                                <InventoryIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Stock Report" />
+                            {openStockReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openStockReport} timeout="auto" unmountOnExit>
+                            {stockReportList.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>
