@@ -5,6 +5,7 @@ import CustomerService from "./CustomerService";
 import Checkbox from '@mui/material/Checkbox';
 import LinearProgress from '@mui/material/LinearProgress';
 
+
 const EditCustomer = () => {
 
 
@@ -17,6 +18,7 @@ const EditCustomer = () => {
     const [customer, setCustomer] = useState({
         id: 0,
         customer_name: '',
+        ads: 0,
         created_at: '',
         updated_at: ''
     });
@@ -56,6 +58,20 @@ const EditCustomer = () => {
 
 
         return errors;
+    }
+
+    const onChangeAds = (e) => {
+
+        console.log("error", e.target.checked)
+        if (e.target.type === 'checkbox') {
+            if (e.target.checked === true) {
+                setCustomer({ ...customer, ads: 1 });
+            } else {
+                setCustomer({ ...customer, ads: 0 });
+            }
+        } else {
+            setCustomer({ ...customer, ads: e.target.value });
+        }
     }
 
 
@@ -131,6 +147,15 @@ const EditCustomer = () => {
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Address</Form.Label>
                     <Form.Control type="text" value={customer.address} name="address" placeholder="Enter Address" onChange={onChangeCustomer} />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Facebook Ads ? </Form.Label>
+
+                    <Checkbox
+                        checked={customer.ads === 0 ? false : true}
+                        onChange={onChangeAds}
+                        inputProps={{ 'aria-label': 'controlled' }}
+                    />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Disabled ? </Form.Label>

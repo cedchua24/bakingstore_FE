@@ -37,6 +37,9 @@ class ProductService {
     fetchModifiedStockDaily(id) {
         return axios.get(`/api/products/fetchModifiedStockDaily/${id}`);
     }
+    fetchModifiedReportList(data) {
+        return axios.post("/api/products/fetchModifiedReportList", data);
+    }
     create(data) {
         return axios.post("/api/products", data);
     }

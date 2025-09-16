@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+import CategoryServiceService from "../Category/CategoryService.service";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -25,17 +26,21 @@ import Select from '@mui/material/Select';
 
 import LinearProgress from '@mui/material/LinearProgress';
 
-const ReportProductSorted = () => {
+const ReportCategorySales = () => {
 
 
     useEffect(() => {
         fetchsortedQuantityList();
+        fetchCategoryList();
     }, []);
 
+    const [categeryList, setCategoryList] = useState([]);
+
     const [productSortedDate, setProductSortedDate] = useState({
+        categoryId: 0,
+        type: '',
         status: 0,
         limit: 0,
-        type: '',
         dateFrom: "",
         dateTo: ""
     });
@@ -52,6 +57,16 @@ const ReportProductSorted = () => {
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
 
+    const fetchCategoryList = () => {
+        CategoryServiceService.getAll()
+            .then(response => {
+                setCategoryList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
     const onChangeInput = (e) => {
         console.log("status", e.target.value);
         console.log("status", e.target.name);
@@ -62,6 +77,10 @@ const ReportProductSorted = () => {
 
     const validate = (values) => {
         const errors = {};
+
+        if (productSortedDate.categoryId == 0) {
+            errors.categoryId = "Category is Required!";
+        }
         if (productSortedDate.status == 0) {
             errors.status = "Status Type is Required!";
         }
@@ -91,7 +110,7 @@ const ReportProductSorted = () => {
         } else {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            ShopOrderTransactionService.fetchSortedProductReport(productSortedDate)
+            ShopOrderTransactionService.fetchSalesByCategory(productSortedDate)
                 .then(response => {
                     console.log("response.data", response.data)
                     // setsortedQuantityList(response.data);
@@ -110,7 +129,7 @@ const ReportProductSorted = () => {
     }
 
     const fetchsortedQuantityList = () => {
-        ShopOrderTransactionService.fetchSortedProductReport(productSortedDate)
+        ShopOrderTransactionService.fetchSalesByCategory(productSortedDate)
             .then(response => {
                 console.log("response.data", response.data)
                 // setsortedQuantityList(response.data);
@@ -146,6 +165,7 @@ const ReportProductSorted = () => {
         return numberFormat(numbers.reduce((acc, { total_profit }) => acc + total_profit, 0));
     }
 
+
     return (
         <div>
             <div style={{ float: 'right', minWidth: 800 }}>
@@ -159,6 +179,25 @@ const ReportProductSorted = () => {
                 </Form.Group>
             </div>
             <Form>
+                {formErrors.categoryId && <p style={{ color: "red" }}>{formErrors.categoryId}</p>}
+                <Box sx={{ minWidth: 120 }}>
+                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                        <InputLabel id="demo-simple-select-label">Category*</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            name="categoryId"
+                            onChange={onChangeInput}
+                        >
+                            {
+                                categeryList.map((category, index) => (
+                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
+                                ))
+                            }
+                        </Select>
+                    </FormControl>
+                </Box>
+
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Type</InputLabel>
@@ -243,8 +282,9 @@ const ReportProductSorted = () => {
                     <LinearProgress color="warning" />
                 }
                 <br></br>
+
             </Form>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Product Sorted   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Category Sales List   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -284,4 +324,4 @@ const ReportProductSorted = () => {
     )
 }
 
-export default ReportProductSorted
+export default ReportCategorySales

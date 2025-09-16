@@ -49,11 +49,6 @@ const Customer = () => {
             <AddCustomer
                 onSaveCustomerData={saveCustomerDataHandler}
             />
-
-            <CustomerList
-                customerList={customerList}
-                deleteCustomer={deleteCustomer}
-            />
         </div>
     )
 }
