@@ -23,6 +23,7 @@ const EditExpenses = () => {
     const [expenses, setExpenses] = useState({
         id: 0,
         expenses_name: '',
+        expenses_type_id: 0,
         expenses_category_name: '',
         details: '',
         amount: 0,
