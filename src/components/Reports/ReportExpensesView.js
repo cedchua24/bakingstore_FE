@@ -5,6 +5,9 @@ import { styled } from '@mui/material/styles';
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
+import Alert from '@mui/material/Alert';
+import Stack from '@mui/material/Stack';
+
 const ReportExpensesView = () => {
 
     useEffect(() => {
@@ -12,6 +15,11 @@ const ReportExpensesView = () => {
         fetchExpensesList();
     }, []);
 
+    const [validator, setValidator] = useState({
+        severity: '',
+        message: '',
+        isShow: false
+    });
 
     const { id } = useParams();
     const [expensesList, setExpensesList] = useState({
@@ -53,7 +61,20 @@ const ReportExpensesView = () => {
                 console.log("error", e)
             });
     }
-
+    const deleteExpense = (id, e) => {
+        ExpensesService.delete(id)
+            .then(response => {
+                fetchExpensesList();
+                setValidator({
+                    severity: 'success',
+                    message: 'SuccessFully Deleted',
+                    isShow: true,
+                });
+            })
+            .catch(e => {
+                console.log('error', e);
+            });
+    }
 
 
 
@@ -75,7 +96,12 @@ const ReportExpensesView = () => {
     return (
 
         <div>
-
+            <Stack sx={{ width: '100%' }} spacing={2}>
+                {validator.isShow &&
+                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                }
+            </Stack>
+            <br></br>
             <div>
 
                 <legend align="center" style={{ fontWeight: 'bold' }} > Expense  </legend>
@@ -87,6 +113,8 @@ const ReportExpensesView = () => {
                             <th>Expenses Name</th>
                             <th>Details</th>
                             <th>Amount</th>
+                            <th></th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,6 +126,18 @@ const ReportExpensesView = () => {
                                     <td>{expenses.expenses_name}</td>
                                     <td>{expenses.details}</td>
                                     <td>{numberFormat(expenses.amount)}</td>
+                                    <td>
+                                        <Link variant="primary" to={"/editExpenses/" + expenses.id}   >
+                                            <Button variant="primary" >
+                                                Update
+                                            </Button>
+                                        </Link>
+                                    </td>
+                                    <td>
+                                        <Button variant="danger" onClick={(e) => deleteExpense(expenses.id, e)} >
+                                            Delete
+                                        </Button>
+                                    </td>
                                 </tr>
                             )
                             )
