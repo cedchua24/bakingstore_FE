@@ -400,13 +400,6 @@ const ProductList = () => {
                                 </td> */}
 
                                         <td>
-                                            <Link variant="primary" to={"/productTransactionList/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
                                             <Link variant="contained" to={"/supplierProductList/" + product.id}   >
                                                 <Button variant="contained" >
                                                     Supplier List
@@ -427,11 +420,11 @@ const ProductList = () => {
                                                 </Button>
                                             </Link>
                                         </td>
-                                        <td>
+                                        {/* <td>
                                             <Button disabled variant="contained" color="error" onClick={(e) => deleteProduct(product.id, e)} >
                                                 Delete
                                             </Button>
-                                        </td>
+                                        </td> */}
                                     </tr>
                                 )
                                 )

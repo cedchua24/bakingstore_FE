@@ -166,17 +166,6 @@ const ProductNoteList = () => {
         setCategoryId(e.target.value)
     }
 
-
-    const fetchProductList = () => {
-        ProductServiceService.fetchProductListNote()
-            .then(response => {
-                setProductList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
     const fetchBrandList = () => {
         BrandServiceService.getAll()
             .then(response => {
@@ -197,25 +186,23 @@ const ProductNoteList = () => {
             });
     }
 
-    const deleteProduct = (id, e) => {
 
-        const index = productList.findIndex(brand => brand.id === id);
-        const newProduct = [...productList];
-        newProduct.splice(index, 1);
-
-        ProductServiceService.delete(id)
+    const fetchProductList = () => {
+        ProductServiceService.fetchProductListNote(0)
             .then(response => {
-                setProductList(newProduct);
+                setProductList(response.data);
             })
             .catch(e => {
-                console.log('error', e);
+                console.log("error", e)
             });
     }
+
+
 
     const fetchProductByCategoryId = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ProductServiceService.fetchProductByCategoryId(categoryId)
+        ProductServiceService.fetchProductListNote(categoryId)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
@@ -237,6 +224,43 @@ const ProductNoteList = () => {
 
     return (
         <div>
+
+            <Form>
+                <Box sx={{ minWidth: 120 }}>
+                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                        <InputLabel id="demo-simple-select-label">Category</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            // value={shopOrderTransaction.shop_id}
+                            label="Shop Name"
+                            name="category_id"
+                            onChange={onChangeInput}
+                        >
+                            {
+                                categeryList.map((category, index) => (
+                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
+                                ))
+                            }
+                        </Select>
+                    </FormControl>
+                    <br></br>
+
+                </Box>
+
+                <Button
+                    variant="contained"
+                    disabled={isAddDisabled}
+                    onClick={fetchProductByCategoryId}
+                >
+                    Search
+                </Button>
+                <br></br>
+                <br></br>
+                {submitLoadingAdd &&
+                    <LinearProgress color="warning" />
+                }
+            </Form>
 
 
             <br></br>
@@ -300,9 +324,9 @@ const ProductNoteList = () => {
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
+                        <th>Category</th>
                         <th>Product</th>
                         <th>Brand</th>
-                        <th>Category</th>
                         <th>Price</th>
                         <th>Quantity / Weight</th>
                         <th>Stock</th>
@@ -313,8 +337,6 @@ const ProductNoteList = () => {
                         <th>Value</th>
                         <th>Note</th>
                         <th>Action</th>
-                        <th>Action</th>
-                        <th></th>
                     </tr>
                 </thead>
                 {productList.length == 0 ?
@@ -327,9 +349,9 @@ const ProductNoteList = () => {
                                 productList.data.map((product, index) => (
                                     <tr key={product.id} >
                                         <td>{product.id}</td>
+                                        <td>{product.category_name}</td>
                                         <td>{product.product_name}</td>
                                         <td>{product.brand_name}</td>
-                                        <td>{product.category_name}</td>
                                         <td>{numberFormat(product.price)}</td>
                                         {/* <td>{product.weight}x{product.quantity}kg</td> */}
                                         <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
@@ -342,39 +364,12 @@ const ProductNoteList = () => {
                                         <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                         <td>{numberFormat(product.price * product.stock)}</td>
                                         <td><p>{product.note}</p></td>
-                                        {/* <td>
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </td> */}
-
-                                        <td>
-                                            <Link variant="primary" to={"/productTransactionList/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            <Link variant="contained" to={"/supplierProductList/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    Supplier List
-                                                </Button>
-                                            </Link>
-                                        </td>
                                         <td>
                                             <Link variant="primary" to={"/editProduct/" + product.id}   >
                                                 <Button variant="contained" >
                                                     Update
                                                 </Button>
                                             </Link>
-                                        </td>
-                                        <td>
-                                            <Button disabled variant="contained" color="error" onClick={(e) => deleteProduct(product.id, e)} >
-                                                Delete
-                                            </Button>
                                         </td>
                                     </tr>
                                 )

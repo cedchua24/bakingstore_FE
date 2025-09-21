@@ -208,7 +208,7 @@ const CustomerHistory = () => {
                     }
                 </tbody>
             </table>
-            <Stack spacing={2}>
+            {/* <Stack spacing={2}>
                 <Typography>Page: {customerTransaction.page}</Typography>
 
                 <Pagination
@@ -221,7 +221,7 @@ const CustomerHistory = () => {
                 {submitLoadingPage &&
                     <LinearProgress color="warning" />
                 }
-            </Stack>
+            </Stack> */}
 
             <br></br>
             <br></br>

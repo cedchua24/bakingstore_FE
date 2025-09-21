@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
-import StockOrderService from "../OtherService/StockOrderService";
 import CategoryServiceService from "../Category/CategoryService.service";
 
 import IconButton from '@mui/material/IconButton';
@@ -20,15 +19,18 @@ import { Form } from 'react-bootstrap';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
+
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 
 
-const StockList = (props) => {
+
+
+const NoStock = (props) => {
 
     // const productList = props.productList;
     useEffect(() => {
-        fetchProductList();
+        fetchProductList(0);
         fetchCategoryList();
     }, []);
 
@@ -37,10 +39,12 @@ const StockList = (props) => {
         id: 0
     });
 
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
+
     const [categoryId, setCategoryId] = useState(0);
     const [categeryList, setCategoryList] = useState([]);
     const [submitLoading, setSubmitLoading] = useState(false);
-
 
     const style = {
         position: 'absolute',
@@ -68,9 +72,7 @@ const StockList = (props) => {
     const [product, setProduct] = useState({
         id: 0,
         product_name: '',
-        stock_reason: '',
         stock: 0,
-        stock_pc: 0,
         newStocks: 0,
         pack: ''
     });
@@ -78,11 +80,8 @@ const StockList = (props) => {
     const [realStock, setRealStock] = useState(0);
     const [errorStock, setErrorStock] = useState(false);
 
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-    const [errorStock2, setErrorStock2] = useState(true);
-
     const onChangeInput = (e) => {
+        console.log(e.target.value)
         setCategoryId(e.target.value)
     }
 
@@ -94,19 +93,6 @@ const StockList = (props) => {
         });
     }
 
-    const onChangeReason = (e) => {
-        setProduct({ ...product, [e.target.name]: e.target.value });
-
-        if (e.target.value.length == 0) {
-            setErrorStock2(true);
-            console.log('true')
-        } else {
-            console.log('false')
-            setErrorStock2(false);
-        }
-    }
-
-
     const onChangeStock = (e) => {
         // const realStock = product.stock;
         // const totalStock = Number(realStock) + Number(e.target.value);
@@ -115,24 +101,11 @@ const StockList = (props) => {
             newStocks: e.target.value,
         });
 
-        let v = product.stock + Number(e.target.value);
-        let x = product.stock_pc + Number(e.target.value);
-        // if (product.pack === 'Box') {
-        //     if (v < 0) {
-        //         setErrorStock(true);
-        //     } else {
-        //         setErrorStock(false);
-        //     }
-        // } else {
-        //     if (x < 0) {
-        //         setErrorStock(true);
-        //     } else {
-        //         setErrorStock(false);
-        //     }
-
-        // }
-
-
+        if (Number(e.target.value) < 1) {
+            setErrorStock(true);
+        } else {
+            setErrorStock(false);
+        }
     }
 
     const fetchByProductId = async (id) => {
@@ -158,27 +131,24 @@ const StockList = (props) => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
-        setErrorStock(true);
         ProductServiceService.update(product.id, product)
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
                 setOpen(false);
-                setErrorStock(false);
                 // updateOrderTransaction();
             })
             .catch(e => {
                 console.log(e);
                 setSubmitLoading(false);
                 setOpen(false);
-                setErrorStock(false);
             });
 
     }
 
 
     const fetchProductList = () => {
-        ProductServiceService.fetchProductByCategoryId(2)
+        ProductServiceService.fetchOutOfStock(0)
             .then(response => {
                 setProductList(response.data);
             })
@@ -190,16 +160,13 @@ const StockList = (props) => {
     const fetchProductByCategoryId = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ProductServiceService.fetchProductByCategoryId(categoryId)
+        ProductServiceService.fetchOutOfStock(categoryId)
             .then(response => {
+                setProductList(response.data);
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-                setProductList(response.data);
-
             })
             .catch(e => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
                 console.log("error", e)
             });
     }
@@ -213,9 +180,9 @@ const StockList = (props) => {
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
-                            defaultValue={2}
+                            // value={shopOrderTransaction.shop_id}
                             label="Shop Name"
-                            name="category_id"
+                            name="categoryId"
                             onChange={onChangeInput}
                         >
                             {
@@ -229,20 +196,19 @@ const StockList = (props) => {
 
                 <Button
                     variant="contained"
-                    onClick={fetchProductByCategoryId}
                     disabled={isAddDisabled}
+                    onClick={fetchProductByCategoryId}
                 >
                     Search
                 </Button>
-                <br></br>
-                <br></br>
+                <br></br><br></br>
+
                 {submitLoadingAdd &&
                     <LinearProgress color="warning" />
                 }
             </Form>
             <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Stock List   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Out of Stock   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -250,70 +216,61 @@ const StockList = (props) => {
                         <th>Category</th>
                         <th>Product</th>
                         <th>Brand</th>
+                        <th>Category</th>
                         <th>Price</th>
                         <th>Stock</th>
                         <th>Stock/Pc</th>
                         <th>Quantity / Weight</th>
                         <th>Update Stock</th>
                         <th>Transaction</th>
-                        <th></th>
                     </tr>
                 </thead>
-                {productList.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
-                    :
-                    (
-                        <tbody>
+                <tbody>
 
 
-                            {
-                                productList.data.map((product, index) => (
-                                    <tr key={product.id} >
-                                        <td>{product.id}</td>
-                                        <td>{product.category_name}</td>
-                                        <td>{product.product_name}</td>
-                                        <td>{product.brand_name}</td>
-                                        <td>₱ {product.price}.00</td>
-                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
-                                            : <p >{product.stock}</p>}
-                                        </td>
-                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
-                                            : <p >{product.stock_pc}</p>}
-                                        </td>
-                                        <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
-                                            : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                        </td>
-                                        <td>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
-                                            </IconButton>
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"/viewStockTransactionList/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"/viewTransaction/" + product.id}   >
-                                                <Button variant="contained" disabled>
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        {/* <td>
+                    {
+                        productList.data.map((product, index) => (
+                            <tr key={product.id} >
+                                <td>{product.id}</td>
+                                <td>{product.category_name}</td>
+                                <td>{product.product_name}</td>
+                                <td>{product.brand_name}</td>
+                                <td>{product.category_name}</td>
+                                <td>₱ {product.price}.00</td>
+                                <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
+                                    : <p >{product.stock}</p>}
+                                </td>
+                                <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
+                                    : <p >{product.stock_pc}</p>}
+                                </td>
+                                {/* <td>{product.weight}x{product.quantity}kg</td> */}
+                                <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
+                                    : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
+                                </td>
+                                <td>
+                                    <IconButton>
+                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} disabled />
+                                    </IconButton>
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"/viewTransaction/" + product.id}   >
+                                        <Button variant="contained" >
+                                            View
+                                        </Button>
+                                    </Link>
+                                </td>
+                                {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteProduct(product.id, e)} >
                                         Delete
                                     </Button>
                                 </td> */}
-                                    </tr>
-                                )
-                                )
-                            }
-                        </tbody>)}
+                            </tr>
+                        )
+                        )
+                    }
+                </tbody>
             </table>
-            < Modal
+            <Modal
                 keepMounted
                 open={open}
                 onClose={handleClose}
@@ -350,10 +307,7 @@ const StockList = (props) => {
                             onChange={onChangePackaging}
                         >
                             <MenuItem value={product.packaging}>{product.packaging}</MenuItem>
-                            {product.quantity != 1 &&
-                                <MenuItem value="Pc">Pc</MenuItem>}
-
-
+                            <MenuItem value="Pc">Pc</MenuItem>
                         </Select>
                     </FormControl>
 
@@ -366,7 +320,7 @@ const StockList = (props) => {
                             variant="filled"
                             name='newStocks'
                             errorText='{this.state.password_error_text}'
-                            // min='1'
+                            min='1'
                             // value={product.stock}
                             onChange={onChangeStock}
                             // helperText="Incorrect entry."
@@ -374,16 +328,16 @@ const StockList = (props) => {
                         />
                     </FormControl>
 
-                    <FormControl fullWidth sx={{ m: 0 }} variant="standard">
+                    {/* <FormControl fullWidth sx={{ m: 0 }} variant="standard">
                         <TextField
+                            disabled
                             id="filled-required"
-                            label="Reason"
+                            label="Stock"
                             variant="filled"
-                            name='stock_reason'
-                            onChange={onChangeReason}
-                            error={errorStock2}
+                            name='product_name'
+                            value={product.stock}
                         />
-                    </FormControl>
+                    </FormControl> */}
 
                     <Box
                         sx={{
@@ -399,13 +353,13 @@ const StockList = (props) => {
                             onClick={updateProduct}
                             disabled={errorStock}
                             size="large" >
-                            Submit
+                            Submits
                         </Button>
                     </Box>
                 </Box>
             </Modal>
-        </div >
+        </div>
     )
 }
 
-export default StockList
+export default NoStock

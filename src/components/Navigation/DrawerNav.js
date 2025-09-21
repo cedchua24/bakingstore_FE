@@ -344,13 +344,19 @@ export default function PersistentDrawerLeft() {
             "url": "/productNoteList",
             "icon": <ListIcon />
         },
-
-
         {
             "name": "Product List Expiration",
             "url": "/productExpirationList",
             "icon": <ListIcon />
         }
+        ,
+        {
+            "name": "Product List Disabled",
+            "url": "/productListDisabled",
+            "icon": <ListIcon />
+        }
+
+
     ]);
 
     const [warehouseList, setWareHouseList] = useState([
@@ -475,6 +481,11 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Stock Warning",
             "url": "/stockWarning",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Out of Stock",
+            "url": "/noStock",
             "icon": <ListIcon />
         }
     ]);

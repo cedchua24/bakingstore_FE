@@ -724,36 +724,7 @@ const AddInstallment = () => {
             </Stack>
             <br></br>
 
-            <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
-                noValidate
-                autoComplete="off"
-            >
 
-                <br></br>
-
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-
-                        <TableBody>
-                            <TableRow >
-                                <TableCell style={{ fontWeight: 'bold' }}>Supplier Name:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.supplier_name}</TableCell>
-
-                                <TableCell style={{ fontWeight: 'bold' }}>Date:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.order_date}</TableCell>
-
-
-                                <TableCell style={{ fontWeight: 'bold' }}>withTax:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.withTax === 1 ? true : false}</TableCell>
-
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Box>
             <br></br>
             {installmentPaymentList.data.length != 0 &&
                 <div style={{ width: 320 }}>
@@ -887,7 +858,7 @@ const AddInstallment = () => {
                     <br></br>
                     {formErrors.start_date && <p style={{ color: "red" }}>{formErrors.start_date}</p>}
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                        <Form.Label>Start Of Due Date</Form.Label>
+                        <Form.Label>Start of Due Date</Form.Label>
                         <Form.Control type="date" name="start_date" onChange={onChangeInput} />
                     </Form.Group>
 
