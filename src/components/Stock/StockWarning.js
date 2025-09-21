@@ -20,6 +20,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
 import CircularProgress from '@mui/material/CircularProgress';
+import LinearProgress from '@mui/material/LinearProgress';
 
 
 
@@ -28,11 +29,18 @@ const StockWarning = (props) => {
 
     // const productList = props.productList;
     useEffect(() => {
-        fetchProductList();
+        fetchProductList(0);
         fetchCategoryList();
     }, []);
 
-    const [productList, setProductList] = useState([]);
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
+
+    const [productList, setProductList] = useState({
+        data: [],
+        id: 0
+    });
+
     const [categoryId, setCategoryId] = useState(0);
     const [categeryList, setCategoryList] = useState([]);
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -73,12 +81,7 @@ const StockWarning = (props) => {
 
     const onChangeInput = (e) => {
         console.log(e.target.value)
-        setProduct({
-            ...product,
-            pack: e.target.value,
-        });
         setCategoryId(e.target.value)
-        // setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
     }
 
     const onChangePackaging = (e) => {
@@ -144,7 +147,7 @@ const StockWarning = (props) => {
 
 
     const fetchProductList = () => {
-        ProductServiceService.fetchByStockWarning()
+        ProductServiceService.fetchByStockWarning(0)
             .then(response => {
                 setProductList(response.data);
             })
@@ -154,9 +157,13 @@ const StockWarning = (props) => {
     }
 
     const fetchProductByCategoryId = () => {
-        ProductServiceService.fetchProductByCategoryId(categoryId)
+        setSubmitLoadingAdd(true);
+        setIsAddDisabled(true);
+        ProductServiceService.fetchByStockWarning(categoryId)
             .then(response => {
                 setProductList(response.data);
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
             })
             .catch(e => {
                 console.log("error", e)
@@ -165,7 +172,7 @@ const StockWarning = (props) => {
 
     return (
         <div>
-            {/* <Form>
+            <Form>
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -174,7 +181,7 @@ const StockWarning = (props) => {
                             id="demo-simple-select"
                             // value={shopOrderTransaction.shop_id}
                             label="Shop Name"
-                            name="category_id"
+                            name="categoryId"
                             onChange={onChangeInput}
                         >
                             {
@@ -188,17 +195,24 @@ const StockWarning = (props) => {
 
                 <Button
                     variant="contained"
+                    disabled={isAddDisabled}
                     onClick={fetchProductByCategoryId}
                 >
                     Search
                 </Button>
-            </Form> */}
+                <br></br><br></br>
+
+                {submitLoadingAdd &&
+                    <LinearProgress color="warning" />
+                }
+            </Form>
             <br></br>
             <legend align="center" style={{ fontWeight: 'bold' }} > Stock Warning   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
+                        <th>Category</th>
                         <th>Product</th>
                         <th>Brand</th>
                         <th>Category</th>
@@ -214,9 +228,10 @@ const StockWarning = (props) => {
 
 
                     {
-                        productList.map((product, index) => (
+                        productList.data.map((product, index) => (
                             <tr key={product.id} >
                                 <td>{product.id}</td>
+                                <td>{product.category_name}</td>
                                 <td>{product.product_name}</td>
                                 <td>{product.brand_name}</td>
                                 <td>{product.category_name}</td>

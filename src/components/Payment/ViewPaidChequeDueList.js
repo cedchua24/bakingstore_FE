@@ -1,20 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
-import { useParams } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import PaymentTermService from "../OtherService/PaymentTermService";
 import CreditCardDueService from "../OtherService/CreditCardDueService";
-import CreditCardPayService from "../OtherService/CreditCardPayService";
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-
+import { Form } from 'react-bootstrap';
 
 
 import Alert from '@mui/material/Alert';
@@ -92,7 +82,10 @@ const ViewPaidChequeDueList = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
-
+    const totalSum = (numbers) => {
+        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        return numberFormat(numbers.reduce((acc, { amount }) => acc + amount, 0));
+    }
 
 
     return (
@@ -102,6 +95,17 @@ const ViewPaidChequeDueList = () => {
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                 }
             </Stack>
+
+
+            <div style={{ minWidth: 800 }}>
+
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label>Total Paid Amount: </Form.Label>
+                    <Form.Control type="text" value={totalSum(orderTransactionList)} />
+                </Form.Group>
+
+            </div>
+            <br></br>
 
             <br></br>
             <legend align="center" style={{ fontWeight: 'bold' }} > Paid Cheque  </legend>
@@ -142,15 +146,17 @@ const ViewPaidChequeDueList = () => {
                                 <td>{numberFormat(orderTransaction.amount_paid)}</td>
                                 <td>{orderTransaction.interest_amount}</td>
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                <td>
-                                    {orderTransaction.status != 1 &&
+
+                                {orderTransaction.status != 1 &&
+                                    <td>
                                         <Link variant="primary" to={"/updateCreditCardDue/" + orderTransaction.id}   >
                                             <Button variant="warning" >
                                                 Update
                                             </Button>
                                         </Link>
-                                    }
-                                </td>
+                                    </td>
+                                }
+
                                 <td>
                                     <Link variant="primary" to={"/viewOrder/" + orderTransaction.transaction_id}   >
                                         <Button variant="primary" >

@@ -3,7 +3,6 @@ import ProductServiceService from "./ProductService.service";
 import ProductTransactionService from "../OtherService/ProductTransactionService";
 import BrandServiceService from "../Brand/BrandService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
-import SupplierService from "../Supplier/SupplierService.service";
 import { Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
@@ -31,13 +30,12 @@ import Select from '@mui/material/Select';
 
 
 
-const ProductExpirationList = () => {
+const ProductListDisabled = () => {
 
     useEffect(() => {
         fetchProductList();
         fetchBrandList();
         fetchCategoryList();
-        fetchSupplierList();
     }, []);
 
     const [categoryId, setCategoryId] = useState(0);
@@ -155,13 +153,11 @@ const ProductExpirationList = () => {
 
     const [brandList, setBrandList] = useState([]);
     const [categeryList, setCategoryList] = useState([]);
-    const [supllierList, setSupllierList] = useState([]);
 
     const [message, setMessage] = useState(false);
 
     const [productList, setProductList] = useState({
         total_value: '',
-        today: '',
         data: []
     });
 
@@ -171,17 +167,15 @@ const ProductExpirationList = () => {
     }
 
 
-
-
-    const compareDate = ($date1, $date2) => {
-        const dateDiff = (date, cDate) => Math.ceil(Math.abs(date - cDate) / (1000 * 60 * 60 * 24));
-        const days = dateDiff(new Date($date1), new Date($date2));
-        if (new Date($date1) > new Date($date2)) {
-            return 0;
-        }
-        return days;
+    const fetchProductList = () => {
+        ProductServiceService.fetchProductListDisabled(0)
+            .then(response => {
+                setProductList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
     }
-
 
     const fetchBrandList = () => {
         BrandServiceService.getAll()
@@ -203,19 +197,6 @@ const ProductExpirationList = () => {
             });
     }
 
-    const fetchSupplierList = () => {
-        SupplierService.getAll()
-            .then(response => {
-                setSupllierList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-
-
-
     const deleteProduct = (id, e) => {
 
         const index = productList.findIndex(brand => brand.id === id);
@@ -231,21 +212,10 @@ const ProductExpirationList = () => {
             });
     }
 
-    const fetchProductList = () => {
-
-        ProductServiceService.fetchProductListExpiration(0)
-            .then(response => {
-                setProductList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
     const fetchProductByCategoryId = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ProductServiceService.fetchProductListExpiration(categoryId)
+        ProductServiceService.fetchProductListDisabled(categoryId)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
@@ -264,10 +234,6 @@ const ProductExpirationList = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
-    const formatStatementDate = (date) => {
-        var d = new Date(date);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
 
     return (
         <div>
@@ -290,7 +256,19 @@ const ProductExpirationList = () => {
                             }
                         </Select>
                     </FormControl>
-
+                    <br></br>
+                    <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
+                        <InputLabel htmlFor="standard-adornment-amount">Total Value</InputLabel>
+                        <Input
+                            type='text'
+                            id="filled-"
+                            label="Quantity"
+                            variant="filled"
+                            name='shop_order_quantity'
+                            value={numberFormat(productList.total_value.total_price)}
+                            disabled
+                        />
+                    </FormControl>
 
                 </Box>
 
@@ -364,13 +342,13 @@ const ProductExpirationList = () => {
                     </Box>
                 </Box>
             </Modal>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Product Expiration List </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Product List Disabled</legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
-                        <th>Category</th>
                         <th>Product</th>
+                        <th>Category</th>
                         <th>Brand</th>
                         <th>Price</th>
                         <th>Quantity / Weight</th>
@@ -380,8 +358,8 @@ const ProductExpirationList = () => {
                         <th>Stock Warning</th>
                         <th>Status</th>
                         <th>Value</th>
-                        <th>Expiration</th>
-                        <th></th>
+                        <th>Note</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 {productList.length == 0 ?
@@ -408,19 +386,16 @@ const ProductExpirationList = () => {
                                         <td>{product.stock_warning}</td>
                                         <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                         <td>{numberFormat(product.price * product.stock)}</td>
-                                        {product.expiration != null ?
-                                            compareDate(productList.today, product.expiration) < 90 ?
-                                                <td style={{ color: 'red', }}>{formatStatementDate(product.expiration)}</td> :
-                                                <td >{formatStatementDate(product.expiration)}</td>
-                                            : ""
-                                        }
+                                        <td><p>{product.note}</p></td>
+
                                         <td>
-                                            <Link variant="contained" to={"/expirationEditList/" + product.id}   >
+                                            <Link variant="primary" to={"/editProduct/" + product.id}   >
                                                 <Button variant="contained" >
-                                                    Expiration List
+                                                    Update
                                                 </Button>
                                             </Link>
                                         </td>
+
                                     </tr>
                                 )
                                 )
@@ -434,4 +409,4 @@ const ProductExpirationList = () => {
     )
 }
 
-export default ProductExpirationList
+export default ProductListDisabled
