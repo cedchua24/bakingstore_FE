@@ -217,7 +217,7 @@ const ViewOrderSupplierTransaction = () => {
                                 <td>
                                     {orderTransaction.status != 1 &&
                                         <Link variant="primary" to={"/promoInstallment/" + orderTransaction.id}   >
-                                            <Button variant="primary" disabled>
+                                            <Button variant="primary" >
                                                 Installment
                                             </Button>
                                         </Link>
