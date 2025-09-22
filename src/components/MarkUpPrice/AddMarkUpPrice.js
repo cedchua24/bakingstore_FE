@@ -259,7 +259,7 @@ const AddMarkUpPrice = (props) => {
             }
             <Box
                 sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
+                    '& .MuiTextField-root': { m: 1, width: '55ch' },
                 }}
                 noValidate
                 autoComplete="off"
