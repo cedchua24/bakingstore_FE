@@ -85,6 +85,10 @@ const CustomerList = (props) => {
                     <Form.Label>Date To:</Form.Label>
                     <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
                 </Form.Group>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Total Count:</Form.Label>
+                    <Form.Control type="text" value={customerList.length} disabled />
+                </Form.Group>
                 <Button variant="primary"
                     onClick={submitSortedCustomerList}
                     disabled={isAddDisabled}
