@@ -875,6 +875,10 @@ export default function PersistentDrawerLeft() {
                             <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
                             <NavDropdown.Item href="/customerHistory">Customer History</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerConvo">Customer Follow Up</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerReOrder">Customer Re-Order</NavDropdown.Item>
+
+
                         </NavDropdown>
                     </Nav>
 

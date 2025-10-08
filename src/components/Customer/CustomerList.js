@@ -28,9 +28,11 @@ const CustomerList = (props) => {
     });
 
     const fetchCustomerList = () => {
+        setSubmitLoadingAdd(true);
         CustomerService.fetchCustomerByDate()
             .then(response => {
                 setCustomerList(response.data);
+                setSubmitLoadingAdd(false);
             })
             .catch(e => {
                 console.log("error", e)

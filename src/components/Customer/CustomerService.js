@@ -23,12 +23,21 @@ class CustomerService {
     // return axios.post("/api/customers/customerLastOrderList", data);
     return axios.post(`/api/customers/customerLastOrderList/${id}`, data);
   }
+  customerConvoList(id, data) {
+    // return axios.post("/api/customers/customerLastOrderList", data);
+    return axios.post(`/api/customers/customerConvoList/${id}`, data);
+  }
+
   fetchCustomerByDate(data) {
     return axios.post("/api/customers/fetchCustomerByDate", data);
   }
   fetchCustomerAds(data) {
     return axios.post("/api/customers/fetchCustomerAds", data);
   }
+  fetchCustomerTransactionListByDate(data) {
+    return axios.post("/api/customers/fetchCustomerTransactionListByDate", data);
+  }
+
 
   fetchCustomerProduct(id) {
     return axios.get(`/api/customers/fetchCustomerProduct/${id}`);

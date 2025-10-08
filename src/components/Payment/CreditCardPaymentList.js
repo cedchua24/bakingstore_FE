@@ -62,6 +62,7 @@ const CreditCardPaymentList = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    //totalsum
     const totalSum = (numbers) => {
         // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
         return numberFormat(numbers.reduce((acc, { total_balance_due }) => acc + total_balance_due, 0));

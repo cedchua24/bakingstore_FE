@@ -17,7 +17,7 @@ import { styled } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 
-const CustomerHistory = () => {
+const CustomerReOrder = () => {
 
     useEffect(() => {
         fetchCustomerList();
@@ -57,7 +57,15 @@ const CustomerHistory = () => {
 
     const [customerTransaction, setCustomerTransaction] = useState({
         dateFrom: '',
+        dateTo: '',
         page: 1
+    });
+
+    const [sortedCustomer, setSortedCustomer] = useState({
+        data: [],
+        code: '',
+        message: '',
+        id: 0
     });
 
     const [submitLoadingPage, setSubmitLoadingPage] = useState(false);
@@ -96,7 +104,7 @@ const CustomerHistory = () => {
         } else {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            CustomerService.customerLastOrderList(1, customerTransaction)
+            CustomerService.customerConvoList(1, customerTransaction)
                 .then(response => {
                     setCustomerList(response.data);
                     setSubmitLoadingAdd(false);
@@ -113,7 +121,7 @@ const CustomerHistory = () => {
 
     const fetchCustomerList = () => {
         setSubmitLoadingAdd(true);
-        CustomerService.customerLastOrderList(1, customerTransaction)
+        CustomerService.customerConvoList(1, customerTransaction)
             .then(response => {
                 setCustomerList(response.data);
                 setSubmitLoadingAdd(false);
@@ -131,10 +139,11 @@ const CustomerHistory = () => {
     const onChangeInputPagination = async (e, value) => {
         e.preventDefault();
         console.log('value', value);
+        // customerLastOrderList();
         setCustomerTransaction({ ...customerTransaction, page: value });
         setSubmitLoadingPage(true);
         setIsAddDisabledPage(true);
-        CustomerService.customerLastOrderList(value, customerTransaction)
+        CustomerService.customerConvoList(value, customerTransaction)
             .then(response => {
                 setCustomerList(response.data);
                 setSubmitLoadingPage(false);
@@ -225,40 +234,70 @@ const CustomerHistory = () => {
     }
 
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
+
+    const totalSum = (numbers) => {
+        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        return numberFormat(numbers.reduce((acc, { shop_order_transaction_total_price }) => acc + shop_order_transaction_total_price, 0));
+    }
+
+    const totalProfit = (numbers) => {
+        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        return numberFormat(numbers.reduce((acc, { profit }) => acc + profit, 0));
+    }
+
     const covertDateString = (day) => {
         var d = new Date(day);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
 
-
-
-
     return (
         <div>
+
             <Form>
-                {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
+                <div style={{ float: 'right', marginRight: 500 }}>
+                    <Form.Group controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Amount: </Form.Label>
+                        <Form.Control type="text" value={totalSum(customerList.data.filter(d => d.last_order < d.last_chat))} />
+                    </Form.Group>
+                    <br></br>
+                    <Form.Group controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Profit: </Form.Label>
+                        <Form.Control type="text" value={totalProfit(customerList.data.filter(d => d.last_order < d.last_chat))} />
+                    </Form.Group>
+                    <br></br>
+
+                </div>
+
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date Below:</Form.Label>
+                    <Form.Label>Date From:</Form.Label>
                     <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
                 </Form.Group>
 
-                {/* <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Days</Form.Label>
-                    <Form.Control type="number" name="dateFrom" placeholder="Enter Category" onChange={onChangeInput} />
-                </Form.Group> */}
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Date To:</Form.Label>
+                    <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
+                </Form.Group>
                 <Button variant="primary"
                     disabled={isAddDisabled}
                     onClick={fetchByDate}>
                     Search
                 </Button>
                 <br></br>
-                {customerList.day_count != 0 &&
+                <br></br>
+
+                {/* {customerList.day_count != 0 &&
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                         <Form.Label>Days Ago:</Form.Label>
                         <Form.Control type="text" value={customerList.day_count} disabled />
                     </Form.Group>
-                }
+                } */}
                 <br></br>
                 <br></br>
                 {submitLoadingAdd &&
@@ -267,7 +306,7 @@ const CustomerHistory = () => {
                 <br></br>
             </Form >
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer History List </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Re Order </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -279,7 +318,12 @@ const CustomerHistory = () => {
                         <th>Address</th>
                         <th>Last Date</th>
                         <th>Last Order</th>
+                        <th>Amount</th>
+                        <th>Profit</th>
                         <th>Action</th>
+                        <th>Last Convo</th>
+                        <th>Chat?</th>
+                        <th>Promo?</th>
                         <th></th>
                         <th></th>
 
@@ -289,7 +333,9 @@ const CustomerHistory = () => {
                 <tbody>
 
                     {
-                        sortList(customerList.data).map((customer, index) => (
+                        sortList(customerList.data.filter(d => d.last_order < d.last_chat)).map((customer, index) => (
+
+
                             <tr key={customer.id} >
                                 <td>{customer.id}</td>
                                 <td>{customer.first_name}</td>
@@ -298,12 +344,18 @@ const CustomerHistory = () => {
                                 <td>{customer.email}</td>
                                 <td>{customer.address}</td>
                                 <td>{covertDateString(customer.date)}</td>
-                                <td>Last {customer.last_order} {customer.last_order <= 1 ? 'Day' : 'Days'}</td>
+                                <td> {customer.last_order == 1 ? customer.last_order + ' Day' : customer.last_order <= 1 ? 'Today' : customer.last_order + ' Days Ago'}</td>
+                                <td>{numberFormat(customer.shop_order_transaction_total_price)}</td>
+                                <td>{numberFormat(customer.profit)}</td>
+
                                 <td>
                                     <IconButton>
                                         <UpdateIcon color="primary" onClick={(e) => handleOpen(customer.id, e)} />
                                     </IconButton>
                                 </td>
+                                <td> {customer.last_chat == 1 ? customer.last_chat + ' Day' : customer.last_chat <= 1 ? 'Today' : customer.last_chat + ' Days Ago'}</td>
+                                <td>{customer.chat == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td>{customer.promo == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
 
                                     <Link variant="primary" to={"/customers/customerTransactionList/" + customer.id}   >
@@ -326,6 +378,7 @@ const CustomerHistory = () => {
                                     </Button>
                                 </td> */}
                             </tr>
+
                         )
                         )
                     }
@@ -401,8 +454,8 @@ const CustomerHistory = () => {
                 </Box>
             </Modal>
 
-        </div>
+        </div >
     )
 }
 
-export default CustomerHistory
+export default CustomerReOrder
