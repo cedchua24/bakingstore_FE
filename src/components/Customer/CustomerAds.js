@@ -26,9 +26,11 @@ const CustomerAds = () => {
 
 
     const fetchCustomerList = () => {
+        setSubmitLoadingAdd(true);
         CustomerService.fetchCustomerAds()
             .then(response => {
                 setCustomerList(response.data);
+                setSubmitLoadingAdd(false);
             })
             .catch(e => {
                 console.log("error", e)
@@ -95,6 +97,11 @@ const CustomerAds = () => {
                     <LinearProgress color="warning" />
                 }
                 <br></br>
+
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Total Count:</Form.Label>
+                    <Form.Control type="text" value={customerList.length} disabled />
+                </Form.Group>
             </Form>
             <legend align="center" style={{ fontWeight: 'bold' }} > Customer Ads List </legend>
             <table class="table table-bordered">
