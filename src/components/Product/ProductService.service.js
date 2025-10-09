@@ -19,6 +19,9 @@ class ProductService {
     fetchProductListV2(id) {
         return axios.get(`/api/products/fetchProductListV2/${id}`);
     }
+    fetchProductToNotify(id) {
+        return axios.get(`/api/products/fetchProductToNotify/${id}`);
+    }
     fetchProductListNote(id) {
         return axios.get(`/api/products/fetchProductListNote/${id}`);
     }
@@ -33,6 +36,9 @@ class ProductService {
     }
     fetchByStockWarning(id) {
         return axios.get(`/api/products/fetchByStockWarning/${id}`);
+    }
+    fetchNoStockWarning(id) {
+        return axios.get(`/api/products/fetchNoStockWarning/${id}`);
     }
     fetchOutOfStock(id) {
         return axios.get(`/api/products/fetchOutOfStock/${id}`);

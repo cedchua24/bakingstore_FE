@@ -65,12 +65,18 @@ import CompletedCustomerOrder from "./components/OrderCustomerList/CompletedCust
 import UpdateCustomerOrder from "./components/OrderCustomerList/UpdateCustomerOrder";
 import Stock from "./components/Stock/Stock";
 import StockWarning from "./components/Stock/StockWarning";
+import NoStockWarning from "./components/Stock/NoStockWarning";
+import OutOfStockReturn from "./components/Stock/OutOfStockReturn";
+
+
 import NoStock from "./components/Stock/NoStock";
 import ModifiedStock from "./components/Stock/ModifiedStock";
 
 import EditStock from "./components/Stock/EditStock";
 import ViewTransaction from "./components/Stock/ViewTransaction";
 import ViewStockTransactionList from "./components/Stock/ViewStockTransactionList";
+import ViewCustomerNotify from "./components/Stock/ViewCustomerNotify";
+
 
 import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
 import MarkUpPriceListV2 from "./components/MarkUpPrice/MarkUpPriceListV2";
@@ -312,12 +318,18 @@ const App = () => {
           <Route path="/addStock" element={<Stock />} />
           <Route exact path="/editStock/:id" element={<EditStock />} />
           <Route exact path="/stockWarning" element={<StockWarning />} />
+          <Route exact path="/noStockWarning" element={<NoStockWarning />} />
+          <Route exact path="/outOfStockReturn" element={<OutOfStockReturn />} />
+
+
           <Route exact path="/noStock" element={<NoStock />} />
 
           <Route exact path="/modifiedStock" element={<ModifiedStock />} />
 
           <Route exact path="/viewTransaction/:id" element={<ViewTransaction />} />
           <Route exact path="/viewStockTransactionList/:id" element={<ViewStockTransactionList />} />
+          <Route exact path="/viewCustomerNotify/:id" element={<ViewCustomerNotify />} />
+
 
           <Route exact path="/markUpPrice/" element={<MarkUpPrice />} />
           <Route exact path="/markUpPriceListV2/" element={<MarkUpPriceListV2 />} />

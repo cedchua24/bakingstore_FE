@@ -484,6 +484,17 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
+            "name": "No Stock Warning",
+            "url": "/noStockWarning",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Customer to Notify Stock",
+            "url": "/outOfStockReturn",
+            "icon": <ListIcon />
+        },
+
+        {
             "name": "Out of Stock",
             "url": "/noStock",
             "icon": <ListIcon />
