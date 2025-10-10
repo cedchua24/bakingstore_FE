@@ -44,10 +44,11 @@ const ViewCustomerNotify = () => {
         created_at: '',
         updated_at: ''
     });
-    const [open, setOpen] = React.useState(false);
 
-    const handleCloseNotify = () => setOpen(false);
     const [openCustomerNotify, setOpenCustomerNotify] = React.useState(false);
+    const handleCloseNotify = () => setOpenCustomerNotify(false);
+
+
     const handleOpenCustomerNotify = (id, e) => {
         console.log('e', id);
         fetchNotifyCustomer(id);

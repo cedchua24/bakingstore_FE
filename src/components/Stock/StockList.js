@@ -65,6 +65,7 @@ const StockList = (props) => {
     });
 
     const [open, setOpen] = React.useState(false);
+    const [openNotify, setOpenNotify] = React.useState(false);
 
     const handleOpen = (id, e) => {
         console.log('e', id);
@@ -73,6 +74,8 @@ const StockList = (props) => {
     }
 
     const handleClose = () => setOpen(false);
+
+    const handleCloseNotify = () => setOpenNotify(false);
 
     const [product, setProduct] = useState({
         id: 0,
@@ -150,7 +153,7 @@ const StockList = (props) => {
         OutOfStockUpdateService.create(orderSupplierModal)
             .then(response => {
                 setSubmitLoading(false);
-                setOpen(false);
+                setOpenNotify(false);
             })
             .catch(e => {
                 console.log(e);
@@ -178,7 +181,7 @@ const StockList = (props) => {
     const handleOpenNotify = (id, e) => {
         console.log('e', id);
         fetchShopOrder(id);
-        setOpen(true);
+        setOpenNotify(true);
     }
 
     const fetchShopOrder = async (id) => {
@@ -473,8 +476,8 @@ const StockList = (props) => {
 
             <Modal
                 keepMounted
-                open={open}
-                onClose={handleClose}
+                open={openNotify}
+                onClose={handleCloseNotify}
                 aria-labelledby="keep-mounted-modal-title"
                 aria-describedby="keep-mounted-modal-description"
             >
