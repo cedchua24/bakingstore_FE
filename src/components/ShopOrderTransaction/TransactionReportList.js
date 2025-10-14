@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
+import DeleteIcon from '@mui/icons-material/Delete';
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
 import ExpensesService from "../Expenses/ExpensesService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
@@ -44,6 +46,19 @@ const TransactionReportList = () => {
         code: '',
         message: '',
     });
+
+    const [deliveryModal, setDeliveryModal] = useState({
+        id: 0,
+        shop_order_transaction_id: 0,
+        name: '',
+        date: '',
+        note: '',
+        contact_number: '',
+        address: '',
+        status: 0,
+        address: ''
+    });
+
 
     const [date, setDate] = useState(0);
 
@@ -128,6 +143,121 @@ const TransactionReportList = () => {
             });
     }
 
+    const [formDeliveryErrors, setFormDeliveryErrors] = useState({});
+    const [isDeliveryDisabled, setIsDeliveryDisabled] = useState(false);
+    const [submitDeliveryLoadingDisabled, setSubmitDeliveryLoadingDisabled] = useState(false);
+
+
+    const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
+
+    const handleDeleteCloseModal = () => {
+        setDeleteOpenModal(false);
+    };
+
+    const onChangeDelivery = (e) => {
+        setDeliveryModal({ ...deliveryModal, [e.target.name]: e.target.value });
+    }
+
+    const onChangeDeliveryStatus = (e) => {
+
+        console.log("error", e.target.checked)
+        if (e.target.type === 'checkbox') {
+            if (e.target.checked === true) {
+                setDeliveryModal({ ...deliveryModal, status: 1 });
+            } else {
+                setDeliveryModal({ ...deliveryModal, status: 0 });
+            }
+        }
+    }
+
+    const [deleteId, setDeleteId] = useState(0)
+    const openDelete = (id) => {
+        console.log('delete', id);
+        setDeleteId(id)
+        setDeleteOpenModal(true);
+    }
+
+    const [openDelivery, setOpenDelivery] = React.useState(false);
+    const hanldeCloseDelivery = () => setOpenDelivery(false);
+
+    const handleOpenDelivery = (id, e) => {
+        console.log('e', id);
+        fetchDelivery(id);
+        setOpenDelivery(true);
+    }
+
+    const fetchDelivery = async (shop_order_transaction_id) => {
+        await DeliveryCustomerService.fetchDeliveryById(shop_order_transaction_id)
+            .then(response => {
+                if (JSON.stringify(response.data) === '{}') {
+                    setDeliveryModal({
+                        shop_order_transaction_id: shop_order_transaction_id,
+                        id: 0,
+                        name: '',
+                        date: '',
+                        note: '',
+                        contact_number: '',
+                        address: '',
+                        status: 0,
+                        address: ''
+                    });
+
+                    console.log('wla', response.data)
+                } else {
+                    console.log('meron', response.data)
+                    setDeliveryModal(response.data);
+                }
+
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const validateDelivery = (values) => {
+        const errors = {};
+        if (deliveryModal.name.length == 0) {
+            errors.name = "Name is Required!";
+        }
+        if (deliveryModal.address.length == 0) {
+            errors.name = "Address is Required!";
+        }
+        if (deliveryModal.contact_number.length == 0) {
+            errors.name = "Contact Number is Required!";
+        }
+        if (deliveryModal.date.length == 0) {
+            errors.name = "Date is Required!";
+        }
+
+        return errors;
+    }
+
+    const updateDelivery = () => {
+        console.log('status: ', deliveryModal);
+        console.log("count: ", Object.keys(validateDelivery(deliveryModal)).length);
+        console.log("validate: ", validateDelivery(deliveryModal));
+        setFormDeliveryErrors(validateDelivery(deliveryModal));
+        if (Object.keys(validateDelivery(deliveryModal)).length > 0) {
+            console.log("Has Validation: ");
+        } else {
+            console.log("Ready for saving: ");
+            setSubmitDeliveryLoadingDisabled(true);
+            setIsDeliveryDisabled(true);
+            DeliveryCustomerService.create(deliveryModal)
+                .then(response => {
+                    saveOrderTransaction();
+                    setOpenDelivery(false);
+                    setSubmitDeliveryLoadingDisabled(false);
+                    setIsDeliveryDisabled(false);
+                })
+                .catch(e => {
+                    setOpenDelivery(false);
+                    setSubmitDeliveryLoadingDisabled(false);
+                    setIsDeliveryDisabled(false);
+                    console.log(e);
+                });
+        }
+    }
 
 
     const [submitOpenModal, setSubmitOpenModal] = React.useState(false);
@@ -505,14 +635,16 @@ const TransactionReportList = () => {
                                                 <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
                                         </td>
                                         <td>
-                                            <td>
-                                                <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
-                                                    shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 ? <>
-                                                        <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING DELIVERY</p></>
-                                                        : ''}</p>
-
-                                            </td>
-
+                                            <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
+                                                shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 ? <>                                    <Tooltip title="Delete">
+                                                    <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING DELIVERY</p>
+                                                    <IconButton>
+                                                        <DeleteIcon color="error" onClick={(e) => openDelete(shopOrderTransaction.id, e)} />
+                                                    </IconButton>
+                                                </Tooltip></> : ''}</p>
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(shopOrderTransaction.id, e)} />
+                                            </IconButton>
                                         </td>
                                         <td>
                                             <p>{shopOrderTransaction.rider_name}</p>
@@ -709,6 +841,77 @@ const TransactionReportList = () => {
                         <Button variant="primary" onClick={updateDate}>
                             Submit
                         </Button>
+                    </Box>
+                </Box>
+            </Modal>
+
+            <Modal
+                keepMounted
+                open={openDelivery}
+                onClose={hanldeCloseDelivery}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="keep-mounted-modal-title" variant="h4" align="center" component="h2">
+                        For Delivery
+                    </Typography>
+                    <br></br>
+                    {formDeliveryErrors.name && <p style={{ color: "red" }}>{formDeliveryErrors.name}</p>}
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Receiver Name</Form.Label>
+                        <Form.Control type="text" value={deliveryModal.name} name="name" onChange={onChangeDelivery} />
+                    </Form.Group>
+                    {formDeliveryErrors.address && <p style={{ color: "red" }}>{formDeliveryErrors.address}</p>}
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Address</Form.Label>
+                        <Form.Control type="text" value={deliveryModal.address} name="address" onChange={onChangeDelivery} />
+                    </Form.Group>
+                    {formDeliveryErrors.contact_number && <p style={{ color: "red" }}>{formDeliveryErrors.contact_number}</p>}
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Contact Number</Form.Label>
+                        <Form.Control type="text" value={deliveryModal.contact_number} name="contact_number" onChange={onChangeDelivery} />
+                    </Form.Group>
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Note</Form.Label>
+                        <Form.Control type="text" value={deliveryModal.note} name="note" onChange={onChangeDelivery} />
+                    </Form.Group>
+                    {formDeliveryErrors.date && <p style={{ color: "red" }}>{formDeliveryErrors.date}</p>}
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Date</Form.Label>
+                        <Form.Control type="date" value={deliveryModal.date} name="date" onChange={onChangeDelivery} />
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>is Delivered ? </Form.Label>
+                        <Checkbox
+                            checked={deliveryModal.status === 0 ? false : true}
+                            onChange={onChangeDeliveryStatus}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                        />
+                    </Form.Group>
+                    <br></br>
+                    <br></br>
+                    {submitDeliveryLoadingDisabled &&
+                        <LinearProgress color="warning" />
+                    }
+                    <br></br>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Button variant="primary"
+                            onClick={updateDelivery}
+                            disabled={isDeliveryDisabled}
+                        >
+                            Submit
+                        </Button>
+
+
                     </Box>
                 </Box>
             </Modal>

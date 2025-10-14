@@ -43,6 +43,12 @@ class ProductService {
     fetchOutOfStock(id) {
         return axios.get(`/api/products/fetchOutOfStock/${id}`);
     }
+    fetchStockWarningPerSupplier(id) {
+        return axios.get(`/api/products/fetchStockWarningPerSupplier/${id}`);
+    }
+    fetchStockPerSupplier(id) {
+        return axios.get(`/api/products/fetchStockPerSupplier/${id}`);
+    }
     fetchProductListDisabled(id) {
         return axios.get(`/api/products/fetchProductListDisabled/${id}`);
     }

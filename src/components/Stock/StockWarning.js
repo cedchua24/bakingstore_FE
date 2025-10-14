@@ -207,7 +207,7 @@ const StockWarning = (props) => {
                 }
             </Form>
             <br></br>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Stock Warning   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Stock Warning    </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -215,7 +215,6 @@ const StockWarning = (props) => {
                         <th>Category</th>
                         <th>Product</th>
                         <th>Brand</th>
-                        <th>Category</th>
                         <th>Price</th>
                         <th>Stock</th>
                         <th>Stock/Pc</th>
@@ -234,7 +233,6 @@ const StockWarning = (props) => {
                                 <td>{product.category_name}</td>
                                 <td>{product.product_name}</td>
                                 <td>{product.brand_name}</td>
-                                <td>{product.category_name}</td>
                                 <td>₱ {product.price}.00</td>
                                 <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
                                     : <p >{product.stock}</p>}

@@ -10,6 +10,10 @@ import ProductExpirationList from "./components/Product/ProductExpirationList";
 import ProductNoteList from "./components/Product/ProductNoteList";
 
 import ProductSpoilageList from "./components/Spoilage/ProductSpoilageList";
+import AddRTS from "./components/ReturnToSeller/AddRTS";
+import RTSList from "./components/ReturnToSeller/RTSList";
+
+
 import SpoilageList from "./components/Spoilage/SpoilageList";
 
 
@@ -70,6 +74,9 @@ import OutOfStockReturn from "./components/Stock/OutOfStockReturn";
 
 
 import NoStock from "./components/Stock/NoStock";
+import StockSupplierWarning from "./components/Stock/StockSupplierWarning";
+import StockSupplier from "./components/Stock/StockSupplier";
+
 import ModifiedStock from "./components/Stock/ModifiedStock";
 
 import EditStock from "./components/Stock/EditStock";
@@ -271,6 +278,10 @@ const App = () => {
 
 
           <Route path="/productSpoilageList" element={<ProductSpoilageList />} />
+          <Route path="/rts/addRTS" element={<AddRTS />} />
+          <Route path="/rts/rTSList" element={<RTSList />} />
+
+
           <Route path="/spoilageList" element={<SpoilageList />} />
 
           <Route exact path="/editProduct/:id" element={<EditProduct />} />
@@ -323,6 +334,10 @@ const App = () => {
 
 
           <Route exact path="/noStock" element={<NoStock />} />
+          <Route exact path="/stockSupplierWarning" element={<StockSupplierWarning />} />
+          <Route exact path="/StockSupplier" element={<StockSupplier />} />
+
+
 
           <Route exact path="/modifiedStock" element={<ModifiedStock />} />
 

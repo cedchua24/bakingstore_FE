@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
 import ProductServiceService from "../Product/ProductService.service";
+import MarkUpPriceService from "../MarkUpPrice/MarkUpPriceService.service";
 import ProductSupplierService from "../ProductSupplier/ProductSupplierService";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -46,9 +47,11 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
+import { styled } from '@mui/material/styles';
 
 
 const AddProductOrderSupplierTransaction = () => {
+    const { id } = useParams();
 
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
@@ -57,7 +60,7 @@ const AddProductOrderSupplierTransaction = () => {
     }, []);
 
 
-    const { id } = useParams();
+
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [value, setValue] = useState(products[0])
@@ -83,6 +86,19 @@ const AddProductOrderSupplierTransaction = () => {
         message: '',
         isShow: false
     });
+
+    const [autoPo, setAutoPo] = useState({
+        order_supplier_transaction_id: id,
+        supplier_id: 0
+    });
+
+    const [autoPoResponse, setAutoResponse] = useState({
+        data: [],
+        code: 0,
+        added_product: ''
+    });
+
+
 
 
 
@@ -334,7 +350,9 @@ const AddProductOrderSupplierTransaction = () => {
                         });
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
+                        window.scrollTo(0, 0);
                     })
+
                     .catch(e => {
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
@@ -344,11 +362,62 @@ const AddProductOrderSupplierTransaction = () => {
         }
     }
 
+    const submitAutoPo = (event) => {
+        event.preventDefault();
+        console.log('autoPo', autoPo);
+
+        setSubmitLoadingAdd(true);
+        setIsAddDisabled(true);
+        OrderSupplierService.sanctum().then(response => {
+            OrderSupplierService.saveAutoPo(autoPo)
+                .then(response => {
+                    setAutoResponse(response.data);
+                    fetchByOrderSupplierId(id);
+                    setOrderSupplier({
+                        order_supplier_transaction_id: id,
+                        product_id: 0,
+                        price: 0,
+                        quantity: 0,
+                        quantity_order: 0,
+                        total_price: 0,
+                    });
+                    updateOrderTransaction();
+                    if (response.data.code === 200) {
+                        setValidator({
+                            severity: 'success',
+                            message: "Successfully Added!" + response.data.added_product,
+                            isShow: true,
+                        });
+
+                    } else if (response.data.code === 202) {
+                        setValidator({
+                            severity: 'warning',
+                            message: response.data.added_product,
+                            isShow: true,
+                        });
+
+                    }
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                    window.scrollTo(0, 0);
+                })
+                .catch(e => {
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                    console.log(e);
+                });
+        });
+
+    }
+
     const fetchOrderSupplierTransaction = async (id) => {
         await OrderSupplierTransactionService.findById(id)
             .then(response => {
                 setOrderSupplierTransaction(response.data);
-
+                setAutoPo({
+                    ...autoPo,
+                    supplier_id: response.data.supplier_id
+                });
 
                 if (response.data.withTax === 0) {
 
@@ -362,6 +431,7 @@ const AddProductOrderSupplierTransaction = () => {
                     setinvoiceTotal(response.data.total_transaction_price);
                 }
 
+                // MarkUpPriceService.fetchMarkUpBySupplierId(response.data.supplier_id)
                 ProductSupplierService.fetchProductSupplierById(response.data.supplier_id)
                     .then(response => {
                         setProducts(response.data);
@@ -477,10 +547,18 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
 
+    const Div = styled('div')(({ theme }) => ({
+        ...theme.typography.button,
+        backgroundColor: theme.palette.background.paper,
+        fontSize: "2rem",
+        padding: theme.spacing(1),
+    }));
 
 
     return (
         <div>
+
+            <Div>{"Purchase Order"}</Div>
 
 
             <Stack sx={{ width: '100%' }} spacing={2}>
@@ -546,9 +624,9 @@ const AddProductOrderSupplierTransaction = () => {
                             id="disable-close-on-select"
                             onChange={handleInputChange}
                             groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.price) + ')'}
+                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.price) + ')' + ' | Stocks - ' + (products.stock)}
                             renderInput={(params) => (
-                                <TextField {...params} label='Choose Product' variant="standard" />
+                                <TextField  {...params} label='Choose Product' variant="standard" />
                             )}
                         />
                     </FormControl>
@@ -630,6 +708,19 @@ const AddProductOrderSupplierTransaction = () => {
                     </div>
                     <br></br>
                 </form>
+
+                <br></br>
+                <form onSubmit={submitAutoPo} >
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        type="submit"
+                        disabled={isAddDisabled}
+                    >
+                        Auto PO
+                    </Button>
+                </form>
+                <br></br>
             </Box>
 
             <TableContainer component={Paper}>

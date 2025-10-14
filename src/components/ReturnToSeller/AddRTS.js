@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
+import ProductSupplierService from "../ProductSupplier/ProductSupplierService";
 
 import CategoryServiceService from "../Category/CategoryService.service";
 import { useNavigate } from "react-router-dom";
-import SpoilageService from "./SpoilageService";
+import RTSService from "./RTSService";
 
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -29,7 +30,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 
 
-const ProductSpoilageList = (props) => {
+const AddRTS = (props) => {
 
     // const productList = props.productList;
     useEffect(() => {
@@ -77,12 +78,16 @@ const ProductSpoilageList = (props) => {
     const [product, setProduct] = useState({
         id: 0,
         product_name: '',
+        supplier_id: '',
         reason: '',
         stock: 0,
         stock_pc: 0,
         newStocks: 0,
+        status: 0,
         pack: ''
     });
+
+    const [supplier, setSupplier] = useState([]);
 
     const [realStock, setRealStock] = useState(0);
     const [errorStock, setErrorStock] = useState(true);
@@ -124,6 +129,14 @@ const ProductSpoilageList = (props) => {
         });
     }
 
+    const onChangeSupplier = (e) => {
+        console.log(e.target.value)
+        setProduct({
+            ...product,
+            supplier_id: e.target.value,
+        });
+    }
+
     const onChangeStock = (e) => {
         setProduct({
             ...product,
@@ -150,6 +163,16 @@ const ProductSpoilageList = (props) => {
             .catch(e => {
                 console.log("error", e)
             });
+
+        await ProductSupplierService.fetchSupplierByProductId(id)
+            .then(response => {
+                setSupplier(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+
     }
 
     const fetchCategoryList = () => {
@@ -164,7 +187,7 @@ const ProductSpoilageList = (props) => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
-        SpoilageService.create(product)
+        RTSService.create(product)
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
@@ -177,7 +200,7 @@ const ProductSpoilageList = (props) => {
                     message: 'Successfuly Added!',
                     isShow: true,
                 });
-                // navigate('/spoilageList');
+                navigate('/rts/rTSList');
             })
             .catch(e => {
                 console.log("error");
@@ -265,7 +288,7 @@ const ProductSpoilageList = (props) => {
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                 }
             </Stack>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Add Spoilage </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Add RTS/BO </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -277,7 +300,7 @@ const ProductSpoilageList = (props) => {
                         <th>Stock</th>
                         <th>Stock/Pc</th>
                         <th>Quantity / Weight</th>
-                        <th>Add Spoilage</th>
+                        <th>Add RTS/BO</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -337,7 +360,7 @@ const ProductSpoilageList = (props) => {
             >
                 <Box sx={style}>
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Stock
+                        Add RTS/BO
                     </Typography>
 
                     {submitLoading &&
@@ -369,6 +392,24 @@ const ProductSpoilageList = (props) => {
                                 <MenuItem value="Pc">Pc</MenuItem>}
 
 
+                        </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+                        <InputLabel id="demo-simple-select-label">Supplier</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            label="Supplier"
+                            name="supplier_id"
+                            onChange={onChangeSupplier}
+                        >
+
+                            {
+                                supplier.map((supplier, index) => (
+                                    <MenuItem value={supplier.id}>{supplier.supplier_name}</MenuItem>
+                                ))
+                            }
                         </Select>
                     </FormControl>
 
@@ -428,4 +469,4 @@ const ProductSpoilageList = (props) => {
     )
 }
 
-export default ProductSpoilageList
+export default AddRTS

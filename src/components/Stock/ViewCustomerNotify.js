@@ -130,7 +130,7 @@ const ViewCustomerNotify = () => {
                         customerNotifyList.data.map((item, index) => (
                             <tr key={item.id} >
                                 <td>{item.id}</td>
-                                <td>{item.first_name + " " + item.lastname}</td>
+                                <td>{item.first_name + " " + item.last_name}</td>
                                 <td>{item.created_at}</td>
                                 <td>{item.status == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>

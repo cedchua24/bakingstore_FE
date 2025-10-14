@@ -405,7 +405,7 @@ const CustomerOrderTransactionList = () => {
     const handleClose = () => setOpen(false);
 
     const handleCloseRider = () => setOpenRider(false);
-    const hanldeCloseDelivery = () => setOpenDelivery(false);
+
 
     const handleClosePickUp = () => setOpenPickUp(false);
 
@@ -414,6 +414,7 @@ const CustomerOrderTransactionList = () => {
     const [openPickUp, setOpenPickUp] = React.useState(false);
 
     const [openDelivery, setOpenDelivery] = React.useState(false);
+    const hanldeCloseDelivery = () => setOpenDelivery(false);
 
     const handleOpenDelivery = (id, e) => {
         console.log('e', id);
