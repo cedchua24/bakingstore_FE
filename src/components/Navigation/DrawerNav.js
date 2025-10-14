@@ -70,6 +70,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ListIcon from '@mui/icons-material/List';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
 
 import { pink } from '@mui/material/colors';
 
@@ -241,6 +242,11 @@ export default function PersistentDrawerLeft() {
     const [open20, setOpen20] = React.useState(false);
     const handleClick20 = () => {
         setOpen20(!open20);
+    };
+
+    const [open21, setOpen21] = React.useState(false);
+    const handleClick21 = () => {
+        setOpen21(!open21);
     };
 
 
@@ -474,13 +480,23 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
+            "name": "Stock Per Supplier",
+            "url": "/stockSupplier",
+            "icon": <ListIcon />
+        },
+        {
             "name": "Modifed Stock Daily",
             "url": "/modifiedStock",
             "icon": <ListIcon />
         },
         {
-            "name": "Stock Warning",
+            "name": "Stock Warning ",
             "url": "/stockWarning",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Stock Warning Per Supplier",
+            "url": "/stockSupplierWarning",
             "icon": <ListIcon />
         },
         {
@@ -575,6 +591,22 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         }
     ]);
+
+    const [rts, setRts] = useState([
+        {
+            "name": "Add RTS/BO",
+            "url": "/rts/addRTS",
+            "icon": <AddIcon />
+        }
+        ,
+        {
+            "name": "RTS/BO List",
+            "url": "/rts/rTSList",
+            "icon": <ListIcon />
+        }
+    ]);
+
+
 
     const [transactionReportList, setTransactionReportList] = useState([
         {
@@ -1461,6 +1493,34 @@ export default function PersistentDrawerLeft() {
                     <Collapse in={open20} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {spoilage.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
+
+                <List
+                    sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                >
+                    <ListItemButton onClick={handleClick21}>
+                        <ListItemIcon>
+                            <AssignmentReturnIcon color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary="RTS/BO" />
+                        {open21 ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={open21} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {rts.map((nav, index) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>

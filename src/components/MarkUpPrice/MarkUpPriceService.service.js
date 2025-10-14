@@ -13,6 +13,9 @@ class MarkUpPriceService {
     saveMarkUp(data) {
         return axios.post("/api/markUpPrice/saveMarkUp", data);
     }
+    fetchMarkUpBySupplierId(id) {
+        return axios.get(`/api/markUpPrice/fetchMarkUpBySupplierId/${id}`);
+    }
     update(id, data) {
         return axios.put(`/api/markUpPrice/${id}`, data);
     }

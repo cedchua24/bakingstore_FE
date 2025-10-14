@@ -2,13 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
-
-import CategoryServiceService from "../Category/CategoryService.service";
-import { useNavigate } from "react-router-dom";
-import SpoilageService from "./SpoilageService";
-
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
+import SupplierService from "../Supplier/SupplierService.service";
 
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
@@ -25,30 +19,31 @@ import { Form } from 'react-bootstrap';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
+
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 
 
-const ProductSpoilageList = (props) => {
+
+
+const StockSupplierWarning = (props) => {
 
     // const productList = props.productList;
     useEffect(() => {
-        fetchProductList();
-        fetchCategoryList();
+        fetchProductList(5);
+        fetchSupplier();
     }, []);
 
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
-    const navigate = useNavigate();
     const [productList, setProductList] = useState({
-        total_value: '',
-        data: []
+        data: [],
+        id: 0
     });
-    const [categoryId, setCategoryId] = useState(0);
-    const [categeryList, setCategoryList] = useState([]);
+
+    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [isAddDisabled, setIsAddDisabled] = useState(false);
+
+    const [supplierId, setCategoryId] = useState(0);
+    const [supplierList, setSupplierList] = useState([]);
     const [submitLoading, setSubmitLoading] = useState(false);
 
     const style = {
@@ -77,44 +72,18 @@ const ProductSpoilageList = (props) => {
     const [product, setProduct] = useState({
         id: 0,
         product_name: '',
-        reason: '',
         stock: 0,
-        stock_pc: 0,
         newStocks: 0,
         pack: ''
     });
 
     const [realStock, setRealStock] = useState(0);
-    const [errorStock, setErrorStock] = useState(true);
-    const [errorStock2, setErrorStock2] = useState(true);
-
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [errorStock, setErrorStock] = useState(false);
 
     const onChangeInput = (e) => {
         console.log(e.target.value)
-        setProduct({
-            ...product,
-            pack: e.target.value,
-        });
         setCategoryId(e.target.value)
-        // setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
     }
-
-
-    const onChange = (e) => {
-        setProduct({ ...product, [e.target.name]: e.target.value });
-
-        if (e.target.value.length == 0) {
-            setErrorStock2(true);
-            console.log('true')
-        } else {
-            console.log('false')
-            setErrorStock2(false);
-        }
-    }
-
-
 
     const onChangePackaging = (e) => {
         console.log(e.target.value)
@@ -125,20 +94,18 @@ const ProductSpoilageList = (props) => {
     }
 
     const onChangeStock = (e) => {
+        // const realStock = product.stock;
+        // const totalStock = Number(realStock) + Number(e.target.value);
         setProduct({
             ...product,
             newStocks: e.target.value,
         });
 
-        if (e.target.value > 0) {
+        if (Number(e.target.value) < 1) {
             setErrorStock(true);
-            console.log('true')
         } else {
-            console.log('false')
             setErrorStock(false);
         }
-
-
     }
 
     const fetchByProductId = async (id) => {
@@ -152,51 +119,38 @@ const ProductSpoilageList = (props) => {
             });
     }
 
-    const fetchCategoryList = () => {
-        CategoryServiceService.getAll()
+    const fetchSupplier = () => {
+        SupplierService.getAll()
             .then(response => {
-                setCategoryList(response.data);
+                setSupplierList(response.data);
             })
             .catch(e => {
                 console.log("error", e)
             });
     }
 
+
+
     const updateProduct = () => {
         setSubmitLoading(true);
-        SpoilageService.create(product)
+        ProductServiceService.update(product.id, product)
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
                 setOpen(false);
-                setErrorStock(false);
                 // updateOrderTransaction();
-                window.scrollTo(0, 0);
-                setValidator({
-                    severity: 'success',
-                    message: 'Successfuly Added!',
-                    isShow: true,
-                });
-                // navigate('/spoilageList');
             })
             .catch(e => {
-                console.log("error");
+                console.log(e);
                 setSubmitLoading(false);
                 setOpen(false);
-                setErrorStock(false);
-                window.scrollTo(0, 0);
-                setValidator({
-                    severity: 'error',
-                    message: 'Error!',
-                    isShow: true,
-                });
             });
 
     }
 
 
     const fetchProductList = () => {
-        ProductServiceService.fetchProductByCategoryId(2)
+        ProductServiceService.fetchStockWarningPerSupplier(5)
             .then(response => {
                 setProductList(response.data);
             })
@@ -205,19 +159,16 @@ const ProductSpoilageList = (props) => {
             });
     }
 
-    const fetchProductByCategoryId = () => {
+    const fetchProductBysupplierId = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ProductServiceService.fetchProductByCategoryId(categoryId)
+        ProductServiceService.fetchStockWarningPerSupplier(supplierId)
             .then(response => {
+                setProductList(response.data);
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-                setProductList(response.data);
-
             })
             .catch(e => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
                 console.log("error", e)
             });
     }
@@ -227,19 +178,18 @@ const ProductSpoilageList = (props) => {
             <Form>
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Category</InputLabel>
+                        <InputLabel id="demo-simple-select-label">Supplier</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
-                            // value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
-                            name="category_id"
-                            defaultValue={2}
+                            defaultValue={5}
+                            label="Supplier"
+                            name="supplierId"
                             onChange={onChangeInput}
                         >
                             {
-                                categeryList.map((category, index) => (
-                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
+                                supplierList.map((supplier, index) => (
+                                    <MenuItem value={supplier.id}>{supplier.supplier_name}</MenuItem>
                                 ))
                             }
                         </Select>
@@ -248,87 +198,86 @@ const ProductSpoilageList = (props) => {
 
                 <Button
                     variant="contained"
-                    onClick={fetchProductByCategoryId}
                     disabled={isAddDisabled}
+                    onClick={fetchProductBysupplierId}
                 >
                     Search
                 </Button>
-                <br></br>
-                <br></br>
+                <br></br><br></br>
+
                 {submitLoadingAdd &&
                     <LinearProgress color="warning" />
                 }
+                <br></br>
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Total Count:</Form.Label>
+                    <Form.Control type="text" value={productList.data.length} disabled />
+                </Form.Group>
             </Form>
             <br></br>
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Add Spoilage </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Stock Warning Per Supplier   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
+                        <th>Supplier</th>
+                        <th>Category</th>
                         <th>Product</th>
                         <th>Brand</th>
-                        <th>Category</th>
                         <th>Price</th>
                         <th>Stock</th>
                         <th>Stock/Pc</th>
                         <th>Quantity / Weight</th>
-                        <th>Add Spoilage</th>
-                        <th></th>
+                        <th>Update Stock</th>
+                        <th>Transaction</th>
                     </tr>
                 </thead>
-                {productList.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
-                    :
-                    (
-                        <tbody>
+                <tbody>
 
 
-                            {
-                                productList.data.map((product, index) => (
-                                    <tr key={product.id} >
-                                        <td>{product.id}</td>
-                                        <td>{product.product_name}</td>
-                                        <td>{product.brand_name}</td>
-                                        <td>{product.category_name}</td>
-                                        <td>₱ {product.price}.00</td>
-                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
-                                            : <p >{product.stock}</p>}
-                                        </td>
-                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
-                                            : <p >{product.stock_pc}</p>}
-                                        </td>
-                                        <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
-                                            : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                        </td>
-                                        <td>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
-                                            </IconButton>
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"/viewTransaction/" + product.id}   >
-                                                <Button variant="contained" disabled>
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        {/* <td>
+                    {
+                        productList.data.map((product, index) => (
+                            <tr key={product.id} >
+                                <td>{product.id}</td>
+                                <td>{product.supplier_name}</td>
+                                <td>{product.category_name}</td>
+                                <td>{product.product_name}</td>
+                                <td>{product.brand_name}</td>
+                                <td>₱ {product.price}.00</td>
+                                <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
+                                    : <p >{product.stock}</p>}
+                                </td>
+                                <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
+                                    : <p >{product.stock_pc}</p>}
+                                </td>
+                                {/* <td>{product.weight}x{product.quantity}kg</td> */}
+                                <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
+                                    : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
+                                </td>
+                                <td>
+                                    <IconButton>
+                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} disabled />
+                                    </IconButton>
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"/viewTransaction/" + product.id}   >
+                                        <Button variant="contained" >
+                                            View
+                                        </Button>
+                                    </Link>
+                                </td>
+                                {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteProduct(product.id, e)} >
                                         Delete
                                     </Button>
                                 </td> */}
-                                    </tr>
-                                )
-                                )
-                            }
-                        </tbody>)}
+                            </tr>
+                        )
+                        )
+                    }
+                </tbody>
             </table>
-            < Modal
+            <Modal
                 keepMounted
                 open={open}
                 onClose={handleClose}
@@ -365,15 +314,12 @@ const ProductSpoilageList = (props) => {
                             onChange={onChangePackaging}
                         >
                             <MenuItem value={product.packaging}>{product.packaging}</MenuItem>
-                            {product.quantity != 1 &&
-                                <MenuItem value="Pc">Pc</MenuItem>}
-
-
+                            <MenuItem value="Pc">Pc</MenuItem>
                         </Select>
                     </FormControl>
 
                     <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Quantity (must be negative)</InputLabel>
+                        <InputLabel htmlFor="standard-adornment-amount">Add Stocks</InputLabel>
                         <Input
                             type='number'
                             id="filled-required"
@@ -381,7 +327,7 @@ const ProductSpoilageList = (props) => {
                             variant="filled"
                             name='newStocks'
                             errorText='{this.state.password_error_text}'
-                            // min='1'
+                            min='1'
                             // value={product.stock}
                             onChange={onChangeStock}
                             // helperText="Incorrect entry."
@@ -389,21 +335,16 @@ const ProductSpoilageList = (props) => {
                         />
                     </FormControl>
 
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Reason</InputLabel>
-                        <Input
-                            type='text'
+                    {/* <FormControl fullWidth sx={{ m: 0 }} variant="standard">
+                        <TextField
+                            disabled
                             id="filled-required"
-                            label="Reason"
+                            label="Stock"
                             variant="filled"
-                            name='reason'
-                            error={errorStock2}
-                            onChange={onChange}
+                            name='product_name'
+                            value={product.stock}
                         />
-                    </FormControl>
-
-
+                    </FormControl> */}
 
                     <Box
                         sx={{
@@ -419,13 +360,13 @@ const ProductSpoilageList = (props) => {
                             onClick={updateProduct}
                             disabled={errorStock}
                             size="large" >
-                            Submit
+                            Submits
                         </Button>
                     </Box>
                 </Box>
             </Modal>
-        </div >
+        </div>
     )
 }
 
-export default ProductSpoilageList
+export default StockSupplierWarning

@@ -15,6 +15,9 @@ class OrderSupplierService {
     setToActiveExpiration(data) {
         return axios.post("/api/orderSuppliers/setToActiveExpiration", data);
     }
+    saveAutoPo(data) {
+        return axios.post("/api/orderSuppliers/saveAutoPo", data);
+    }
     delete(brand) {
         return axios.delete(`/api/orderSuppliers/${brand}`);
     }

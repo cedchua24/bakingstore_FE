@@ -13,6 +13,9 @@ class ProductSupplierService {
     fetchProductSupplierById(id) {
         return axios.get(`/api/productSupplier/fetchProductSupplierById/${id}`);
     }
+    fetchSupplierByProductId(id) {
+        return axios.get(`/api/productSupplier/fetchSupplierByProductId/${id}`);
+    }
     create(data) {
         return axios.post("/api/productSupplier", data);
     }
