@@ -112,12 +112,16 @@ const QuantitySorted = () => {
         padding: theme.spacing(1),
     }));
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
 
 
     return (
         <div>
-            <Div>{"Product Sorted"}
-            </Div>
             <Form>
                 {formErrors.status && <p style={{ color: "red" }}>{formErrors.status}</p>}
                 {/* <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
@@ -163,7 +167,7 @@ const QuantitySorted = () => {
                 }
                 <br></br>
             </Form>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Quantity Sorted   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Top Product Today   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -186,8 +190,8 @@ const QuantitySorted = () => {
                                         <td>{data.id}</td>
                                         <td>{data.business_type}</td>
                                         <td>{data.product_name}</td>
-                                        <td>{data.total_profit}</td>
-                                        {sortedQuantity.id == 3 || sortedQuantity.id == 4 ? <td style={{ fontWeight: 'bold', }}>{data.total_price}</td> : <td >{data.total_price}</td>}
+                                        <td>{numberFormat(data.total_profit)}</td>
+                                        {sortedQuantity.id == 3 || sortedQuantity.id == 4 ? <td style={{ fontWeight: 'bold', }}>{numberFormat(data.total_price)}</td> : <td >{numberFormat(data.total_price)}</td>}
                                         {/* <td style={{ fontWeight: 'bold', }}>{sortedQuantity.total_quantity}</td> */}
                                         {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td style={{ fontWeight: 'bold', }}>{data.total_quantity}</td> : <td >{data.total_quantity}</td>}
                                     </tr>

@@ -532,6 +532,12 @@ const FinalizeShopOrder = () => {
 
                                 <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
                                 <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
+                                {shopOrderTransaction.checker == 0 &&
+                                    <>
+                                        <TableCell style={{ fontWeight: 'bold' }}>  Sales Representative:</TableCell>
+                                        <TableCell align="right">{shopOrderTransaction.sr_name}</TableCell>
+                                    </>
+                                }
 
                             </TableRow>
                         </TableBody>

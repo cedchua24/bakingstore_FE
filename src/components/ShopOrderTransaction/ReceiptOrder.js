@@ -195,9 +195,14 @@ const ReceiptOrder = () => {
 
                 </table>
                 <br></br>
+                <h6 style={{ textAlign: 'center' }}> Sales Representative: {shopOrderTransaction.sr_name}</h6>
+                <br></br>
                 <h5 style={{ textAlign: 'center' }}> THANK YOU FOR YOUR ORDER</h5>
                 <br></br>
                 <h3 style={{ textAlign: 'center' }}> THIS IS NOT AN OFFICIAL RECEIPT</h3>
+                <br></br>
+
+
             </div>
             <br></br>
             <div class="hide-on-print">

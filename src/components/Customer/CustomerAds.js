@@ -115,7 +115,7 @@ const CustomerAds = () => {
                         <th>Email</th>
                         <th>Address</th>
                         <th>Facebook Ads</th>
-                        <th>Status</th>
+                        <th>Active</th>
                         <th>Date</th>
                         <th></th>
                         <th></th>

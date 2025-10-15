@@ -111,12 +111,15 @@ const CustomerSorted = () => {
         padding: theme.spacing(1),
     }));
 
-
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
 
     return (
         <div>
-            <Div>{"Customer Sorted"}
-            </Div>
+
             <Form>
                 {formErrors.status && <p style={{ color: "red" }}>{formErrors.status}</p>}
                 {/* <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
@@ -155,7 +158,7 @@ const CustomerSorted = () => {
                 }
                 <br></br>
             </Form>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Sorted   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Top Customer Today  </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -175,8 +178,8 @@ const CustomerSorted = () => {
                                     <tr key={data.id} >
                                         <td>{data.id}</td>
                                         <td>{data.first_name}</td>
-                                        <td>{data.total_profit}</td>
-                                        <td style={{ fontWeight: 'bold', }}>{data.total_price}</td>
+                                        <td>{numberFormat(data.total_profit)}</td>
+                                        <td style={{ fontWeight: 'bold', }}>{numberFormat(data.total_price)}</td>
                                     </tr>
                                 )
                                 )
