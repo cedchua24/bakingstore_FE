@@ -468,7 +468,7 @@ const TransactionReportList = () => {
                                 )
                             }
                             <tr  >
-                                <td>Total Mandatory Expenses: </td>
+                                <td>Expenses: </td>
                                 <td>{numberFormat(expensesMandatory.total_expenses)}</td>
                             </tr>
                             {

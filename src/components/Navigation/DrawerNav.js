@@ -917,6 +917,13 @@ export default function PersistentDrawerLeft() {
                             <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
                             <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
+
+
+                        </NavDropdown>
+                    </Nav>
+
+                    <Nav >
+                        <NavDropdown title="Customer Reminder" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customerHistory">Customer History</NavDropdown.Item>
                             <NavDropdown.Item href="/customerConvo">Customer Follow Up</NavDropdown.Item>
                             <NavDropdown.Item href="/customerReOrder">Customer Re-Order</NavDropdown.Item>
@@ -929,9 +936,9 @@ export default function PersistentDrawerLeft() {
                         <NavDropdown title="Customer Order" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/customerOrderTransactionList">Customer Order List</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Top Product Today</NavDropdown.Item>
+                            <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Top Customer Today</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/pendingDelivery">For Delivery</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Sorted Product List</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Sorted Customer List</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
 

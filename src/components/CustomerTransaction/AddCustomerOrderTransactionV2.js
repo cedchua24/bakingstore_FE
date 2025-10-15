@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, Form, Alert } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -29,6 +30,8 @@ const AddCustomerOrderTransactionV2 = (props) => {
         requestor: 0,
         checker: 0,
         customer_type_id: 0,
+        sales_rep_id: 0,
+        user_id: localStorage.getItem('auth_user_id'),
         date: '',
         type: 0,
         created_at: '',
@@ -37,6 +40,8 @@ const AddCustomerOrderTransactionV2 = (props) => {
     const shopList = props.shopList;
     const customerList = props.customerList;
     const customerTypeList = props.customerTypeList;
+    const salesRepList = props.salesRepList;
+
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
@@ -68,6 +73,9 @@ const AddCustomerOrderTransactionV2 = (props) => {
         const errors = {};
         if (shopOrderTransaction.shop_id == 0) {
             errors.shop_id = "Shop is Required!";
+        }
+        if (shopOrderTransaction.sales_rep_id == 0) {
+            errors.sales_rep_id = "Sales Representative is Required!";
         }
         if (shopOrderTransaction.customer_type_id == 0) {
             errors.customer_type_id = "Customer Type is Required!";
@@ -203,6 +211,25 @@ const AddCustomerOrderTransactionV2 = (props) => {
                             }
                         </Select>
                     </FormControl> */}
+                    {formErrors.sales_rep_id && <p style={{ color: "red" }}>{formErrors.sales_rep_id}</p>}
+                    <Box sx={{ minWidth: 120 }}>
+                        <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                            <InputLabel id="demo-simple-select-label">Sales Representative</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                label="Shop Name"
+                                name="sales_rep_id"
+                                onChange={onChangeInput}
+                            >
+                                {
+                                    salesRepList.map((salesRep, index) => (
+                                        <MenuItem value={salesRep.id}>{salesRep.first_name}</MenuItem>
+                                    ))
+                                }
+                            </Select>
+                        </FormControl>
+                    </Box>
                     {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
                     <FormControl variant="standard" >
                         <Autocomplete

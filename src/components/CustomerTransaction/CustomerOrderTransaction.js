@@ -3,28 +3,33 @@ import AddCustomerOrderTransactionV2 from "./AddCustomerOrderTransactionV2";
 import ShopService from "../Shop/ShopService";
 import CustomerTypeService from "../OtherService/CustomerTypeService";
 import UserService from "../User/UserService.service";
+import SalesRepService from "../OtherService/SalesRepService";
 import CustomerService from "../Customer/CustomerService";
 
 const CustomerOrderTransaction = () => {
 
     useEffect(() => {
-        // fetchShopList();
+        fetchSalesRep();
         fetchShopActive();
         fetchUserList();
         fetchCustomerTypeList();
     }, []);
 
     const [shopList, setShopList] = useState([]);
+    const [salesRepList, setSalesRepList] = useState([]);
+
 
     const [customerList, setCustomerList] = useState([]);
 
     const [customerTypeList, setCustomerTypeList] = useState([]);
 
 
-    const fetchShopList = () => {
-        ShopService.fetchOnlineOrderList()
+
+
+    const fetchSalesRep = () => {
+        SalesRepService.getAll()
             .then(response => {
-                setShopList(response.data);
+                setSalesRepList(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -69,6 +74,7 @@ const CustomerOrderTransaction = () => {
         <div>
             <AddCustomerOrderTransactionV2
                 shopList={shopList}
+                salesRepList={salesRepList}
                 customerTypeList={customerTypeList}
                 customerList={customerList}
             />

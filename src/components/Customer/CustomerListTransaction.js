@@ -150,7 +150,7 @@ const CustomerListTransaction = () => {
                         <th>FB Ads</th>
                         <th>Sales</th>
                         <th>Profit</th>
-                        <th>Status</th>
+                        <th>Active</th>
                         <th></th>
                         <th></th>
 
