@@ -66,6 +66,7 @@ const CustomerHistory = () => {
     const [customerSupport, setCustomerSupport] = useState({
         id: 0,
         customer_id: 0,
+        user_id: localStorage.getItem('auth_user_id'),
         first_name: '',
         last_name: '',
         chat: 0,
@@ -166,6 +167,7 @@ const CustomerHistory = () => {
         await CustomerService.get(id)
             .then(response => {
                 setCustomerSupport({
+                    ...customerSupport,
                     customer_id: response.data.id,
                     first_name: response.data.first_name,
                     last_name: response.data.last_name,
