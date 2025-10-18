@@ -207,7 +207,7 @@ const CustomerOrderTransactionList = () => {
                 console.log("error", e)
             });
 
-        SpoilageService.fetchSpoilageToday()
+        SpoilageService.fetchSpoilageToday(dateToday.today)
             .then(response => {
                 setSpoilage(response.data);
             })
@@ -626,7 +626,7 @@ const CustomerOrderTransactionList = () => {
                     <Form.Control type="text" value={numberFormat(discountLoss.total_amount)} />
                 </Form.Group>
                 <br></br>
-                <legend align="center" style={{ fontWeight: 'bold' }} > Expense Report   </legend>
+                <legend align="center" style={{ fontWeight: 'bold' }} >  Report   </legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">
