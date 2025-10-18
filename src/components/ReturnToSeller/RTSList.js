@@ -181,6 +181,7 @@ const RTSList = (props) => {
                         <th>Unit</th>
                         <th>Price</th>
                         <th>Quantity</th>
+                        <th>Type</th>
                         <th>Total Cost</th>
                         <th>Reason</th>
                         <th>Date</th>
@@ -207,6 +208,7 @@ const RTSList = (props) => {
                                         <td>{product.type}</td>
                                         <td>{product.type === 'Pc' ? numberFormat(product.price / product.quantity) : numberFormat(product.price)}</td>
                                         <td>{product.rts_quantity}</td>
+                                        <td>{product.type}</td>
                                         <td>{numberFormat(product.total_cost)}</td>
                                         <td>{product.reason}</td>
                                         <td>{covertDateString(product.updated_at)}</td>

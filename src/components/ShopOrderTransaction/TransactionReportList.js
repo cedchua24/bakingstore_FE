@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
+import DiscountService from "../OtherService/DiscountService";
+import SpoilageService from "../Spoilage/SpoilageService";
 import ExpensesService from "../Expenses/ExpensesService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
@@ -26,10 +28,12 @@ import CloseIcon from '@mui/icons-material/Close';
 
 import LinearProgress from '@mui/material/LinearProgress';
 
+
 const TransactionReportList = () => {
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
-        date: ""
+        date: "",
+        today: ""
     });
 
     const [role, setRole] = useState(localStorage.getItem('role_as'));
@@ -39,6 +43,26 @@ const TransactionReportList = () => {
         code: '',
         message: '',
         total_expenses: 0
+    });
+
+    const [spoilage, setSpoilage] = useState({
+        data: [],
+        code: '',
+        message: '',
+    });
+
+    const [discount, setDiscount] = useState({
+        data: [],
+        total_amount: 0,
+        code: '',
+        message: '',
+    });
+
+    const [discountLoss, setDiscountLoss] = useState({
+        data: [],
+        code: '',
+        total_amount: 0,
+        message: '',
     });
 
     const [expensesMandatory, setExpensesMandatory] = useState({
@@ -124,6 +148,30 @@ const TransactionReportList = () => {
         ExpensesService.fetchExpensesMandatoryToday(date)
             .then(response => {
                 setExpensesMandatory(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+        SpoilageService.fetchSpoilageToday(customerOrderDate.today)
+            .then(response => {
+                setSpoilage(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+        DiscountService.fetchDiscountReport(customerOrderDate)
+            .then(response => {
+                setDiscount(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+        DiscountService.fetchDiscountLossReport(customerOrderDate)
+            .then(response => {
+                setDiscountLoss(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -303,7 +351,11 @@ const TransactionReportList = () => {
     }));
 
     const onChangeInput = (e) => {
-        setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
+        setCustomerOrderDate({
+            ...customerOrderDate,
+            today: e.target.value,
+            date: e.target.value,
+        });
         setDate(e.target.value);
     }
 
@@ -437,6 +489,84 @@ const TransactionReportList = () => {
 
     return (
         <div style={{ marginLeft: -100 }}>
+
+
+            <div style={{ float: 'right', marginRight: 100 }}>
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label> Expenses</Form.Label>
+                    <Link variant="primary" to={"../expenses"}   >
+                        <PageviewIcon color="primary" />
+                    </Link>
+                    <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
+                </Form.Group>
+                <br></br>
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label> Spoilage</Form.Label>
+                    <Link variant="primary" to={"../reports/viewSpoilageReport/" + customerOrderDate.date}   >
+                        <PageviewIcon color="primary" />
+                    </Link>
+                    <Form.Control type="text" value={numberFormat(spoilage.total_cost)} />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label> Discount</Form.Label>
+                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscount/" + customerOrderDate.date}   >
+                        <PageviewIcon color="primary" />
+                    </Link>
+                    <Form.Control type="text" value={numberFormat(discount.total_amount)} />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                    <Form.Label> Discount Loss</Form.Label>
+                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscountLoss/" + customerOrderDate.date}   >
+                        <PageviewIcon color="primary" />
+                    </Link>
+                    <Form.Control type="text" value={numberFormat(discountLoss.total_amount)} />
+                </Form.Group>
+                <br></br>
+                <legend align="center" style={{ fontWeight: 'bold' }} >  Report   </legend>
+                <table class="table table-bordered">
+                    <thead class="table-dark">
+                        <tr class="table-secondary">
+                            <th></th>
+                            <th></th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            role == 2 && (
+                                <tr  >
+                                    <td>Total Profit: </td>
+                                    <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
+                                </tr>
+                            )
+                        }
+
+                        <tr  >
+                            <td>Total Discount Loss: </td>
+                            <td>{numberFormat(discountLoss.total_amount)}</td>
+                        </tr>
+                        <tr  >
+                            <td>Total Expenses: </td>
+                            <td>{numberFormat(expensesMandatory.total_expenses)}</td>
+                        </tr>
+                        <tr  >
+                            <td>Total Spoilage: </td>
+                            <td>{numberFormat(spoilage.total_cost)}</td>
+                        </tr>
+                        {
+                            role == 2 && (
+                                <tr  >
+                                    <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
+                                    <td style={{ fontWeight: 'bold', }}>{numberFormat(discountLoss.total_amount + shopOrderTransaction.total_profit - expensesMandatory.total_expenses + spoilage.total_cost)}</td>
+                                </tr>
+                            )
+                        }
+
+                        <br></br>
+
+                    </tbody>
+                </table>
+            </div>
 
             {expenses.total_expenses != 0 &&
                 <div style={{ float: 'right', marginRight: 100 }}>
