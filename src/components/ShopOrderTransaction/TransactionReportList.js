@@ -499,7 +499,6 @@ const TransactionReportList = () => {
                     </Link>
                     <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
                 </Form.Group>
-                <br></br>
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label> Spoilage</Form.Label>
                     <Link variant="primary" to={"../reports/viewSpoilageReport/" + customerOrderDate.date}   >
@@ -568,53 +567,6 @@ const TransactionReportList = () => {
                 </table>
             </div>
 
-            {expenses.total_expenses != 0 &&
-                <div style={{ float: 'right', marginRight: 100 }}>
-                    <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label> Expenses</Form.Label>
-                        {/* <Link variant="primary" to={"../expenses"}   > */}
-                        <Link variant="primary" to={"/reports/reportExpensesView/" + date}   >
-                            <PageviewIcon color="primary" />
-                        </Link>
-                        <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
-                    </Form.Group>
-
-                    <br></br>
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr class="table-secondary">
-                                <th></th>
-                                <th></th>
-
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {
-                                role == 2 && (
-                                    <tr  >
-                                        <td>Total Profit: </td>
-                                        <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
-                                    </tr>
-                                )
-                            }
-                            <tr  >
-                                <td>Expenses: </td>
-                                <td>{numberFormat(expensesMandatory.total_expenses)}</td>
-                            </tr>
-                            {
-                                role == 2 && (
-                                    <tr  >
-                                        <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
-                                        <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.total_profit - expensesMandatory.total_expenses)}</td>
-                                    </tr>
-                                )
-                            }
-
-
-                        </tbody>
-                    </table>
-                </div>
-            }
 
 
             <div style={{ float: 'right', marginRight: 100 }}>

@@ -16,6 +16,10 @@ import Checkbox from '@mui/material/Checkbox';
 import { styled } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+
 
 const CustomerReOrder = () => {
 
@@ -105,7 +109,7 @@ const CustomerReOrder = () => {
         } else {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            CustomerService.customerConvoList(1, customerTransaction)
+            CustomerService.customerReorder(1, customerTransaction)
                 .then(response => {
                     setCustomerList(response.data);
                     setSubmitLoadingAdd(false);
@@ -122,7 +126,7 @@ const CustomerReOrder = () => {
 
     const fetchCustomerList = () => {
         setSubmitLoadingAdd(true);
-        CustomerService.customerConvoList(1, customerTransaction)
+        CustomerService.customerReorder(1, customerTransaction)
             .then(response => {
                 setCustomerList(response.data);
                 setSubmitLoadingAdd(false);
@@ -144,7 +148,7 @@ const CustomerReOrder = () => {
         setCustomerTransaction({ ...customerTransaction, page: value });
         setSubmitLoadingPage(true);
         setIsAddDisabledPage(true);
-        CustomerService.customerConvoList(value, customerTransaction)
+        CustomerService.customerReorder(value, customerTransaction)
             .then(response => {
                 setCustomerList(response.data);
                 setSubmitLoadingPage(false);
@@ -258,20 +262,36 @@ const CustomerReOrder = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const steps = [
+        'Customer Need to Follow up',
+        'Customer Done Following up',
+        'Customer Successfully Reordered',
+    ];
+
 
     return (
         <div>
+            <Stepper activeStep={2} alternativeLabel>
+                {steps.map((label) => (
+                    <Step key={label}>
+                        <StepLabel>{label}</StepLabel>
+
+
+                    </Step>
+                ))}
+            </Stepper>
+            <br></br>
 
             <Form>
                 <div style={{ float: 'right', marginRight: 500 }}>
                     <Form.Group controlId="formBasicEmail" disabled>
                         <Form.Label>Total Amount: </Form.Label>
-                        <Form.Control type="text" value={totalSum(customerList.data.filter(d => d.last_order < d.last_chat))} />
+                        <Form.Control type="text" value={totalSum(customerList.data)} />
                     </Form.Group>
                     <br></br>
                     <Form.Group controlId="formBasicEmail" disabled>
                         <Form.Label>Total Profit: </Form.Label>
-                        <Form.Control type="text" value={totalProfit(customerList.data.filter(d => d.last_order < d.last_chat))} />
+                        <Form.Control type="text" value={totalProfit(customerList.data)} />
                     </Form.Group>
                     <br></br>
 
@@ -308,7 +328,7 @@ const CustomerReOrder = () => {
                 <br></br>
             </Form >
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Re Order </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Successfully Reordered </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -319,10 +339,11 @@ const CustomerReOrder = () => {
                         <th>Email</th>
                         <th>Address</th>
                         <th>Last Date</th>
-                        <th>Last Order</th>
+
                         <th>Amount</th>
                         <th>Profit</th>
-                        <th>Action</th>
+                        {/* <th>Action</th> */}
+                        <th>Last Order</th>
                         <th>Last Convo</th>
                         <th>Chat?</th>
                         <th>Promo?</th>
@@ -335,7 +356,8 @@ const CustomerReOrder = () => {
                 <tbody>
 
                     {
-                        sortList(customerList.data.filter(d => d.last_order < d.last_chat)).map((customer, index) => (
+                        // sortList(customerList.data.filter(d => d.last_order < d.last_chat)).map((customer, index) => (
+                        customerList.data.map((customer, index) => (
 
 
                             <tr key={customer.id} >
@@ -346,15 +368,16 @@ const CustomerReOrder = () => {
                                 <td>{customer.email}</td>
                                 <td>{customer.address}</td>
                                 <td>{covertDateString(customer.date)}</td>
-                                <td> {customer.last_order == 1 ? customer.last_order + ' Day' : customer.last_order <= 1 ? 'Today' : customer.last_order + ' Days Ago'}</td>
+
                                 <td>{numberFormat(customer.shop_order_transaction_total_price)}</td>
                                 <td>{numberFormat(customer.profit)}</td>
 
-                                <td>
+                                {/* <td>
                                     <IconButton>
                                         <UpdateIcon color="primary" onClick={(e) => handleOpen(customer.id, e)} />
                                     </IconButton>
-                                </td>
+                                </td> */}
+                                <td> {customer.last_order == 1 ? customer.last_order + ' Day' : customer.last_order <= 1 ? 'Today' : customer.last_order + ' Days Ago'}</td>
                                 <td> {customer.last_chat == 1 ? customer.last_chat + ' Day' : customer.last_chat <= 1 ? 'Today' : customer.last_chat + ' Days Ago'}</td>
                                 <td>{customer.chat == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>{customer.promo == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>

@@ -927,11 +927,9 @@ export default function PersistentDrawerLeft() {
 
                     <Nav >
                         <NavDropdown title="Customer Reminder" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/customerHistory">Customer History</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerConvo">Customer Follow Up</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerReOrder">Customer Re-Order</NavDropdown.Item>
-
-
+                            <NavDropdown.Item href="/customerHistory">Customer Need to Follow up </NavDropdown.Item>
+                            <NavDropdown.Item href="/customerConvo">Customer Done Following up</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerReOrder">Customer Successfully Reordered</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
 

@@ -221,13 +221,13 @@ const ViewOrderSupplierTransaction = () => {
                                     }
                                 </td>
                                 <td>
-                                    {orderTransaction.status != 1 &&
-                                        <Link variant="primary" to={"/updateCreditCardDue/" + orderTransaction.id}   >
-                                            <Button variant="warning" >
-                                                Update
-                                            </Button>
-                                        </Link>
-                                    }
+                                    {/* {orderTransaction.status != 1 && */}
+                                    <Link variant="primary" to={"/updateCreditCardDue/" + orderTransaction.id}   >
+                                        <Button variant="warning" >
+                                            Update
+                                        </Button>
+                                    </Link>
+                                    {/* } */}
                                 </td>
                                 <td>
                                     {orderTransaction.amount_paid != 0 &&
