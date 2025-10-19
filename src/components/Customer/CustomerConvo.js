@@ -16,6 +16,9 @@ import Checkbox from '@mui/material/Checkbox';
 import { styled } from '@mui/material/styles';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
 
 const CustomerConvo = () => {
 
@@ -242,11 +245,25 @@ const CustomerConvo = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
-
+    const steps = [
+        'Customer Need to Follow up',
+        'Customer Done Following up',
+        'Customer Successfully Reordered',
+    ];
 
 
     return (
         <div>
+            <Stepper activeStep={1} alternativeLabel>
+                {steps.map((label) => (
+                    <Step key={label}>
+                        <StepLabel>{label}</StepLabel>
+
+
+                    </Step>
+                ))}
+            </Stepper>
+            <br></br>
             <Form>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date From:</Form.Label>
@@ -277,7 +294,7 @@ const CustomerConvo = () => {
                 <br></br>
             </Form >
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Follow up List </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Done Following Up </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -288,8 +305,8 @@ const CustomerConvo = () => {
                         <th>Email</th>
                         <th>Address</th>
                         <th>Last Date</th>
-                        <th>Last Order</th>
                         <th>Action</th>
+                        <th>Last Order</th>
                         <th>Last Convo</th>
                         <th>Chat?</th>
                         <th>Promo?</th>
@@ -311,12 +328,13 @@ const CustomerConvo = () => {
                                 <td>{customer.email}</td>
                                 <td>{customer.address}</td>
                                 <td>{covertDateString(customer.date)}</td>
-                                <td> {customer.last_order == 1 ? customer.last_order + ' Day' : customer.last_order <= 1 ? 'Today' : customer.last_order + ' Days Ago'}</td>
+
                                 <td>
                                     <IconButton>
                                         <UpdateIcon color="primary" onClick={(e) => handleOpen(customer.id, e)} />
                                     </IconButton>
                                 </td>
+                                <td> {customer.last_order == 1 ? customer.last_order + ' Day' : customer.last_order <= 1 ? 'Today' : customer.last_order + ' Days Ago'}</td>
                                 <td> {customer.last_chat == 1 ? customer.last_chat + ' Day' : customer.last_chat <= 1 ? 'Today' : customer.last_chat + ' Days Ago'}</td>
                                 <td>{customer.chat == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>{customer.promo == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>

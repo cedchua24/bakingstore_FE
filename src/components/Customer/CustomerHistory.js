@@ -14,8 +14,9 @@ import Box from '@mui/material/Box';
 import Modal from '@mui/material/Modal';
 import Checkbox from '@mui/material/Checkbox';
 import { styled } from '@mui/material/styles';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
 
 const CustomerHistory = () => {
 
@@ -232,12 +233,26 @@ const CustomerHistory = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
-
+    const steps = [
+        'Customer Need to Follow up',
+        'Customer Done Following up',
+        'Customer Successfully Reordered',
+    ];
 
 
 
     return (
         <div>
+            <Stepper activeStep={0} alternativeLabel>
+                {steps.map((label) => (
+                    <Step key={label}>
+                        <StepLabel>{label}</StepLabel>
+
+
+                    </Step>
+                ))}
+            </Stepper>
+            <br></br>
             <Form>
                 {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
@@ -269,7 +284,7 @@ const CustomerHistory = () => {
                 <br></br>
             </Form >
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer History List </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Need to Follow Up </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

@@ -27,7 +27,10 @@ class CustomerService {
     // return axios.post("/api/customers/customerLastOrderList", data);
     return axios.post(`/api/customers/customerConvoList/${id}`, data);
   }
-
+  customerReorder(id, data) {
+    // return axios.post("/api/customers/customerLastOrderList", data);
+    return axios.post(`/api/customers/customerReorder/${id}`, data);
+  }
   fetchCustomerByDate(data) {
     return axios.post("/api/customers/fetchCustomerByDate", data);
   }
