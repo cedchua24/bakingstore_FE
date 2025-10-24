@@ -168,6 +168,7 @@ const ReportProductSorted = () => {
                             name="type"
                             onChange={onChangeInput}
                         >
+                            <MenuItem value='All'>All</MenuItem>
                             <MenuItem value='WHOLESALE'>WHOLESALE</MenuItem>
                             <MenuItem value='RETAIL'>RETAIL</MenuItem>
                         </Select>
@@ -271,7 +272,8 @@ const ReportProductSorted = () => {
                                         <td>{numberFormat(data.total_profit)}</td>
                                         {sortedQuantity.id == 3 || sortedQuantity.id == 4 ? <td style={{ fontWeight: 'bold', }}>{numberFormat(data.total_price)}</td> : <td >{numberFormat(data.total_price)}</td>}
                                         {/* <td style={{ fontWeight: 'bold', }}>{sortedQuantity.total_quantity}</td> */}
-                                        {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td style={{ fontWeight: 'bold', }}>{data.total_quantity}</td> : <td >{data.total_quantity}</td>}
+                                        {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td style={{ fontWeight: 'bold', }}>{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td> :
+                                            <td >{data.total_quantity < data.quanty ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td>}
                                         <td>{data.business_type === 'WHOLESALE' ? data.stock : data.stock_pc}</td>
                                     </tr>
                                 )
