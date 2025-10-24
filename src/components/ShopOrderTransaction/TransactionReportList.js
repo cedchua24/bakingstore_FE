@@ -25,15 +25,22 @@ import PageviewIcon from '@mui/icons-material/Pageview';
 import Tooltip from '@mui/material/Tooltip';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import { useParams } from 'react-router-dom';
 
 import LinearProgress from '@mui/material/LinearProgress';
 
 
 const TransactionReportList = () => {
 
+    const { id } = useParams();
+
+    useEffect(() => {
+        fetchExpensesList(id);
+    }, []);
+
     const [customerOrderDate, setCustomerOrderDate] = useState({
-        date: "",
-        today: ""
+        date: id,
+        today: id
     });
 
     const [role, setRole] = useState(localStorage.getItem('role_as'));
@@ -176,11 +183,8 @@ const TransactionReportList = () => {
             .catch(e => {
                 console.log("error", e)
             });
-    }
 
-
-    const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList()
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList(customerOrderDate.date)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -190,6 +194,8 @@ const TransactionReportList = () => {
 
             });
     }
+
+
 
     const [formDeliveryErrors, setFormDeliveryErrors] = useState({});
     const [isDeliveryDisabled, setIsDeliveryDisabled] = useState(false);
@@ -336,7 +342,6 @@ const TransactionReportList = () => {
             .then(response => {
                 setSubmitLoading(false);
                 setSubmitOpenModal(false);
-                fetchShopOrderTransactionList();
             })
             .catch(e => {
                 console.log(e);
@@ -438,7 +443,6 @@ const TransactionReportList = () => {
     const updateDate = () => {
         ShopOrderTransactionService.update(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
             .then(response => {
-                fetchShopOrderTransactionList();
                 setOpen(false);
                 setOpenRider(false);
                 setOpenPickUp(false);
@@ -597,7 +601,7 @@ const TransactionReportList = () => {
                     {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date</Form.Label>
-                        <Form.Control type="date" name="date" onChange={onChangeInput} />
+                        <Form.Control type="date" name="date" value={id} onChange={onChangeInput} />
                     </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Transaction: </Form.Label>

@@ -73,6 +73,7 @@ import ListIcon from '@mui/icons-material/List';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
+import moment from "moment";
 
 import { pink } from '@mui/material/colors';
 
@@ -613,7 +614,7 @@ export default function PersistentDrawerLeft() {
     const [transactionReportList, setTransactionReportList] = useState([
         {
             "name": "Transaction Daily",
-            "url": "/shopOrderTransaction/transactionReportList",
+            "url": "/shopOrderTransaction/transactionReportList/" + moment().format("YYYY-MM-DD"),
             "icon": <TodayIcon />
         },
         {

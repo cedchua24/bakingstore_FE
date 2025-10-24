@@ -437,7 +437,8 @@ const App = () => {
 
 
 
-          <Route exact path="/shopOrderTransaction/transactionReportList/" element={<TransactionReportList />} />
+          {/* <Route exact path="/shopOrderTransaction/transactionReportList/" element={<TransactionReportList />} /> */}
+          <Route exact path="/shopOrderTransaction/transactionReportList/:id" element={<TransactionReportList />} />
           <Route exact path="/shopOrderTransaction/pendingTransactionList/" element={<PendingTransactionList />} />
           <Route exact path="/shopOrderTransaction/cancelTransactionList/" element={<CancelTransactionList />} />
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />

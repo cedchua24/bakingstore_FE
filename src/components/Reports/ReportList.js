@@ -209,7 +209,7 @@ const ReportList = () => {
                                 <th>Total Profit</th>
                             )
                         }
-
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -226,6 +226,14 @@ const ReportList = () => {
                                         <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
                                     )
                                 }
+                                <td>
+
+                                    <Link variant="primary" to={"/shopOrderTransaction/transactionReportList/" + shopOrderTransaction.date}   >
+                                        <Button variant="primary" >
+                                            View Transaction
+                                        </Button>
+                                    </Link>
+                                </td>
                             </tr>
                         )
                         )
