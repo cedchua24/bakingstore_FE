@@ -29,6 +29,8 @@ const AddShopOrderTransaction = (props) => {
         requestor: 0,
         checker: 0,
         type: 1,
+        sales_rep_id: 0,
+        user_id: localStorage.getItem('auth_user_id'),
         created_at: '',
         updated_at: ''
     });
@@ -117,7 +119,6 @@ const AddShopOrderTransaction = (props) => {
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
-                            value={shopOrderTransaction.user_id}
                             label="Requestor"
                             name="requestor"
                             onChange={onChangeInput}
@@ -137,7 +138,6 @@ const AddShopOrderTransaction = (props) => {
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
-                            value={shopOrderTransaction.user_id}
                             label="Checker"
                             name="checker"
                             onChange={onChangeInput}
