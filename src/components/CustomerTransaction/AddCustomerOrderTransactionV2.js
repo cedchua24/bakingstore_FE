@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Button, Form, Alert } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
+import Alert from '@mui/material/Alert';
 import { useNavigate } from "react-router-dom";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
 
@@ -41,6 +42,8 @@ const AddCustomerOrderTransactionV2 = (props) => {
     const customerList = props.customerList;
     const customerTypeList = props.customerTypeList;
     const salesRepList = props.salesRepList;
+    const dailySessionUpdate = props.dailySessionUpdate;
+
 
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
@@ -143,58 +146,61 @@ const AddCustomerOrderTransactionV2 = (props) => {
                     </p>
                 </Alert>
             }
+            {dailySessionUpdate == false ? <div align="center">
+                <Alert variant="filled" severity="error">Submit start of day first.</Alert>
+            </div>
+                : <div>
+                    <Form>
+                        {formErrors.shop_id && <p style={{ color: "red" }}>{formErrors.shop_id}</p>}
+                        <Box sx={{ minWidth: 120 }}>
+                            <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                                <InputLabel id="demo-simple-select-label">Shop Name</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    value={shopOrderTransaction.shop_id}
+                                    label="Shop Name"
+                                    name="shop_id"
+                                    onChange={onChangeInput}
+                                >
+                                    {
+                                        shopList.map((shop, index) => (
+                                            <MenuItem value={shop.id}>{shop.shop_name}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                            </FormControl>
+                        </Box>
+                        {formErrors.customer_type_id && <p style={{ color: "red" }}>{formErrors.customer_type_id}</p>}
+                        <Box sx={{ minWidth: 120 }}>
+                            <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                                <InputLabel id="demo-simple-select-label">Customer Type</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    value={shopOrderTransaction.customer_type_id}
+                                    label="Shop Name"
+                                    name="customer_type_id"
+                                    onChange={onChangeInput}
+                                >
+                                    {
+                                        customerTypeList.map((customerType, index) => (
+                                            <MenuItem value={customerType.id}>{customerType.customer_type}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                            </FormControl>
+                        </Box>
 
-            <Form>
-                {formErrors.shop_id && <p style={{ color: "red" }}>{formErrors.shop_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Shop Name</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
-                            name="shop_id"
-                            onChange={onChangeInput}
+                        <Box
+                            sx={{
+                                '& .MuiTextField-root': { m: 1, width: '35ch' },
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        // onSubmit={saveOrderSupplier}
                         >
-                            {
-                                shopList.map((shop, index) => (
-                                    <MenuItem value={shop.id}>{shop.shop_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-                {formErrors.customer_type_id && <p style={{ color: "red" }}>{formErrors.customer_type_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Customer Type</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={shopOrderTransaction.customer_type_id}
-                            label="Shop Name"
-                            name="customer_type_id"
-                            onChange={onChangeInput}
-                        >
-                            {
-                                customerTypeList.map((customerType, index) => (
-                                    <MenuItem value={customerType.id}>{customerType.customer_type}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-
-                <Box
-                    sx={{
-                        '& .MuiTextField-root': { m: 1, width: '35ch' },
-                    }}
-                    noValidate
-                    autoComplete="off"
-                // onSubmit={saveOrderSupplier}
-                >
-                    {/* <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                            {/* <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Customer</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
@@ -211,60 +217,62 @@ const AddCustomerOrderTransactionV2 = (props) => {
                             }
                         </Select>
                     </FormControl> */}
-                    {formErrors.sales_rep_id && <p style={{ color: "red" }}>{formErrors.sales_rep_id}</p>}
-                    <Box sx={{ minWidth: 120 }}>
-                        <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                            <InputLabel id="demo-simple-select-label">Sales Representative</InputLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                label="Shop Name"
-                                name="sales_rep_id"
-                                onChange={onChangeInput}
-                            >
-                                {
-                                    salesRepList.map((salesRep, index) => (
-                                        <MenuItem value={salesRep.id}>{salesRep.first_name}</MenuItem>
-                                    ))
-                                }
-                            </Select>
-                        </FormControl>
-                    </Box>
-                    {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
-                    <FormControl variant="standard" >
-                        <Autocomplete
-                            // {...defaultProps}
-                            options={customerList}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleInputChange}
-                            getOptionLabel={(customerList) => customerList.first_name + " " + customerList.last_name}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Choose Customer" variant="standard" />
-                            )}
-                        />
-                    </FormControl>
-                </Box>
-                {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date</Form.Label>
-                    <Form.Control type="date" name="date" onChange={onChangeInput} />
-                </Form.Group>
+                            {formErrors.sales_rep_id && <p style={{ color: "red" }}>{formErrors.sales_rep_id}</p>}
+                            <Box sx={{ minWidth: 120 }}>
+                                <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                                    <InputLabel id="demo-simple-select-label">Sales Representative</InputLabel>
+                                    <Select
+                                        labelId="demo-simple-select-label"
+                                        id="demo-simple-select"
+                                        label="Shop Name"
+                                        name="sales_rep_id"
+                                        onChange={onChangeInput}
+                                    >
+                                        {
+                                            salesRepList.map((salesRep, index) => (
+                                                <MenuItem value={salesRep.id}>{salesRep.first_name}</MenuItem>
+                                            ))
+                                        }
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                            {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
+                            <FormControl variant="standard" >
+                                <Autocomplete
+                                    // {...defaultProps}
+                                    options={customerList}
+                                    className="mb-3"
+                                    id="disable-close-on-select"
+                                    onChange={handleInputChange}
+                                    getOptionLabel={(customerList) => customerList.first_name + " " + customerList.last_name}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Choose Customer" variant="standard" />
+                                    )}
+                                />
+                            </FormControl>
+                        </Box>
+                        {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
+                        <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                            <Form.Label>Date</Form.Label>
+                            <Form.Control type="date" name="date" onChange={onChangeInput} />
+                        </Form.Group>
 
-                <Button variant="primary"
-                    disabled={isAddDisabled}
-                    onClick={saveOrderTransaction}>
-                    Next
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-                <br></br>
+                        <Button variant="primary"
+                            disabled={isAddDisabled}
+                            onClick={saveOrderTransaction}>
+                            Next
+                        </Button>
+                        <br></br>
+                        <br></br>
+                        {submitLoadingAdd &&
+                            <LinearProgress color="warning" />
+                        }
+                        <br></br>
 
-            </Form>
-            <br></br>
+                    </Form>
+                    <br></br>
+                </div>
+            }
 
         </div>
     )

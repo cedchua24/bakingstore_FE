@@ -20,6 +20,9 @@ class ShopOrderTransactionService {
     fetchSortedProduct(id) {
         return axios.get(`/api/shopOrderTransaction/fetchSortedProduct/${id}`);
     }
+    fetchProductSoldToday(data) {
+        return axios.post("/api/shopOrderTransaction/fetchProductSoldToday", data);
+    }
     fetchSortedCustomer(id) {
         return axios.get(`/api/shopOrderTransaction/fetchSortedCustomer/${id}`);
     }
@@ -56,6 +59,7 @@ class ShopOrderTransactionService {
     fetchSalesByCategory(data) {
         return axios.post("/api/shopOrderTransaction/fetchSalesByCategory", data);
     }
+
     fetchShopOrderTransactionListReportByDate(data) {
         return axios.post("/api/shopOrderTransaction/fetchShopOrderTransactionListReportByDate", data);
     }
@@ -76,6 +80,7 @@ class ShopOrderTransactionService {
     create(data) {
         return axios.post("/api/shopOrderTransaction", data);
     }
+
     update(id, data) {
         return axios.put(`/api/shopOrderTransaction/${id}`, data);
     }

@@ -2,17 +2,20 @@ import React, { useState, useEffect } from "react";
 import AddCustomerOrderTransactionV2 from "./AddCustomerOrderTransactionV2";
 import ShopService from "../Shop/ShopService";
 import CustomerTypeService from "../OtherService/CustomerTypeService";
-import UserService from "../User/UserService.service";
+import DailySessionService from "../OtherService/DailySessionService";
 import SalesRepService from "../OtherService/SalesRepService";
 import CustomerService from "../Customer/CustomerService";
+import moment from "moment";
 
 const CustomerOrderTransaction = () => {
+
 
     useEffect(() => {
         fetchSalesRep();
         fetchShopActive();
         fetchUserList();
         fetchCustomerTypeList();
+        fetchDailySession();
     }, []);
 
     const [shopList, setShopList] = useState([]);
@@ -22,8 +25,17 @@ const CustomerOrderTransaction = () => {
     const [customerList, setCustomerList] = useState([]);
 
     const [customerTypeList, setCustomerTypeList] = useState([]);
+    const [dailySessionUpdate, setDailySessionUpdate] = useState(false);
 
-
+    const fetchDailySession = () => {
+        DailySessionService.fetchDailySession(moment().format("YYYY-MM-DD"))
+            .then(response => {
+                setDailySessionUpdate(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    };
 
 
     const fetchSalesRep = () => {
@@ -77,6 +89,7 @@ const CustomerOrderTransaction = () => {
                 salesRepList={salesRepList}
                 customerTypeList={customerTypeList}
                 customerList={customerList}
+                dailySessionUpdate={dailySessionUpdate}
             />
         </div>
     )
