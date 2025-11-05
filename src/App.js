@@ -108,6 +108,12 @@ import AddProductShopOrderTransaction from "./components/ShopOrderTransaction/Ad
 import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
 import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
+import ProductSoldToday from "./components/dashboard/ProductSoldToday";
+import ProductSoldTodayCheckList from "./components/dashboard/ProductSoldTodayCheckList";
+
+import StartOfDay from "./components/dashboard/StartOfDay";
+
+
 import CustomerSorted from "./components/ShopOrderTransaction/CustomerSorted";
 import PendingDelivery from "./components/ShopOrderTransaction/PendingDelivery";
 
@@ -429,9 +435,18 @@ const App = () => {
                 : <UserLogin />
             }
           />
+          {/* // Dashoard */}
+          <Route exact path="/dashboard/productSoldToday/:id" element={<ProductSoldToday />} />
+          <Route exact path="/dashboard/productSoldTodayCheckList/:id" element={<ProductSoldTodayCheckList />} />
+          <Route exact path="/dashboard/startOfDay/:id" element={<StartOfDay />} />
+
+
+
           <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/quantitySortedList/" element={<QuantitySorted />} />
+
+
           <Route exact path="/shopOrderTransaction/customerSortedList/" element={<CustomerSorted />} />
           <Route exact path="/shopOrderTransaction/PendingDelivery/" element={<PendingDelivery />} />
 

@@ -944,6 +944,17 @@ export default function PersistentDrawerLeft() {
                         </NavDropdown>
                     </Nav>
 
+                    <Nav >
+                        <NavDropdown title="Daily Store Session" id="basic-nav-dropdown">
+                            <NavDropdown.Item href={`/dashboard/startOfDay/${moment().format("YYYY-MM-DD")}`}>  Start of Day </NavDropdown.Item>
+                            <NavDropdown.Item href={`/dashboard/productSoldToday/${moment().format("YYYY-MM-DD")}`}> End of Day </NavDropdown.Item>
+                            <NavDropdown.Item href={`/dashboard/productSoldTodayCheckList/${moment().format("YYYY-MM-DD")}`}> Product Sold Checklist </NavDropdown.Item>
+
+                        </NavDropdown>
+                    </Nav>
+
+
+
                     <Typography variant="h6" noWrap component="div" sx={{ color: "LightGray", marginLeft: 100 }}>
                         {localStorage.getItem('name')}
                     </Typography>
