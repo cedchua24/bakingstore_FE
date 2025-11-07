@@ -25,7 +25,7 @@ const CustomerOrderTransaction = () => {
     const [customerList, setCustomerList] = useState([]);
 
     const [customerTypeList, setCustomerTypeList] = useState([]);
-    const [dailySessionUpdate, setDailySessionUpdate] = useState(false);
+    const [dailySessionUpdate, setDailySessionUpdate] = useState('');
 
     const fetchDailySession = () => {
         DailySessionService.fetchDailySession(moment().format("YYYY-MM-DD"))
