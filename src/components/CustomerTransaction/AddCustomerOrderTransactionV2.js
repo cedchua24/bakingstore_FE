@@ -146,7 +146,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
                     </p>
                 </Alert>
             }
-            {dailySessionUpdate == false ? <div align="center">
+            {dailySessionUpdate === '' ? <LinearProgress color="warning" /> : dailySessionUpdate == false ? <div align="center">
                 <Alert variant="filled" severity="error">Submit start of day first.</Alert>
             </div>
                 : <div>
