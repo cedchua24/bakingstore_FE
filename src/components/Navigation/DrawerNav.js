@@ -934,7 +934,7 @@ export default function PersistentDrawerLeft() {
                     <Nav >
                         <NavDropdown title="Customer Order" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/customerOrderTransactionList">Customer Order List</NavDropdown.Item>
+                            <NavDropdown.Item href={`/shopOrderTransaction/customerOrderTransactionList/${moment().format("YYYY-MM-DD")}`}>  Customer Order List </NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Top Product Today</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Top Customer Today</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/pendingDelivery">For Delivery</NavDropdown.Item>

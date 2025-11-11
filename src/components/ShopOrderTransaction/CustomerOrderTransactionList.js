@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
@@ -11,7 +12,6 @@ import SpoilageService from "../Spoilage/SpoilageService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
-
 import CircularProgress from '@mui/material/CircularProgress';
 
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -37,11 +37,16 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 const CustomerOrderTransactionList = () => {
 
+    const { id } = useParams();
 
     useEffect(() => {
-        fetchShopOrderTransactionList();
+        fetchShopOrderTransactionList(id);
         fetchExpensesList();
     }, []);
+
+    const [momentDay, setMomentDay] = useState({
+        today: id
+    });
 
 
     const [role, setRole] = useState(localStorage.getItem('role_as'));
@@ -103,7 +108,15 @@ const CustomerOrderTransactionList = () => {
         payment: [],
         code: '',
         message: '',
-        total_sales: 0
+        total_sales: 0,
+        total_sales_completed: 0,
+        total_paid_prev: 0,
+        total_online_prev: 0,
+        total_cash_prev: 0,
+        total_paid_oudated: 0,
+        total_online_outdated: 0,
+        total_cash_outdated: 0,
+        total_paid_: 0
     });
 
     const [shopOrderTransactionUpdate, setShopOrderTransactionUpdate] = useState({
@@ -165,12 +178,12 @@ const CustomerOrderTransactionList = () => {
 
 
     let newDate = new Date().toLocaleDateString();
-    const fetchShopOrderTransactionList = () => {
+    const fetchShopOrderTransactionList = ($date) => {
         let nDate = newDate.replaceAll("/", "-");
         console.log('nDate', nDate);
         console.log('role_as: ', localStorage.getItem('role_as'));
         // console.log('date', new Date().toLocaleDateString().replace("/", "-"));
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList()
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList($date)
             .then(response => {
                 console.log("fetchOnlineShopOrderTransactionList :", response.data)
                 // setShopOrderTransactionList(response.data);
@@ -592,10 +605,10 @@ const CustomerOrderTransactionList = () => {
 
 
     return (
-        <div style={{ marginLeft: -100 }}>
+        <div style={{ marginLeft: -200 }}>
 
 
-            <div style={{ float: 'right', marginRight: 100 }}>
+            <div style={{ float: 'right' }}>
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label> Expenses</Form.Label>
                     <Link variant="primary" to={"../expenses"}   >
@@ -692,7 +705,7 @@ const CustomerOrderTransactionList = () => {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                             <Form.Label> {payment.payment_type} {payment.payment_type_description} </Form.Label>
-                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
+                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + id}   >
                                 <PageviewIcon color="primary" />
                             </Link>
                             {payment.total_paid_count != payment.total_count ?
@@ -711,6 +724,77 @@ const CustomerOrderTransactionList = () => {
             </div>
 
 
+            <div style={{ float: 'right', marginRight: 100 }}>
+
+                {
+                    <>
+                        {shopOrderTransaction.total_paid != 0 &&
+                            <>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label style={{ fontWeight: 'bold', }} >Current Transaction </Form.Label>
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Total Paid: </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_paid)} />
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Cash: </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash)} />
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Online: </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online)} />
+                                </Form.Group>
+                            </>
+                        }
+                        {shopOrderTransaction.total_paid_prev != 0 &&
+                            <>
+                                <br></br>
+                                <br></br>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label style={{ fontWeight: 'bold', }}>Previous Transaction Paid Today </Form.Label>
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Total Paid : </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_paid_prev)} />
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Cash: </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash_prev)} />
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Online: </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online_prev)} />
+                                </Form.Group>
+                            </>
+                        }
+
+                        {shopOrderTransaction.total_paid_outdated != 0 &&
+                            <>
+                                <br></br>
+                                <br></br>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label style={{ fontWeight: 'bold', }}>Outdated Transaction Paid</Form.Label>
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Total Paid : </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_paid_outdated)} />
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Cash: </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash_outdated)} />
+                                </Form.Group>
+                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Online: </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online_outdated)} />
+                                </Form.Group>
+                            </>
+                        }
+                    </>
+
+                }
+
+            </div>
 
             <div>
                 <Form>
@@ -751,16 +835,8 @@ const CustomerOrderTransactionList = () => {
                         <Form.Control type="text" value={shopOrderTransaction.total_count} />
                     </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Cash Payment: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash)} />
-                    </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Online Payment: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online)} />
-                    </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Sales: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_price)} />
+                        <Form.Label>Total Sales Completed: </Form.Label>
+                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_sales_completed)} />
                     </Form.Group>
                     {
                         role == 2 && (
@@ -769,6 +845,28 @@ const CustomerOrderTransactionList = () => {
                                 <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
                             </Form.Group>
                         )
+                    }
+
+                    <br></br>
+                    <br></br>
+                    {shopOrderTransaction.total_paid != 0 && shopOrderTransaction.total_paid_prev != 0 &&
+                        <>
+                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label style={{ fontWeight: 'bold', }}>Current + Prev Transaction</Form.Label>
+                            </Form.Group>
+                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label>Total Paid : </Form.Label>
+                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_paid + shopOrderTransaction.total_paid_prev)} />
+                            </Form.Group>
+                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label>Cash: </Form.Label>
+                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash + shopOrderTransaction.total_cash_prev)} />
+                            </Form.Group>
+                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label>Online: </Form.Label>
+                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online + shopOrderTransaction.total_online_prev)} />
+                            </Form.Group>
+                        </>
                     }
 
 
@@ -837,8 +935,7 @@ const CustomerOrderTransactionList = () => {
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity != 0 ? shopOrderTransaction.shop_order_transaction_total_quantity : ""}</td>
                                         <td>{shopOrderTransaction.total_cash != 0 ? numberFormat(shopOrderTransaction.total_cash) : ""}</td>
                                         <td>{shopOrderTransaction.total_online != 0 ? numberFormat(shopOrderTransaction.total_online) : ""}</td>
-                                        <td>{shopOrderTransaction.status == 1 ? (
-
+                                        <td>{
                                             shopOrderTransaction.mode_of_payment.map((sot, index) => (
                                                 <>
                                                     <tr>
@@ -848,7 +945,6 @@ const CustomerOrderTransactionList = () => {
                                                 </>
                                             )
                                             )
-                                        ) : (<></>)
                                         }</td>
 
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price != 0 ? numberFormat(shopOrderTransaction.shop_order_transaction_total_price) : ""}</td>
@@ -858,10 +954,13 @@ const CustomerOrderTransactionList = () => {
                                                 </td>
                                             )
                                         }
-                                        <td>{shopOrderTransaction.date}
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
-                                            </IconButton>
+                                        <td>{shopOrderTransaction.date != shopOrderTransaction.created_at ? <p style={{ fontWeight: 'bold', color: 'orange', }}>{shopOrderTransaction.date}</p>
+                                            : shopOrderTransaction.date}
+                                            {shopOrderTransaction.status == 2 && shopOrderTransaction.is_pickup == 0 ?
+                                                <IconButton>
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
+                                                </IconButton> : ""
+                                            }
                                         </td>
                                         <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                             : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :

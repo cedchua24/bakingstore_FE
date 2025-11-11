@@ -175,42 +175,49 @@ const PaymentTypeSales = () => {
     return (
         <div>
             <div style={{ width: 300 }}>
+                {shopOrderTransaction.data.length == 0 ?
+                    (<tr style={{ color: "red", }}>{"No Data Available"}</tr>)
+                    :
+                    (
+                        <>
+                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label style={{ fontWeight: 'bold' }}> {shopOrderTransaction.payment.payment_type} {shopOrderTransaction.payment.payment_type_description}</Form.Label>
+                                <Form.Control type="text" value={"₱ " + shopOrderTransaction.payment.total_amount} />
 
-                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label style={{ fontWeight: 'bold' }}> {shopOrderTransaction.payment.payment_type} {shopOrderTransaction.payment.payment_type_description}</Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.payment.total_amount} />
-
-                </Form.Group>
+                            </Form.Group>
 
 
 
-                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label style={{ fontWeight: 'bold' }}> Count</Form.Label>
-                    {filterByPaid(shopOrderTransaction.data).length == shopOrderTransaction.data.length ? <CheckIcon style={{ color: 'green', }} /> :
-                        <CloseIcon style={{ color: 'red', }} />}
-                    <Form.Control type="text" value={filterByPaid(shopOrderTransaction.data).length + "/" + shopOrderTransaction.data.length} />
-                </Form.Group>
+                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label style={{ fontWeight: 'bold' }}> Count</Form.Label>
+                                {filterByPaid(shopOrderTransaction.data).length == shopOrderTransaction.data.length ? <CheckIcon style={{ color: 'green', }} /> :
+                                    <CloseIcon style={{ color: 'red', }} />}
+                                <Form.Control type="text" value={filterByPaid(shopOrderTransaction.data).length + "/" + shopOrderTransaction.data.length} />
+                            </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label style={{ fontWeight: 'bold' }}> Payment</Form.Label>
-                    {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
-                        <CloseIcon style={{ color: 'red', }} />}
-                    <Form.Control type="text" value={paymentDetails.paid + "/" + shopOrderTransaction.payment.total_amount} />
-                </Form.Group>
+                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label style={{ fontWeight: 'bold' }}> Payment</Form.Label>
+                                {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
+                                    <CloseIcon style={{ color: 'red', }} />}
+                                <Form.Control type="text" value={paymentDetails.paid + "/" + shopOrderTransaction.payment.total_amount} />
+                            </Form.Group>
 
-                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label style={{ fontWeight: 'bold' }}> Discrepancy</Form.Label>
-                    {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
-                        <CloseIcon style={{ color: 'red', }} />}
-                    <Form.Control type="text" value={shopOrderTransaction.payment.total_amount - paymentDetails.paid} />
-                </Form.Group>
+                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                                <Form.Label style={{ fontWeight: 'bold' }}> Discrepancy</Form.Label>
+                                {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
+                                    <CloseIcon style={{ color: 'red', }} />}
+                                <Form.Control type="text" value={shopOrderTransaction.payment.total_amount - paymentDetails.paid} />
+                            </Form.Group>
 
-            </div>
 
-            <div>
-            </div>
+
+                        </>)}
+                <div>
+                </div>        </div>
 
             <legend align="center" style={{ fontWeight: 'bold' }} > Payment Type Sales   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} ><h6> {id.split("+")[1]}  </h6></legend>
+
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -231,43 +238,47 @@ const PaymentTypeSales = () => {
                         <th></th>
                     </tr>
                 </thead>
-                <tbody>
-                    {
-                        shopOrderTransaction.data.map((shopOrderTransaction, index) => (
-                            <tr key={shopOrderTransaction.id} >
-                                <td>{shopOrderTransaction.id}</td>
-                                <td>{shopOrderTransaction.shop_name}</td>
-                                <td>{shopOrderTransaction.customer_type}</td>
-                                <td>{shopOrderTransaction.requestor_name}</td>
-                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.amount}</td>
-                                <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                <td>{shopOrderTransaction.total_cash}</td>
-                                <td>{shopOrderTransaction.total_online}</td>
-                                <td >{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                <td>{shopOrderTransaction.date}</td>
-                                <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                    : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                        <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
-                                <td>
-                                    {shopOrderTransaction.is_paid === 1 ? <CheckIcon style={{ color: 'green', }} /> :
-                                        <CloseIcon style={{ color: 'red', }} />}
-                                    <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
-                                    </IconButton>
-                                </td>
-                                <td>
-                                    <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.shop_order_transaction_id}   >
-                                        <Button variant="primary" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
-                            </tr>
+                {shopOrderTransaction.data.length == 0 ?
+                    (<tr style={{ color: "red", }}>{"No Data Available"}</tr>)
+                    :
+                    (
+                        <tbody>
+                            {
+                                shopOrderTransaction.data.map((shopOrderTransaction, index) => (
+                                    <tr key={shopOrderTransaction.id} >
+                                        <td>{shopOrderTransaction.id}</td>
+                                        <td>{shopOrderTransaction.shop_name}</td>
+                                        <td>{shopOrderTransaction.customer_type}</td>
+                                        <td>{shopOrderTransaction.requestor_name}</td>
+                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.amount}</td>
+                                        <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
+                                        <td>{shopOrderTransaction.total_cash}</td>
+                                        <td>{shopOrderTransaction.total_online}</td>
+                                        <td >{shopOrderTransaction.shop_order_transaction_total_price}</td>
+                                        <td>{shopOrderTransaction.date != id.split("+")[1] ? <p style={{ color: 'orange', }}>{shopOrderTransaction.date}</p> : shopOrderTransaction.date}</td>
 
-                        )
-                        )
-                    }
-                </tbody>
+                                        <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
+                                            : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
+                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                        <td>
+                                            {shopOrderTransaction.is_paid === 1 ? <CheckIcon style={{ color: 'green', }} /> :
+                                                <CloseIcon style={{ color: 'red', }} />}
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
+                                            </IconButton>
+                                        </td>
+                                        <td>
+                                            <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.shop_order_transaction_id}   >
+                                                <Button variant="primary" >
+                                                    View
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                    </tr>
+                                )
+                                )
+                            }
+                        </tbody>)}
             </table>
 
             <Modal

@@ -475,7 +475,7 @@ const App = () => {
           />
           <Route
             exact
-            path="/shopOrderTransaction/customerOrderTransactionList/"
+            path="/shopOrderTransaction/customerOrderTransactionList/:id"
             element={
               localStorage.getItem('auth_token')
                 // items !== null
