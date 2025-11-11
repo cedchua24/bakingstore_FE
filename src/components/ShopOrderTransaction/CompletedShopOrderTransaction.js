@@ -222,6 +222,7 @@ const CompletedShopOrderTransaction = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Date</TableCell>
                                 <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
                             </TableRow>
                         </TableHead>
@@ -229,11 +230,12 @@ const CompletedShopOrderTransaction = () => {
                             {modeOfPaymentDTO.data.map((row) => (
                                 <TableRow key={row.id}>
                                     <TableCell>{row.payment_type}</TableCell>
+                                    <TableCell align="right">{shopOrderTransaction.date != row.created_at ? <p style={{ color: 'orange', }}>{row.created_at}</p> : row.created_at}</TableCell>
                                     <TableCell align="right">{row.amount}</TableCell>
                                 </TableRow>
                             ))}
                             <TableRow>
-                                <TableCell colSpan={1} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                                <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                                 <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
                             </TableRow>
                         </TableBody>

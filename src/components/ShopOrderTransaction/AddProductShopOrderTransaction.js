@@ -730,7 +730,7 @@ const AddProductCustomerOrderTransaction = () => {
                                 }
 
                                 <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
-                                <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
+                                <TableCell align="right">{shopOrderTransaction.updated_at}</TableCell>
                                 {shopOrderTransaction.checker == 0 &&
                                     <>
                                         <TableCell style={{ fontWeight: 'bold' }}>  Sales Representative:</TableCell>

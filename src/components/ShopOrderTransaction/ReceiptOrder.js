@@ -157,7 +157,7 @@ const ReceiptOrder = () => {
 
                     <tr>
                         <th>{shopOrderTransaction.requestor_name}</th>
-                        <th>{shopOrderTransaction.created_at}</th>
+                        <th>{shopOrderTransaction.updated_at}</th>
                     </tr>
 
                     <br></br>

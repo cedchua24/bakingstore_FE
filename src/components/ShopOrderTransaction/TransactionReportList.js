@@ -715,7 +715,14 @@ const TransactionReportList = () => {
                                                 <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}</td>
                                             )
                                         }
-                                        <td>{shopOrderTransaction.date}</td>
+                                        <td>{shopOrderTransaction.date != shopOrderTransaction.created_at ? <p style={{ fontWeight: 'bold', color: 'orange', }}>{shopOrderTransaction.date}</p>
+                                            : shopOrderTransaction.date}
+                                            {shopOrderTransaction.status == 2 && shopOrderTransaction.is_pickup == 0 ?
+                                                <IconButton>
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
+                                                </IconButton> : ""
+                                            }
+                                        </td>
                                         <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                             : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                                 <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}

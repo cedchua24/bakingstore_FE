@@ -157,6 +157,7 @@ const ProductSoldToday = () => {
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Product Name</th>
+                        <th>Discrepancy (PC) </th>
                         {/* <th>Stock (PC)</th> */}
                         <th>Sold Stock (WS/BOX)</th>
                         <th >Sold (PC)</th>
@@ -174,6 +175,7 @@ const ProductSoldToday = () => {
                                     <tr key={data.mark_up_product_id} >
                                         <td>{data.id}</td>
                                         <td>{data.product_name}</td>
+                                        <td>{data.discrepancy > 0 ? <p style={{ color: "red" }}>{data.discrepancy}</p> : <><p>{data.discrepancy}</p> </>}</td>
                                         {/* <td>{(data.total_quantity % data.quantity)}</td> */}
                                         <td>{Math.floor(data.total_quantity / data.quantity)}</td>
                                         <td>{data.total_quantity}</td>

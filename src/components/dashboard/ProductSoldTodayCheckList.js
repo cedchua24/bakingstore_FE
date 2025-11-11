@@ -156,10 +156,10 @@ const ProductSoldTodayCheckList = () => {
                         <th>ID</th>
                         <th>Code</th>
                         <th>Product Name</th>
-                        {/* <th>Stock (PC)</th> */}
+                        <th>Discrepancy (PC)</th>
                         <th>Sold (WS/BOX)</th>
-                        <th style={{ fontWeight: 'bold', color: 'red' }}>Sold (PC)</th>
-                        <th style={{ fontWeight: 'bold', color: 'red' }}>Current Stock(PC)</th>
+                        <th style={{ fontWeight: 'bold', color: 'green' }}>Sold (PC)</th>
+                        <th style={{ fontWeight: 'bold', color: 'green' }}>Current Stock(PC)</th>
                         <th>Excel Stock (PC)</th>
                         <th>Tally Count </th>
                     </tr>
@@ -173,7 +173,7 @@ const ProductSoldTodayCheckList = () => {
                                 <td>{data.id}</td>
                                 <td>{data.product_code}</td>
                                 <td>{data.product_name}</td>
-                                {/* <td>{data.stock}</td> */}
+                                <td>{data.discrepancy == 0 ? <p>{data.discrepancy}</p> : <p style={{ fontWeight: 'bold', color: 'red' }}>{data.discrepancy}</p>}</td>
                                 <td>{Math.floor(data.total_stock / data.quantity)}</td>
                                 <td>{data.total_stock}</td>
                                 <td>{data.current_stock}</td>

@@ -15,7 +15,7 @@ import Select from '@mui/material/Select';
 import Box from '@mui/material/Box';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-
+import moment from "moment";
 import LinearProgress from '@mui/material/LinearProgress';
 
 
@@ -33,7 +33,7 @@ const AddCustomerOrderTransactionV2 = (props) => {
         customer_type_id: 0,
         sales_rep_id: 0,
         user_id: localStorage.getItem('auth_user_id'),
-        date: '',
+        date: moment().format("YYYY-MM-DD"),
         type: 0,
         created_at: '',
         updated_at: ''
@@ -249,12 +249,13 @@ const AddCustomerOrderTransactionV2 = (props) => {
                                         <TextField {...params} label="Choose Customer" variant="standard" />
                                     )}
                                 />
+
                             </FormControl>
                         </Box>
                         {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
                         <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                             <Form.Label>Date</Form.Label>
-                            <Form.Control type="date" name="date" onChange={onChangeInput} />
+                            <Form.Control type="date" name="date" value={shopOrderTransaction.date} onChange={onChangeInput} />
                         </Form.Group>
 
                         <Button variant="primary"

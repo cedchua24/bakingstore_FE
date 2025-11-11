@@ -46,7 +46,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Modal from '@mui/material/Modal';
 import UpdateIcon from '@mui/icons-material/Update';
 import LinearProgress from '@mui/material/LinearProgress';
-
+import moment from "moment";
 import { styled } from '@mui/material/styles';
 
 const FinalizeShopOrder = () => {
@@ -96,6 +96,7 @@ const FinalizeShopOrder = () => {
         requestor_name: '',
         status: 0,
         checker_name: '',
+        date: '',
         created_at: '',
         updated_at: ''
     });
@@ -136,7 +137,7 @@ const FinalizeShopOrder = () => {
         payment_type_id: '',
         shop_order_transaction_id: 0,
         amount: 0,
-        created_at: '',
+        created_at: moment().format("YYYY-MM-DD"),
         updated_at: ''
     });
     const [amount, setAmount] = useState(0);
@@ -161,6 +162,10 @@ const FinalizeShopOrder = () => {
         data: [],
         code: ''
     });
+
+    const onChangeInput = (e) => {
+        setModeOfPayment({ ...modeOfPayment, [e.target.name]: e.target.value });
+    }
 
 
     const [validator, setValidator] = useState({
@@ -265,6 +270,14 @@ const FinalizeShopOrder = () => {
                             message: 'Sucessfully added!',
                             isShow: true,
                         });
+
+                        if (response.data.balance == 0) {
+                            if (shopOrderTransaction.shop_type_id == 3) {
+                                navigate(`/shopOrderTransaction/receiptOrder/${shopOrderTransaction.id}/`);
+                            } else {
+                                navigate('/shopOrderTransaction/shorOrderTransactionList/');
+                            }
+                        }
                     })
                     .catch(e => {
                         setSubmitLoadingAdd(false);
@@ -284,11 +297,16 @@ const FinalizeShopOrder = () => {
     }
 
     const openSubmit = () => {
-        setShopOrderTransaction({
-            ...shopOrderTransaction,
-            status: 1,
-        });
-        setSubmitOpenModal(true);
+        // setShopOrderTransaction({
+        //     ...shopOrderTransaction,
+        //     status: 1,
+        // });
+        // setSubmitOpenModal(true);
+        if (shopOrderTransaction.shop_type_id == 3) {
+            navigate(`/shopOrderTransaction/receiptOrder/${shopOrderTransaction.id}/`);
+        } else {
+            navigate('/shopOrderTransaction/shorOrderTransactionList/');
+        }
     }
 
     const fetchPaymentType = () => {
@@ -590,12 +608,19 @@ const FinalizeShopOrder = () => {
                             />
                         </FormControl>
 
+
+
+                        <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                            <Form.Label>Date</Form.Label>
+                            <Form.Control type="date" value={modeOfPayment.created_at} name="created_at" onChange={onChangeInput} />
+                        </Form.Group>
+
                         <Button
                             variant="contained"
                             disabled={errorStock}
                             onClick={savePaymentType}
                             size="large" >
-                            Add
+                            Addz
                         </Button>
                         <br></br>
                         <br></br>
@@ -614,6 +639,7 @@ const FinalizeShopOrder = () => {
                             <TableRow>
                                 <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
                                 <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Date</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -621,6 +647,7 @@ const FinalizeShopOrder = () => {
                                 <TableRow key={row.id}>
                                     <TableCell>{row.payment_type}{" - " + row.payment_type_description}</TableCell>
                                     <TableCell align="right">{row.amount}</TableCell>
+                                    <TableCell align="right">{shopOrderTransaction.date != row.created_at ? <p style={{ color: 'orange', }}>{row.created_at}</p> : row.updated_at}</TableCell>
                                     <TableCell align="right">
                                         <Tooltip title="Update">
                                             <IconButton>
@@ -734,7 +761,7 @@ const FinalizeShopOrder = () => {
                                 variant="contained"
                                 onClick={openSubmit}
                                 size="large" >
-                                Submit
+                                Next and Print
                             </Button>
                         </Div>)
                     }
