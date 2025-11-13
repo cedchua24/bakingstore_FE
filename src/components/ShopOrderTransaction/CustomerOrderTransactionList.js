@@ -605,7 +605,7 @@ const CustomerOrderTransactionList = () => {
 
 
     return (
-        <div style={{ marginLeft: -200 }}>
+        <div style={{ marginLeft: -250 }}>
 
 
             <div style={{ float: 'right' }}>
@@ -699,7 +699,7 @@ const CustomerOrderTransactionList = () => {
             </div>
 
 
-            <div style={{ float: 'right', marginRight: 100 }}>
+            <div style={{ float: 'right', marginRight: 30 }}>
 
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
