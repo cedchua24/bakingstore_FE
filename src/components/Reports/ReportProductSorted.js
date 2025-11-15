@@ -256,6 +256,7 @@ const ReportProductSorted = () => {
                         <th>Amount</th>
                         <th>Sold</th>
                         <th>Current Stock</th>
+                        <th>Diff</th>
                     </tr>
                 </thead>
                 {sortedQuantity.data.length == 0 ?
@@ -273,8 +274,11 @@ const ReportProductSorted = () => {
                                         {sortedQuantity.id == 3 || sortedQuantity.id == 4 ? <td style={{ fontWeight: 'bold', }}>{numberFormat(data.total_price)}</td> : <td >{numberFormat(data.total_price)}</td>}
                                         {/* <td style={{ fontWeight: 'bold', }}>{sortedQuantity.total_quantity}</td> */}
                                         {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td style={{ fontWeight: 'bold', }}>{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td> :
-                                            <td >{data.total_quantity < data.quanty ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td>}
-                                        <td>{data.business_type === 'WHOLESALE' ? data.stock : data.stock_pc}</td>
+                                            <td >{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td>}
+                                        <td>{data.stock + " " + data.packaging}</td>
+                                        {data.business_type === 'ALL' &&
+                                            <td>{data.stock - Math.floor(data.total_quantity / data.quantity) > 0 ? <p> {data.stock - Math.floor(data.total_quantity / data.quantity)}</p> : <p style={{ color: "red" }}>{data.stock - Math.floor(data.total_quantity / data.quantity)}</p>}</td>
+                                        }
                                     </tr>
                                 )
                                 )

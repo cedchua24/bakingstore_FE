@@ -40,20 +40,18 @@ const CustomerOrderTransactionList = () => {
     const { id } = useParams();
 
     useEffect(() => {
-        fetchShopOrderTransactionList(id);
+        fetchOnlineShopOrderTransactionList();
         fetchExpensesList();
     }, []);
 
-    const [momentDay, setMomentDay] = useState({
-        today: id
+    const [customerOrderDate, setCustomerOrderDate] = useState({
+        date: id,
+        status: 0
     });
 
 
     const [role, setRole] = useState(localStorage.getItem('role_as'));
 
-    const [customerOrderDate, setCustomerOrderDate] = useState({
-        date: ""
-    });
 
     const [expenses, setExpenses] = useState({
         data: [],
@@ -177,13 +175,16 @@ const CustomerOrderTransactionList = () => {
 
 
 
-    let newDate = new Date().toLocaleDateString();
-    const fetchShopOrderTransactionList = ($date) => {
+
+    const fetchOnlineShopOrderTransactionList = () => {
+
+        let newDate = new Date().toLocaleDateString();
         let nDate = newDate.replaceAll("/", "-");
         console.log('nDate', nDate);
         console.log('role_as: ', localStorage.getItem('role_as'));
+        console.log("customerOrderDate :", customerOrderDate)
         // console.log('date', new Date().toLocaleDateString().replace("/", "-"));
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList($date)
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList(customerOrderDate)
             .then(response => {
                 console.log("fetchOnlineShopOrderTransactionList :", response.data)
                 // setShopOrderTransactionList(response.data);
@@ -277,7 +278,7 @@ const CustomerOrderTransactionList = () => {
                 //     message: 'Successfuly Deleted!',
                 //     isShow: true,
                 // });
-                fetchShopOrderTransactionList();
+                fetchOnlineShopOrderTransactionList();
                 // window.location.reload();
             })
             .catch(e => {
@@ -313,7 +314,7 @@ const CustomerOrderTransactionList = () => {
             .then(response => {
                 setSubmitLoading(false);
                 setSubmitOpenModal(false);
-                fetchShopOrderTransactionList();
+                fetchOnlineShopOrderTransactionList();
             })
             .catch(e => {
                 console.log(e);
@@ -327,14 +328,18 @@ const CustomerOrderTransactionList = () => {
         padding: theme.spacing(1),
     }));
 
+    // const onChangeInput = (e) => {
+    //     console.log("status", e.target.value);
+    //     setStatus(e.target.value);
+    // }
+
     const onChangeInput = (e) => {
-        console.log("status", e.target.value);
-        setStatus(e.target.value);
+        setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
     }
 
     const validate = (values) => {
         const errors = {};
-        if (status == 0) {
+        if (customerOrderDate.date.length == 0) {
             errors.date = "Status Type is Required!";
         }
 
@@ -342,18 +347,19 @@ const CustomerOrderTransactionList = () => {
     }
 
     const saveOrderTransaction = () => {
-        console.log('status: ', status);
-        console.log("count: ", Object.keys(validate(status)).length);
-        console.log("validate: ", validate(status));
-        setFormErrors(validate(status));
-        if (Object.keys(validate(status)).length > 0) {
+        console.log('status: ', customerOrderDate);
+        console.log("count: ", Object.keys(validate(customerOrderDate)).length);
+        console.log("validate: ", validate(customerOrderDate));
+        setFormErrors(validate(customerOrderDate));
+        if (Object.keys(validate(customerOrderDate)).length > 0) {
             console.log("Has Validation: ");
 
         } else {
             console.log("Ready for saving: ");
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByStatus(status)
+            // ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByStatus(customerOrderDate)
+            ShopOrderTransactionService.fetchOnlineShopOrderTransactionList(customerOrderDate)
                 .then(response => {
                     console.log("data: ", response.data);
                     setShopOrderTransaction(response.data);
@@ -488,7 +494,7 @@ const CustomerOrderTransactionList = () => {
     const updateDate = () => {
         ShopOrderTransactionService.update(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
             .then(response => {
-                fetchShopOrderTransactionList();
+                fetchOnlineShopOrderTransactionList();
                 setOpen(false);
                 setOpenRider(false);
                 setOpenPickUp(false);
@@ -529,7 +535,7 @@ const CustomerOrderTransactionList = () => {
             setIsDeliveryDisabled(true);
             DeliveryCustomerService.create(deliveryModal)
                 .then(response => {
-                    fetchShopOrderTransactionList();
+                    fetchOnlineShopOrderTransactionList();
                     setOpenDelivery(false);
                     setSubmitDeliveryLoadingDisabled(false);
                     setIsDeliveryDisabled(false);
@@ -798,11 +804,17 @@ const CustomerOrderTransactionList = () => {
 
             <div>
                 <Form>
-                    {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
+
                     {/* <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" name="date" onChange={onChangeInput} />
                     </Form.Group> */}
+                    {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Date</Form.Label>
+                        <Form.Control type="date" name="date" value={customerOrderDate.date} onChange={onChangeInput} />
+                    </Form.Group>
+
                     <Box sx={{ minWidth: 120 }}>
                         <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                             <InputLabel id="demo-simple-select-label">Choose Status</InputLabel>
@@ -813,6 +825,7 @@ const CustomerOrderTransactionList = () => {
                                 label="Status"
                                 name="status"
                                 onChange={onChangeInput}
+                                disabled
                             >
                                 <MenuItem disabled value="" style={{ fontWeight: 'bold' }}>
                                     <em>Payment Status</em>
@@ -829,6 +842,18 @@ const CustomerOrderTransactionList = () => {
                             </Select>
                         </FormControl>
                     </Box>
+                    <Button variant="primary"
+                        onClick={saveOrderTransaction}
+                        disabled={isAddDisabled}
+                    >
+                        Find
+                    </Button>
+                    <br></br>
+                    <br></br>
+                    {submitLoadingAdd &&
+                        <LinearProgress color="warning" />
+                    }
+                    <br></br>
 
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Transaction: </Form.Label>
@@ -871,19 +896,6 @@ const CustomerOrderTransactionList = () => {
 
 
 
-
-                    <Button variant="primary"
-                        onClick={saveOrderTransaction}
-                        disabled={isAddDisabled}
-                    >
-                        Find
-                    </Button>
-                    <br></br>
-                    <br></br>
-                    {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
-                    }
-                    <br></br>
                 </Form >
             </div>
 

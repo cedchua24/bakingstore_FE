@@ -10,8 +10,8 @@ class ShopOrderTransactionService {
     fetchShopOrderTransactionList() {
         return axios.get("/api/shopOrderTransaction/fetchShopOrderTransactionList");
     }
-    fetchOnlineShopOrderTransactionList(id) {
-        return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionList/${id}`);
+    fetchOnlineShopOrderTransactionList(data) {
+        return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionList", data);
     }
     fetctProductOrderTransaction(id, data) {
         // return axios.post("/api/customers/customerLastOrderList", data);
