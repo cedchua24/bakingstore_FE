@@ -58,6 +58,7 @@ const CustomerHistory = () => {
 
     const [customerTransaction, setCustomerTransaction] = useState({
         dateFrom: '',
+        required_amount: '',
         page: 1
     });
 
@@ -221,6 +222,11 @@ const CustomerHistory = () => {
             });
     }
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
 
 
     const sortList = ($data) => {
@@ -260,6 +266,12 @@ const CustomerHistory = () => {
                     <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
                 </Form.Group>
 
+                {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Amount Higher than:</Form.Label>
+                    <Form.Control type="text" name="required_amount" onChange={onChangeInput} />
+                </Form.Group>
+
                 {/* <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Days</Form.Label>
                     <Form.Control type="number" name="dateFrom" placeholder="Enter Category" onChange={onChangeInput} />
@@ -294,6 +306,7 @@ const CustomerHistory = () => {
                         <th>Contact Number</th>
                         <th>Email</th>
                         <th>Address</th>
+                        <th>Total Sales</th>
                         <th>Last Date</th>
                         <th>Last Order</th>
                         <th>Action</th>
@@ -314,6 +327,7 @@ const CustomerHistory = () => {
                                 <td>{customer.contact_number}</td>
                                 <td>{customer.email}</td>
                                 <td>{customer.address}</td>
+                                <td>{numberFormat(customer.total_sales)}</td>
                                 <td>{covertDateString(customer.date)}</td>
                                 <td>Last {customer.last_order} {customer.last_order <= 1 ? 'Day' : 'Days'}</td>
                                 <td>

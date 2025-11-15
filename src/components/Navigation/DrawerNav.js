@@ -614,7 +614,7 @@ export default function PersistentDrawerLeft() {
     const [transactionReportList, setTransactionReportList] = useState([
         {
             "name": "Transaction Daily",
-            "url": "/shopOrderTransaction/transactionReportList/" + moment().format("YYYY-MM-DD"),
+            "url": "/shopOrderTransaction/customerOrderTransactionList/" + moment().format("YYYY-MM-DD"),
             "icon": <TodayIcon />
         },
         {
