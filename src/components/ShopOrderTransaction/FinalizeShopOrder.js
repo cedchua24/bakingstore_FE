@@ -647,7 +647,7 @@ const FinalizeShopOrder = () => {
                                 <TableRow key={row.id}>
                                     <TableCell>{row.payment_type}{" - " + row.payment_type_description}</TableCell>
                                     <TableCell align="right">{row.amount}</TableCell>
-                                    <TableCell align="right">{shopOrderTransaction.date != row.created_at ? <p style={{ color: 'orange', }}>{row.created_at}</p> : row.updated_at}</TableCell>
+                                    <TableCell align="right">{shopOrderTransaction.date != row.created_at ? <p style={{ color: 'orange', }}>{row.created_at}</p> : row.created_at}</TableCell>
                                     <TableCell align="right">
                                         <Tooltip title="Update">
                                             <IconButton>
