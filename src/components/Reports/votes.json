@@ -1,0 +1,33 @@
+{
+    "data": [
+        {
+            "date": "10/01/25",
+            "total_sales": 200
+        },
+        {
+            "date": "10/02/25",
+            "total_sales": 200
+        },
+        {
+            "date": "10/03/25",
+            "total_sales": 500
+        },
+        {
+            "date": "10/04/25",
+            "total_sales": 100
+        },
+        {
+            "date": "10/05/25",
+            "total_sales": 1000
+        }
+    ],
+    "code": 200,
+    "total_sales": 91727092,
+    "total_profit": 12918547.85,
+    "total_cash": 24015838,
+    "total_online": 67717704,
+    "expenses_mandatory": 4246921.08,
+    "expenses_non_mandatory": 13986055.690000001,
+    "total_expenses": 18232976.770000003,
+    "message": "Successfully Added"
+}

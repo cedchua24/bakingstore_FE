@@ -23,6 +23,10 @@ class CustomerService {
     // return axios.post("/api/customers/customerLastOrderList", data);
     return axios.post(`/api/customers/customerLastOrderList/${id}`, data);
   }
+  customerBacklogList(id, data) {
+    // return axios.post("/api/customers/customerLastOrderList", data);
+    return axios.post(`/api/customers/customerBacklogList/${id}`, data);
+  }
   customerConvoList(id, data) {
     // return axios.post("/api/customers/customerLastOrderList", data);
     return axios.post(`/api/customers/customerConvoList/${id}`, data);

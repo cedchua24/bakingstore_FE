@@ -47,10 +47,16 @@ const CustomerTransactionList = () => {
         }).format(value).replace(/(\.|,)00$/g, '');
 
 
+    const totalSum = (numbers) => {
+        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        return numberFormat(numbers.reduce((acc, { shop_order_transaction_total_price }) => acc + shop_order_transaction_total_price, 0));
+    }
+
+
     return (
         <div>
             <h1>{customerTransactionList.customerDetails.first_name + " " + customerTransactionList.customerDetails.last_name}</h1>
-            <div style={{ width: 400, marginRight: 100 }}>
+            <div style={{ width: 600, marginRight: 100 }}>
 
                 {
                     customerTransactionList.payment.map((payment, index) => (
@@ -70,6 +76,14 @@ const CustomerTransactionList = () => {
                     )
                 }
 
+
+
+                <div >
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Amount: </Form.Label>
+                        <Form.Control type="text" value={totalSum(customerTransactionList.data)} />
+                    </Form.Group>
+                </div>
             </div>
 
 
