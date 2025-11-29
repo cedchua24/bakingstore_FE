@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+import ReportBar from "./ReportBar";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 
@@ -18,6 +19,7 @@ const ReportList = () => {
     const [role, setRole] = useState(localStorage.getItem('role_as'));
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [showGraph, setShowGraph] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
 
@@ -85,6 +87,7 @@ const ReportList = () => {
                     setShopOrderTransaction(response.data);
                     setSubmitLoadingAdd(false);
                     setIsAddDisabled(false);
+                    setShowGraph(true);
                 })
                 .catch(e => {
                     console.log("error", e)
@@ -192,9 +195,17 @@ const ReportList = () => {
                     }
                     <br></br>
                 </Form >
+
             </div>
-
-
+            {showGraph &&
+                <>
+                    <legend align="center" style={{ fontWeight: 'bold' }} > Bar Graph  </legend>
+                    <ReportBar
+                        transactionList={shopOrderTransaction}
+                    />
+                </>
+            }
+            <br></br>
 
             <legend align="center" style={{ fontWeight: 'bold' }} > Online Orders  </legend>
             <table class="table table-bordered">

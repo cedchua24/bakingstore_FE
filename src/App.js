@@ -152,6 +152,7 @@ import CustomerTransactionList from "./components/Customer/CustomerTransactionLi
 import CustomerListTransaction from "./components/Customer/CustomerListTransaction";
 import CustomerAds from "./components/Customer/CustomerAds";
 import CustomerHistory from "./components/Customer/CustomerHistory";
+import CustomerBacklog from "./components/Customer/CustomerBacklog";
 import CustomerConvo from "./components/Customer/CustomerConvo";
 import CustomerReOrder from "./components/Customer/CustomerReOrder";
 
@@ -213,6 +214,7 @@ import Expenses from "./components/Expenses/Expenses";
 import EditExpenses from "./components/Expenses/EditExpenses";
 
 import ReportList from "./components/Reports/ReportList";
+import ReportBar from "./components/Reports/ReportBar";
 import ReportPurchaseOrder from "./components/Reports/ReportPurchaseOrder";
 import ReportPurchaseOrderList from "./components/Reports/ReportPurchaseOrderList";
 import ReportPurchaseOrderPendingList from "./components/Reports/ReportPurchaseOrderPendingList";
@@ -523,6 +525,7 @@ const App = () => {
 
 
           <Route exact path="/reports/reportsList" element={<ReportList />} />
+          <Route exact path="/reports/reportBar" element={<ReportBar />} />
           <Route exact path="/reports/reportPurchaseOrder" element={<ReportPurchaseOrder />} />
           <Route exact path="/reports/reportPurchaseOrderList" element={<ReportPurchaseOrderList />} />
           <Route exact path="/reports/ReportPurchaseOrderPendingList" element={<ReportPurchaseOrderPendingList />} />
@@ -554,6 +557,8 @@ const App = () => {
           <Route exact path="/customerAds" element={<CustomerAds />} />
 
           <Route exact path="/customerHistory" element={<CustomerHistory />} />
+          <Route exact path="/customerBacklog" element={<CustomerBacklog />} />
+
           <Route exact path="/customerConvo" element={<CustomerConvo />} />
           <Route exact path="/customerReOrder" element={<CustomerReOrder />} />
 

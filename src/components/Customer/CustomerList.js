@@ -113,6 +113,7 @@ const CustomerList = (props) => {
                         <th>ID</th>
                         <th>First Name</th>
                         <th>Last Name</th>
+                        <th>Store Name</th>
                         <th>Contact Number</th>
                         <th>Email</th>
                         <th>Address</th>
@@ -134,6 +135,7 @@ const CustomerList = (props) => {
                                 <td>{customer.id}</td>
                                 <td>{customer.first_name}</td>
                                 <td>{customer.last_name}</td>
+                                <td>{customer.store_name}</td>
                                 <td>{customer.contact_number}</td>
                                 <td>{customer.email}</td>
                                 <td>{customer.address}</td>

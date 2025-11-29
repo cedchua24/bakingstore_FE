@@ -333,6 +333,7 @@ export default function PersistentDrawerLeft() {
             "url": "/customerHistory",
             "icon": <ListIcon />
         }
+
     ]);
 
     const [productList, setProductList] = useState([
@@ -928,6 +929,7 @@ export default function PersistentDrawerLeft() {
                             <NavDropdown.Item href="/customerHistory">Customer Need to Follow up </NavDropdown.Item>
                             <NavDropdown.Item href="/customerConvo">Customer Done Following up</NavDropdown.Item>
                             <NavDropdown.Item href="/customerReOrder">List of Customer Successfully Reordered</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerBacklog">Customer Backlog List</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
 

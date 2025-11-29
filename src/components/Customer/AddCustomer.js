@@ -19,6 +19,7 @@ const AddCustomer = (props) => {
         id: 0,
         first_name: '',
         last_name: '',
+        store_name: '',
         contact_number: '',
         email: '',
         ads: 0,
@@ -140,6 +141,12 @@ const AddCustomer = (props) => {
                     <Form.Control type="text" value={customer.last_name} name="last_name" placeholder="Enter Last Name" onChange={onChangeCustomer} />
 
                 </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Store Name</Form.Label>
+                    <Form.Control type="text" value={customer.store_name} name="store_name" placeholder="Enter Store Name" onChange={onChangeCustomer} />
+
+                </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Contact Number</Form.Label>
                     <Form.Control type="text" value={customer.contact_number} name="contact_number" placeholder="Enter Contact Number" onChange={onChangeCustomer} />
@@ -188,6 +195,7 @@ const AddCustomer = (props) => {
                         <th>ID</th>
                         <th>First Name</th>
                         <th>Last Name</th>
+                        <th>Store Name</th>
                         <th>Contact Number</th>
                         <th>Email</th>
                         <th>Address</th>
@@ -209,6 +217,7 @@ const AddCustomer = (props) => {
                                 <td>{customer.id}</td>
                                 <td>{customer.first_name}</td>
                                 <td>{customer.last_name}</td>
+                                <td>{customer.store_name}</td>
                                 <td>{customer.contact_number}</td>
                                 <td>{customer.email}</td>
                                 <td>{customer.address}</td>

@@ -18,7 +18,7 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 
-const CustomerHistory = () => {
+const CustomerBacklog = () => {
 
     useEffect(() => {
         fetchCustomerList();
@@ -90,7 +90,6 @@ const CustomerHistory = () => {
         }
 
 
-
         return errors;
     }
 
@@ -104,7 +103,7 @@ const CustomerHistory = () => {
         } else {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            CustomerService.customerLastOrderList(1, customerTransaction)
+            CustomerService.customerBacklogList(1, customerTransaction)
                 .then(response => {
                     setCustomerList(response.data);
                     setSubmitLoadingAdd(false);
@@ -121,7 +120,7 @@ const CustomerHistory = () => {
 
     const fetchCustomerList = () => {
         setSubmitLoadingAdd(true);
-        CustomerService.customerLastOrderList(1, customerTransaction)
+        CustomerService.customerBacklogList(1, customerTransaction)
             .then(response => {
                 setCustomerList(response.data);
                 setSubmitLoadingAdd(false);
@@ -259,7 +258,7 @@ const CustomerHistory = () => {
     }
 
     const steps = [
-        'Customer Need to Follow up',
+        'Customer Backlog',
         'Customer Done Following up',
         'Customer Successfully Reordered',
     ];
@@ -314,7 +313,7 @@ const CustomerHistory = () => {
                 <br></br>
             </Form >
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Need to Follow Up </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Customer Backlog List </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -463,4 +462,4 @@ const CustomerHistory = () => {
     )
 }
 
-export default CustomerHistory
+export default CustomerBacklog

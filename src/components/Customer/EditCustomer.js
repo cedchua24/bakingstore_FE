@@ -17,7 +17,9 @@ const EditCustomer = () => {
 
     const [customer, setCustomer] = useState({
         id: 0,
-        customer_name: '',
+        first_name: '',
+        last_name: '',
+        store_name: '',
         ads: 0,
         created_at: '',
         updated_at: ''
@@ -135,6 +137,10 @@ const EditCustomer = () => {
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Last Name</Form.Label>
                     <Form.Control type="text" value={customer.last_name} name="last_name" placeholder="Enter Last Name" onChange={onChangeCustomer} />
+                </Form.Group>
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Store Name</Form.Label>
+                    <Form.Control type="text" value={customer.store_name} name="store_name" placeholder="Enter Store Name" onChange={onChangeCustomer} />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Contact Number</Form.Label>

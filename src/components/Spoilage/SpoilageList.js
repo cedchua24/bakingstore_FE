@@ -86,13 +86,6 @@ const SpoilageList = (props) => {
         // setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
     }
 
-    const onChangePackaging = (e) => {
-        console.log(e.target.value)
-        setProduct({
-            ...product,
-            pack: e.target.value,
-        });
-    }
 
     const onChangeStock = (e) => {
         // const realStock = product.stock;
@@ -174,26 +167,15 @@ const SpoilageList = (props) => {
             });
     }
 
-    const fetchProductByCategoryId = () => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        ProductServiceService.fetchProductByCategoryId(categoryId)
-            .then(response => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                setProductList(response.data);
 
-            })
-            .catch(e => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                console.log("error", e)
-            });
-    }
 
     const deleteSpoilage = (id, e) => {
+        setSubmitLoading(true);
+        setErrorStock(true);
         SpoilageService.delete(id)
             .then(response => {
+                setSubmitLoading(false);
+                setOpen(false);
                 fetchProductList();
             })
             .catch(e => {
@@ -218,7 +200,11 @@ const SpoilageList = (props) => {
         <div>
 
             <br></br>
-
+            {submitLoading &&
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    <CircularProgress />
+                </div>
+            }
             <legend align="center" style={{ fontWeight: 'bold' }} > Spoilage List   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
@@ -262,7 +248,7 @@ const SpoilageList = (props) => {
 
 
                                         <td>
-                                            <Button variant="contained" onClick={(e) => deleteSpoilage(product.spoilage_id, e)} >
+                                            <Button variant="contained" onClick={(e) => deleteSpoilage(product.spoilage_id, e)} disabled={submitLoading}>
                                                 Delete
                                             </Button>
                                         </td>
