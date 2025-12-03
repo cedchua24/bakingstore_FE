@@ -622,6 +622,11 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
+            "name": "Sales List",
+            "url": "/reports/reportSales",
+            "icon": <ListIcon />
+        },
+        {
             "name": "Pending Transaction List",
             "url": "/shopOrderTransaction/pendingTransactionList",
             "icon": <ListIcon />

@@ -50,6 +50,9 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionListReportByDate(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReportByDate", data);
     }
+    fetchSalesList(data) {
+        return axios.post("/api/shopOrderTransaction/fetchSalesList", data);
+    }
     fetchSortedCustomerReport(data) {
         return axios.post("/api/shopOrderTransaction/fetchSortedCustomerReport", data);
     }

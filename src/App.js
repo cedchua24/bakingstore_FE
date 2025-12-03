@@ -214,6 +214,8 @@ import Expenses from "./components/Expenses/Expenses";
 import EditExpenses from "./components/Expenses/EditExpenses";
 
 import ReportList from "./components/Reports/ReportList";
+import ReportSales from "./components/Reports/ReportSales";
+
 import ReportBar from "./components/Reports/ReportBar";
 import ReportPurchaseOrder from "./components/Reports/ReportPurchaseOrder";
 import ReportPurchaseOrderList from "./components/Reports/ReportPurchaseOrderList";
@@ -525,6 +527,8 @@ const App = () => {
 
 
           <Route exact path="/reports/reportsList" element={<ReportList />} />
+          <Route exact path="/reports/reportSales" element={<ReportSales />} />
+
           <Route exact path="/reports/reportBar" element={<ReportBar />} />
           <Route exact path="/reports/reportPurchaseOrder" element={<ReportPurchaseOrder />} />
           <Route exact path="/reports/reportPurchaseOrderList" element={<ReportPurchaseOrderList />} />
