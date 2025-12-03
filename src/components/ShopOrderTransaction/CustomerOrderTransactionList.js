@@ -197,7 +197,7 @@ const CustomerOrderTransactionList = () => {
     }
 
     const fetchExpensesList = () => {
-        ExpensesService.fetchExpensesTransactionToday()
+        ExpensesService.fetchExpensesTransactionToday(customerOrderDate.date)
             .then(response => {
                 setExpenses(response.data);
             })
@@ -205,7 +205,7 @@ const CustomerOrderTransactionList = () => {
                 console.log("error", e)
             });
 
-        ExpensesService.fetchExpensesMandatoryToday()
+        ExpensesService.fetchExpensesMandatoryToday(customerOrderDate.date)
             .then(response => {
                 setExpensesMandatory(response.data);
             })
@@ -221,7 +221,7 @@ const CustomerOrderTransactionList = () => {
                 console.log("error", e)
             });
 
-        SpoilageService.fetchSpoilageToday(dateToday.today)
+        SpoilageService.fetchSpoilageToday(customerOrderDate.date)
             .then(response => {
                 setSpoilage(response.data);
             })
@@ -335,6 +335,7 @@ const CustomerOrderTransactionList = () => {
 
     const onChangeInput = (e) => {
         setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
+        setDateToday({ today: e.target.value })
     }
 
     const validate = (values) => {
@@ -363,6 +364,7 @@ const CustomerOrderTransactionList = () => {
                 .then(response => {
                     console.log("data: ", response.data);
                     setShopOrderTransaction(response.data);
+                    fetchExpensesList();
                     setSubmitLoadingAdd(false);
                     setIsAddDisabled(false);
                 })
@@ -617,7 +619,7 @@ const CustomerOrderTransactionList = () => {
             <div style={{ float: 'right' }}>
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label> Expenses</Form.Label>
-                    <Link variant="primary" to={"../expenses"}   >
+                    <Link variant="primary" to={"../reports/reportExpensesView/" + customerOrderDate.date}   >
                         <PageviewIcon color="primary" />
                     </Link>
                     <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
@@ -625,21 +627,21 @@ const CustomerOrderTransactionList = () => {
                 <br></br>
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label> Spoilage</Form.Label>
-                    <Link variant="primary" to={"../reports/viewSpoilageReport/" + dateToday.today}   >
+                    <Link variant="primary" to={"../reports/viewSpoilageReport/" + customerOrderDate.date}   >
                         <PageviewIcon color="primary" />
                     </Link>
                     <Form.Control type="text" value={numberFormat(spoilage.total_cost)} />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label> Discount</Form.Label>
-                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscount/" + dateToday.today}   >
+                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscount/" + customerOrderDate.date}   >
                         <PageviewIcon color="primary" />
                     </Link>
                     <Form.Control type="text" value={numberFormat(discount.total_amount)} />
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label> Discount Loss</Form.Label>
-                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscountLoss/" + dateToday.today}   >
+                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscountLoss/" + customerOrderDate.date}   >
                         <PageviewIcon color="primary" />
                     </Link>
                     <Form.Control type="text" value={numberFormat(discountLoss.total_amount)} />
@@ -711,7 +713,7 @@ const CustomerOrderTransactionList = () => {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                             <Form.Label> {payment.payment_type} {payment.payment_type_description} </Form.Label>
-                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + id}   >
+                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + customerOrderDate.date}   >
                                 <PageviewIcon color="primary" />
                             </Link>
                             {payment.total_paid_count != payment.total_count ?
@@ -854,13 +856,15 @@ const CustomerOrderTransactionList = () => {
                         <LinearProgress color="warning" />
                     }
                     <br></br>
-
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Transaction: </Form.Label>
+                        <Form.Label style={{ fontWeight: 'bold', }}>Transaction Today</Form.Label>
+                    </Form.Group>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label>Transaction Count: </Form.Label>
                         <Form.Control type="text" value={shopOrderTransaction.total_count} />
                     </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Sales Completed: </Form.Label>
+                        <Form.Label>Total Transaction Completed: </Form.Label>
                         <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_sales_completed)} />
                     </Form.Group>
                     {
@@ -874,10 +878,10 @@ const CustomerOrderTransactionList = () => {
 
                     <br></br>
                     <br></br>
-                    {shopOrderTransaction.total_paid != 0 && shopOrderTransaction.total_paid_prev != 0 &&
+                    {shopOrderTransaction.total_paid != 0 &&
                         <>
                             <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold', }}>Current + Prev Transaction</Form.Label>
+                                <Form.Label style={{ fontWeight: 'bold', }}>Sales Today</Form.Label>
                             </Form.Group>
                             <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                                 <Form.Label>Total Paid : </Form.Label>
