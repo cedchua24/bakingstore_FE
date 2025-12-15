@@ -747,6 +747,7 @@ const CustomerOrderTransactionList = () => {
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                                     <Form.Label>Cash: </Form.Label>
+
                                     <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash)} />
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
@@ -768,12 +769,27 @@ const CustomerOrderTransactionList = () => {
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                                     <Form.Label>Cash: </Form.Label>
+                                    <Link
+                                        variant="primary"
+                                        to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/1`}
+                                    >
+                                        <PageviewIcon color="primary" />
+                                    </Link>
                                     <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash_prev)} />
                                 </Form.Group>
+
                                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                                     <Form.Label>Online: </Form.Label>
+                                    <Link
+                                        variant="primary"
+                                        to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/1`}
+                                    >
+                                        <PageviewIcon color="primary" />
+                                    </Link>
                                     <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online_prev)} />
+
                                 </Form.Group>
+
                             </>
                         }
 
@@ -790,10 +806,22 @@ const CustomerOrderTransactionList = () => {
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                                     <Form.Label>Cash: </Form.Label>
+                                    <Link
+                                        variant="primary"
+                                        to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/2`}
+                                    >
+                                        <PageviewIcon color="primary" />
+                                    </Link>
                                     <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash_outdated)} />
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                                     <Form.Label>Online: </Form.Label>
+                                    <Link
+                                        variant="primary"
+                                        to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/2`}
+                                    >
+                                        <PageviewIcon color="primary" />
+                                    </Link>
                                     <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online_outdated)} />
                                 </Form.Group>
                             </>

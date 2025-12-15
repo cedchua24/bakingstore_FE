@@ -35,6 +35,7 @@ const ReportCategorySales = () => {
     }, []);
 
     const [categeryList, setCategoryList] = useState([]);
+    const [role] = useState(localStorage.getItem('role_as'));
 
     const [productSortedDate, setProductSortedDate] = useState({
         categoryId: 0,
@@ -173,10 +174,14 @@ const ReportCategorySales = () => {
                     <Form.Label>Total Sales: </Form.Label>
                     <Form.Control type="text" value={totalSum(sortedQuantity.data)} />
                 </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Profit: </Form.Label>
-                    <Form.Control type="text" value={totalProfit(sortedQuantity.data)} />
-                </Form.Group>
+                {
+                    role == 2 && (
+                        <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                            <Form.Label>Total Profit: </Form.Label>
+                            <Form.Control type="text" value={totalProfit(sortedQuantity.data)} />
+                        </Form.Group>
+                    )
+                }
             </div>
             <Form>
                 {formErrors.categoryId && <p style={{ color: "red" }}>{formErrors.categoryId}</p>}
@@ -292,8 +297,14 @@ const ReportCategorySales = () => {
                         <th>ID</th>
                         <th>Type</th>
                         <th>Product Name</th>
-                        <th>Profit</th>
+                        {
+                            role == 2 && (
+                                <th>Profit</th>
+                            )
+                        }
                         <th>Amount</th>
+                        <th>Qty WS</th>
+                        <th>Qty RTL</th>
                         <th>Sold</th>
                         <th>Current Stock</th>
                         <th>Diff</th>
@@ -310,9 +321,17 @@ const ReportCategorySales = () => {
                                         <td>{data.id}</td>
                                         <td>{data.business_type}</td>
                                         <td>{data.product_name}</td>
-                                        <td>{numberFormat(data.total_profit)}</td>
+                                        {
+                                            role == 2 && (
+                                                <td>{numberFormat(data.total_profit)}</td>
+                                            )
+                                        }
                                         {sortedQuantity.id == 3 || sortedQuantity.id == 4 ? <td style={{ fontWeight: 'bold', }}>{numberFormat(data.total_price)}</td> : <td >{numberFormat(data.total_price)}</td>}
-                                        {/* <td style={{ fontWeight: 'bold', }}>{sortedQuantity.total_quantity}</td> */}
+
+                                        {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td>{data.total_quantity < data.quantity ? "" : Math.floor(data.total_quantity / data.quantity)}</td> :
+                                            <td >{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td>}
+
+                                        <td>{data.total_quantity}</td>
                                         {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td style={{ fontWeight: 'bold', }}>{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td> :
                                             <td >{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td>}
                                         <td>{data.stock + " " + data.packaging}</td>

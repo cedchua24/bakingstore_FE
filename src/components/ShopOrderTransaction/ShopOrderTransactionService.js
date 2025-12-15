@@ -38,6 +38,9 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionListByIdDate(id, date) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByIdDate/${id}/${date}`);
     }
+    fetchPrev(id, today, type) {
+        return axios.get(`/api/shopOrderTransaction/fetchPrev/${id}/${today}/${type}`);
+    }
     fetchOnlineShopOrderTransactionListReport(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReport/${id}`);
     }
