@@ -13,11 +13,11 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import Checkbox from '@mui/material/Checkbox';
-import moment from "moment";
 
-const PaymentTypeSales = () => {
+const PaymentTypePrev = () => {
 
-    const { id } = useParams();
+
+    const { id, today, type } = useParams();
 
 
     useEffect(() => {
@@ -102,20 +102,7 @@ const PaymentTypeSales = () => {
 
     const fetchShopOrderTransactionList = () => {
 
-        var dateToday = moment().format("YYYY-MM-DD")
-        console.log('test: ', dateToday);
-        var valueParam = id.split("+");
-        console.log('pieces', valueParam);
-        console.log('date', valueParam[1]);
-
-        if (valueParam[1] === '') {
-            console.log('empty');
-            valueParam[1] = dateToday;
-        } else {
-            console.log('non empty');
-        }
-
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByIdDate(valueParam[0], valueParam[1])
+        ShopOrderTransactionService.fetchPrev(id, today, type)
             .then(response => {
                 console.log('fetchOnlineShopOrderTransactionListByIdDate', response.data)
                 // setShopOrderTransactionList(response.data);
@@ -158,6 +145,12 @@ const PaymentTypeSales = () => {
         setOpenPickUp(true);
     }
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
     const updateDate = () => {
         ModeOfPaymentService.updatePaidStatus(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
             .then(response => {
@@ -181,33 +174,16 @@ const PaymentTypeSales = () => {
                     (
                         <>
                             <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold' }}> {shopOrderTransaction.payment.payment_type} {shopOrderTransaction.payment.payment_type_description}</Form.Label>
-                                <Form.Control type="text" value={"₱ " + shopOrderTransaction.payment.total_amount} />
+                                <Form.Label style={{ fontWeight: 'bold' }}> {id == 1 ? 'Cash' : 'Online'}</Form.Label>
+                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_amount)} />
 
                             </Form.Group>
-
-
-
                             <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+
                                 <Form.Label style={{ fontWeight: 'bold' }}> Count</Form.Label>
-                                {filterByPaid(shopOrderTransaction.data).length == shopOrderTransaction.data.length ? <CheckIcon style={{ color: 'green', }} /> :
-                                    <CloseIcon style={{ color: 'red', }} />}
-                                <Form.Control type="text" value={filterByPaid(shopOrderTransaction.data).length + "/" + shopOrderTransaction.data.length} />
+                                <Form.Control type="text" value={filterByPaid(shopOrderTransaction.data).length} />
                             </Form.Group>
 
-                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold' }}> Payment</Form.Label>
-                                {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
-                                    <CloseIcon style={{ color: 'red', }} />}
-                                <Form.Control type="text" value={paymentDetails.paid + "/" + shopOrderTransaction.payment.total_amount} />
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold' }}> Discrepancy</Form.Label>
-                                {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
-                                    <CloseIcon style={{ color: 'red', }} />}
-                                <Form.Control type="text" value={shopOrderTransaction.payment.total_amount - paymentDetails.paid} />
-                            </Form.Group>
 
 
 
@@ -215,17 +191,17 @@ const PaymentTypeSales = () => {
                 <div>
                 </div>        </div>
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Payment Type Sales   </legend>
-            <legend align="center" style={{ fontWeight: 'bold' }} ><h6> {id.split("+")[1]}  </h6></legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > {id == 1 ? 'Cash' : 'Online'} {type == 1 ? 'Previous' : 'Outdated'}  Transaction   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} ><h6> {today}  </h6></legend>
 
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
-                        <th>Transaction ID</th>
                         <th>Shop Name</th>
                         <th>Customer Type</th>
                         <th>Customer</th>
+                        <th>Bank</th>
                         <th>Amount</th>
                         <th>Total Quantity</th>
                         <th>Total Cash</th>
@@ -234,8 +210,6 @@ const PaymentTypeSales = () => {
                         <th>Transaction Date</th>
                         <th>Status</th>
                         <th>Payment Record</th>
-                        <th></th>
-                        <th></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -248,11 +222,11 @@ const PaymentTypeSales = () => {
                                 shopOrderTransaction.data.map((shopOrderTransaction, index) => (
                                     <tr key={shopOrderTransaction.id} >
                                         <td>{shopOrderTransaction.id}</td>
-                                        <td>{shopOrderTransaction.transaction_id}</td>
                                         <td>{shopOrderTransaction.shop_name}</td>
                                         <td>{shopOrderTransaction.customer_type}</td>
                                         <td>{shopOrderTransaction.requestor_name}</td>
-                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.amount}</td>
+                                        <td>{shopOrderTransaction.payment_type + " " + shopOrderTransaction.payment_type_description}</td>
+                                        <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.amount)}</td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                         <td>{shopOrderTransaction.total_cash}</td>
                                         <td>{shopOrderTransaction.total_online}</td>
@@ -265,9 +239,9 @@ const PaymentTypeSales = () => {
                                         <td>
                                             {shopOrderTransaction.is_paid === 1 ? <CheckIcon style={{ color: 'green', }} /> :
                                                 <CloseIcon style={{ color: 'red', }} />}
-                                            <IconButton>
+                                            {/* <IconButton>
                                                 <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
-                                            </IconButton>
+                                            </IconButton> */}
                                         </td>
                                         <td>
                                             <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.shop_order_transaction_id}   >
@@ -324,4 +298,4 @@ const PaymentTypeSales = () => {
     )
 }
 
-export default PaymentTypeSales
+export default PaymentTypePrev

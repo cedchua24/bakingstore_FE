@@ -130,6 +130,8 @@ import CancelTransactionList from "./components/ShopOrderTransaction/CancelTrans
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
 import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
 import PaymentTypeSales from "./components/ShopOrderTransaction/PaymentTypeSales";
+import PaymentTypePrev from "./components/ShopOrderTransaction/PaymentTypePrev";
+
 import ViewDiscount from "./components/ShopOrderTransaction/ViewDiscount";
 import ViewDiscountLoss from "./components/ShopOrderTransaction/ViewDiscountLoss";
 import ReceiptOrder from "./components/ShopOrderTransaction/ReceiptOrder";
@@ -463,6 +465,7 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
           <Route exact path="/shopOrderTransaction/completedShopOrderTransaction/:id" element={<CompletedShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/paymentTypeSales/:id" element={<PaymentTypeSales />} />
+          <Route exact path="/shopOrderTransaction/PaymentTypePrev/:id/:today/:type" element={<PaymentTypePrev />} />
           <Route exact path="/shopOrderTransaction/viewDiscount/:id" element={<ViewDiscount />} />
           <Route exact path="/shopOrderTransaction/viewDiscountLoss/:id" element={<ViewDiscountLoss />} />
 
