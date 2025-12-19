@@ -50,14 +50,12 @@ const EditCustomer = () => {
 
     const validate = (values) => {
         const errors = {};
-        if (customer.first_name == 0) {
+        if (customer.first_name.length == 0) {
             errors.first_name = "First Name is Required!";
         }
-        if (customer.last_name == 0) {
+        if (customer.last_name.length == 0) {
             errors.last_name = "Last Name is Required!";
         }
-
-
 
         return errors;
     }
