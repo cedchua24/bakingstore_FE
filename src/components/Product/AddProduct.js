@@ -224,10 +224,7 @@ const AddProduct = () => {
       errors.quantity = "Quantity is Required!";
       // console.log("Quantity is Required!");
     }
-    if (product.stock == 0) {
-      errors.stock = "Stock is Required!";
-      // console.log("Stock is Required!");
-    }
+
     if (product.stock_warning == 0) {
       errors.stock_warning = "Stock Warning is Required!";
       // console.log("Stock Warning is Required!");

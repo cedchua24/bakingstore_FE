@@ -16,6 +16,9 @@ class MarkUpPriceService {
     fetchMarkUpBySupplierId(id) {
         return axios.get(`/api/markUpPrice/fetchMarkUpBySupplierId/${id}`);
     }
+    fetchMarkUpShoporder(id) {
+        return axios.get(`/api/markUpPrice/fetchMarkUpShoporder/${id}`);
+    }
     update(id, data) {
         return axios.put(`/api/markUpPrice/${id}`, data);
     }

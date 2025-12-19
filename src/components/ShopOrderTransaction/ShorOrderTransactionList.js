@@ -5,6 +5,8 @@ import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 
+import moment from "moment";
+
 const ShorOrderTransactionList = () => {
 
 
@@ -19,7 +21,7 @@ const ShorOrderTransactionList = () => {
         data: [],
         code: '',
         message: '',
-        total_price: 0
+
     });
 
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
@@ -27,7 +29,7 @@ const ShorOrderTransactionList = () => {
 
 
     const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.fetchBranchOrder()
+        ShopOrderTransactionService.fetchShopOrderTransactionListByDate(moment().format("YYYY-MM-DD"))
             .then(response => {
                 setShopOrderTransaction(response.data);
             })
@@ -92,6 +94,22 @@ const ShorOrderTransactionList = () => {
 
     }
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
+    const totalSum = (numbers) => {
+        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        return numberFormat(numbers.reduce((acc, { shop_order_transaction_total_price }) => acc + shop_order_transaction_total_price, 0));
+    }
+
+    const totalProfit = (numbers) => {
+        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+        return numberFormat(numbers.reduce((acc, { profit }) => acc + profit, 0));
+    }
+
     return (
         <div>
             <Form>
@@ -101,11 +119,11 @@ const ShorOrderTransactionList = () => {
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label>Total Sales: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_price} />
+                    <Form.Control type="text" value={totalSum(shopOrderTransaction.data)} />
                 </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label>Total Profit: </Form.Label>
-                    <Form.Control type="text" value={"₱ " + shopOrderTransaction.total_profit} />
+                    <Form.Control type="text" value={totalProfit(shopOrderTransaction.data)} />
                 </Form.Group>
 
                 <Button variant="primary" onClick={saveOrderTransaction}>
@@ -117,7 +135,7 @@ const ShorOrderTransactionList = () => {
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
-                        <th>ID</th>
+                        <th>Invoice Number</th>
                         <th>Shop Name</th>
                         <th>Total Quantity</th>
                         <th>Total Amount</th>
@@ -140,7 +158,7 @@ const ShorOrderTransactionList = () => {
                                 <td>{shopOrderTransaction.id}</td>
                                 <td>{shopOrderTransaction.shop_name}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                <td>{shopOrderTransaction.shop_order_transaction_total_price}</td>
+                                <td>{numberFormat(shopOrderTransaction.shop_order_transaction_total_price)}</td>
                                 <td>{shopOrderTransaction.profit}</td>
                                 <td>{shopOrderTransaction.requestor_name}</td>
                                 <td>{shopOrderTransaction.checker_name}</td>
