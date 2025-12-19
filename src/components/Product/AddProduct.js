@@ -442,14 +442,14 @@ const AddProduct = () => {
           <Form.Control type="text" value={product.quantity} name="quantity" onChange={onChange} />
         </FloatingLabel>
 
-        {formErrors.stock && <p style={{ color: "red" }}>{formErrors.stock}</p>}
+        {/* {formErrors.stock && <p style={{ color: "red" }}>{formErrors.stock}</p>}
         <FloatingLabel
           controlId="floatingInput"
           label="Stock"
           className="mb-3"
         >
           <Form.Control type="number" value={product.stock} name="stock" onChange={onChange} />
-        </FloatingLabel>
+        </FloatingLabel> */}
 
         {formErrors.stock_warning && <p style={{ color: "red" }}>{formErrors.stock_warning}</p>}
         <FloatingLabel
