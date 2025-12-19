@@ -78,6 +78,9 @@ class ShopOrderTransactionService {
     updateShopOrderTransactionStatus(id, data) {
         return axios.put(`/api/shopOrderTransaction/updateShopOrderTransactionStatus/${id}`, data);
     }
+    updateShopBranchStatus(id, data) {
+        return axios.put(`/api/shopOrderTransaction/updateShopBranchStatus/${id}`, data);
+    }
 
     // branch
     fetchBranchOrder(id) {

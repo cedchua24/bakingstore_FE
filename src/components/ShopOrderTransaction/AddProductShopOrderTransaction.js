@@ -55,7 +55,7 @@ const AddProductCustomerOrderTransaction = () => {
     useEffect(() => {
         fetchShopOrderTransaction(id);
         fetchShopOrder(id);
-        fetchProductList();
+
         fetchShopOrderDTO(id);
     }, []);
 
@@ -244,14 +244,14 @@ const AddProductCustomerOrderTransaction = () => {
                     message: 'Required Discounted Percentage',
                     isShow: true,
                 });
-            } else if (orderShop.shop_order_profit < 1 && orderShop.sale_price < 1) {
-                setValidator({
+            } else if (shopOrderTransaction.checker == 0 && orderShop.shop_order_profit < 1 && orderShop.sale_price < 1) {
+                setValidatorModal({
                     severity: 'error',
                     message: 'Price is less than to Capital',
                     isShow: true,
                 });
-            }
-            else {
+                setSubmitLoading(false);
+            } else {
                 setValidator({
                     severity: '',
                     message: '',
@@ -470,15 +470,27 @@ const AddProductCustomerOrderTransaction = () => {
         setProfit(value.profit)
     }
 
-    const fetchProductList = () => {
-        MarkUpPriceService.getAll()
-            .then(response => {
-                console.log("product List: ", response.data)
-                setProducts(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+    const fetchProductList = (checker) => {
+        if (checker != 0) {
+            MarkUpPriceService.fetchMarkUpShoporder()
+                .then(response => {
+                    console.log("product List: ", response.data)
+                    setProducts(response.data);
+                })
+                .catch(e => {
+                    console.log("error", e)
+                });
+        } else {
+            MarkUpPriceService.getAll()
+                .then(response => {
+                    console.log("product List: ", response.data)
+                    setProducts(response.data);
+                })
+                .catch(e => {
+                    console.log("error", e)
+                });
+        }
+
     }
 
     const fetchShopOrderTransaction = async (id) => {
@@ -487,6 +499,7 @@ const AddProductCustomerOrderTransaction = () => {
             .then(response => {
                 console.log('fetchShopOrderTransaction', response.data)
                 setShopOrderTransaction(response.data);
+                fetchProductList(response.data.checker);
             })
             .catch(e => {
                 console.log("error", e)
@@ -614,13 +627,16 @@ const AddProductCustomerOrderTransaction = () => {
                 isShow: true,
             });
             setSubmitLoading(false);
-        } else if (orderSupplierModal.shop_order_profit < 1 && orderSupplierModal.sale_price < 1) {
-            setValidatorModal({
-                severity: 'error',
-                message: 'Price is less than to Capital',
-                isShow: true,
-            });
-            setSubmitLoading(false);
+        } else if (shopOrderTransaction.checker == 0) {
+            if (orderSupplierModal.shop_order_profit < 1 && orderSupplierModal.sale_price < 1) {
+                setValidatorModal({
+                    severity: 'error',
+                    message: 'Price is less than to Capital',
+                    isShow: true,
+                });
+                setSubmitLoading(false);
+            }
+
         } else {
 
             ShopOrderService.update(orderSupplierModal.id, orderSupplierModal)
@@ -835,6 +851,7 @@ const AddProductCustomerOrderTransaction = () => {
                             name='discount'
                             label="Mark Up Option"
                             onChange={onChangeDiscount}
+                            disabled={shopOrderTransaction.checker != 0}
                         >
                             <MenuItem value='PERCENTAGE'>PERCENTAGE</MenuItem>
                             <MenuItem value='AMOUNT'>AMOUNT</MenuItem>
