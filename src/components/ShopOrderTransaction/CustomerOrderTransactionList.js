@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import CustomerService from "../Customer/CustomerService";
 import ExpensesService from "../Expenses/ExpensesService";
 import ShopService from "../Shop/ShopService";
 import DiscountService from "../OtherService/DiscountService";
@@ -150,6 +151,19 @@ const CustomerOrderTransactionList = () => {
         updated_at: ''
     });
 
+    const [pickUpModal, setPickUpModal] = useState({
+        id: 0,
+        first_name: '',
+        last_name: '',
+        contact_number: '',
+        email: '',
+        address: '',
+        store_name: '',
+        date: '',
+        customer_id: 0,
+        is_pickup: 0,
+    });
+
     const [deliveryModal, setDeliveryModal] = useState({
         id: 0,
         shop_order_transaction_id: 0,
@@ -168,6 +182,7 @@ const CustomerOrderTransactionList = () => {
     const [submitLoadingReport, setSubmitLoadingReport] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
+    const [formErrorsPickUp, setFormErrorsPickup] = useState({});
     const [formDeliveryErrors, setFormDeliveryErrors] = useState({});
 
     const [isDeliveryDisabled, setIsDeliveryDisabled] = useState(false);
@@ -457,9 +472,9 @@ const CustomerOrderTransactionList = () => {
     }
 
     const fetchTransaction = async (id) => {
-        await ShopOrderTransactionService.get(id)
+        await ShopOrderTransactionService.fetchCustomerDetails(id)
             .then(response => {
-                setShopOrderTransactionUpdateModal(response.data);
+                setPickUpModal(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -494,17 +509,42 @@ const CustomerOrderTransactionList = () => {
             });
     }
 
+    const validatePickUp = (values) => {
+        const errors = {};
+        if (pickUpModal.last_name == null || pickUpModal.last_name.length == 0) {
+            errors.last_name = "Last Name is Required!";
+        }
+        if (pickUpModal.address == null || pickUpModal.address.length == 0) {
+            errors.address = "Address is Required!";
+        }
+        if (pickUpModal.contact_number == null || pickUpModal.contact_number.length == 0) {
+            errors.contact_number = "Contact Number is Required!";
+        }
+        if (pickUpModal.store_name.length == 0) {
+            errors.store_name = "Store Name is Required!";
+        }
+        return errors;
+    }
+
     const updateDate = () => {
-        ShopOrderTransactionService.update(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
-            .then(response => {
-                fetchOnlineShopOrderTransactionList();
-                setOpen(false);
-                setOpenRider(false);
-                setOpenPickUp(false);
-            })
-            .catch(e => {
-                console.log(e);
-            });
+        console.log('status: ', pickUpModal);
+        console.log("count: ", Object.keys(validate(pickUpModal)).length);
+        console.log("validate: ", validate(pickUpModal));
+        setFormErrorsPickup(validatePickUp(pickUpModal));
+        if (Object.keys(validatePickUp(pickUpModal)).length > 0) {
+            console.log("Has Validation: ");
+        } else {
+            ShopOrderTransactionService.pickUpAndCustomerUpdate(pickUpModal)
+                .then(response => {
+                    fetchOnlineShopOrderTransactionList();
+                    setOpen(false);
+                    setOpenRider(false);
+                    setOpenPickUp(false);
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+        }
     }
 
     const validateDelivery = (values) => {
@@ -566,13 +606,18 @@ const CustomerOrderTransactionList = () => {
         console.log("error", e.target.checked)
         if (e.target.type === 'checkbox') {
             if (e.target.checked === true) {
-                setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_pickup: 1 });
+                setPickUpModal({ ...pickUpModal, is_pickup: 1 });
             } else {
-                setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_pickup: 0 });
+                setPickUpModal({ ...pickUpModal, is_pickup: 0 });
             }
         } else {
-            setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, is_pickup: e.target.value });
+            setPickUpModal({ ...pickUpModal, is_pickup: e.target.value });
         }
+    }
+
+
+    const onChangeCustomer = (e) => {
+        setPickUpModal({ ...pickUpModal, [e.target.name]: e.target.value });
     }
 
     const onChangeDeliveryStatus = (e) => {
@@ -1260,13 +1305,41 @@ const CustomerOrderTransactionList = () => {
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>is Pick-up ? </Form.Label>
-
                         <Checkbox
-                            checked={shopOrderTransactionUpdateModal.is_pickup === 0 ? false : true}
+                            checked={pickUpModal.is_pickup === 0 ? false : true}
                             onChange={onChangePaymentTypeStatus}
                             inputProps={{ 'aria-label': 'controlled' }}
                         />
                     </Form.Group>
+                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                        Customer Details
+                    </Typography>
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>First Name</Form.Label>
+                        <Form.Control type="text" value={pickUpModal.first_name} name="first_name" placeholder="Enter First Name" disabled />
+                    </Form.Group>
+
+                    {formErrorsPickUp.last_name && <p style={{ color: "red" }}>{formErrorsPickUp.last_name}</p>}
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>Last Name*</Form.Label>
+                        <Form.Control type="text" value={pickUpModal.last_name} name="last_name" placeholder="Enter Last Name" onChange={onChangeCustomer} />
+                    </Form.Group>
+                    {formErrorsPickUp.contact_number && <p style={{ color: "red" }}>{formErrorsPickUp.contact_number}</p>}
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>Contact Number*</Form.Label>
+                        <Form.Control type="text" value={pickUpModal.contact_number} name="contact_number" placeholder="Enter Contact Number" onChange={onChangeCustomer} />
+                    </Form.Group>
+                    {formErrorsPickUp.address && <p style={{ color: "red" }}>{formErrorsPickUp.address}</p>}
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>Address*</Form.Label>
+                        <Form.Control type="text" value={pickUpModal.address} name="address" placeholder="Enter Address" onChange={onChangeCustomer} />
+                    </Form.Group>
+                    {formErrorsPickUp.store_name && <p style={{ color: "red" }}>{formErrorsPickUp.store_name}</p>}
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>Store Name*</Form.Label>
+                        <Form.Control type="text" value={pickUpModal.store_name} name="store_name" placeholder="Enter Store Name" onChange={onChangeCustomer} />
+                    </Form.Group>
+
 
                     <Box
                         sx={{
