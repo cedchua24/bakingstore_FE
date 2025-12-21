@@ -20,7 +20,7 @@ import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import LinearProgress from '@mui/material/LinearProgress';
 
-const PendingTransactionList = () => {
+const PendingPickUp = () => {
 
 
     useEffect(() => {
@@ -62,21 +62,6 @@ const PendingTransactionList = () => {
         address: ''
     });
 
-
-    const [pickUpModal, setPickUpModal] = useState({
-        id: 0,
-        first_name: '',
-        last_name: '',
-        contact_number: '',
-        email: '',
-        address: '',
-        store_name: '',
-        date: '',
-        customer_id: 0,
-        is_pickup: 0,
-    });
-
-
     const [shopOrderTransactionUpdate, setShopOrderTransactionUpdate] = useState({
         checker: 0,
         id: 0,
@@ -90,6 +75,19 @@ const PendingTransactionList = () => {
         status: 3,
         created_at: '',
         updated_at: ''
+    });
+
+    const [pickUpModal, setPickUpModal] = useState({
+        id: 0,
+        first_name: '',
+        last_name: '',
+        contact_number: '',
+        email: '',
+        address: '',
+        store_name: '',
+        date: '',
+        customer_id: 0,
+        is_pickup: 0,
     });
 
 
@@ -116,7 +114,7 @@ const PendingTransactionList = () => {
 
 
     const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.fetchPendingTransactionList(transactionStatus)
+        ShopOrderTransactionService.fetchPendingPickUp(0)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -230,7 +228,6 @@ const PendingTransactionList = () => {
         fetchTransactionPickUp(id);
         setOpenPickUp(true);
     }
-
     const onChangeDelivery = (e) => {
         setDeliveryModal({ ...deliveryModal, [e.target.name]: e.target.value });
     }
@@ -292,48 +289,6 @@ const PendingTransactionList = () => {
         }
     }
 
-    const onChangeCustomer = (e) => {
-        setPickUpModal({ ...pickUpModal, [e.target.name]: e.target.value });
-    }
-
-    const validatePickUp = (values) => {
-        const errors = {};
-        if (pickUpModal.last_name == null || pickUpModal.last_name.length == 0) {
-            errors.last_name = "Last Name is Required!";
-        }
-        // if (pickUpModal.address == null || pickUpModal.address.length == 0) {
-        //     errors.address = "Address is Required!";
-        // }
-        // if (pickUpModal.contact_number == null || pickUpModal.contact_number.length == 0) {
-        //     errors.contact_number = "Contact Number is Required!";
-        // }
-        // if (pickUpModal.store_name.length == 0) {
-        //     errors.store_name = "Store Name is Required!";
-        // }
-        return errors;
-    }
-
-    const updatePickUp = () => {
-        console.log('status: ', pickUpModal);
-        console.log("count: ", Object.keys(validatePickUp(pickUpModal)).length);
-        console.log("validate: ", validatePickUp(pickUpModal));
-        setFormErrorsPickup(validatePickUp(pickUpModal));
-        if (Object.keys(validatePickUp(pickUpModal)).length > 0) {
-            console.log("Has Validation: ");
-        } else {
-            ShopOrderTransactionService.pickUpAndCustomerUpdate(pickUpModal)
-                .then(response => {
-                    fetchShopOrderTransactionList();
-                    setOpen(false);
-                    setOpenRider(false);
-                    setOpenPickUp(false);
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        }
-    }
-
     const fetchTransaction = async (id) => {
         await ShopOrderTransactionService.get(id)
             .then(response => {
@@ -355,6 +310,23 @@ const PendingTransactionList = () => {
             });
     }
 
+    const validatePickUp = (values) => {
+        const errors = {};
+        if (pickUpModal.last_name == null || pickUpModal.last_name.length == 0) {
+            errors.last_name = "Last Name is Required!";
+        }
+        // if (pickUpModal.address == null || pickUpModal.address.length == 0) {
+        //     errors.address = "Address is Required!";
+        // }
+        // if (pickUpModal.contact_number == null || pickUpModal.contact_number.length == 0) {
+        //     errors.contact_number = "Contact Number is Required!";
+        // }
+        // if (pickUpModal.store_name.length == 0) {
+        //     errors.store_name = "Store Name is Required!";
+        // }
+        return errors;
+    }
+
     const updateDate = () => {
         ShopOrderTransactionService.update(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
             .then(response => {
@@ -366,6 +338,27 @@ const PendingTransactionList = () => {
             .catch(e => {
                 console.log(e);
             });
+    }
+
+    const updatePickUp = () => {
+        console.log('status: ', pickUpModal);
+        console.log("count: ", Object.keys(validatePickUp(pickUpModal)).length);
+        console.log("validate: ", validatePickUp(pickUpModal));
+        setFormErrorsPickup(validatePickUp(pickUpModal));
+        if (Object.keys(validatePickUp(pickUpModal)).length > 0) {
+            console.log("Has Validation: ");
+        } else {
+            ShopOrderTransactionService.pickUpAndCustomerUpdate(pickUpModal)
+                .then(response => {
+                    fetchShopOrderTransactionList();
+                    setOpen(false);
+                    setOpenRider(false);
+                    setOpenPickUp(false);
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+        }
     }
 
 
@@ -438,6 +431,10 @@ const PendingTransactionList = () => {
         }
     }
 
+    const onChangeCustomer = (e) => {
+        setPickUpModal({ ...pickUpModal, [e.target.name]: e.target.value });
+    }
+
     const style = {
         position: 'absolute',
         top: '50%',
@@ -488,7 +485,7 @@ const PendingTransactionList = () => {
             </div>
 
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Pending Transaction   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Pending Pick Up Transaction   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -839,4 +836,4 @@ const PendingTransactionList = () => {
     )
 }
 
-export default PendingTransactionList
+export default PendingPickUp

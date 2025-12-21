@@ -627,13 +627,13 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
-            "name": "Pending Transaction List",
+            "name": "Pending Payment List",
             "url": "/shopOrderTransaction/pendingTransactionList",
             "icon": <ListIcon />
         },
         {
-            "name": "Cancel Transaction List",
-            "url": "/shopOrderTransaction/cancelTransactionList",
+            "name": "Pending Pick Up List",
+            "url": "/shopOrderTransaction/pendingPickUp",
             "icon": <ListIcon />
         }
     ]);
