@@ -467,14 +467,25 @@ const CustomerOrderTransactionList = () => {
 
     const handleOpenPickUp = (id, e) => {
         console.log('e', id);
-        fetchTransaction(id);
+        fetchTransactionPickUp(id);
         setOpenPickUp(true);
     }
 
-    const fetchTransaction = async (id) => {
+    const fetchTransactionPickUp = async (id) => {
         await ShopOrderTransactionService.fetchCustomerDetails(id)
             .then(response => {
+                console.log('response.data', response.data);
                 setPickUpModal(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const fetchTransaction = async (id) => {
+        await ShopOrderTransactionService.get(id)
+            .then(response => {
+                setShopOrderTransactionUpdateModal(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -514,22 +525,22 @@ const CustomerOrderTransactionList = () => {
         if (pickUpModal.last_name == null || pickUpModal.last_name.length == 0) {
             errors.last_name = "Last Name is Required!";
         }
-        if (pickUpModal.address == null || pickUpModal.address.length == 0) {
-            errors.address = "Address is Required!";
-        }
-        if (pickUpModal.contact_number == null || pickUpModal.contact_number.length == 0) {
-            errors.contact_number = "Contact Number is Required!";
-        }
-        if (pickUpModal.store_name.length == 0) {
-            errors.store_name = "Store Name is Required!";
-        }
+        // if (pickUpModal.address == null || pickUpModal.address.length == 0) {
+        //     errors.address = "Address is Required!";
+        // }
+        // if (pickUpModal.contact_number == null || pickUpModal.contact_number.length == 0) {
+        //     errors.contact_number = "Contact Number is Required!";
+        // }
+        // if (pickUpModal.store_name.length == 0) {
+        //     errors.store_name = "Store Name is Required!";
+        // }
         return errors;
     }
 
-    const updateDate = () => {
+    const updatePickUp = () => {
         console.log('status: ', pickUpModal);
-        console.log("count: ", Object.keys(validate(pickUpModal)).length);
-        console.log("validate: ", validate(pickUpModal));
+        console.log("count: ", Object.keys(validatePickUp(pickUpModal)).length);
+        console.log("validate: ", validatePickUp(pickUpModal));
         setFormErrorsPickup(validatePickUp(pickUpModal));
         if (Object.keys(validatePickUp(pickUpModal)).length > 0) {
             console.log("Has Validation: ");
@@ -545,6 +556,19 @@ const CustomerOrderTransactionList = () => {
                     console.log(e);
                 });
         }
+    }
+
+    const updateDate = () => {
+        ShopOrderTransactionService.update(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
+            .then(response => {
+                fetchOnlineShopOrderTransactionList();
+                setOpen(false);
+                setOpenRider(false);
+                setOpenPickUp(false);
+            })
+            .catch(e => {
+                console.log(e);
+            });
     }
 
     const validateDelivery = (values) => {
@@ -844,7 +868,7 @@ const CustomerOrderTransactionList = () => {
                                 <br></br>
                                 <br></br>
                                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label style={{ fontWeight: 'bold', }}>Outdated Transaction Paid</Form.Label>
+                                    <Form.Label style={{ fontWeight: 'bold', }}>Post Transaction Paid</Form.Label>
                                 </Form.Group>
                                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                                     <Form.Label>Total Paid : </Form.Label>
@@ -1349,7 +1373,7 @@ const CustomerOrderTransactionList = () => {
                             justifyContent: 'center',
                         }}
                     >
-                        <Button variant="primary" onClick={updateDate}>
+                        <Button variant="primary" onClick={updatePickUp}>
                             Submit
                         </Button>
                     </Box>

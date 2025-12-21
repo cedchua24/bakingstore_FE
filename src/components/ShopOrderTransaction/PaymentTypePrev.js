@@ -191,7 +191,7 @@ const PaymentTypePrev = () => {
                 <div>
                 </div>        </div>
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > {id == 1 ? 'Cash' : 'Online'} {type == 1 ? 'Previous' : 'Outdated'}  Transaction   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > {id == 1 ? 'Cash' : 'Online'} {type == 1 ? 'Previous' : 'Post'}  Transaction   </legend>
             <legend align="center" style={{ fontWeight: 'bold' }} ><h6> {today}  </h6></legend>
 
             <table class="table table-bordered">
