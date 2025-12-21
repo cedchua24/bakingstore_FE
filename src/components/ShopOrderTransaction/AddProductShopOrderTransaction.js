@@ -627,16 +627,13 @@ const AddProductCustomerOrderTransaction = () => {
                 isShow: true,
             });
             setSubmitLoading(false);
-        } else if (shopOrderTransaction.checker == 0) {
-            if (orderSupplierModal.shop_order_profit < 1 && orderSupplierModal.sale_price < 1) {
-                setValidatorModal({
-                    severity: 'error',
-                    message: 'Price is less than to Capital',
-                    isShow: true,
-                });
-                setSubmitLoading(false);
-            }
-
+        } else if (shopOrderTransaction.checker == 0 && orderSupplierModal.shop_order_profit < 1 && orderSupplierModal.sale_price < 1) {
+            setValidatorModal({
+                severity: 'error',
+                message: 'Price is less than to Capital',
+                isShow: true,
+            });
+            setSubmitLoading(false);
         } else {
 
             ShopOrderService.update(orderSupplierModal.id, orderSupplierModal)
