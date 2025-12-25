@@ -501,11 +501,11 @@ export default function PersistentDrawerLeft() {
             "url": "/stockSupplierWarning",
             "icon": <ListIcon />
         },
-        {
-            "name": "No Stock Warning",
-            "url": "/noStockWarning",
-            "icon": <ListIcon />
-        },
+        // {
+        //     "name": "No Stock Warning",
+        //     "url": "/noStockWarning",
+        //     "icon": <ListIcon />
+        // },
         {
             "name": "Customer to Notify Stock",
             "url": "/outOfStockReturn",

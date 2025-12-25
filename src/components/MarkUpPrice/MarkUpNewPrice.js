@@ -240,7 +240,7 @@ const MarkUpNewPrice = () => {
     return (
         <div>
             <Form>
-                <legend>Mark Up New Price</legend>
+
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -259,6 +259,10 @@ const MarkUpNewPrice = () => {
                             }
                         </Select>
                     </FormControl>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Total Count:</Form.Label>
+                        <Form.Control type="text" value={productList.data.length} disabled />
+                    </Form.Group>
 
 
                 </Box>
