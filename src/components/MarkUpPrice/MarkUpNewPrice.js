@@ -261,7 +261,7 @@ const MarkUpNewPrice = () => {
                     </FormControl>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                         <Form.Label>Total Count:</Form.Label>
-                        <Form.Control type="text" value={productList.data.length} disabled />
+                        <Form.Control type="text" value={productList.data.filter(d => d.price != d.mup_price).length} disabled />
                     </Form.Group>
 
 
