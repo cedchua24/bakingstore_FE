@@ -484,6 +484,10 @@ const PendingPickUp = () => {
                         Find
                     </Button>
                 </Form > */}
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Total Count:</Form.Label>
+                    <Form.Control type="text" value={shopOrderTransaction.data.length} disabled />
+                </Form.Group>
             </div>
 
             <legend align="center" style={{ fontWeight: 'bold' }} > Pending Pick Up Transaction   </legend>

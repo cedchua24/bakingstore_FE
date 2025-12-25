@@ -116,6 +116,10 @@ const ReportPurchaseOrderPendingList = () => {
                         <Form.Label>Total Balance: </Form.Label>
                         <Form.Control type="text" value={numberFormat(orderTransactionList.total_balance.total_balance)} />
                     </Form.Group>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Total Count:</Form.Label>
+                        <Form.Control type="text" value={orderTransactionList.data.length} disabled />
+                    </Form.Group>
 
                     <Button variant="primary" onClick={saveOrderTransaction} disabled={isAddDisabled}>
                         Find
