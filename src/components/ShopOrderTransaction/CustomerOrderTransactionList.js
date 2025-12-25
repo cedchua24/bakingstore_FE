@@ -325,7 +325,7 @@ const CustomerOrderTransactionList = () => {
         event.preventDefault();
         setSubmitLoading(true);
 
-        ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
+        ShopOrderTransactionService.delete(shopOrderTransactionUpdate.id)
             .then(response => {
                 setSubmitLoading(false);
                 setSubmitOpenModal(false);
@@ -409,23 +409,17 @@ const CustomerOrderTransactionList = () => {
                     setIsAddDisabled(false);
                 });
         } else if (shop.shop_type_id == 3) {
-            axios.get("https://mdrbakingsupplies.com/sanctum/csrf-cookie").then(async () => {
-                axios.post(`https://mdrbakingsupplies.com/api/shop/sendReport`,
-                    shopOrderTransaction)
-                    .then(res => {
-                        console.log("data: ", res.data);
-                        setSubmitLoadingReport(false);
-                        setIsAddDisabled(false);
-                    })
-                    .catch(e => {
-                        console.log("error", e)
-                        setSubmitLoadingReport(false);
-                        setIsAddDisabled(false);
-                    })
-                    .catch(e => {
-                        console.log(e);
-                    });
-            });
+            ShopService.sendReport(shopOrderTransaction)
+                .then(response => {
+                    console.log("data: ", response.data);
+                    setSubmitLoadingReport(false);
+                    setIsAddDisabled(false);
+                })
+                .catch(e => {
+                    console.log("error", e)
+                    setSubmitLoadingReport(false);
+                    setIsAddDisabled(false);
+                });
 
         }
     }
@@ -1163,7 +1157,7 @@ const CustomerOrderTransactionList = () => {
             >
 
                 <DialogTitle id="alert-dialog-title">
-                    {"Are you sure you want to Submit?"}
+                    {"Are you sure you want to Delete?"}
                 </DialogTitle>
                 {submitLoading &&
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
