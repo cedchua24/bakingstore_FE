@@ -171,6 +171,12 @@ const NoStock = (props) => {
             });
     }
 
+    const covertDateString = (day) => {
+        var d = new Date(day);
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
+    }
+
+
     return (
         <div>
             <Form>
@@ -221,7 +227,8 @@ const NoStock = (props) => {
                         <th>Stock</th>
                         <th>Stock/Pc</th>
                         <th>Quantity / Weight</th>
-                        <th>Update Stock</th>
+                        <th>Last Stock Date</th>
+                        {/* <th>Update Stock</th> */}
                         <th>Transaction</th>
                     </tr>
                 </thead>
@@ -247,11 +254,12 @@ const NoStock = (props) => {
                                 <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
                                     : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
                                 </td>
-                                <td>
+                                {/* <td>
                                     <IconButton>
                                         <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} disabled />
                                     </IconButton>
-                                </td>
+                                </td> */}
+                                <td>{covertDateString(product.updated_at)}</td>
                                 <td>
                                     <Link variant="primary" to={"/viewTransaction/" + product.id}   >
                                         <Button variant="contained" >
@@ -327,6 +335,7 @@ const NoStock = (props) => {
                             error={errorStock}
                         />
                     </FormControl>
+
 
                     {/* <FormControl fullWidth sx={{ m: 0 }} variant="standard">
                         <TextField

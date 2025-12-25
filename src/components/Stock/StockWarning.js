@@ -219,7 +219,7 @@ const StockWarning = (props) => {
                         <th>Stock</th>
                         <th>Stock/Pc</th>
                         <th>Quantity / Weight</th>
-                        <th>Update Stock</th>
+                        {/* <th>Update Stock</th> */}
                         <th>Transaction</th>
                     </tr>
                 </thead>
@@ -244,11 +244,11 @@ const StockWarning = (props) => {
                                 <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
                                     : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
                                 </td>
-                                <td>
+                                {/* <td>
                                     <IconButton>
                                         <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} disabled />
                                     </IconButton>
-                                </td>
+                                </td> */}
                                 <td>
                                     <Link variant="primary" to={"/viewTransaction/" + product.id}   >
                                         <Button variant="contained" >
