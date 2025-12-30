@@ -88,11 +88,12 @@ const StockList = (props) => {
     });
 
     const [realStock, setRealStock] = useState(0);
-    const [errorStock, setErrorStock] = useState(false);
+    const [errorStock, setErrorStock] = useState(true);
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [errorStock2, setErrorStock2] = useState(true);
+    const [errorStock3, setErrorStock3] = useState(true);
 
     const onChangeInput = (e) => {
         setCategoryId(e.target.value)
@@ -104,6 +105,14 @@ const StockList = (props) => {
             ...product,
             pack: e.target.value,
         });
+
+        if (e.target.value.length === '') {
+            setErrorStock3(true);
+            console.log('true')
+        } else {
+            console.log('false')
+            setErrorStock3(false);
+        }
     }
 
     const onChangeReason = (e) => {
@@ -120,31 +129,16 @@ const StockList = (props) => {
 
 
     const onChangeStock = (e) => {
-        // const realStock = product.stock;
-        // const totalStock = Number(realStock) + Number(e.target.value);
         setProduct({
             ...product,
             newStocks: e.target.value,
         });
 
-        let v = product.stock + Number(e.target.value);
-        let x = product.stock_pc + Number(e.target.value);
-        // if (product.pack === 'Box') {
-        //     if (v < 0) {
-        //         setErrorStock(true);
-        //     } else {
-        //         setErrorStock(false);
-        //     }
-        // } else {
-        //     if (x < 0) {
-        //         setErrorStock(true);
-        //     } else {
-        //         setErrorStock(false);
-        //     }
-
-        // }
-
-
+        if (e.target.value == 0) {
+            setErrorStock(true);
+        } else {
+            setErrorStock(false);
+        }
     }
 
 
@@ -221,14 +215,25 @@ const StockList = (props) => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
-        setErrorStock(true);
+        // setErrorStock(true);
         ProductServiceService.update(product.id, product)
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
                 setOpen(false);
                 setErrorStock(false);
-                // updateOrderTransaction();
+
+                setProduct({
+                    id: 0,
+                    product_name: '',
+                    stock_reason: '',
+                    stock: 0,
+                    stock_pc: 0,
+                    newStocks: 0,
+                    pack: ''
+
+                });
+
             })
             .catch(e => {
                 console.log(e);
@@ -371,11 +376,6 @@ const StockList = (props) => {
                                                 </Button>
                                             </Link>
                                         </td>
-                                        {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteProduct(product.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td> */}
                                     </tr>
                                 )
                                 )
@@ -413,9 +413,10 @@ const StockList = (props) => {
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
-                            value={product.packaging}
+                            value={product.pack}
                             label="Packaging"
                             name="pack"
+                            error={errorStock3}
                             onChange={onChangePackaging}
                         >
                             <MenuItem value={product.packaging}>{product.packaging}</MenuItem>
@@ -426,29 +427,39 @@ const StockList = (props) => {
                         </Select>
                     </FormControl>
 
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Add Stocks</InputLabel>
+
+                    <FormControl variant="standard">
+                        {/* <InputLabel htmlFor="standard-adornment-amount">Add Stocks</InputLabel>
                         <Input
                             type='number'
                             id="filled-required"
                             label="Stock"
                             variant="filled"
                             name='newStocks'
-                            errorText='{this.state.password_error_text}'
-                            // min='1'
-                            // value={product.stock}
+                            value={product.newStocks}
                             onChange={onChangeStock}
-                            // helperText="Incorrect entry."
+                            error={errorStock}
+                        /> */}
+
+                        <TextField
+                            InputLabelProps={{ shrink: true }}
+                            id="outlined-password-input"
+                            label="Quantity"
+                            type='number'
+                            name='newStocks'
+                            value={product.newStocks}
+                            onChange={onChangeStock}
                             error={errorStock}
                         />
                     </FormControl>
 
-                    <FormControl fullWidth sx={{ m: 0 }} variant="standard">
+                    <FormControl variant="standard">
                         <TextField
                             id="filled-required"
                             label="Reason"
                             variant="filled"
                             name='stock_reason'
+                            value={product.stock_reason}
                             onChange={onChangeReason}
                             error={errorStock2}
                         />
@@ -466,7 +477,7 @@ const StockList = (props) => {
                             variant="contained"
                             type="submit"
                             onClick={updateProduct}
-                            disabled={errorStock}
+                            disabled={errorStock || errorStock2 || errorStock3}
                             size="large" >
                             Submit
                         </Button>

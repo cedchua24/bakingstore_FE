@@ -59,15 +59,15 @@ const CustomerListTransaction = () => {
 
 
     const fetchCustomerList = () => {
-        setSubmitLoadingAdd(true);
-        CustomerService.fetchCustomerTransactionListByDate()
-            .then(response => {
-                setCustomerList(response.data);
-                setSubmitLoadingAdd(false);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+        // setSubmitLoadingAdd(true);
+        // CustomerService.fetchCustomerTransactionListByDate()
+        //     .then(response => {
+        //         setCustomerList(response.data);
+        //         setSubmitLoadingAdd(false);
+        //     })
+        //     .catch(e => {
+        //         console.log("error", e)
+        //     });
     }
     const numberFormat = (value) =>
         new Intl.NumberFormat('en-us', {
@@ -145,6 +145,7 @@ const CustomerListTransaction = () => {
                         <th>First Name</th>
                         <th>Last Name</th>
                         <th>Contact Number</th>
+                        <th>Store Name</th>
                         <th>Email</th>
                         <th>Address</th>
                         <th>FB Ads</th>
@@ -157,47 +158,53 @@ const CustomerListTransaction = () => {
                         {/* <th></th> */}
                     </tr>
                 </thead>
-                <tbody>
+                {customerList.data.length == 0 ?
+                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    :
+                    (
+                        <tbody>
 
-                    {
-                        customerList.data.map((customer, index) => (
-                            <tr key={customer.id} >
-                                <td>{customer.id}</td>
-                                <td>{customer.first_name}</td>
-                                <td>{customer.last_name}</td>
-                                <td>{customer.contact_number}</td>
-                                <td>{customer.email}</td>
-                                <td>{customer.address}</td>
-                                <td>{customer.ads === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                <td>{numberFormat(customer.total_balance)}</td>
-                                <td>{numberFormat(customer.total_profit)}</td>
-                                <td>{customer.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                <td>
+                            {
 
-                                    <Link variant="primary" to={"/customers/customerTransactionList/" + customer.id}   >
-                                        <Button variant="primary" >
-                                            View Transaction
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
+                                customerList.data.map((customer, index) => (
+                                    <tr key={customer.id} >
+                                        <td>{customer.id}</td>
+                                        <td>{customer.first_name}</td>
+                                        <td>{customer.last_name}</td>
+                                        <td>{customer.contact_number}</td>
+                                        <td>{customer.store_name}</td>
+                                        <td>{customer.email}</td>
+                                        <td>{customer.address}</td>
+                                        <td>{customer.ads === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                        <td>{numberFormat(customer.total_balance)}</td>
+                                        <td>{numberFormat(customer.total_profit)}</td>
+                                        <td>{customer.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                        <td>
 
-                                    <Link variant="primary" to={"/customers/customerProductList/" + customer.id}   >
-                                        <Button variant="primary" >
-                                            View Products
-                                        </Button>
-                                    </Link>
-                                </td>
-                                {/* <td>
+                                            <Link variant="primary" to={"/customers/customerTransactionList/" + customer.id}   >
+                                                <Button variant="primary" >
+                                                    View Transaction
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        <td>
+
+                                            <Link variant="primary" to={"/customers/customerProductList/" + customer.id}   >
+                                                <Button variant="primary" >
+                                                    View Products
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteCustomermr(customer.id, e)} >
                                         Delete
                                     </Button>
                                 </td> */}
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
+                                    </tr>
+                                )
+                                )
+                            }
+                        </tbody>)}
             </table>
         </div>
     )

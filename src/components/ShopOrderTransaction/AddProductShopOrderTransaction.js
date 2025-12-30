@@ -59,7 +59,7 @@ const AddProductCustomerOrderTransaction = () => {
         fetchShopOrderDTO(id);
     }, []);
 
-    const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
+    const [deleteOpenModal, setDeleteOpenModal] = useState(false);
 
     const handleDeleteCloseModal = () => {
         setDeleteOpenModal(false);
@@ -279,6 +279,10 @@ const AddProductCustomerOrderTransaction = () => {
                                     shop_order_price: 0,
                                     shop_order_quantity: 0,
                                     shop_order_total_price: 0,
+                                    fixed_price: 0,
+                                    discount: '',
+                                    discount_percentage: 0,
+                                    discount_amount: 0,
                                 });
                                 fetchShopOrderDTO(id);
                                 setSubmitLoadingAdd(false);
@@ -991,29 +995,6 @@ const AddProductCustomerOrderTransaction = () => {
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
-
-                                <Dialog
-                                    open={deleteOpenModal}
-                                    onClose={handleDeleteCloseModal}
-                                    aria-labelledby="alert-dialog-title"
-                                    aria-describedby="alert-dialog-description"
-                                >
-
-                                    <DialogTitle id="alert-dialog-title">
-                                        {"Are you sure you want to Delete?"}
-                                    </DialogTitle>
-                                    {submitLoading &&
-                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <CircularProgress />
-                                        </div>
-                                    }
-                                    <DialogActions>
-                                        <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                                        <Button onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
-                                            Agree
-                                        </Button>
-                                    </DialogActions>
-                                </Dialog>
                             </TableRow>
                         ))}
 
@@ -1053,6 +1034,29 @@ const AddProductCustomerOrderTransaction = () => {
                     Next
                 </Button>
             </Box>
+
+            <Dialog
+                open={deleteOpenModal}
+                onClose={handleDeleteCloseModal}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+
+                <DialogTitle id="alert-dialog-title">
+                    {"Are you sure you want to Delete?"}
+                </DialogTitle>
+                {submitLoading &&
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress />
+                    </div>
+                }
+                <DialogActions>
+                    <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                    <Button onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
+                        Agree
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Modal
                 keepMounted

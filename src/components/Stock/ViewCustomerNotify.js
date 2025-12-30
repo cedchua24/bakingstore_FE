@@ -110,6 +110,12 @@ const ViewCustomerNotify = () => {
             });
     }
 
+    //formatDate
+    const covertDateString = (day) => {
+        var d = new Date(day);
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
+    }
+
     return (
         <div>
             <legend align="center" style={{ fontWeight: 'bold' }} > Customer to Notify </legend>
@@ -131,7 +137,7 @@ const ViewCustomerNotify = () => {
                             <tr key={item.id} >
                                 <td>{item.id}</td>
                                 <td>{item.first_name + " " + item.last_name}</td>
-                                <td>{item.created_at}</td>
+                                <td>{covertDateString(item.created_at)}</td>
                                 <td>{item.status == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     <IconButton>
