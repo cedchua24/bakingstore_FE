@@ -352,6 +352,7 @@ const AddRTS = (props) => {
                         </tbody>)}
             </table>
             < Modal
+
                 keepMounted
                 open={open}
                 onClose={handleClose}
