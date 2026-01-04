@@ -537,15 +537,16 @@ export default function PersistentDrawerLeft() {
 
     const [shopOrder, setShopOrder] = useState([
         {
+            "name": "Add Branch Shop Order",
+            "url": "/shopOrderTransaction",
+            "icon": <AddIcon />
+        },
+        {
             "name": "Shop Branch Order List",
             "url": "/shopOrderTransaction/shorOrderTransactionList",
             "icon": <ListIcon />
         },
-        {
-            "name": "Add Branch Shop Order",
-            "url": "/shopOrderTransaction",
-            "icon": <ListIcon />
-        }
+
     ]);
 
     const [expense, setExpense] = useState([

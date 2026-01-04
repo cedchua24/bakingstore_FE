@@ -217,9 +217,46 @@ const ReportModifiedStock = (props) => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
+    const totalSum = (numbers) => {
+        var result;
+        result = numbers.filter(d => d.stock > 0)
+        return (result.reduce((acc, { total_cost }) => acc + total_cost, 0));
+    }
+
+    const totalDiff = (numbers) => {
+        var result;
+        result = numbers.filter(d => d.stock < 0)
+        return (result.reduce((acc, { total_cost }) => acc + total_cost, 0));
+    }
+
     return (
         <div>
             <Form>
+
+                <div style={{ float: 'right', marginRight: 500 }}>
+                    <Form.Group controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Added : </Form.Label>
+                        <Form.Control type="text" value={numberFormat(totalSum(productList.data))} />
+                    </Form.Group>
+                    <br></br>
+                    <Form.Group controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Reduced : </Form.Label>
+                        <Form.Control type="text" value={numberFormat(totalDiff(productList.data))} />
+                    </Form.Group>
+                    <br></br>
+                    <Form.Group controlId="formBasicEmail" disabled>
+                        <Form.Label>Total : </Form.Label>
+                        <Form.Control type="text" value={numberFormat(totalSum(productList.data) + totalDiff(productList.data))} />
+                    </Form.Group>
+                    <br></br>
+                    <br></br>
+                </div>
                 {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date From*:</Form.Label>
@@ -230,7 +267,6 @@ const ReportModifiedStock = (props) => {
                     <Form.Label>Date To*:</Form.Label>
                     <Form.Control type="date" name="dateTo" onChange={onChangeDate} />
                 </Form.Group>
-
                 <Button variant="primary"
                     onClick={saveOrderTransaction}
                     disabled={isAddDisabled}
@@ -244,6 +280,10 @@ const ReportModifiedStock = (props) => {
                 }
                 <br></br>
             </Form >
+
+
+            <br></br>
+
             <br></br>
             <legend align="center" style={{ fontWeight: 'bold' }} > Modified Stock Report </legend>
             <table class="table table-bordered">
@@ -253,7 +293,9 @@ const ReportModifiedStock = (props) => {
                         <th>Brand</th>
                         <th>Product</th>
                         <th>Reason</th>
+                        <th>Price</th>
                         <th>Quantity</th>
+                        <th>Total Cost</th>
                         <th>Date</th>
                         {/* <th>Transaction</th> */}
                     </tr>
@@ -268,7 +310,9 @@ const ReportModifiedStock = (props) => {
                                 <td>{product.brand_name}</td>
                                 <td>{product.product_name}</td>
                                 <td>{product.stock_reason}</td>
+                                <td>{numberFormat(product.price)}</td>
                                 <td>{product.stock + " " + product.pack}</td>
+                                <td>{numberFormat(product.total_cost)}</td>
                                 <td>{formatStatementDate(product.updated_at)}</td>
                                 {/* <td>
                                     <Link variant="primary" to={"/viewTransaction/" + product.id}   >

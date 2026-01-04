@@ -215,13 +215,13 @@ const StockList = (props) => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
-        // setErrorStock(true);
+        setErrorStock3(true);
         ProductServiceService.update(product.id, product)
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
                 setOpen(false);
-                setErrorStock(false);
+                setErrorStock3(false);
 
                 setProduct({
                     id: 0,
@@ -322,7 +322,7 @@ const StockList = (props) => {
                         <th>Stock</th>
                         <th>Stock/Pc</th>
                         <th>Quantity / Weight</th>
-                        <th>Update Stock</th>
+                        <th>Modify Stock</th>
                         <th>Add Customer Follow Up</th>
                         <th>Transaction</th>
                         <th></th>
@@ -391,7 +391,7 @@ const StockList = (props) => {
             >
                 <Box sx={style}>
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Stock
+                        Modify Stock
                     </Typography>
 
                     {submitLoading &&
