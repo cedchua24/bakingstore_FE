@@ -214,7 +214,7 @@ const RTSList = (props) => {
                                         <td>{covertDateString(product.updated_at)}</td>
                                         <td>{product.status == 0 ? <p style={{ fontWeight: 'bold', color: 'red', }}>Declare RTS/BO</p>
                                             : product.status == 1 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>Send to Supplier</p> :
-                                                product.status == 2 ? <p style={{ fontWeight: 'bold', color: 'green', }}>Received by Supplier</p> :
+                                                product.status == 2 ? <p style={{ fontWeight: 'bold', color: 'green', }}>Received to Warehouse</p> :
                                                     <p style={{ fontWeight: 'bold', color: 'green', }}>Refunded</p>}
                                         </td>
 
@@ -285,7 +285,7 @@ const RTSList = (props) => {
                         >
                             {product.current_status != 0 && <MenuItem value={0}>Declare RTS/BO</MenuItem>}
                             {product.current_status != 1 && <MenuItem value={1}>Send to Supplier</MenuItem>}
-                            {product.current_status != 2 && <MenuItem value={2}>Received by Supplier</MenuItem>}
+                            {product.current_status != 2 && <MenuItem value={2}>Received to Warehouse</MenuItem>}
                             {product.current_status != 2 && <MenuItem value={3}>Refund</MenuItem>}
                         </Select>
                     </FormControl>
