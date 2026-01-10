@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogTitle from '@mui/material/DialogTitle';
+import CircularProgress from '@mui/material/CircularProgress';
+
 import OrderSupplierTransactionService from "../OrderSupplierTransaction/OrderSupplierTransactionService";
 
 import LinearProgress from '@mui/material/LinearProgress';
@@ -25,6 +30,7 @@ const ReportPurchaseOrderList = () => {
         setDeleteOpenModal(false);
     };
 
+    const [submitLoading, setSubmitLoading] = useState(false);
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
@@ -98,6 +104,25 @@ const ReportPurchaseOrderList = () => {
                     setIsAddDisabled(false);
                 });
         }
+    }
+
+    const submitCancel = (id, e) => {
+        setSubmitLoading(true);
+        OrderSupplierTransactionService.delete(id)
+            .then(response => {
+                console.log('response', response.data);
+
+                window.scrollTo(0, 0);
+                setSubmitLoading(false);
+                setDeleteOpenModal(false);
+                fetchOrderTransactionList();
+
+            })
+            .catch(e => {
+                setSubmitLoading(false);
+                setDeleteOpenModal(false);
+                console.log('error', e);
+            });
     }
 
     const openDelete = (id) => {
@@ -240,11 +265,16 @@ const ReportPurchaseOrderList = () => {
                                                 </Button>
                                             </Link>
                                         </td>
-                                    </div> : <td>
-                                        <Button variant="danger" onClick={(e) => openDelete(orderTransaction.id, e)} >
-                                            Delete
-                                        </Button>
-                                    </td>}
+                                        {orderTransaction.total_transaction_price == 0 && orderTransaction.payment_status != 1 && orderTransaction.status === 'IN_PROGRESS' &&
+                                            <td>
+                                                <Button variant="danger" onClick={(e) => openDelete(orderTransaction.id, e)} >
+                                                    Delete
+                                                </Button>
+                                            </td>
+                                        }
+                                    </div> :
+                                        <></>
+                                    }
 
 
                                 </tr>
@@ -254,6 +284,29 @@ const ReportPurchaseOrderList = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Dialog
+                open={deleteOpenModal}
+                onClose={handleDeleteCloseModal}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+
+                <DialogTitle id="alert-dialog-title">
+                    {"Are you sure you want to Delete?"}
+                </DialogTitle>
+                {submitLoading &&
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <CircularProgress />
+                    </div>
+                }
+                <DialogActions>
+                    <Button onClick={handleDeleteCloseModal}>Delete</Button>
+                    <Button onClick={(e) => submitCancel(deleteId, e)} autoFocus>
+                        Agree
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div >
     )
 }
