@@ -292,6 +292,12 @@ const FinalizeOrder = () => {
                 payment_term_id: value.id,
                 payment_type_po_id: 1
             });
+        } else if (value.id == 5) {
+            setModeOfPaymentPo({
+                ...modeOfPaymentPo,
+                payment_term_id: value.id,
+                payment_type_po_id: 2
+            });
         }
         else if (value.id == 4 || value.id == 3) {
             setModeOfPaymentPo({
@@ -445,6 +451,23 @@ const FinalizeOrder = () => {
                         console.log(e);
                     });
             });
+            if (modeOfPaymentPo.payment_term_id == 3 || modeOfPaymentPo.payment_term_id == 4) {
+                ModeOfPaymentPoService.sanctum().then(response => {
+                    ModeOfPaymentPoService.updateOnlinePaymentPO(modeOfPaymentPo)
+                        .then(response => {
+                            setSubmitLoadingAdd(false);
+                            setIsAddDisabled(false);
+                            setErrorStock(false);
+                            fetchPaymentTypePoByShopTransactionId(id);
+                        })
+                        .catch(e => {
+                            setSubmitLoadingAdd(false);
+                            setIsAddDisabled(false);
+                            setErrorStock(false);
+                            console.log(e);
+                        });
+                });
+            }
         }
     }
     const fetchPaymentTypePoByShopTransactionId = (id) => {
@@ -580,7 +603,7 @@ const FinalizeOrder = () => {
                                 </FormControl>
                             </Box>
                         </>) : ""}
-                        {modeOfPaymentPo.payment_term_id == 1 || modeOfPaymentPo.payment_term_id == 2 || modeOfPaymentPo.payment_term_id == 3 || modeOfPaymentPo.payment_term_id == 4 ? (<>
+                        {modeOfPaymentPo.payment_term_id == 1 || modeOfPaymentPo.payment_term_id == 5 || modeOfPaymentPo.payment_term_id == 2 || modeOfPaymentPo.payment_term_id == 3 || modeOfPaymentPo.payment_term_id == 4 ? (<>
                             {formErrors.amount && <p style={{ color: "red" }}>{formErrors.amount}</p>}
                             <FormControl fullWidth sx={{ m: 1 }} variant="standard">
                                 <InputLabel htmlFor="standard-adornment-amount">Enter Amount</InputLabel>

@@ -303,7 +303,8 @@ const FinalizeShopOrder = () => {
         // });
         // setSubmitOpenModal(true);
         if (shopOrderTransaction.shop_type_id == 3) {
-            navigate(`/shopOrderTransaction/receiptOrder/${shopOrderTransaction.id}/`);
+            // navigate(`/shopOrderTransaction/receiptOrder/${shopOrderTransaction.id}/`);
+            window.open(`/shopOrderTransaction/receiptOrder/${id}`, "_blank");
         } else {
             navigate('/shopOrderTransaction/shorOrderTransactionList/');
         }
@@ -486,6 +487,12 @@ const FinalizeShopOrder = () => {
         p: 4,
         '& .MuiTextField-root': { m: 1, width: '25ch' },
     };
+
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
 
 
     return (
@@ -704,7 +711,10 @@ const FinalizeShopOrder = () => {
                             <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Sum</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Price</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Discount</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Total Cost</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -712,24 +722,28 @@ const FinalizeShopOrder = () => {
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.shop_order_quantity}</TableCell>
-                                <TableCell align="right">{row.shop_order_price}</TableCell>
-                                <TableCell align="right">{row.shop_order_total_price}</TableCell>
+                                <TableCell align="right">{row.variation}</TableCell>
+                                <TableCell align="right">{numberFormat(row.fixed_price)}</TableCell>
+                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
+                                <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
+                                <TableCell align="right">{numberFormat(row.shop_order_total_price)}</TableCell>
                             </TableRow>
                         ))}
 
                         <TableRow>
                             <TableCell rowSpan={3} />
-                            <TableCell colSpan={2}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
+                            {/* <TableCell colSpan={5}>Subtotal</TableCell> */}
+                            {/* <TableCell align="right">{invoiceSubtotal}</TableCell> */}
                         </TableRow>
-                        <TableRow>
+                        {/* <TableRow>
                             <TableCell>Tax</TableCell>
                             <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow>
+                        </TableRow> */}
                         <TableRow>
-                            <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
+                            <TableCell colSpan={5} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                            {/* <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell> */}
+                            <TableCell align="right">{numberFormat(invoiceSubtotal)}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>

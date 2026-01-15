@@ -9,30 +9,26 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
+import { useLocation } from "react-router-dom";
 
 const NewNavBar = (props) => {
+    const location = useLocation();
+    const isReceiptOrderPage = location.pathname.startsWith("/shopOrderTransaction/receiptOrder/");
+    const isReceiptSupplierPage = location.pathname.startsWith("/printOrderSupplier/");
+    const isReceipShopBranchPage = location.pathname.startsWith("/shopOrderTransaction/printShopBranch/");
+
+
 
     var AuthButtons = '';
-    if (!localStorage.getItem('auth_token')) {
-        AuthButtons = (
-            // <>
-            //     <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            //     <Navbar.Collapse id="basic-navbar-nav">
-            //         <Nav className="me-auto">
-            //             <Nav.Link href="/userRegistration">Register</Nav.Link>
-            //             <Nav.Link href="/login">Login</Nav.Link>
-            //         </Nav>
-            //     </Navbar.Collapse>
-            // </>
-            <UserLoginNav />
-        );
-
-
-    }
-    else {
-        AuthButtons = (
-            <DrawerNav />
-        );
+    // Hide nav on receiptOrder page
+    if (isReceiptOrderPage || isReceiptSupplierPage || isReceipShopBranchPage) {
+        AuthButtons = null; // or empty fragment <></>
+    } else {
+        if (!localStorage.getItem('auth_token')) {
+            AuthButtons = <UserLoginNav />;
+        } else {
+            AuthButtons = <DrawerNav />;
+        }
     }
 
 

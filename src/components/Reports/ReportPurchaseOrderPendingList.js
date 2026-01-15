@@ -211,6 +211,13 @@ const ReportPurchaseOrderPendingList = () => {
                                             </Button>
                                         </Link>
                                     </td>
+                                    <td>
+                                        <Link variant="primary" to={"/printOrderSupplier/" + orderTransaction.id}   >
+                                            <Button variant="primary" >
+                                                Print
+                                            </Button>
+                                        </Link>
+                                    </td>
 
                                 </tr>
                             )

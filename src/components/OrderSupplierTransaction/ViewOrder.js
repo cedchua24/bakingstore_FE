@@ -531,9 +531,9 @@ const FinalizeOrder = () => {
                                 <TableCell style={{ fontWeight: 'bold' }}>Date:</TableCell>
                                 <TableCell align="right">{orderSupplierTransaction.order_date}</TableCell>
 
-
+                                {/* 
                                 <TableCell style={{ fontWeight: 'bold' }}>withTax:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.withTax === 1 ? true : false}</TableCell>
+                                <TableCell align="right">{orderSupplierTransaction.withTax === 1 ? true : false}</TableCell> */}
 
                             </TableRow>
                         </TableBody>
@@ -598,11 +598,12 @@ const FinalizeOrder = () => {
                             <TableCell align="left" colSpan={4}>
                                 Details
                             </TableCell>
-                            <TableCell align="center" >Price</TableCell>
+
                         </TableRow>
                         <TableRow>
                             <TableCell>Product</TableCell>
                             <TableCell align="right">Qty.</TableCell>
+                            <TableCell align="right">Price</TableCell>
                             <TableCell align="right">Unit</TableCell>
                             <TableCell align="center" >Expiration</TableCell>
                             <TableCell align="right">Sum</TableCell>
@@ -614,9 +615,9 @@ const FinalizeOrder = () => {
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
-                                <TableCell align="right">{row.expiration != '0000-00-00' ? formatStatementDate(row.expiration) : ""}</TableCell>
+                                <TableCell align="right">{row.variation}</TableCell>
+                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
-
                             </TableRow>
                         ))}
                         <br></br>

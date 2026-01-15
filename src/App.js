@@ -62,6 +62,8 @@ import ProductSupplierListV2 from "./components/ProductSupplier/ProductSupplierL
 import AddProductOrderSupplierTransaction from "./components/OrderSupplierTransaction/AddProductOrderSupplierTransaction";
 import BranchStock from "./components/OrderSupplierTransaction/BranchStock";
 import FinalizeOrder from "./components/OrderSupplierTransaction/FinalizeOrder";
+import PrintOrderSupplier from "./components/OrderSupplierTransaction/PrintOrderSupplier";
+
 import ViewOrder from "./components/OrderSupplierTransaction/ViewOrder";
 import PaymentOrder from "./components/OrderSupplierTransaction/PaymentOrder";
 import CompletedOrder from "./components/OrderSupplierTransaction/CompletedOrder";
@@ -131,6 +133,7 @@ import PendingPickUp from "./components/ShopOrderTransaction/PendingPickUp";
 import CancelTransactionList from "./components/ShopOrderTransaction/CancelTransactionList";
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
 import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
+import PrintShopBranch from "./components/ShopOrderTransaction/PrintShopBranch";
 import PaymentTypeSales from "./components/ShopOrderTransaction/PaymentTypeSales";
 import PaymentTypePrev from "./components/ShopOrderTransaction/PaymentTypePrev";
 
@@ -336,6 +339,8 @@ const App = () => {
           <Route exact path="/editSupplierTransaction/:id" element={<EditSupplierTransaction />} />
 
           <Route exact path="/finalizeOrder/:id" element={<FinalizeOrder />} />
+          <Route exact path="/printOrderSupplier/:id" element={<PrintOrderSupplier />} />
+
           <Route exact path="/ViewOrder/:id" element={<ViewOrder />} />
           <Route exact path="/paymentOrder/:id" element={<PaymentOrder />} />
           <Route exact path="/completedOrder/:id" element={<CompletedOrder />} />
@@ -468,6 +473,8 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/cancelTransactionList/" element={<CancelTransactionList />} />
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
           <Route exact path="/shopOrderTransaction/completedShopOrderTransaction/:id" element={<CompletedShopOrderTransaction />} />
+          <Route exact path="/shopOrderTransaction/printShopBranch/:id" element={<PrintShopBranch />} />
+
           <Route exact path="/shopOrderTransaction/paymentTypeSales/:id" element={<PaymentTypeSales />} />
           <Route exact path="/shopOrderTransaction/PaymentTypePrev/:id/:today/:type" element={<PaymentTypePrev />} />
           <Route exact path="/shopOrderTransaction/viewDiscount/:id" element={<ViewDiscount />} />

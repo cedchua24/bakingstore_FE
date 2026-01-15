@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Button, Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
 import { useNavigate } from "react-router-dom";
@@ -124,6 +124,8 @@ const AddCustomerOrderTransactionV2 = (props) => {
         }
     }
 
+    const memoizedCustomerList = useMemo(() => customerList, [customerList]);
+
     return (
         <div>
             <Stepper activeStep={0} alternativeLabel>
@@ -237,19 +239,29 @@ const AddCustomerOrderTransactionV2 = (props) => {
                                 </FormControl>
                             </Box>
                             {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
-                            <FormControl variant="standard" >
+                            <FormControl variant="standard">
                                 <Autocomplete
-                                    // {...defaultProps}
-                                    options={customerList}
+                                    options={memoizedCustomerList} // use the memoized list here
                                     className="mb-3"
                                     id="disable-close-on-select"
+                                    isOptionEqualToValue={(option, value) => option.id === value.id}
                                     onChange={handleInputChange}
-                                    getOptionLabel={(customerList) => customerList.first_name + " " + customerList.last_name}
+                                    getOptionLabel={(customer) =>
+                                        `${customer.first_name} ${customer.last_name}`
+                                    }
+                                    filterOptions={(options, { inputValue }) =>
+                                        options
+                                            .filter((cust) =>
+                                                `${cust.first_name} ${cust.last_name}`
+                                                    .toLowerCase()
+                                                    .includes(inputValue.toLowerCase())
+                                            )
+                                            .slice(0, 50)
+                                    }
                                     renderInput={(params) => (
                                         <TextField {...params} label="Choose Customer" variant="standard" />
                                     )}
                                 />
-
                             </FormControl>
                         </Box>
                         {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}

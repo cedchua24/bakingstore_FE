@@ -213,6 +213,14 @@ const SupplierTransactionListV2 = () => {
                                             </Button>
                                         </Link>
                                     </td>
+                                    <td>
+                                        <Link variant="primary" to={"/printOrderSupplier/" + orderTransaction.id}   >
+                                            <Button variant="primary" >
+                                                Print
+                                            </Button>
+                                        </Link>
+                                    </td>
+
 
                                     {orderTransaction.status != 'COMPLETED' ? <div>
                                         <td>

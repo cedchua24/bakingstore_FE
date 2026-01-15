@@ -45,7 +45,7 @@ import Typography from '@mui/material/Typography'
 
 
 
-const FinalizeOrder = () => {
+const PrintOrderSupplier = () => {
 
 
     const { id } = useParams();
@@ -54,7 +54,7 @@ const FinalizeOrder = () => {
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
         fetchByOrderSupplierId(id);
-        fetchPaymentTypePo();
+        // fetchPaymentTypePo();
         fetchPaymentTerm();
         fetchPaymentTypePoByShopTransactionId(id);
     }, []);
@@ -280,11 +280,13 @@ const FinalizeOrder = () => {
 
     const handlePaymentTypeChange = (e, value) => {
         e.persist();
-        console.log(e.target.value)
+        console.log('handlePaymentTypeChange', value)
         setModeOfPaymentPo({
             ...modeOfPaymentPo,
             payment_type_po_id: value.id,
         });
+
+
     }
 
     const handlePaymentTermChange = (e, value) => {
@@ -297,21 +299,21 @@ const FinalizeOrder = () => {
                 payment_type_po_id: 1
             });
         }
-        else if (value.id == 4) {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
-                payment_term_id: value.id,
-                amount: modeOfPaymentDTO.balance,
-                payment_type_po_id: 2
-            });
-        }
+        // else if (value.id == 4) {
+        //     setModeOfPaymentPo({
+        //         ...modeOfPaymentPo,
+        //         payment_term_id: value.id,
+        //         amount: modeOfPaymentDTO.balance,
+        //         payment_type_po_id: 2
+        //     });
+        // }
         else {
             setModeOfPaymentPo({
                 ...modeOfPaymentPo,
                 payment_term_id: value.id
             });
         }
-
+        fetchPaymentTypePo(value.id);
     }
 
     const onChangeAmount = (e) => {
@@ -326,8 +328,8 @@ const FinalizeOrder = () => {
         // }
     }
 
-    const fetchPaymentTypePo = () => {
-        PaymentTypePoService.getAll()
+    const fetchPaymentTypePo = ($id) => {
+        PaymentTypePoService.findByCategory($id)
             .then(response => {
                 setPaymentTypePoList(response.data);
             })
@@ -335,6 +337,7 @@ const FinalizeOrder = () => {
                 console.log("error", e)
             });
     }
+
 
     const fetchPaymentTerm = () => {
         PaymentTermService.getAll()
@@ -382,7 +385,7 @@ const FinalizeOrder = () => {
     const updateOrderTransaction = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        OrderSupplierTransactionService.setToCompleteTransaction(id)
+        OrderSupplierTransactionService.setToCompletePaymentTransaction(id)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
@@ -474,11 +477,15 @@ const FinalizeOrder = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+
+
     const formatStatementDate = (date) => {
         var d = new Date(date);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
-
+    const print = () => {
+        window.print();
+    }
 
 
     return (
@@ -505,16 +512,7 @@ const FinalizeOrder = () => {
                 noValidate
                 autoComplete="off"
             >
-                <Stepper activeStep={2} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
 
-
-                        </Step>
-                    ))}
-                </Stepper>
-                <br></br>
 
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 700 }} aria-label="spanning table">
@@ -526,9 +524,9 @@ const FinalizeOrder = () => {
                                 <TableCell style={{ fontWeight: 'bold' }}>Date:</TableCell>
                                 <TableCell align="right">{orderSupplierTransaction.order_date}</TableCell>
 
-
+                                {/* 
                                 <TableCell style={{ fontWeight: 'bold' }}>withTax:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.withTax === 1 ? true : false}</TableCell>
+                                <TableCell align="right">{orderSupplierTransaction.withTax === 1 ? true : false}</TableCell> */}
 
                             </TableRow>
                         </TableBody>
@@ -536,15 +534,13 @@ const FinalizeOrder = () => {
                 </TableContainer>
             </Box>
             <br></br>
+
+
+            <br></br>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
-                        <TableRow>
-                            <TableCell align="left" colSpan={3}>
-                                Details
-                            </TableCell>
 
-                        </TableRow>
                         <TableRow>
                             <TableCell>Product</TableCell>
                             <TableCell align="right">Qty.</TableCell>
@@ -559,119 +555,60 @@ const FinalizeOrder = () => {
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
-                                <TableCell align="right">{row.price}</TableCell>
+                                <TableCell align="right">{numberFormat(row.price)}</TableCell>
                                 <TableCell align="right">{row.variation}</TableCell>
                                 <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
-                                <TableCell align="right">{row.total_price}</TableCell>
+                                <TableCell align="right">{numberFormat(row.total_price)}</TableCell>
                             </TableRow>
                         ))}
+                        <br></br>
 
                         <TableRow>
-
-                            <TableCell rowSpan={4} />
-                            <TableCell colSpan={4}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Tax</TableCell>
-                            <TableCell align="right" colSpan={3}>{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }} colSpan={3}>{numberFormat(invoiceTotal)}</TableCell>
+                            <TableCell colSpan={5} style={{ fontWeight: 'bold', }}>Total</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>{numberFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>
-
             <br></br>
-            {
-                submitLoadingAdd &&
-                <LinearProgress color="warning" />
-            }
             <br></br>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <br></br>
+            <br></br>
+            <br></br>
+            <div style={{ marginTop: "60px", display: "flex", justifyContent: "space-between", textAlign: "center" }}>
+                <div style={{ width: "30%" }}>
+                    <div style={{ borderBottom: "1px solid #000", height: "30px" }}></div>
+                    <div>DRIVER</div>
+                </div>
 
+                <div style={{ width: "30%" }}>
+                    <div style={{ borderBottom: "1px solid #000", height: "30px" }}></div>
+                    <div>SENDER</div>
+                </div>
 
-                <br></br>
+                <div style={{ width: "30%" }}>
+                    <div style={{ borderBottom: "1px solid #000", height: "30px" }}></div>
+                    <div>RECEIVER</div>
+                </div>
+            </div>
+            <br></br>
+            <br></br>
+            <br></br>
+            <div class="hide-on-print" style={{ textAlign: "center" }}>
                 <Button
-                    disabled={orderSupplierTransaction.status == 'COMPLETED'}
                     variant="contained"
-                    type="submit"
-                    onClick={updateOrderTransaction}
+                    onClick={print}
                     size="large" >
-                    Submit
+                    Print
                 </Button>
+                {/* <button class="hide-on-print" onClick={print}>Print</button> */}
+                <br></br>
 
-            </Box>
-
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Product
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <br></br>
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Amount</InputLabel>
-                        <Input
-                            id="filled-required"
-                            label="Amount"
-                            variant="filled"
-                            name='amount'
-                            value={modeOfPaymentModal.amount}
-                            onChange={onChangeInputPriceModal}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-
-
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            disabled={modeOfPaymentDTO.balance != 0}
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
-            <br></br>
-            <br></br>
+            </div>
         </div >
     )
 }
 
-export default FinalizeOrder
+export default PrintOrderSupplier
 
 
 

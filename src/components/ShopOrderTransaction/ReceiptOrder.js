@@ -205,15 +205,16 @@ const ReceiptOrder = () => {
 
             </div>
             <br></br>
-            <div class="hide-on-print">
+            <div class="hide-on-print" style={{ textAlign: "center" }}>
                 <Button
-
                     variant="contained"
                     onClick={print}
                     size="large" >
                     Print
                 </Button>
                 {/* <button class="hide-on-print" onClick={print}>Print</button> */}
+                <br></br>
+                <br></br>
                 <br></br>
             </div>
         </div >

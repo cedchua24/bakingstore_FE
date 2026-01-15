@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from "react";
 import CustomerService from "../Customer/CustomerService";
-import { Button, Form, Alert } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 import CustomerServiceService from "./CustomerService";
 import LinearProgress from '@mui/material/LinearProgress';
 import Checkbox from '@mui/material/Checkbox';
 import { Link } from "react-router-dom";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import Stack from '@mui/material/Stack';
+import Alert from '@mui/material/Alert';
 
 const AddCustomer = (props) => {
 
     useEffect(() => {
         fetchCustomerList();
     }, []);
+
+    const [validator, setValidator] = useState({
+        severity: '',
+        message: '',
+        isShow: false
+    });
 
     const [customerList, setCustomerList] = useState([]);
     const [customer, setCustomer] = useState({
@@ -97,12 +105,21 @@ const AddCustomer = (props) => {
                         fetchCustomerList();
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
-                        setMessage(true);
+                        setValidator({
+                            severity: 'success',
+                            message: response.data.message,
+                            isShow: true,
+                        });
                     })
                     .catch(e => {
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
                         console.log(e);
+                        setValidator({
+                            severity: 'error',
+                            message: "Customer Already Exists",
+                            isShow: true,
+                        });
                     });
             });
         }
@@ -116,17 +133,12 @@ const AddCustomer = (props) => {
 
     return (
         <div>
-            {message &&
-                <Alert variant="success" dismissible>
-                    <Alert.Heading>Successfully Added!</Alert.Heading>
-                    <p>
-                        Change this and that and try again. Duis mollis, est non commodo
-                        luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-                        Cras mattis consectetur purus sit amet fermentum.
-                    </p>
-                </Alert>
-            }
-
+            <Stack sx={{ width: '100%' }} spacing={2}>
+                {validator.isShow &&
+                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                }
+            </Stack>
+            <br></br>
             <Form>
                 {formErrors.first_name && <p style={{ color: "red" }}>{formErrors.first_name}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">

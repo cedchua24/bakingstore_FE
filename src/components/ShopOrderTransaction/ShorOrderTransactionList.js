@@ -148,6 +148,7 @@ const ShorOrderTransactionList = () => {
                         <th></th>
                         <th></th>
                         <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -170,6 +171,13 @@ const ShorOrderTransactionList = () => {
                                     <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
                                         <Button variant="primary" >
                                             View
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"../shopOrderTransaction/printShopBranch/" + shopOrderTransaction.id}   >
+                                        <Button variant="primary" >
+                                            Print
                                         </Button>
                                     </Link>
                                 </td>
