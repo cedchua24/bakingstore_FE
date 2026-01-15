@@ -5,6 +5,10 @@ import ProductServiceService from "./ProductService.service";
 import BrandServiceService from "../Brand/BrandService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
 import Checkbox from '@mui/material/Checkbox';
+import InputLabel from '@mui/material/InputLabel';
+
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const EditProduct = () => {
 
@@ -28,6 +32,7 @@ const EditProduct = () => {
         stock: 0,
         weight: 0,
         quantity: 0,
+        variation: 0,
         stock_warning: 0,
         note: '',
         disabled: 0
@@ -176,6 +181,23 @@ const EditProduct = () => {
                 >
                     <Form.Control type="number" name="weight" value={product.weight} onChange={onChange} />
                 </FloatingLabel>
+
+
+                <InputLabel id="demo-simple-select-label">Variation</InputLabel>
+                <Select
+                    labelId="demo-simple-select-label"
+                    className="mb-3"
+                    id="demo-simple-select"
+                    name='variation'
+                    label="Variation"
+                    value={product.variation}
+                    onChange={onChange}
+                >
+                    <MenuItem value='kg'>kg</MenuItem>
+                    <MenuItem value='pcs'>pcs</MenuItem>
+                </Select>
+
+
 
                 <FloatingLabel
                     controlId="floatingInput"
