@@ -228,6 +228,13 @@ const ShopBranchReportList = () => {
                                     </Link>
                                 </td>
                                 <td>
+                                    <Link variant="primary" to={"../shopOrderTransaction/printShopBranch/" + shopOrderTransaction.id}   >
+                                        <Button variant="primary" >
+                                            Print
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
                                     <Link variant="primary" to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}   >
                                         <Button variant="success" >
                                             Update

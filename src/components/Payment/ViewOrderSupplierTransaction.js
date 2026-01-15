@@ -201,7 +201,7 @@ const ViewOrderSupplierTransaction = () => {
                                 <td>{orderTransaction.interest_amount}</td>
                                 <td>{formatStatementDate(orderTransaction.due_date)}</td>
                                 <td>{orderTransaction.is_installment === 1 ? <CheckIcon style={{ color: 'black', }} /> : <CloseIcon style={{ color: 'black', }} />}</td>
-                                <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : orderTransaction.status === 2 ? "" : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     {orderTransaction.status != 1 &&
                                         <Link variant="primary" to={"/payCreditCard/" + orderTransaction.id}   >

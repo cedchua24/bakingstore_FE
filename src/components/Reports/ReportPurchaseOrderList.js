@@ -236,6 +236,13 @@ const ReportPurchaseOrderList = () => {
                                         </Link>
                                     </td>
                                     <td>
+                                        <Link variant="primary" to={"/printOrderSupplier/" + orderTransaction.id}   >
+                                            <Button variant="primary" >
+                                                Print
+                                            </Button>
+                                        </Link>
+                                    </td>
+                                    <td>
                                         <Link variant="primary" to={"/paymentOrder/" + orderTransaction.id}   >
                                             <Button variant="primary" >
                                                 Update Payment

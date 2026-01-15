@@ -16,6 +16,12 @@ class ModeOfPaymentPoService {
     create(data) {
         return axios.post("/api/modeOfPaymentPo", data);
     }
+    updateOnlinePaymentPO(data) {
+        return axios.post("/api/modeOfPaymentPo/updateOnlinePaymentPO", data);
+    }
+    // updateOnlinePaymentPO(data) {
+    //     return axios.post("https://mdrbakingsupplies.com/api/modeOfPaymentPo/updateOnlinePaymentPO", data);
+    // }
     fetchPaymentTypePoByShopTransactionId(id) {
         return axios.get(`/api/modeOfPaymentPo/fetchPaymentTypePoByShopTransactionId/${id}`);
     }

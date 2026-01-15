@@ -963,7 +963,7 @@ const AddProductCustomerOrderTransaction = () => {
                             <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit Price</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Price</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Discount</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Total Cost</TableCell>
