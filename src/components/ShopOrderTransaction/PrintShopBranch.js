@@ -162,10 +162,10 @@ const PrintShopBranch = () => {
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableBody>
                         <TableRow >
+                            <TableCell style={{ fontWeight: 'bold' }}>Reference #: </TableCell>
+                            <TableCell align="right">{shopOrderTransaction.id}</TableCell>
                             <TableCell style={{ fontWeight: 'bold' }}>Requestor Branch: </TableCell>
                             <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
-
-
                             <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
                             <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
 
@@ -184,6 +184,7 @@ const PrintShopBranch = () => {
                         <TableRow >
                             <TableCell style={{ fontWeight: 'bold', }}>Product</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Qty.</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Price</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Unit</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Sum</TableCell>
                         </TableRow>
@@ -194,13 +195,14 @@ const PrintShopBranch = () => {
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.shop_order_quantity}</TableCell>
                                 <TableCell align="right">{row.shop_order_price}</TableCell>
+                                <TableCell align="right">{row.variation}</TableCell>
                                 <TableCell align="right">{row.shop_order_total_price}</TableCell>
                             </TableRow>
                         ))}
 
 
                         <TableRow>
-                            <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                            <TableCell colSpan={4} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
