@@ -183,19 +183,23 @@ const PrintShopBranch = () => {
                     <TableHead>
                         <TableRow >
                             <TableCell style={{ fontWeight: 'bold', }}>Product</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Unit</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Qty.</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Price</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Unit</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }}>Sum</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {orderShopDTO.shopOrderList.map((row) => (
                             <TableRow key={row.id}>
-                                <TableCell>{row.product_name}</TableCell>
+                                <TableCell>{row.product_name}{
+                                    row.business_type === 'WHOLESALE' ? <></>
+                                        : < > ({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) {row.discount == 'PERCENTAGE' ? ",Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''}</>
+                                }</TableCell>
+                                <TableCell align="right">{row.unit}</TableCell>
                                 <TableCell align="right">{row.shop_order_quantity}</TableCell>
                                 <TableCell align="right">{row.shop_order_price}</TableCell>
-                                <TableCell align="right">{row.variation}</TableCell>
+
                                 <TableCell align="right">{row.shop_order_total_price}</TableCell>
                             </TableRow>
                         ))}

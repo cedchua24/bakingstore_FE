@@ -539,12 +539,7 @@ const FinalizeOrder = () => {
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
-                        <TableRow>
-                            <TableCell align="left" colSpan={3}>
-                                Details
-                            </TableCell>
 
-                        </TableRow>
                         <TableRow>
                             <TableCell>Product</TableCell>
                             <TableCell align="right">Qty.</TableCell>
@@ -558,9 +553,9 @@ const FinalizeOrder = () => {
                         {orderList.map((row) => (
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
+                                <TableCell align="right">{row.unit}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
-                                <TableCell align="right">{row.variation}</TableCell>
                                 <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
                             </TableRow>

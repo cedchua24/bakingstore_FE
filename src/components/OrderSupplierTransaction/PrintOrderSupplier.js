@@ -543,9 +543,9 @@ const PrintOrderSupplier = () => {
 
                         <TableRow>
                             <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
-                            <TableCell align="right">Price</TableCell>
                             <TableCell align="right">Unit</TableCell>
+                            <TableCell align="right">Quantity</TableCell>
+                            <TableCell align="right">Price</TableCell>
                             <TableCell align="center" >Expiration</TableCell>
                             <TableCell align="right">Sum</TableCell>
                         </TableRow>
@@ -554,9 +554,9 @@ const PrintOrderSupplier = () => {
                         {orderList.map((row) => (
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
+                                <TableCell align="right">{row.unit}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{numberFormat(row.price)}</TableCell>
-                                <TableCell align="right">{row.variation}</TableCell>
                                 <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">{numberFormat(row.total_price)}</TableCell>
                             </TableRow>

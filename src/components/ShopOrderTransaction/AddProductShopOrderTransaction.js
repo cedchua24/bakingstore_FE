@@ -974,9 +974,12 @@ const AddProductCustomerOrderTransaction = () => {
                     <TableBody>
                         {orderShopDTO.shopOrderList.map((row) => (
                             <TableRow key={row.id}>
-                                <TableCell>{row.product_name}</TableCell>
+                                <TableCell>{row.product_name} {
+                                    row.business_type === 'WHOLESALE' ? <></>
+                                        : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) {row.discount == 'PERCENTAGE' ? ",Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''}</>
+                                }</TableCell>
                                 <TableCell align="right">{row.shop_order_quantity}</TableCell>
-                                <TableCell align="right">{row.variation}</TableCell>
+                                <TableCell align="right">{row.unit}</TableCell>
                                 <TableCell align="right">{numberFormat(row.fixed_price)}</TableCell>
                                 <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
                                 <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
@@ -1152,6 +1155,7 @@ const AddProductCustomerOrderTransaction = () => {
                                 row.business_type === 'WHOLESALE' ? <>{row.packaging} ({row.weight / row.quantity}{row.variation} x {row.quantity}) {row.discount == 'PERCENTAGE' ? ",Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''}</>
                                     : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) {row.discount == 'PERCENTAGE' ? ",Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''}</>
                             }
+
 
                             <> = </>{row.shop_order_total_price}</h6>
 
