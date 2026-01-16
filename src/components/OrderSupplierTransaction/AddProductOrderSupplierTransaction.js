@@ -726,20 +726,14 @@ const AddProductOrderSupplierTransaction = () => {
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
-                        <TableRow>
-                            <TableCell align="left" colSpan={3}>
-                                Details
-                            </TableCell>
-                            <TableCell align="center" >Price</TableCell>
-                            <TableCell align="center" >Expiration</TableCell>
-                            <TableCell align="center" colSpan={2}>Action</TableCell>
-                        </TableRow>
+
                         <TableRow>
                             <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
                             <TableCell align="right">Unit</TableCell>
+                            <TableCell align="right">Qty.</TableCell>
+                            <TableCell align="right">Price</TableCell>
                             <TableCell align="right">Sum</TableCell>
-                            <TableCell align="right"></TableCell>
+                            <TableCell align="right">Expiration</TableCell>
                             <TableCell align="right"></TableCell>
                             <TableCell align="right"></TableCell>
                         </TableRow>
@@ -747,7 +741,8 @@ const AddProductOrderSupplierTransaction = () => {
                     <TableBody>
                         {orderList.map((row) => (
                             <TableRow key={row.id}>
-                                <TableCell>{row.product_name}</TableCell>
+                                <TableCell>{row.product_name} </TableCell>
+                                <TableCell align="right">{row.unit}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
@@ -770,17 +765,17 @@ const AddProductOrderSupplierTransaction = () => {
                         ))}
 
                         <TableRow>
-                            <TableCell rowSpan={3} />
-                            <TableCell colSpan={2}>Subtotal</TableCell>
+                            <TableCell rowSpan={4} />
+                            <TableCell colSpan={3}>Subtotal</TableCell>
                             <TableCell align="right">{invoiceSubtotal}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Tax</TableCell>
-                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
+                            <TableCell align="right" colSpan={2}>{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell colSpan={2} style={{ color: 'red', }}>Total</TableCell>
+                            <TableCell colSpan={3} style={{ color: 'red', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ color: 'red', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
