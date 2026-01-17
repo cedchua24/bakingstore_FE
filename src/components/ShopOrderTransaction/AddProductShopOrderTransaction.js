@@ -976,7 +976,7 @@ const AddProductCustomerOrderTransaction = () => {
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name} {
                                     row.business_type === 'WHOLESALE' ? <></>
-                                        : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) {row.discount == 'PERCENTAGE' ? ",Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''}</>
+                                        : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) </>
                                 }</TableCell>
                                 <TableCell align="right">{row.shop_order_quantity}</TableCell>
                                 <TableCell align="right">{row.unit}</TableCell>
