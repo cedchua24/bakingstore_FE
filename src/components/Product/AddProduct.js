@@ -419,6 +419,7 @@ const AddProduct = () => {
           <option>Select Variation</option>
           <option value="kg">kg</option>
           <option value="pcs">pcs</option>
+          <option value="pack">pack</option>
 
         </Form.Select>
 
