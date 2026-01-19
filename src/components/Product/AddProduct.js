@@ -179,7 +179,10 @@ const AddProduct = () => {
     setProduct({ ...product, variation: e.target.value });
     if (e.target.value === "kg") {
       setVariationLabel("Weight");
-    } else {
+    } else if (e.target.value === "session") {
+      setVariationLabel("Session");
+    }
+    else {
       setVariationLabel("Pcs");
     }
 
@@ -404,22 +407,32 @@ const AddProduct = () => {
         </FloatingLabel>
 
         {formErrors.packaging && <p style={{ color: "red" }}>{formErrors.packaging}</p>}
-        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangePackaging}  >
-          <option>Select Packaging</option>
-
-          <option value="Sack">Sack</option>
-          <option value="Box">Box</option>
-          <option value="Plastic">Plastic</option>
-          <option value="Galloon">Galloon</option>
+        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangePackaging}>
+          <option >Select Packaging</option>
+          <optgroup label="Product Packaging">
+            <option value="Sack">Sack</option>
+            <option value="Box">Box</option>
+            <option value="Plastic">Plastic</option>
+            <option value="Galloon">Galloon</option>
+            <option value="Pack">Pack</option>
+          </optgroup>
+          <optgroup label="Training / Services">
+            <option value="Service">Session</option>
+          </optgroup>
 
         </Form.Select>
 
         {formErrors.variation && <p style={{ color: "red" }}>{formErrors.variation}</p>}
         <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangeVariation}  >
-          <option>Select Variation</option>
-          <option value="kg">kg</option>
-          <option value="pcs">pcs</option>
-          <option value="pack">pack</option>
+          <option >Select Variation</option>
+          <optgroup label="Product Packaging">
+            <option value="kg">kg</option>
+            <option value="pcs">pcs</option>
+            <option value="pack">pack</option>
+          </optgroup>
+          <optgroup label="Training / Services">
+            <option value="Session">Session</option>
+          </optgroup>
 
         </Form.Select>
 
