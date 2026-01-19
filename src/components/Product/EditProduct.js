@@ -6,6 +6,8 @@ import BrandServiceService from "../Brand/BrandService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
 import Checkbox from '@mui/material/Checkbox';
 import InputLabel from '@mui/material/InputLabel';
+import ListSubheader from '@mui/material/ListSubheader';
+
 
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -33,6 +35,7 @@ const EditProduct = () => {
         weight: 0,
         quantity: 0,
         variation: 0,
+        packaging: '',
         stock_warning: 0,
         note: '',
         disabled: 0
@@ -67,6 +70,7 @@ const EditProduct = () => {
             .then(response => {
                 // setProduct(response.data);
                 setMessage(true);
+                window.scrollTo(0, 0);
             })
             .catch(e => {
                 console.log(e);
@@ -182,19 +186,48 @@ const EditProduct = () => {
                     <Form.Control type="number" name="weight" value={product.weight} onChange={onChange} />
                 </FloatingLabel>
 
+                <InputLabel id="demo-simple-select-label">Packaging</InputLabel>
+                <Select
+                    labelId="demo-simple-select-label"
+                    className="mb-3"
+                    id="demo-simple-select"
+                    name="packaging"
+                    label="Packaging"
+                    value={product.packaging}
+                    onChange={onChange}
+                    displayEmpty
+                >
+                    <ListSubheader>Product Packaging</ListSubheader>
+                    <MenuItem value="Sack">Sack</MenuItem>
+                    <MenuItem value="Box">Box</MenuItem>
+                    <MenuItem value="Plastic">Plastic</MenuItem>
+                    <MenuItem value="Galloon">Galloon</MenuItem>
+                    <MenuItem value="Pack">Pack</MenuItem>
+
+                    <ListSubheader>Training / Services</ListSubheader>
+                    <MenuItem value="Session">Session</MenuItem>
+
+                </Select>
+
 
                 <InputLabel id="demo-simple-select-label">Variation</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
                     className="mb-3"
                     id="demo-simple-select"
-                    name='variation'
+                    name="variation"
                     label="Variation"
                     value={product.variation}
                     onChange={onChange}
+                    displayEmpty
                 >
-                    <MenuItem value='kg'>kg</MenuItem>
-                    <MenuItem value='pcs'>pcs</MenuItem>
+                    <ListSubheader>Product Packaging</ListSubheader>
+                    <MenuItem value="kg">kg</MenuItem>
+                    <MenuItem value="pcs">pcs</MenuItem>
+                    <MenuItem value="pack">pack</MenuItem>
+                    <ListSubheader>Training / Services</ListSubheader>
+                    <MenuItem value="Session">Session</MenuItem>
+
                 </Select>
 
 

@@ -553,9 +553,11 @@ const FinalizeOrder = () => {
                         {orderList.map((row) => (
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
-                                <TableCell align="right">{row.unit}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
+                                <TableCell align="right">{row.unit}</TableCell>
+
+
                                 <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
                             </TableRow>
