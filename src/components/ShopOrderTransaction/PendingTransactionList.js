@@ -35,6 +35,8 @@ const PendingTransactionList = () => {
         status: 2
     });
 
+    const [role, setRole] = useState(localStorage.getItem('role_as'));
+
     const [formDeliveryErrors, setFormDeliveryErrors] = useState({});
     const [formErrorsPickUp, setFormErrorsPickup] = useState({});
     const [isDeliveryDisabled, setIsDeliveryDisabled] = useState(false);
@@ -453,6 +455,12 @@ const PendingTransactionList = () => {
     };
 
 
+    const numberFormat = (value) =>
+        new Intl.NumberFormat('en-us', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(value).replace(/(\.|,)00$/g, '');
+
 
     return (
         <div>
@@ -516,7 +524,6 @@ const PendingTransactionList = () => {
                                 <th>For Trucking</th>
                                 <th>Rider</th>
                                 <th >Pick Up Status</th>
-                                <th>Update Date</th>
                                 <th></th>
                                 <th></th>
                                 <th></th>
@@ -537,8 +544,20 @@ const PendingTransactionList = () => {
                                         <td>{shopOrderTransaction.total_cash}</td>
                                         <td>{shopOrderTransaction.total_online}</td>
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
-                                        <td>{shopOrderTransaction.date}</td>
+                                        {
+                                            role == 2 && (
+                                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
+                                                </td>
+                                            )
+                                        }
+                                        <td>{shopOrderTransaction.date != shopOrderTransaction.created_at ? <p style={{ fontWeight: 'bold', color: 'orange', }}>{shopOrderTransaction.date}</p>
+                                            : shopOrderTransaction.date}
+                                            {shopOrderTransaction.status == 2 && shopOrderTransaction.is_pickup == 0 ?
+                                                <IconButton>
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
+                                                </IconButton> : ""
+                                            }
+                                        </td>
                                         <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                             : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
                                                 <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
@@ -570,11 +589,7 @@ const PendingTransactionList = () => {
                                                 <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
                                             </IconButton>
                                         </td>
-                                        <td>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
-                                            </IconButton>
-                                        </td>
+
                                         <td>
                                             <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id + "+" + date}   >
                                                 <Button variant="primary" >

@@ -150,6 +150,7 @@ const ReportDiscountLoss = () => {
                     <tr class="table-secondary">
                         <th>ID</th>
                         <th>Product Name</th>
+                        <th>Discount Type</th>
                         <th>Discount Amount</th>
                         <th>Quantity</th>
                         <th>Total Discount Amount</th>
@@ -166,6 +167,7 @@ const ReportDiscountLoss = () => {
                             <tr  >
                                 <td>{shopOrderTransaction.id}</td>
                                 <td>{shopOrderTransaction.product_name}</td>
+                                <td>{shopOrderTransaction.discount}</td>
                                 <td>{shopOrderTransaction.so_discount_amount}</td>
                                 <td>{shopOrderTransaction.shop_order_quantity}</td>
                                 <td>{shopOrderTransaction.discount_amount}</td>

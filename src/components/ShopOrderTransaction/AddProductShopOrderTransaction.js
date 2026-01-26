@@ -245,12 +245,11 @@ const AddProductCustomerOrderTransaction = () => {
                     isShow: true,
                 });
             } else if (shopOrderTransaction.checker == 0 && orderShop.shop_order_profit < 1 && orderShop.sale_price < 1) {
-                setValidatorModal({
+                setValidator({
                     severity: 'error',
                     message: 'Price is less than to Capital',
                     isShow: true,
                 });
-                setSubmitLoading(false);
             } else {
                 setValidator({
                     severity: '',
