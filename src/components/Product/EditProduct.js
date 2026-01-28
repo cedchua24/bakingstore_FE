@@ -37,6 +37,7 @@ const EditProduct = () => {
         variation: 0,
         packaging: '',
         stock_warning: 0,
+        stock_warning_type: '',
         note: '',
         disabled: 0
     });
@@ -239,6 +240,21 @@ const EditProduct = () => {
                 >
                     <Form.Control type="number" name="quantity" value={product.quantity} onChange={onChange} />
                 </FloatingLabel>
+
+                <InputLabel id="demo-simple-select-label">Select Stock Warning Type</InputLabel>
+                <Select
+                    labelId="demo-simple-select-label"
+                    className="mb-3"
+                    id="demo-simple-select"
+                    name="stock_warning_type"
+                    label="Stock Warning Type"
+                    value={product.stock_warning_type}
+                    onChange={onChange}
+                    displayEmpty
+                >
+                    <MenuItem value="WHOLESALE">WHOLESALE</MenuItem>
+                    <MenuItem value="RETAIL">RETAIL</MenuItem>
+                </Select>
 
                 <FloatingLabel
                     controlId="floatingInput"
