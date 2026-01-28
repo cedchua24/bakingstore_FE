@@ -148,6 +148,7 @@ const AddProduct = () => {
     variation: '',
     quantity: 0,
     stock_warning: 0,
+    stock_warning_type: '',
     packaging: ''
   })
 
@@ -231,6 +232,9 @@ const AddProduct = () => {
     if (product.stock_warning == 0) {
       errors.stock_warning = "Stock Warning is Required!";
       // console.log("Stock Warning is Required!");
+    }
+    if (product.stock_warning_type.length == 0) {
+      errors.stock_warning_type = "Stock Warning Type is Required!";
     }
 
 
@@ -407,7 +411,7 @@ const AddProduct = () => {
         </FloatingLabel>
 
         {formErrors.packaging && <p style={{ color: "red" }}>{formErrors.packaging}</p>}
-        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangePackaging}>
+        <Form.Select aria-label="Default select example" name="packaging" className="mb-3" onChange={onChangePackaging}>
           <option >Select Packaging</option>
           <optgroup label="Product Packaging">
             <option value="Sack">Sack</option>
@@ -423,7 +427,7 @@ const AddProduct = () => {
         </Form.Select>
 
         {formErrors.variation && <p style={{ color: "red" }}>{formErrors.variation}</p>}
-        <Form.Select aria-label="Default select example" className="mb-3" onChange={onChangeVariation}  >
+        <Form.Select aria-label="Default select example" name="variation" className="mb-3" onChange={onChangeVariation}  >
           <option >Select Variation</option>
           <optgroup label="Product Packaging">
             <option value="kg">kg</option>
@@ -456,14 +460,13 @@ const AddProduct = () => {
           <Form.Control type="text" value={product.quantity} name="quantity" onChange={onChange} />
         </FloatingLabel>
 
-        {/* {formErrors.stock && <p style={{ color: "red" }}>{formErrors.stock}</p>}
-        <FloatingLabel
-          controlId="floatingInput"
-          label="Stock"
-          className="mb-3"
-        >
-          <Form.Control type="number" value={product.stock} name="stock" onChange={onChange} />
-        </FloatingLabel> */}
+        {formErrors.stock_warning_type && <p style={{ color: "red" }}>{formErrors.stock_warning_type}</p>}
+        <Form.Select aria-label="Default select example" className="mb-3" name="stock_warning_type" onChange={onChange}  >
+          <option >Select Stock Warning Type</option>
+          <option value="WHOLESALE">WHOLESALE</option>
+          <option value="RETAIL">RETAIL</option>
+        </Form.Select>
+
 
         {formErrors.stock_warning && <p style={{ color: "red" }}>{formErrors.stock_warning}</p>}
         <FloatingLabel
