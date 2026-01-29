@@ -254,8 +254,8 @@ const StockWarning = (props) => {
                                         <td>{product.stock_pc < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
                                             : <p >{product.stock_pc}</p>}
                                         </td>
-                                    </>}
-                                {/* <td>{product.weight}x{product.quantity}kg</td> */}
+                                    </>
+                                }
                                 <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
                                     : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
                                 </td>
