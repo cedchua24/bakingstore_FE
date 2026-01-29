@@ -224,6 +224,8 @@ const StockSupplierWarning = (props) => {
                         <th>Category</th>
                         <th>Product</th>
                         <th>Brand</th>
+                        <th>Stock Warning</th>
+                        <th>Stock Warning Type</th>
                         <th>Price</th>
                         <th>Stock</th>
                         <th>Stock/Pc</th>
@@ -243,13 +245,27 @@ const StockSupplierWarning = (props) => {
                                 <td>{product.category_name}</td>
                                 <td>{product.product_name}</td>
                                 <td>{product.brand_name}</td>
+                                <td>{product.stock_warning_type}</td>
+                                <td>{product.stock_warning}</td>
                                 <td>₱ {product.price}.00</td>
-                                <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
-                                    : <p >{product.stock}</p>}
-                                </td>
-                                <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
-                                    : <p >{product.stock_pc}</p>}
-                                </td>
+                                {product.stock_warning_type == 'WHOLESALE' ?
+                                    <>
+                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
+                                            : <p >{product.stock}</p>}
+                                        </td>
+                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
+                                            : <p >{product.stock_pc}</p>}
+                                        </td></>
+                                    :
+                                    <>
+                                        <td>{product.stock_pc < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
+                                            : <p >{product.stock}</p>}
+                                        </td>
+                                        <td>{product.stock_pc < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
+                                            : <p >{product.stock_pc}</p>}
+                                        </td>
+                                    </>
+                                }
                                 {/* <td>{product.weight}x{product.quantity}kg</td> */}
                                 <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
                                     : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
