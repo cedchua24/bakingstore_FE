@@ -46,7 +46,7 @@ import Typography from '@mui/material/Typography'
 
 
 
-const FinalizeOrder = () => {
+const OrderSupplierApproval = () => {
 
 
     const { id } = useParams();
@@ -102,6 +102,7 @@ const FinalizeOrder = () => {
     const [paymentTypePoList, setPaymentTypePoList] = useState([]);
     const [errorStock, setErrorStock] = useState(false);
     const [formErrors, setFormErrors] = useState({});
+
     const [orderSupplierTransaction, setOrderSupplierTransaction] = useState({
         id: 0,
         supplier_name: '',
@@ -109,7 +110,7 @@ const FinalizeOrder = () => {
         withTax: 0,
         status: '',
         total_transaction_price: 0,
-        approval: useState(localStorage.getItem('name')),
+        approval: localStorage.getItem('name'),
         approval_status: '',
         note: '',
         order_date: '',
@@ -383,7 +384,7 @@ const FinalizeOrder = () => {
     }
 
     const onChange = (e) => {
-        setOrderSupplierTransaction({ ...orderSupplierTransaction, [e.target.name]: e.target.value });
+        setOrderSupplierTransaction({ ...orderSupplierTransaction, [e.target.name]: e.target.value, approval: localStorage.getItem('name') });
     }
 
 
@@ -410,6 +411,9 @@ const FinalizeOrder = () => {
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
+                if (response.data.approval_status == 'APPROVED') {
+                    navigate('/finalizeOrder/' + id);
+                }
             })
             .catch(e => {
                 setSubmitLoadingAdd(false);
@@ -504,6 +508,11 @@ const FinalizeOrder = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const statusColor = {
+        PENDING: 'warning.main',
+        APPROVED: 'success.main',
+        REJECTED: 'error.main',
+    };
 
     return (
         <div>
@@ -529,10 +538,12 @@ const FinalizeOrder = () => {
                 noValidate
                 autoComplete="off"
             >
-                <Stepper activeStep={3} alternativeLabel>
+                <Stepper activeStep={2} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
                             <StepLabel>{label}</StepLabel>
+
+
                         </Step>
                     ))}
                 </Stepper>
@@ -558,14 +569,21 @@ const FinalizeOrder = () => {
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
-
                         <TableRow>
-                            <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
-                            <TableCell align="right">Price</TableCell>
-                            <TableCell align="right">Unit</TableCell>
-                            <TableCell align="center" >Expiration</TableCell>
-                            <TableCell align="right">Sum</TableCell>
+                            <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Price</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Expiration</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }} >Sum</TableCell>
+                            <TableCell align="right"></TableCell>
+                            <TableCell align="right" style={{ color: '#28a745' }}>Current Stock</TableCell>
+                            <TableCell align="right" style={{ color: '#fd7e14' }}>Stock Warning</TableCell>
+                            <TableCell align="right"></TableCell>
+                            <TableCell align="right" style={{ color: '#007bff' }}>Last 15 days</TableCell>
+                            <TableCell align="right" style={{ color: '#20c997' }}>Last 30 days</TableCell>
+                            <TableCell align="right" style={{ color: '#6f42c1' }}>Last 2 months</TableCell>
+                            <TableCell align="right" style={{ color: '#6c757d' }}>Last Year</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -579,6 +597,14 @@ const FinalizeOrder = () => {
 
                                 <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">{row.total_price}</TableCell>
+                                <TableCell align="right"></TableCell>
+                                <TableCell align="right">{row.stock}</TableCell>
+                                <TableCell align="right">{row.stock_warning}{row.stock_warning_type == 'RETAIL' ? 'RETAIL' : ''}</TableCell>
+                                <TableCell align="right"></TableCell>
+                                <TableCell align="right">{row.last_15_days_sales}</TableCell>
+                                <TableCell align="right">{row.last_30_days_sales}</TableCell>
+                                <TableCell align="right">{row.last_2_months_sales}</TableCell>
+                                <TableCell align="right">{row.last_year_same_month_30_days}</TableCell>
                             </TableRow>
                         ))}
                         {/* 
@@ -608,29 +634,72 @@ const FinalizeOrder = () => {
             }
             <br></br>
             <br></br>
+            <InputLabel id="demo-simple-select-label">Approver</InputLabel>
+            <TextField
+                id="outlined-disabled"
+                variant="filled"
+                value={orderSupplierTransaction.approval ? orderSupplierTransaction.approval : localStorage.getItem('name')}
+                disabled
+            />
+            <br></br>
+            <br></br>
+            <InputLabel id="demo-simple-select-label">Select Status</InputLabel>
+            <Select
+                labelId="demo-simple-select-label"
 
-            {
-                orderSupplierTransaction.approval_status == 'APPROVED' &&
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: { xs: 'column', md: 'row' },
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <Button
-                        disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                        variant="contained"
-                        type="submit"
-                        onClick={updateOrderTransaction}
-                        size="large" >
-                        Submit Transaction
-                    </Button>
+                id="demo-simple-select"
+                name="approval_status"
+                label="Stock Warning Type"
+                value={orderSupplierTransaction.approval_status}
+                sx={{
+                    color: statusColor[orderSupplierTransaction.approval_status],
+                    '& .MuiSelect-icon': {
+                        color: statusColor[orderSupplierTransaction.approval_status],
+                    },
+                }}
+                onChange={onChange}
+                displayEmpty
+            >
+                <MenuItem value="PENDING" sx={{ color: "orange" }}>PENDING</MenuItem>
+                <MenuItem value="APPROVED" sx={{ color: "green" }}>APPROVED</MenuItem>
+                <MenuItem value="REJECTED" sx={{ color: "red" }}>REJECTED</MenuItem>
+            </Select>
+            <br></br>
+            <br></br>
+            <InputLabel id="demo-simple-select-label">Note</InputLabel>
+            <TextareaAutosize
+                maxRows={4}
+                aria-label="Note"
+                placeholder="Note"
+                name="note"
+                value={orderSupplierTransaction.note}
+                onChange={onChange}
+                style={{ width: 500, height: 150 }}
+            />
+            <br></br>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' },
 
-                </Box>
 
-            }
+                }}
+            >
+                <Button
+                    disabled={orderSupplierTransaction.status == 'COMPLETED'}
+                    variant="contained"
+                    type="submit"
+                    onClick={submitApproval}
+                    color="success"
+                    size="large" >
+                    Submit and Next
+                </Button>
+
+            </Box>
+            <br></br>
+            <br></br>
+            <br></br>
+
 
 
             <Modal
@@ -690,7 +759,7 @@ const FinalizeOrder = () => {
     )
 }
 
-export default FinalizeOrder
+export default OrderSupplierApproval
 
 
 

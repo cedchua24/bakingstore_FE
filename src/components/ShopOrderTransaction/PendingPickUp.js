@@ -184,8 +184,8 @@ const PendingPickUp = () => {
         backgroundColor: theme.palette.background.paper,
         fontSize: "2rem",
         padding: theme.spacing(1),
+        textAlign: "center",
     }));
-
     const onChangeInput = (e) => {
         setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
         setDate(e.target.value);

@@ -75,8 +75,8 @@ const ShorOrderTransactionList = () => {
         backgroundColor: theme.palette.background.paper,
         fontSize: "2rem",
         padding: theme.spacing(1),
+        textAlign: "center",
     }));
-
     const onChangeInput = (e) => {
         setShopOrderDate({ ...shopOrderDate, [e.target.name]: e.target.value });
     }

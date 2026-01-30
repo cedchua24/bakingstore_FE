@@ -23,7 +23,8 @@ const AddOrderSupplierTransaction = (props) => {
         id: 0,
         supplier_id: 0,
         supplier_name: 0,
-        withTax: 0,
+        withTax: 1,
+        requestor: localStorage.getItem('name'),
         total_transaction_price: 0,
         order_date: '',
         status: 'IN_PROGRESS',
@@ -33,9 +34,10 @@ const AddOrderSupplierTransaction = (props) => {
     const supplierList = props.supplierList;
 
     const steps = [
-        'Create Transaction Details',
+        'Created Transaction Details',
         'Add Product Orders',
-        'Finalize Orders',
+        'Review Orders',
+        'Receive Orders',
     ];
 
     const [message, setMessage] = useState(false);
@@ -115,11 +117,11 @@ const AddOrderSupplierTransaction = (props) => {
                     </FormControl>
                 </Box>
 
-                <FormControl sx={{ m: 0, minWidth: 120, minHeight: 70 }}>
+                {/* <FormControl sx={{ m: 0, minWidth: 120, minHeight: 70 }}>
                     <FormGroup>
                         <FormControlLabel control={<Checkbox name="withTax" value={isChecked} onChange={onChangeInput} />} label="Tax" />
                     </FormGroup>
-                </FormControl>
+                </FormControl> */}
 
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date</Form.Label>

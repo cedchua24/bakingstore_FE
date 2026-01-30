@@ -66,8 +66,8 @@ const AddShopOrderTransaction = (props) => {
         backgroundColor: theme.palette.background.paper,
         fontSize: "2rem",
         padding: theme.spacing(1),
+        textAlign: "center",
     }));
-
     return (
         <div>
             <Div>{"Shop Order"}</Div>
