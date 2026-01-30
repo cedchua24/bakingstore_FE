@@ -576,10 +576,10 @@ const OrderSupplierApproval = () => {
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>Expiration</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }} >Sum</TableCell>
-                            <TableCell align="right"></TableCell>
+                            <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
                             <TableCell align="right" style={{ color: '#28a745' }}>Current Stock</TableCell>
                             <TableCell align="right" style={{ color: '#fd7e14' }}>Stock Warning</TableCell>
-                            <TableCell align="right"></TableCell>
+                            <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
                             <TableCell align="right" style={{ color: '#007bff' }}>Last 15 days</TableCell>
                             <TableCell align="right" style={{ color: '#20c997' }}>Last 30 days</TableCell>
                             <TableCell align="right" style={{ color: '#6f42c1' }}>Last 2 months</TableCell>
@@ -595,16 +595,16 @@ const OrderSupplierApproval = () => {
                                 <TableCell align="right">{row.unit}</TableCell>
 
 
-                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
-                                <TableCell align="right">{row.total_price}</TableCell>
-                                <TableCell align="right"></TableCell>
-                                <TableCell align="right">{row.stock}</TableCell>
-                                <TableCell align="right">{row.stock_warning}{row.stock_warning_type == 'RETAIL' ? 'RETAIL' : ''}</TableCell>
-                                <TableCell align="right"></TableCell>
-                                <TableCell align="right">{row.last_15_days_sales}</TableCell>
-                                <TableCell align="right">{row.last_30_days_sales}</TableCell>
-                                <TableCell align="right">{row.last_2_months_sales}</TableCell>
-                                <TableCell align="right">{row.last_year_same_month_30_days}</TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
+                                <TableCell align="right">{numberFormat(row.total_price)}</TableCell>
+                                <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? row.stock + " " + row.packaging + " / " + row.stock_pc + " pc" : row.stock}</TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.stock_warning}{row.stock_warning_type == 'RETAIL' ? ' pc' : ''}</TableCell>
+                                <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
+                                <TableCell align="right">{row.type == 'WHOLESALE' ? row.last_15_days_sales : row.last_15_days_sales * row.pQuantity}</TableCell>
+                                <TableCell align="right">{row.type == 'WHOLESALE' ? row.last_30_days_sales : row.last_30_days_sales * row.pQuantity}</TableCell>
+                                <TableCell align="right">{row.type == 'WHOLESALE' ? row.last_2_months_sales : row.last_2_months_sales * row.pQuantity}</TableCell>
+                                <TableCell align="right">{row.type == 'WHOLESALE' ? row.last_year_same_month_30_days : row.last_year_same_month_30_days * row.pQuantity}</TableCell>
                             </TableRow>
                         ))}
                         {/* 
