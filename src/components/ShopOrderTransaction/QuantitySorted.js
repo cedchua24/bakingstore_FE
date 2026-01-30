@@ -105,12 +105,7 @@ const QuantitySorted = () => {
 
     }
 
-    const Div = styled('div')(({ theme }) => ({
-        ...theme.typography.button,
-        backgroundColor: theme.palette.background.paper,
-        fontSize: "2rem",
-        padding: theme.spacing(1),
-    }));
+
 
     const numberFormat = (value) =>
         new Intl.NumberFormat('en-us', {

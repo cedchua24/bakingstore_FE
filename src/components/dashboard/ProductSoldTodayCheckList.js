@@ -119,8 +119,8 @@ const ProductSoldTodayCheckList = () => {
         backgroundColor: theme.palette.background.paper,
         fontSize: "2rem",
         padding: theme.spacing(1),
+        textAlign: "center",
     }));
-
     return (
         <div>
             <Stack sx={{ width: '100%' }} spacing={2}>

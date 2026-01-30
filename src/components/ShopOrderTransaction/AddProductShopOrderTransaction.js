@@ -687,8 +687,8 @@ const AddProductCustomerOrderTransaction = () => {
         backgroundColor: theme.palette.background.paper,
         fontSize: "2rem",
         padding: theme.spacing(1),
+        textAlign: "center",
     }));
-
     const numberFormat = (value) =>
         new Intl.NumberFormat('en-us', {
             style: 'currency',

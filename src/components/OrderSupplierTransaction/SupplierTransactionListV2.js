@@ -114,7 +114,11 @@ const SupplierTransactionListV2 = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
-
+    const statusColor = {
+        PENDING: '#ed6c02',   // orange
+        APPROVED: '#2e7d32',  // green
+        REJECTED: '#d32f2f',  // red
+    };
 
 
 
@@ -138,14 +142,18 @@ const SupplierTransactionListV2 = () => {
                             <th>ID</th>
                             <th>Invoice Number</th>
                             <th>Supplier Name</th>
-                            <th>With Tax</th>
                             <th>Total Amount</th>
-                            <th>Date</th>
+                            <th>Requestor</th>
+                            <th>Approver</th>
+                            <th>Approval Status</th>
+                            <th>Date Draft</th>
+                            <th>Date Received</th>
                             <th>Delivery Status</th>
                             <th>Payment Status</th>
                             <th>Bank</th>
                             {/* <th>Placed Stock Status</th>
                             <th>Organize Stock</th> */}
+                            <th></th>
                             <th></th>
                             <th></th>
                             <th></th>
@@ -161,8 +169,13 @@ const SupplierTransactionListV2 = () => {
                                     <td>{orderTransaction.id}</td>
                                     <td>{orderTransaction.invoice_number}</td>
                                     <td>{orderTransaction.supplier_name}</td>
-                                    <td>{orderTransaction.withTax === 1 ? <CheckIcon style={{ color: 'black', }} /> : <CloseIcon style={{ color: 'black', }} />}</td>
                                     <td>{numberFormat(orderTransaction.total_transaction_price)}</td>
+                                    <td>{orderTransaction.requestor}</td>
+                                    <td>{orderTransaction.approval}</td>
+                                    <td style={{ color: statusColor[orderTransaction.approval_status], fontWeight: 'bold' }}>
+                                        {orderTransaction.approval_status}
+                                    </td>
+                                    <td>{orderTransaction.created_at}</td>
                                     <td>{orderTransaction.order_date}</td>
                                     <td>{orderTransaction.status === 'COMPLETED' ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                         : orderTransaction.status === 'IN_PROGRESS' ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
@@ -194,7 +207,7 @@ const SupplierTransactionListV2 = () => {
                                     </td>
                                     <td>
                                         <Link variant="primary" to={"/paymentOrder/" + orderTransaction.id}   >
-                                            <Button variant="primary" >
+                                            <Button variant="success" >
                                                 Update Payment
                                             </Button>
                                         </Link>
@@ -214,8 +227,15 @@ const SupplierTransactionListV2 = () => {
                                         </Link>
                                     </td>
                                     <td>
-                                        <Link variant="primary" to={"/printOrderSupplier/" + orderTransaction.id}   >
+                                        <Link variant="primary" to={"/orderSupplierApproval/" + orderTransaction.id}   >
                                             <Button variant="primary" >
+                                                Review Order
+                                            </Button>
+                                        </Link>
+                                    </td>
+                                    <td>
+                                        <Link variant="primary" to={"/printOrderSupplier/" + orderTransaction.id}   >
+                                            <Button variant="secondary" >
                                                 Print
                                             </Button>
                                         </Link>

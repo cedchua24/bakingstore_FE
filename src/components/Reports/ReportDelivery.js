@@ -208,8 +208,8 @@ const ReportDelivery = () => {
         backgroundColor: theme.palette.background.paper,
         fontSize: "2rem",
         padding: theme.spacing(1),
+        textAlign: "center",
     }));
-
     const onChangeInput = (e) => {
         setTransactionStatus({ ...transactionStatus, [e.target.name]: e.target.value });
     }

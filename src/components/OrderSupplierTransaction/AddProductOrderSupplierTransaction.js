@@ -129,7 +129,8 @@ const AddProductOrderSupplierTransaction = () => {
     const steps = [
         'Created Transaction Details',
         'Add Product Orders',
-        'Finalize Orders',
+        'Review Orders',
+        'Receive Orders',
     ];
 
     const TAX_RATE = 0.12;
@@ -538,7 +539,7 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
     const finalizeOrder = () => {
-        navigate('/finalizeOrder/' + id);
+        navigate('/orderSupplierApproval/' + id);
     }
 
     const formatStatementDate = (date) => {
@@ -552,6 +553,7 @@ const AddProductOrderSupplierTransaction = () => {
         backgroundColor: theme.palette.background.paper,
         fontSize: "2rem",
         padding: theme.spacing(1),
+        textAlign: "center",
     }));
 
 
@@ -586,28 +588,25 @@ const AddProductOrderSupplierTransaction = () => {
                     ))}
                 </Stepper>
                 <br></br>
+                <TableContainer component={Paper}>
+
+                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                        <TableBody>
+                            <TableRow >
+                                <TableCell style={{ fontWeight: 'bold' }}>Supplier:</TableCell>
+                                <TableCell align="right">{orderSupplierTransaction.supplier_name}</TableCell>
+
+                                <TableCell style={{ fontWeight: 'bold' }}>Created Date :</TableCell>
+                                <TableCell align="right">{orderSupplierTransaction.order_date}</TableCell>
+
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
                 <form onSubmit={saveOrderSupplier} >
-                    <TextField
-                        id="outlined-disabled"
-                        label="Supplier Name"
-                        variant="filled"
-                        value={orderSupplierTransaction.supplier_name}
-                        disabled
-                    />
 
-                    <TextField
-                        id="outlined-disabled"
-                        label="Date"
-                        variant="filled"
-                        value={orderSupplierTransaction.order_date}
-                        disabled
-                    />
 
-                    <FormControlLabel disabled control={<Checkbox
-                        checked={isChecked}
-                        // onChange={handleChange}
-                        inputProps={{ 'aria-label': 'controlled' }}
-                    />} label="With Tax" />
+
                     <br></br>
                     {formErrors.product_id && <p style={{ color: "red" }}>{formErrors.product_id}</p>}
                     <FormControl variant="standard" >
@@ -764,7 +763,7 @@ const AddProductOrderSupplierTransaction = () => {
                             </TableRow>
                         ))}
 
-                        <TableRow>
+                        {/* <TableRow>
                             <TableCell rowSpan={4} />
                             <TableCell colSpan={3}>Subtotal</TableCell>
                             <TableCell align="right">{invoiceSubtotal}</TableCell>
@@ -773,10 +772,10 @@ const AddProductOrderSupplierTransaction = () => {
                             <TableCell>Tax</TableCell>
                             <TableCell align="right" colSpan={2}>{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow>
+                        </TableRow> */}
                         <TableRow>
-                            <TableCell colSpan={3} style={{ color: 'red', }}>Grand Total</TableCell>
-                            <TableCell align="right" style={{ color: 'red', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
+                            <TableCell colSpan={4} style={{ fontWeight: 'bold' }}>Grand Total</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold' }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>

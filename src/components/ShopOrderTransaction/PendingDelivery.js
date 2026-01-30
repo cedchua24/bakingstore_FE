@@ -169,8 +169,8 @@ const PendingDelivery = () => {
         backgroundColor: theme.palette.background.paper,
         fontSize: "2rem",
         padding: theme.spacing(1),
+        textAlign: "center",
     }));
-
     const onChangeInput = (e) => {
         setTransactionStatus({
             ...transactionStatus,
