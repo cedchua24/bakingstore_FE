@@ -570,20 +570,27 @@ const OrderSupplierApproval = () => {
                 <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                     <TableHead>
                         <TableRow>
-                            <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Price</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Expiration</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }} >Sum</TableCell>
-                            <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
-                            <TableCell align="right" style={{ color: '#28a745' }}>Current Stock</TableCell>
-                            <TableCell align="right" style={{ color: '#fd7e14' }}>Stock Warning</TableCell>
-                            <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
-                            <TableCell align="right" style={{ color: '#007bff' }}>Last 15 days</TableCell>
-                            <TableCell align="right" style={{ color: '#20c997' }}>Last 30 days</TableCell>
-                            <TableCell align="right" style={{ color: '#6f42c1' }}>Last 2 months</TableCell>
-                            <TableCell align="right" style={{ color: '#6c757d' }}>Last Year</TableCell>
+                            <TableCell align="center" colSpan={6} ><h5 style={{ fontWeight: 'bold' }}>Order Details</h5></TableCell>
+                            <TableCell align="center" ><h5 style={{ fontWeight: 'bold' }}></h5></TableCell>
+                            <TableCell align="center" colSpan={2} style={{ fontWeight: 'bold' }}><h5 style={{ fontWeight: 'bold' }}>Stock</h5></TableCell>
+                            <TableCell align="center" ><h5 style={{ fontWeight: 'bold' }}></h5></TableCell>
+                            <TableCell align="center" colSpan={5} style={{ fontWeight: 'bold' }}><h5 style={{ fontWeight: 'bold' }}>Sold</h5></TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }}>Product</h6></TableCell>
+                            <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }}>Qty</h6></TableCell>
+                            <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }}>Price</h6></TableCell>
+                            <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }}>Unit</h6></TableCell>
+                            <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }}>Expiration</h6></TableCell>
+                            <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }} >Sum</h6></TableCell>
+                            <TableCell align="center" style={{ backgroundColor: '#FFFAF0' }}><h6 style={{ fontWeight: 'bold' }}></h6></TableCell>
+                            <TableCell align="center" style={{ color: '#28a745' }}><h6 style={{ fontWeight: 'bold' }}>Current Stock</h6></TableCell>
+                            <TableCell align="center" style={{ color: '#fd7e14' }}><h6 style={{ fontWeight: 'bold' }}>Stock Warning</h6></TableCell>
+                            <TableCell align="center" style={{ backgroundColor: '#FFFAF0' }}><h6 style={{ fontWeight: 'bold' }}></h6></TableCell>
+                            <TableCell align="center" style={{ color: '#007bff' }}><h6 style={{ fontWeight: 'bold' }}>Last 15 days</h6></TableCell>
+                            <TableCell align="center" style={{ color: '#20c997' }}><h6 style={{ fontWeight: 'bold' }}>Last 30 days</h6></TableCell>
+                            <TableCell align="center" style={{ color: '#6f42c1' }}><h6 style={{ fontWeight: 'bold' }}>Last 2 months</h6></TableCell>
+                            <TableCell align="center" style={{ color: '#6c757d' }}><h6 style={{ fontWeight: 'bold' }}>Last Year</h6></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
