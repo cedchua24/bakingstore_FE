@@ -180,7 +180,7 @@ const ReportPurchaseOrderPendingList = () => {
                                     <td style={{ color: statusColor[orderTransaction.approval_status], fontWeight: 'bold' }}>
                                         {orderTransaction.approval_status}
                                     </td>
-                                    <td>{orderTransaction.created_at}</td>
+                                    <td>{orderTransaction.created_at.split(' ')[0]}</td>
                                     <td>{orderTransaction.order_date}</td>
                                     <td>{orderTransaction.status === 'COMPLETED' ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                         : orderTransaction.status === 'IN_PROGRESS' ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
