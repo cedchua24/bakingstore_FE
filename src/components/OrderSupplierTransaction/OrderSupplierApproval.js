@@ -601,7 +601,7 @@ const OrderSupplierApproval = () => {
                     <TableBody>
                         {orderList.data.map((row) => (
                             <TableRow key={row.id}>
-                                <TableCell>{row.product_name}</TableCell>
+                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
                                 <TableCell align="right">{row.price}</TableCell>
                                 <TableCell align="right">{row.unit}</TableCell>
