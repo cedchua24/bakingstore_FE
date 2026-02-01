@@ -27,6 +27,9 @@ class OrderSupplierService {
     findById(id) {
         return axios.get(`/api/orderSuppliers/fetchOrderByTransactionId/${id}`);
     }
+    fetchApprovalPO(id) {
+        return axios.get(`/api/orderSuppliers/fetchApprovalPO/${id}`);
+    }
     fetchOrderBySupplierId(id) {
         return axios.get(`/api/orderSuppliers/fetchOrderBySupplierId/${id}`);
     }

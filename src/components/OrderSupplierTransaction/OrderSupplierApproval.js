@@ -54,7 +54,7 @@ const OrderSupplierApproval = () => {
 
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
-        fetchByOrderSupplierId(id);
+        fetchApprovalPO(id);
         fetchPaymentTypePo();
         fetchPaymentTerm();
         fetchPaymentTypePoByShopTransactionId(id);
@@ -96,7 +96,11 @@ const OrderSupplierApproval = () => {
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
 
-    const [orderList, setOrderList] = useState([]);
+
+
+    const [orderList, setOrderList] = useState({
+        data: []
+    });
 
     const [paymentTermList, setPaymentTermList] = useState([]);
     const [paymentTypePoList, setPaymentTypePoList] = useState([]);
@@ -373,8 +377,9 @@ const OrderSupplierApproval = () => {
             });
     }
 
-    const fetchByOrderSupplierId = async (id) => {
-        await OrderSupplierService.findById(id)
+
+    const fetchApprovalPO = async (id) => {
+        await OrderSupplierService.fetchApprovalPO(id)
             .then(response => {
                 setOrderList(response.data);
             })
@@ -594,7 +599,7 @@ const OrderSupplierApproval = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {orderList.map((row) => (
+                        {orderList.data.map((row) => (
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
@@ -608,10 +613,10 @@ const OrderSupplierApproval = () => {
                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? row.stock + " " + row.packaging + " / " + row.stock_pc + " pc" : row.stock}</TableCell>
                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.stock_warning}{row.stock_warning_type == 'RETAIL' ? ' pc' : ''}</TableCell>
                                 <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
-                                <TableCell align="right">{row.type == 'WHOLESALE' ? row.last_15_days_sales : row.last_15_days_sales * row.pQuantity}</TableCell>
-                                <TableCell align="right">{row.type == 'WHOLESALE' ? row.last_30_days_sales : row.last_30_days_sales * row.pQuantity}</TableCell>
-                                <TableCell align="right">{row.type == 'WHOLESALE' ? row.last_2_months_sales : row.last_2_months_sales * row.pQuantity}</TableCell>
-                                <TableCell align="right">{row.type == 'WHOLESALE' ? row.last_year_same_month_30_days : row.last_year_same_month_30_days * row.pQuantity}</TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_15_days_sales / row.pQuantity)) + " " + row.packaging + " / " + row.last_15_days_sales + " pc" : row.last_15_days_sales + " " + row.packaging}</TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_30_days_sales / row.pQuantity)) + " " + row.packaging + " / " + row.last_30_days_sales + " pc" : row.last_30_days_sales + " " + row.packaging}</TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_2_months_sales / row.pQuantity)) + " " + row.packaging + " / " + row.last_2_months_sales + " pc" : row.last_2_months_sales + " " + row.packaging}</TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_year_same_month_30_days / row.pQuantity)) + " " + row.packaging + " / " + row.last_year_same_month_30_days + " pc" : row.last_year_same_month_30_days + " " + row.packaging}</TableCell>
                             </TableRow>
                         ))}
                         {/* 
