@@ -910,6 +910,23 @@ const AddProductOrderSupplierTransaction = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <div>
+                <br></br>
+                <br></br>
+                {orderList.map((row) => (
+                    <>
+                        <h6>{row.quantity} {row.unit} - {row.product_name}</h6>
+
+                    </>
+
+                ))
+                }
+
+            </div>
+            <br></br>
+            <br></br>
+            <br></br>
+            <br></br>
         </div >
     )
 }
