@@ -625,7 +625,7 @@ const FinalizeOrder = () => {
                         type="submit"
                         onClick={updateOrderTransaction}
                         size="large" >
-                        Submit Transaction
+                        Received Orders
                     </Button>
 
                 </Box>
