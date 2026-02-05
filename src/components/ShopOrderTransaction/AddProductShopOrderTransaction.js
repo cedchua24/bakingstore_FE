@@ -1143,7 +1143,7 @@ const AddProductCustomerOrderTransaction = () => {
             </Modal>
             <div>
                 <br></br>
-                <h6>Reference Number: #{shopOrderTransaction.id} </h6>
+                <h6>Reference Number: #{shopOrderTransaction.id} </h6> 
                 <h6> {shopOrderTransaction.requestor_name} </h6>
 
                 <br></br>
