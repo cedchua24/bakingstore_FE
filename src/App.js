@@ -228,6 +228,7 @@ import ReportBar from "./components/Reports/ReportBar";
 import ReportPurchaseOrder from "./components/Reports/ReportPurchaseOrder";
 import ReportPurchaseOrderList from "./components/Reports/ReportPurchaseOrderList";
 import ReportPurchaseOrderPendingList from "./components/Reports/ReportPurchaseOrderPendingList";
+import ReportPurchaseOrderApproval from "./components/Reports/ReportPurchaseOrderApproval";
 import PurchaseOrderList from "./components/Reports/PurchaseOrderList";
 import ReportSpoilage from "./components/Reports/ReportSpoilage";
 import ReportDiscount from "./components/Reports/ReportDiscount";
@@ -550,6 +551,8 @@ const App = () => {
           <Route exact path="/reports/reportPurchaseOrder" element={<ReportPurchaseOrder />} />
           <Route exact path="/reports/reportPurchaseOrderList" element={<ReportPurchaseOrderList />} />
           <Route exact path="/reports/ReportPurchaseOrderPendingList" element={<ReportPurchaseOrderPendingList />} />
+          <Route exact path="/reports/reportPurchaseOrderApproval" element={<ReportPurchaseOrderApproval />} />
+
           <Route exact path="/reports/reportSpoilage" element={<ReportSpoilage />} />
           <Route exact path="/reports/reportDiscount" element={<ReportDiscount />} />
           <Route exact path="/reports/reportDelivery" element={<ReportDelivery />} />

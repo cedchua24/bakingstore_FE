@@ -654,7 +654,13 @@ export default function PersistentDrawerLeft() {
             "name": "PO Pending Payment List",
             "url": "/reports/ReportPurchaseOrderPendingList",
             "icon": <ListIcon />
+        },
+        {
+            "name": "PO Pending Approval List",
+            "url": "/reports/reportPurchaseOrderApproval",
+            "icon": <ListIcon />
         }
+
 
     ]);
 
