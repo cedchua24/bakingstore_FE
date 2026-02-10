@@ -482,7 +482,7 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
-            "name": "Stock Per Supplier",
+            "name": "Products Per Supplier",
             "url": "/stockSupplier",
             "icon": <ListIcon />
         },

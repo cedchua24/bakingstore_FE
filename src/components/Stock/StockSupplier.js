@@ -215,7 +215,7 @@ const StockSupplier = (props) => {
                 </Form.Group>
             </Form>
             <br></br>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Stock Per Supplier   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Products Per Supplier   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -237,8 +237,11 @@ const StockSupplier = (props) => {
 
                     {
                         productList.data.map((product, index) => (
-                            <tr key={product.id} >
-                                <td>{product.id}</td>
+                            <tr key={product.id} style={{
+                                backgroundColor: product.disabled === 1 ? '#707070' : 'transparent',
+                                color: product.disabled === 1 ? '#999' : 'inherit',
+                            }}>
+                                <td >{product.id}</td>
                                 <td>{product.supplier_name}</td>
                                 <td>{product.category_name}</td>
                                 <td>{product.product_name}</td>
