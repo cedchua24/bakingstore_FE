@@ -13,6 +13,9 @@ class CustomerService {
   fetchCustomerTransaction(id) {
     return axios.get(`/api/customers/fetchCustomerTransaction/${id}`);
   }
+  fetchCustomerToDelete(id) {
+    return axios.get(`/api/customers/fetchCustomerToDelete/${id}`);
+  }
   fetchCustomerTransactionList(id) {
     return axios.get(`/api/customers/fetchCustomerTransactionList/${id}`);
   }
@@ -22,6 +25,9 @@ class CustomerService {
   customerLastOrderList(id, data) {
     // return axios.post("/api/customers/customerLastOrderList", data);
     return axios.post(`/api/customers/customerLastOrderList/${id}`, data);
+  }
+  updateAndDeleteCustomer(data) {
+    return axios.post("/api/customers/updateAndDeleteCustomer", data);
   }
   customerBacklogList(id, data) {
     // return axios.post("/api/customers/customerLastOrderList", data);
