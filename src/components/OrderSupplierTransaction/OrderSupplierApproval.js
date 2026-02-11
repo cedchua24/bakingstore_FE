@@ -610,7 +610,14 @@ const OrderSupplierApproval = () => {
                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
                                 <TableCell align="right">{numberFormat(row.total_price)}</TableCell>
                                 <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
-                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? row.stock + " " + row.packaging + " / " + row.stock_pc + " pc" : row.stock}</TableCell>
+                                {row.enable == 1 ?
+                                    <>
+                                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? row.os_stock + " " + row.packaging + " / " + row.os_stock_pc + " pc" : row.os_stock}</TableCell>
+                                    </> :
+                                    <>
+                                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? row.stock + " " + row.packaging + " / " + row.stock_pc + " pc" : row.stock}</TableCell>
+                                    </>
+                                }
                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.stock_warning}{row.stock_warning_type == 'RETAIL' ? ' pc' : ''}</TableCell>
                                 <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_15_days_sales / row.pQuantity)) + " " + row.packaging + " / " + row.last_15_days_sales + " pc" : row.last_15_days_sales + " " + row.packaging}</TableCell>

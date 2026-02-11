@@ -1,16 +1,34 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import OrderSupplierTransactionService from "../OrderSupplierTransaction/OrderSupplierTransactionService";
 import { Form } from 'react-bootstrap';
 import LinearProgress from '@mui/material/LinearProgress';
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography'
+import Modal from '@mui/material/Modal';
+import IconButton from '@mui/material/IconButton';
+import UpdateIcon from '@mui/icons-material/Update';
 
 const ReportPurchaseOrderApproval = () => {
 
     useEffect(() => {
         fetchOrderTransactionList();
     }, []);
+
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 300,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    };
+
 
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
@@ -26,6 +44,49 @@ const ReportPurchaseOrderApproval = () => {
         message: '',
         total_sales: 0
     });
+
+    const [open, setOpen] = React.useState(false);
+    const handleClose = () => setOpen(false);
+
+    const [orderDate, setOrderDate] = useState({
+        id: 0,
+        created_at: ''
+    });
+
+    const handleOpen = (id, e) => {
+        console.log('e', id);
+        fetchTransaction(id);
+        setOpen(true);
+    }
+
+
+    const fetchTransaction = async (id) => {
+        await OrderSupplierTransactionService.get(id)
+            .then(response => {
+                setOrderDate({
+                    id: response.data.id,
+                    created_at: response.data.created_at.split(' ')[0]
+                });
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const onChangeDate = (e) => {
+        setOrderDate({ ...orderDate, [e.target.name]: e.target.value });
+    }
+
+    const updateDate = () => {
+        OrderSupplierTransactionService.updateDateOrderSupplier(orderDate)
+            .then(response => {
+                setOpen(false);
+                fetchOrderTransactionList();
+            })
+            .catch(e => {
+                console.log(e);
+            });
+    }
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         dateFrom: "",
@@ -178,7 +239,14 @@ const ReportPurchaseOrderApproval = () => {
                                     <td style={{ color: statusColor[orderTransaction.approval_status], fontWeight: 'bold' }}>
                                         {orderTransaction.approval_status}
                                     </td>
-                                    <td>{orderTransaction.created_at.split(' ')[0]}</td>
+                                    {/* <td>{orderTransaction.created_at.split(' ')[0]}</td> */}
+                                    <td>{orderTransaction.created_at}
+                                        {orderTransaction.status === 'IN_PROGRESS' &&
+                                            <IconButton>
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(orderTransaction.id, e)} />
+                                            </IconButton>
+                                        }
+                                    </td>
                                     <td>{orderTransaction.order_date}</td>
                                     <td>{orderTransaction.status === 'COMPLETED' ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                         : orderTransaction.status === 'IN_PROGRESS' ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
@@ -251,6 +319,39 @@ const ReportPurchaseOrderApproval = () => {
                     </tbody>
                 </table>
             </div>
+
+            <Modal
+                keepMounted
+                open={open}
+                onClose={handleClose}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                        Update Date
+                    </Typography>
+
+                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
+                        <Form.Label></Form.Label>
+                        <Form.Control type="date" value={orderDate.created_at} name="created_at" onChange={onChangeDate} />
+                    </Form.Group>
+
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Button variant="primary" onClick={updateDate}>
+                            Submit
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
         </div >
     )
 }

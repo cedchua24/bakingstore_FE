@@ -13,6 +13,9 @@ class OrderSupplierTransactionService {
     update(id, data) {
         return axios.put(`/api/orderSupplierTransaction/${id}`, data);
     }
+    updateDateOrderSupplier(data) {
+        return axios.post("/api/orderSupplierTransaction/updateDateOrderSupplier", data);
+    }
     setToCompleteTransaction(id) {
         return axios.put(`/api/orderSupplierTransaction/setToCompleteTransaction/${id}`);
     }

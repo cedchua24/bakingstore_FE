@@ -5,6 +5,13 @@ import { Link } from "react-router-dom";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import LinearProgress from '@mui/material/LinearProgress';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography'
+import Modal from '@mui/material/Modal';
+import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
+
+import FormControl from '@mui/material/FormControl';
 
 
 
@@ -14,8 +21,26 @@ const CustomerList = (props) => {
         fetchCustomerList();
     }, []);
 
+    const style = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 300,
+        bgcolor: 'background.paper',
+        border: '2px solid #000',
+        boxShadow: 24,
+        p: 4,
+        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    };
+
+    const handleClosePickUp = () => setOpenPickUp(false);
+    const [openPickUp, setOpenPickUp] = React.useState(false);
 
     const [customerList, setCustomerList] = useState([]);
+
+    const [customerToDeleteList, setCustomerToDeleteList] = useState([]);
+    const [formErrorsPickUp, setFormErrorsPickup] = useState({});
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
@@ -26,6 +51,82 @@ const CustomerList = (props) => {
         message: '',
         id: 0
     });
+
+    const [customerModal, setCustomerModal] = useState({
+        id: 0,
+        customer_id: 0,
+        first_name: '',
+        last_name: ''
+    });
+
+    const onChangeCustomerModal = (e) => {
+        setCustomerModal({ ...customerModal, [e.target.name]: e.target.value });
+    }
+
+    const handleInputChange = (e, value) => {
+        e.persist();
+        setCustomerModal({
+            ...customerModal,
+            customer_id: value.id,
+        });
+    }
+
+    const validateCustomer = (values) => {
+        const errors = {};
+        if (customerModal.customer_id == 0 || customerModal.customer_id == null) {
+            errors.customer_id = "Choose Customer Id!";
+        }
+        return errors;
+    }
+
+
+    const deleteCustomer = () => {
+        setSubmitLoadingAdd(true);
+        setIsAddDisabled(true);
+        console.log('status: ', customerModal);
+        console.log("count: ", Object.keys(validateCustomer(customerModal)).length);
+        console.log("validate: ", validateCustomer(customerModal));
+        setFormErrorsPickup(validateCustomer(customerModal));
+        if (Object.keys(validateCustomer(customerModal)).length > 0) {
+            console.log("Has Validation: ");
+        } else {
+            CustomerService.updateAndDeleteCustomer(customerModal)
+                .then(response => {
+                    setSubmitLoadingAdd(false);
+                    setOpenPickUp(false);
+                    setIsAddDisabled(false);
+                    fetchCustomerList();
+                })
+                .catch(e => {
+                    console.log(e);
+                });
+        }
+
+    }
+
+    const handleOpenPickUp = (id, e) => {
+        console.log('e', id);
+        CustomerService.get(id)
+            .then(response => {
+                setCustomerModal(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+        CustomerService.fetchCustomerToDelete(id)
+            .then(response => {
+                setCustomerToDeleteList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+        setOpenPickUp(true);
+    }
+
+
+
 
     const fetchCustomerList = () => {
         setSubmitLoadingAdd(true);
@@ -46,11 +147,14 @@ const CustomerList = (props) => {
 
     }
 
-    const submitSortedCustomerList = () => {
+
+    const submitCustomerDelete = () => {
 
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        CustomerService.fetchCustomerByDate(sortedCustomer)
+
+
+        CustomerService.fetchCustomerByDate(customerModal)
             .then(response => {
                 console.log("response.data", response.data)
                 setCustomerList(response.data);
@@ -63,6 +167,7 @@ const CustomerList = (props) => {
                 setIsAddDisabled(false);
 
             });
+
 
     }
 
@@ -92,7 +197,7 @@ const CustomerList = (props) => {
                     <Form.Control type="text" value={customerList.length} disabled />
                 </Form.Group>
                 <Button variant="primary"
-                    onClick={submitSortedCustomerList}
+                    onClick={submitCustomerDelete}
                     disabled={isAddDisabled}
                 >
                     Find
@@ -109,7 +214,7 @@ const CustomerList = (props) => {
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
-                        <th>#</th>
+                        {/* <th>#</th> */}
                         <th>ID</th>
                         <th>First Name</th>
                         <th>Last Name</th>
@@ -131,7 +236,7 @@ const CustomerList = (props) => {
                     {
                         customerList.map((customer, index) => (
                             <tr key={customer.id} >
-                                <td>{index}</td>
+                                {/* <td>{index}</td> */}
                                 <td>{customer.id}</td>
                                 <td>{customer.first_name}</td>
                                 <td>{customer.last_name}</td>
@@ -151,10 +256,16 @@ const CustomerList = (props) => {
                                     </Link>
                                 </td>
 
-                                {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteCustomermr(customer.id, e)} >
+                                <td>
+                                    <Button variant="danger" onClick={(e) => handleOpenPickUp(customer.id, e)} >
                                         Delete
                                     </Button>
+                                </td>
+
+                                {/* <td>
+                                    <IconButton>
+                                        <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(customer.id, e)} />
+                                    </IconButton>
                                 </td> */}
                             </tr>
                         )
@@ -162,6 +273,64 @@ const CustomerList = (props) => {
                     }
                 </tbody>
             </table>
+
+            <Modal
+                keepMounted
+                open={openPickUp}
+                onClose={handleClosePickUp}
+                aria-labelledby="keep-mounted-modal-title"
+                aria-describedby="keep-mounted-modal-description"
+            >
+                <Box sx={style}>
+                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                        Delete and Transfer Customer
+                    </Typography>
+
+
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>First Name</Form.Label>
+                        <Form.Control type="text" value={customerModal.first_name} name="first_name" placeholder="Enter First Name" disabled />
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="formBasicEmail">
+                        <Form.Label>Last Name*</Form.Label>
+                        <Form.Control type="text" value={customerModal.last_name} name="last_name" placeholder="Enter Last Name" onChange={onChangeCustomerModal} disabled />
+                    </Form.Group>
+                    {formErrorsPickUp.customer_id && <p style={{ color: "red" }}>{formErrorsPickUp.customer_id}</p>}
+                    <FormControl variant="standard" >
+                        <Autocomplete
+                            // {...defaultProps}
+                            options={customerToDeleteList}
+                            className="mb-3"
+                            id="disable-close-on-select"
+                            onChange={handleInputChange}
+                            getOptionLabel={(customerToDeleteList) => customerToDeleteList.id}
+                            renderInput={(params) => (
+                                <TextField {...params} label="Choose Customer Id" variant="standard" />
+                            )}
+                        />
+                    </FormControl>
+
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: { xs: 'column', md: 'row' },
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <Button variant="primary" onClick={deleteCustomer} disabled={isAddDisabled}>
+                            Delete
+                        </Button>
+
+                    </Box>
+                    <br></br>
+                    {submitLoadingAdd &&
+                        <LinearProgress color="warning" />
+                    }
+                    <br></br>
+                </Box>
+            </Modal>
         </div>
     )
 }
