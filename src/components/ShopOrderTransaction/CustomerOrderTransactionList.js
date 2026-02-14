@@ -1129,16 +1129,15 @@ const CustomerOrderTransactionList = () => {
                                             {
                                                 shopOrderTransaction.status != 3 &&
                                                 <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
-                                                    <span>
-                                                        <Button
-                                                            variant="danger"
-                                                            onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
-                                                            disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
-                                                            color="error"
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    </span>
+
+                                                    <Button
+                                                        variant="danger"
+                                                        onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
+                                                        disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                        color="error"
+                                                    >
+                                                        Delete
+                                                    </Button>
                                                 </Tooltip>
                                             }
                                         </td>
