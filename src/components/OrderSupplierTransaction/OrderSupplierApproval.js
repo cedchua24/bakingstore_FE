@@ -20,6 +20,7 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 
+
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -592,10 +593,10 @@ const OrderSupplierApproval = () => {
                             <TableCell align="center" style={{ color: '#28a745' }}><h6 style={{ fontWeight: 'bold' }}>Current Stock</h6></TableCell>
                             <TableCell align="center" style={{ color: '#fd7e14' }}><h6 style={{ fontWeight: 'bold' }}>Stock Warning</h6></TableCell>
                             <TableCell align="center" style={{ backgroundColor: '#FFFAF0' }}><h6 style={{ fontWeight: 'bold' }}></h6></TableCell>
-                            <TableCell align="center" style={{ color: '#007bff' }}><h6 style={{ fontWeight: 'bold' }}>Last 15 days</h6></TableCell>
-                            <TableCell align="center" style={{ color: '#20c997' }}><h6 style={{ fontWeight: 'bold' }}>Last 30 days</h6></TableCell>
-                            <TableCell align="center" style={{ color: '#6f42c1' }}><h6 style={{ fontWeight: 'bold' }}>Last 2 months</h6></TableCell>
-                            <TableCell align="center" style={{ color: '#6c757d' }}><h6 style={{ fontWeight: 'bold' }}>Last Year</h6></TableCell>
+                            <TableCell align="center" style={{ color: '#007bff' }}><h6 style={{ fontWeight: 'bold' }}> <Tooltip title={orderList.last15Days + " - " + orderSupplierTransaction.created_at} >    <span>     Last 15 days   </span></Tooltip></h6></TableCell>
+                            <TableCell align="center" style={{ color: '#20c997' }}><h6 style={{ fontWeight: 'bold' }}><Tooltip title={orderList.last30Days + " - " + orderSupplierTransaction.created_at} >    <span>     Last 30 days   </span></Tooltip></h6></TableCell>
+                            <TableCell align="center" style={{ color: '#6f42c1' }}><h6 style={{ fontWeight: 'bold' }}><Tooltip title={orderList.twoMonthsAgoStart + " - " + orderList.twoMonthsAgoEnd} >    <span>    Last 2 months   </span></Tooltip></h6></TableCell>
+                            <TableCell align="center" style={{ color: '#6c757d' }}><h6 style={{ fontWeight: 'bold' }}><Tooltip title={orderList.startLastYear + " - " + orderList.endLastYear} >    <span>    Last year   </span></Tooltip></h6></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
