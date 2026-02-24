@@ -27,7 +27,7 @@ const AddOrderSupplierTransaction = (props) => {
         requestor: localStorage.getItem('name'),
         total_transaction_price: 0,
         order_date: '',
-        status: 'IN_PROGRESS',
+        status: 'PENDING',
         created_at: '',
         updated_at: ''
     });
@@ -37,6 +37,7 @@ const AddOrderSupplierTransaction = (props) => {
         'Created Transaction Details',
         'Add Product Orders',
         'Review Orders',
+        'Send to Supplier',
         'Receive Orders',
     ];
 

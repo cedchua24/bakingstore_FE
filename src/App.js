@@ -62,6 +62,8 @@ import ProductSupplierListV2 from "./components/ProductSupplier/ProductSupplierL
 import AddProductOrderSupplierTransaction from "./components/OrderSupplierTransaction/AddProductOrderSupplierTransaction";
 import BranchStock from "./components/OrderSupplierTransaction/BranchStock";
 import FinalizeOrder from "./components/OrderSupplierTransaction/FinalizeOrder";
+import SendToSupplier from "./components/OrderSupplierTransaction/SendToSupplier";
+
 import OrderSupplierApproval from "./components/OrderSupplierTransaction/OrderSupplierApproval";
 import PrintOrderSupplier from "./components/OrderSupplierTransaction/PrintOrderSupplier";
 
@@ -341,6 +343,8 @@ const App = () => {
           <Route exact path="/editSupplierTransaction/:id" element={<EditSupplierTransaction />} />
 
           <Route exact path="/finalizeOrder/:id" element={<FinalizeOrder />} />
+          <Route exact path="/sendToSupplier/:id" element={<SendToSupplier />} />
+
           <Route exact path="/orderSupplierApproval/:id" element={<OrderSupplierApproval />} />
 
           <Route exact path="/printOrderSupplier/:id" element={<PrintOrderSupplier />} />

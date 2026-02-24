@@ -19,6 +19,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 
 import Stepper from '@mui/material/Stepper';
@@ -65,6 +66,7 @@ const OrderSupplierApproval = () => {
         'Created Transaction Details',
         'Add Product Orders',
         'Review Orders',
+        'Send to Supplier',
         'Receive Orders',
     ];
 
@@ -418,7 +420,7 @@ const OrderSupplierApproval = () => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
                 if (response.data.approval_status == 'APPROVED') {
-                    navigate('/finalizeOrder/' + id);
+                    navigate('/sendToSupplier/' + id);
                 }
             })
             .catch(e => {
@@ -426,6 +428,11 @@ const OrderSupplierApproval = () => {
                 setIsAddDisabled(false);
                 console.log(e);
             });
+    }
+
+    const nextSubmit = () => {
+        navigate('/sendToSupplier/' + id);
+
     }
 
 
@@ -663,40 +670,80 @@ const OrderSupplierApproval = () => {
             />
             <br></br>
             <br></br>
-            <InputLabel id="demo-simple-select-label">Select Status</InputLabel>
-            <Select
-                labelId="demo-simple-select-label"
 
-                id="demo-simple-select"
-                name="approval_status"
-                label="Stock Warning Type"
-                value={orderSupplierTransaction.approval_status}
-                sx={{
-                    color: statusColor[orderSupplierTransaction.approval_status],
-                    '& .MuiSelect-icon': {
-                        color: statusColor[orderSupplierTransaction.approval_status],
-                    },
-                }}
-                onChange={onChange}
-                displayEmpty
-            >
-                <MenuItem value="PENDING" sx={{ color: "orange" }}>PENDING</MenuItem>
-                <MenuItem value="APPROVED" sx={{ color: "green" }}>APPROVED</MenuItem>
-                <MenuItem value="REJECTED" sx={{ color: "red" }}>REJECTED</MenuItem>
-            </Select>
+            {orderSupplierTransaction.status == 'COMPLETED' ?
+                <>
+                    <TextField
+                        label="Status"
+                        value="Approved"
+
+                        InputProps={{
+                            readOnly: true,
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <CheckCircleIcon color="success" />
+                                </InputAdornment>
+                            ),
+                        }}
+                        disabled
+                    />
+                    <br></br>
+                    <br></br>
+                    <InputLabel id="demo-simple-select-label">Note</InputLabel>
+                    <TextareaAutosize
+                        maxRows={4}
+                        aria-label="Note"
+                        placeholder="Note"
+                        name="note"
+                        value={orderSupplierTransaction.note}
+                        onChange={onChange}
+                        style={{ width: 500, height: 150 }}
+                        disabled
+                    />
+                </> :
+                <>
+
+                    <InputLabel id="demo-simple-select-label">Select Status</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-label"
+
+                        id="demo-simple-select"
+                        name="approval_status"
+                        label="Stock Warning Type"
+                        value={orderSupplierTransaction.approval_status}
+                        sx={{
+                            color: statusColor[orderSupplierTransaction.approval_status],
+                            '& .MuiSelect-icon': {
+                                color: statusColor[orderSupplierTransaction.approval_status],
+                            },
+                        }}
+                        onChange={onChange}
+                        displayEmpty
+                        disabled={orderSupplierTransaction.status == 'COMPLETED'}
+                    >
+                        <MenuItem value="PENDING" sx={{ color: "orange" }}>PENDING</MenuItem>
+                        <MenuItem value="APPROVED" sx={{ color: "green" }}>APPROVED</MenuItem>
+                        <MenuItem value="REJECTED" sx={{ color: "red" }}>REJECTED</MenuItem>
+                    </Select>
+                    <br></br>
+                    <br></br>
+                    <InputLabel id="demo-simple-select-label">Note</InputLabel>
+                    <TextareaAutosize
+                        maxRows={4}
+                        aria-label="Note"
+                        placeholder="Note"
+                        name="note"
+                        value={orderSupplierTransaction.note}
+                        onChange={onChange}
+                        style={{ width: 500, height: 150 }}
+                    />
+                </>
+            }
+
+
+
             <br></br>
-            <br></br>
-            <InputLabel id="demo-simple-select-label">Note</InputLabel>
-            <TextareaAutosize
-                maxRows={4}
-                aria-label="Note"
-                placeholder="Note"
-                name="note"
-                value={orderSupplierTransaction.note}
-                onChange={onChange}
-                style={{ width: 500, height: 150 }}
-            />
-            <br></br>
+
             <Box
                 sx={{
                     display: 'flex',
@@ -705,17 +752,33 @@ const OrderSupplierApproval = () => {
 
                 }}
             >
-                <Button
-                    disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                    variant="contained"
-                    type="submit"
-                    onClick={submitApproval}
-                    color="success"
-                    size="large" >
-                    Submit and Next
-                </Button>
+                {orderSupplierTransaction.status == 'COMPLETED' ?
+                    <>
+                        <Button
+                            variant="contained"
+                            size="large"
+                            onClick={nextSubmit}
+                        >
+                            Next
+                        </Button>
+                    </> :
+                    <>
+                        <Button
+                            disabled={orderSupplierTransaction.status == 'COMPLETED'}
+                            variant="contained"
+                            type="submit"
+                            onClick={submitApproval}
+                            color="success"
+                            size="large" >
+                            Submit and Next
+                        </Button>
+                    </>
+                }
+
 
             </Box>
+
+
             <br></br>
             <br></br>
             <br></br>

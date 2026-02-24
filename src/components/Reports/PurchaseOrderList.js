@@ -119,10 +119,13 @@ const PurchaseOrderList = () => {
         }).format(value).replace(/(\.|,)00$/g, '');
 
     const statusColor = {
-        PENDING: '#ed6c02',   // orange
+        PENDING: '#ed6c02',
+        SEND_TO_SUPPLIER: '#0225ed',  // orange
         APPROVED: '#2e7d32',  // green
+        COMPLETED: '#2e7d32',  // green
         REJECTED: '#d32f2f',  // red
     };
+
 
 
 
@@ -151,6 +154,7 @@ const PurchaseOrderList = () => {
                         <th>Requestor</th>
                         <th>Approver</th>
                         <th>Approval Status</th>
+                        <th>Date Send to Supplier</th>
                         <th>Date Draft</th>
                         <th>Date Received</th>
                         <th>Delivery Status</th>
@@ -182,10 +186,10 @@ const PurchaseOrderList = () => {
                                     {orderTransaction.approval_status}
                                 </td>
                                 <td>{orderTransaction.created_at}</td>
+                                <td>{orderTransaction.send_date}</td>
                                 <td>{orderTransaction.order_date}</td>
-                                <td>{orderTransaction.status === 'COMPLETED' ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                    : orderTransaction.status === 'IN_PROGRESS' ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                        <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
+                                <td style={{ color: statusColor[orderTransaction.status], fontWeight: 'bold' }}>
+                                    {orderTransaction.status}
                                 </td>
                                 <td>{orderTransaction.payment_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p>}
@@ -254,7 +258,7 @@ const PurchaseOrderList = () => {
                                             </Button>
                                         </Link>
                                     </td>
-                                    {orderTransaction.total_transaction_price == 0 && orderTransaction.payment_status != 1 && orderTransaction.status === 'IN_PROGRESS' &&
+                                    {orderTransaction.total_transaction_price == 0 && orderTransaction.payment_status != 1 && orderTransaction.status === 'PENDING' &&
                                         <td>
                                             <Button variant="danger" onClick={(e) => openDelete(orderTransaction.id, e)} >
                                                 Delete
