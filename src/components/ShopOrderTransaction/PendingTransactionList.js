@@ -517,6 +517,7 @@ const PendingTransactionList = () => {
                                 <th>Total Quantity</th>
                                 <th>Total Cash</th>
                                 <th>Total Online</th>
+                                <th>Bank</th>
                                 <th>Total Amount</th>
                                 <th>Profit</th>
                                 <th>Date</th>
@@ -543,6 +544,17 @@ const PendingTransactionList = () => {
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                         <td>{shopOrderTransaction.total_cash}</td>
                                         <td>{shopOrderTransaction.total_online}</td>
+                                        <td>{
+                                            shopOrderTransaction.mode_of_payment.map((sot, index) => (
+                                                <>
+                                                    <tr>
+                                                        <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
+                                                        <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
+                                                    </tr>
+                                                </>
+                                            )
+                                            )
+                                        }</td>
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                         {
                                             role == 2 && (
