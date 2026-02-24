@@ -130,6 +130,7 @@ const AddProductOrderSupplierTransaction = () => {
         'Created Transaction Details',
         'Add Product Orders',
         'Review Orders',
+        'Send to Supplier',
         'Receive Orders',
     ];
 

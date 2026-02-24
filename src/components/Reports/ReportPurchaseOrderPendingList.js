@@ -98,8 +98,10 @@ const ReportPurchaseOrderPendingList = () => {
         }).format(value).replace(/(\.|,)00$/g, '');
 
     const statusColor = {
-        PENDING: '#ed6c02',   // orange
+        PENDING: '#ed6c02',
+        SEND_TO_SUPPLIER: '#0225ed',  // orange
         APPROVED: '#2e7d32',  // green
+        COMPLETED: '#2e7d32',  // green
         REJECTED: '#d32f2f',  // red
     };
 
@@ -155,6 +157,7 @@ const ReportPurchaseOrderPendingList = () => {
                             <th>Approver</th>
                             <th>Approval Status</th>
                             <th>Date Draft</th>
+                            <th>Date Send to Supplier</th>
                             <th>Date Received</th>
                             <th>Delivery Status</th>
                             <th>Payment Status</th>
@@ -181,10 +184,10 @@ const ReportPurchaseOrderPendingList = () => {
                                         {orderTransaction.approval_status}
                                     </td>
                                     <td>{orderTransaction.created_at.split(' ')[0]}</td>
+                                    <td>{orderTransaction.send_date}</td>
                                     <td>{orderTransaction.order_date}</td>
-                                    <td>{orderTransaction.status === 'COMPLETED' ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                        : orderTransaction.status === 'IN_PROGRESS' ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                            <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
+                                    <td style={{ color: statusColor[orderTransaction.status], fontWeight: 'bold' }}>
+                                        {orderTransaction.status}
                                     </td>
                                     <td>{orderTransaction.payment_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                         : <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p>}

@@ -42,7 +42,7 @@ const EditSupplierTransaction = () => {
         total_transaction_price: 0,
         order_date: '',
         invoice_number: '',
-        status: 'IN_PROGRESS',
+        status: 'PENDING',
         created_at: '',
         updated_at: ''
     });

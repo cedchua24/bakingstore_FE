@@ -19,13 +19,12 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import LinearProgress from '@mui/material/LinearProgress';
-
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import FormControl from '@mui/material/FormControl';
 import Autocomplete from '@mui/material/Autocomplete';
 import InputLabel from '@mui/material/InputLabel';
@@ -47,7 +46,7 @@ import Typography from '@mui/material/Typography'
 
 
 
-const FinalizeOrder = () => {
+const SendToSupplier = () => {
 
 
     const { id } = useParams();
@@ -115,6 +114,7 @@ const FinalizeOrder = () => {
         approval_status: '',
         note: '',
         order_date: '',
+        send_date: '',
         created_at: '',
         updated_at: ''
     });
@@ -392,17 +392,23 @@ const FinalizeOrder = () => {
     const updateOrderTransaction = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        OrderSupplierTransactionService.setToCompleteTransaction(id)
+        OrderSupplierTransactionService.setSendtoSupplierStatus(orderSupplierTransaction)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-                navigate('/supplierTransactionList/');
+                if (response.data.status === 'SEND_TO_SUPPLIER') {
+                    navigate('/finalizeOrder/' + id);
+                }
             })
             .catch(e => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
                 console.log(e);
             });
+    }
+
+    const nextSubmit = () => {
+        navigate('/finalizeOrder/' + id);
     }
 
     const submitApproval = () => {
@@ -506,7 +512,6 @@ const FinalizeOrder = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
-
     return (
         <div>
             {message &&
@@ -531,7 +536,7 @@ const FinalizeOrder = () => {
                 noValidate
                 autoComplete="off"
             >
-                <Stepper activeStep={4} alternativeLabel>
+                <Stepper activeStep={3} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
                             <StepLabel>{label}</StepLabel>
@@ -583,18 +588,7 @@ const FinalizeOrder = () => {
                                 <TableCell align="right">{row.total_price}</TableCell>
                             </TableRow>
                         ))}
-                        {/* 
-                        <TableRow>
 
-                            <TableCell rowSpan={4} />
-                            <TableCell colSpan={4}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
-                        </TableRow> */}
-                        {/* <TableRow>
-                            <TableCell>Tax</TableCell>
-                            <TableCell align="right" colSpan={3}>{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow> */}
                         <TableRow>
                             <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }} colSpan={3}>{numberFormat(invoiceTotal)}</TableCell>
@@ -610,112 +604,95 @@ const FinalizeOrder = () => {
             }
             <br></br>
             <br></br>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
 
-                {
-                    orderSupplierTransaction.approval_status == 'APPROVED' && orderSupplierTransaction.status == 'SEND_TO_SUPPLIER' ?
-                        <>
-
-                            <Button
-                                disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                                variant="contained"
-                                type="submit"
-                                onClick={updateOrderTransaction}
-                                color="success"
-                                size="large" >
-                                Received Orders
-                            </Button>
-
-
-                        </>
-                        :
-                        <>
-                            <TextField
-                                label="Status"
-                                value="Received Orders"
-
-                                InputProps={{
-                                    readOnly: true,
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <CheckCircleIcon color="success" />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                                disabled
-                            />
-                        </>
-
-
-                }
-            </Box>
-
-
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Product
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <br></br>
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Amount</InputLabel>
-                        <Input
-                            id="filled-required"
-                            label="Amount"
-                            variant="filled"
-                            name='amount'
-                            value={modeOfPaymentModal.amount}
-                            onChange={onChangeInputPriceModal}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-
-
-
+            {
+                orderSupplierTransaction.approval_status == 'APPROVED' &&
+                <>
                     <Box
                         sx={{
                             display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
+                            flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center',
                         }}
                     >
-                        <Button
-                            disabled={modeOfPaymentDTO.balance != 0}
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
+
+                        {
+                            orderSupplierTransaction.status == 'COMPLETED' ?
+                                <>
+                                    <TextField
+                                        label="Status"
+                                        value="Sent to Supplier"
+
+                                        InputProps={{
+                                            readOnly: true,
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <CheckCircleIcon color="success" />
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                        disabled
+                                    />
+                                    <Box sx={{ width: '100%', textAlign: 'center', mt: 2 }}>
+                                        <Button
+                                            variant="contained"
+                                            size="large"
+                                            onClick={nextSubmit}
+                                        >
+                                            Next
+                                        </Button>
+                                    </Box>
+                                </> : <>
+
+                                    <InputLabel id="demo-simple-select-label" >Select Order Status</InputLabel>
+                                    <Select
+                                        labelId="demo-simple-select-label"
+                                        id="demo-simple-select"
+                                        name="status"
+                                        value={orderSupplierTransaction.status}
+                                        onChange={onChange}
+                                        displayEmpty
+                                    >
+                                        <MenuItem value="PENDING" >PENDING</MenuItem>
+                                        <MenuItem value="SEND_TO_SUPPLIER" >SEND TO SUPPLIER</MenuItem>
+                                    </Select>
+                                    <br></br>
+                                    <Form.Group controlId="dateFrom">
+                                        <Form.Label>Date Sent</Form.Label>
+                                        <Form.Control
+                                            type="date"
+                                            value={orderSupplierTransaction.send_date}
+                                            name="send_date"
+                                            onChange={onChange}
+                                        />
+                                    </Form.Group>
+
+                                    <Box sx={{ width: '100%', textAlign: 'center', mt: 2 }}>
+                                        <Button
+                                            disabled={orderSupplierTransaction.status == 'COMPLETED'}
+                                            variant="contained"
+                                            size="large"
+                                            color="success"
+                                            onClick={updateOrderTransaction}
+                                        >
+                                            Submit and Next
+                                        </Button>
+                                    </Box>
+                                </>
+                        }
                     </Box>
-                </Box>
-            </Modal>
+                </>
+
+            }
+
+
             <br></br>
             <br></br>
         </div >
     )
 }
 
-export default FinalizeOrder
+export default SendToSupplier
 
 
 
