@@ -284,7 +284,7 @@ const ReportPurchaseOrderList = () => {
                                     <td style={{ color: statusColor[orderTransaction.approval_status], fontWeight: 'bold' }}>
                                         {orderTransaction.approval_status}
                                     </td>
-                                    {/* <td>{orderTransaction.created_at.split(' ')[0]}</td> */}
+
                                     <td>{orderTransaction.created_at}
                                         {orderTransaction.status === 'PENDING' &&
                                             <IconButton>

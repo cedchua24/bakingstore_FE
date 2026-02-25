@@ -10,7 +10,7 @@ import Modal from '@mui/material/Modal';
 import IconButton from '@mui/material/IconButton';
 import UpdateIcon from '@mui/icons-material/Update';
 
-const ReportPurchaseOrderApproval = () => {
+const ReportPurchaseOrderPendingSupplier = () => {
 
     useEffect(() => {
         fetchOrderTransactionList();
@@ -96,7 +96,7 @@ const ReportPurchaseOrderApproval = () => {
 
 
     const fetchOrderTransactionList = () => {
-        OrderSupplierTransactionService.fetchPendingApproval()
+        OrderSupplierTransactionService.fetchPendingPOSupplier()
             .then(response => {
                 setOrderTransactionList(response.data);
             })
@@ -134,7 +134,7 @@ const ReportPurchaseOrderApproval = () => {
             console.log("Ready for saving: ");
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            OrderSupplierTransactionService.fetchPendingApproval(customerOrderDate)
+            OrderSupplierTransactionService.fetchPendingPOSupplier(customerOrderDate)
                 .then(response => {
                     setOrderTransactionList(response.data);
                     setSubmitLoadingAdd(false);
@@ -205,7 +205,7 @@ const ReportPurchaseOrderApproval = () => {
 
 
             <div >
-                <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order Pending Approval </legend>
+                <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order On-Process Supplier List</legend>
                 <table class="table table-bordered">
                     <thead class="table-dark">
                         <tr class="table-secondary">
@@ -244,7 +244,10 @@ const ReportPurchaseOrderApproval = () => {
                                         {orderTransaction.approval_status}
                                     </td>
                                     {/* <td>{orderTransaction.created_at.split(' ')[0]}</td> */}
+
                                     <td>{orderTransaction.created_at}
+
+
                                         {orderTransaction.status === 'PENDING' &&
                                             <IconButton>
                                                 <UpdateIcon color="primary" onClick={(e) => handleOpen(orderTransaction.id, e)} />
@@ -360,4 +363,4 @@ const ReportPurchaseOrderApproval = () => {
     )
 }
 
-export default ReportPurchaseOrderApproval
+export default ReportPurchaseOrderPendingSupplier

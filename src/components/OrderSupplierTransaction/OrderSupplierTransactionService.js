@@ -34,6 +34,9 @@ class OrderSupplierTransactionService {
     fetchPendingApproval(data) {
         return axios.post("/api/orderSupplierTransaction/fetchPendingApproval", data);
     }
+    fetchPendingPOSupplier(data) {
+        return axios.post("/api/orderSupplierTransaction/fetchPendingPOSupplier", data);
+    }
     fetchAllOrderSupplier(data) {
         return axios.post("/api/orderSupplierTransaction/fetchAllOrderSupplier", data);
     }

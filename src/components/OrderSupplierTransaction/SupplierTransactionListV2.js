@@ -239,15 +239,15 @@ const SupplierTransactionListV2 = () => {
                                         {orderTransaction.approval_status}
                                     </td>
                                     {/* <td>{orderTransaction.created_at.split(' ')[0]}</td> */}
-                                    <td>{orderTransaction.created_at}
-                                        {orderTransaction.status === 'PENDING' &&
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(orderTransaction.id, e)} />
-                                            </IconButton>
-                                        }
-                                    </td>
-                                    <td>{orderTransaction.order_date}
-                                    </td>
+                                    <td>{orderTransaction.created_at}  </td>
+                                    {orderTransaction.status === 'PENDING' &&
+                                        <IconButton>
+                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(orderTransaction.id, e)} />
+                                        </IconButton>
+                                    }
+
+                                    <td>{orderTransaction.order_date}  </td>
+
 
                                     <td style={{ color: statusColor[orderTransaction.status], fontWeight: 'bold' }}>
                                         {orderTransaction.status}
@@ -269,7 +269,7 @@ const SupplierTransactionListV2 = () => {
 
                                     }</td>
                                     {/* <td>{orderTransaction.stock_status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td> */}
-                                    <td>
+                                    < td >
                                         <Link variant="primary" to={"/editSupplierTransaction/" + orderTransaction.id}   >
                                             <Button variant="warning" >
                                                 Update Invoice
@@ -334,7 +334,7 @@ const SupplierTransactionListV2 = () => {
                         }
                     </tbody>
                 </table>
-            </div>
+            </div >
             <Dialog
                 open={deleteOpenModal}
                 onClose={handleDeleteCloseModal}

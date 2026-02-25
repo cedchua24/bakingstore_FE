@@ -154,8 +154,8 @@ const PurchaseOrderList = () => {
                         <th>Requestor</th>
                         <th>Approver</th>
                         <th>Approval Status</th>
-                        <th>Date Send to Supplier</th>
                         <th>Date Draft</th>
+                        <th>Date Send to Supplier</th>
                         <th>Date Received</th>
                         <th>Delivery Status</th>
                         <th>Payment Status</th>
