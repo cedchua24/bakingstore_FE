@@ -656,6 +656,11 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
+            "name": "PO On-Process Supplier List",
+            "url": "/reports/reportPurchaseOrderPendingSupplier",
+            "icon": <ListIcon />
+        },
+        {
             "name": "PO Pending Approval List",
             "url": "/reports/reportPurchaseOrderApproval",
             "icon": <ListIcon />
