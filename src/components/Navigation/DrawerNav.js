@@ -548,16 +548,41 @@ export default function PersistentDrawerLeft() {
     ]);
 
     const [expense, setExpense] = useState([
+        // {
+        //     "name": "Add Expense",
+        //     "url": "/expenses",
+        //     "icon": <AddIcon />
+        // },
+        // {
+        //     "name": "Add Expense Type",
+        //     "url": "/expensesType",
+        //     "icon": <ListIcon />
+        // },
         {
-            "name": "Add Expense",
-            "url": "/expenses",
+            "name": "Expense Type",
+            "url": "/expensesV2/addExpenseTypeV2",
             "icon": <AddIcon />
         },
         {
-            "name": "Add Expense Type",
-            "url": "/expensesType",
-            "icon": <ListIcon />
+            "name": "Expense Category",
+            "url": "/expensesV2/addExpenseCategoryV2",
+            "icon": <AddIcon />
         },
+        {
+            "name": "Expenses",
+            "url": "/expensesV2/addExpenseV2",
+            "icon": <AddIcon />
+        },
+        {
+            "name": "Expense Transaction",
+            "url": "/expensesV2/expenseTransaction",
+            "icon": <AddIcon />
+        },
+
+
+
+
+
 
     ]);
 

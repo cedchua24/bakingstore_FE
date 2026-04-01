@@ -146,10 +146,51 @@ const ReportList = () => {
             <div style={{ float: 'right', marginRight: 200 }}>
                 <Form>
 
-                    <Form.Group className="w-10 mb-3" controlId="formBasicEmail" disabled>
+                    {/* <Form.Group className="w-10 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label> Expenses: </Form.Label>
                         <Form.Control type="text" value={numberFormat(shopOrderTransaction.expenses_mandatory)} />
+                    </Form.Group> */}
+
+                    <Form.Group className="w-10 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label> Average Transaction Per Day: </Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={
+                                shopOrderTransaction?.data && shopOrderTransaction?.total_count
+                                    ? (shopOrderTransaction.total_count / shopOrderTransaction.data.length)
+                                    : 0
+                            }
+                        />
                     </Form.Group>
+
+                    <Form.Group className="w-10 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label> Average Sales Per Day: </Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={
+                                shopOrderTransaction?.data && shopOrderTransaction?.total_sales
+                                    ? numberFormat(shopOrderTransaction.total_sales / shopOrderTransaction.data.length)
+                                    : numberFormat(0)
+                            }
+                        />
+                    </Form.Group>
+                    {
+                        role == 2 && (
+                            <>
+                                <Form.Group className="w-10 mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label> Average Profit Per Day: </Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={
+                                            shopOrderTransaction?.data && shopOrderTransaction?.total_profit
+                                                ? numberFormat(shopOrderTransaction.total_profit / shopOrderTransaction.data.length)
+                                                : numberFormat(0)
+                                        }
+                                    />
+                                </Form.Group>
+                            </>
+                        )
+                    }
                 </Form >
             </div>
             <div>
@@ -165,6 +206,10 @@ const ReportList = () => {
                         <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
                     </Form.Group>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label>Total Transaction Count: </Form.Label>
+                        <Form.Control type="text" value={shopOrderTransaction.total_count} />
+                    </Form.Group>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
                         <Form.Label>Total Cash Payment: </Form.Label>
                         <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash)} />
                     </Form.Group>
@@ -178,10 +223,23 @@ const ReportList = () => {
                     </Form.Group>
                     {
                         role == 2 && (
-                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label>Total Profit: </Form.Label>
-                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
-                            </Form.Group>
+                            <>
+                                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Total Profit: </Form.Label>
+                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
+                                </Form.Group>
+                                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
+                                    <Form.Label>Profit Percentage: </Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={
+                                            shopOrderTransaction.total_sales
+                                                ? ((shopOrderTransaction.total_profit / shopOrderTransaction.total_sales) * 100).toFixed(2) + "%"
+                                                : "0.00%"
+                                        }
+                                    />
+                                </Form.Group>
+                            </>
                         )
                     }
 
@@ -197,7 +255,8 @@ const ReportList = () => {
                 </Form >
 
             </div>
-            {showGraph &&
+            {
+                showGraph &&
                 <>
                     <legend align="center" style={{ fontWeight: 'bold' }} > Bar Graph  </legend>
                     <ReportBar
@@ -239,7 +298,7 @@ const ReportList = () => {
                                 }
                                 <td>
 
-                                    <Link variant="primary" to={"/shopOrderTransaction/transactionReportList/" + shopOrderTransaction.date}   >
+                                    <Link variant="primary" to={"/shopOrderTransaction/customerOrderTransactionList/" + shopOrderTransaction.date}   >
                                         <Button variant="primary" >
                                             View Transaction
                                         </Button>

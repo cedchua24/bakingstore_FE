@@ -33,7 +33,19 @@ import PaymentTypeList from "./components/PaymentType/PaymentTypeList";
 import EditPaymentType from "./components/PaymentType/EditPaymentType";
 import PoPaymentType from "./components/PaymentType/PoPaymentType";
 import PoPaymentTypeList from "./components/PaymentType/PoPaymentTypeList";
+import BalanceHistory from "./components/PaymentType/BalanceHistory";
+
 import PoEditPaymentType from "./components/PaymentType/PoEditPaymentType";
+
+import AddExpenseTypeV2 from "./components/ExpensesV2/AddExpenseTypeV2";
+import AddExpenseCategoryV2 from "./components/ExpensesV2/AddExpenseCategoryV2";
+import AddExpenseV2 from "./components/ExpensesV2/AddExpenseV2";
+import ExpenseTransaction from "./components/ExpensesV2/ExpenseTransaction";
+import EditExpenseTransaction from "./components/ExpensesV2/EditExpenseTransaction";
+
+
+
+
 
 import AddCategory from "./components/Category/AddCategory";
 import CategoryList from "./components/Category/CategoryList";
@@ -319,6 +331,8 @@ const App = () => {
 
           <Route path="/poPaymentType" element={<PoPaymentType />} />
           <Route path="/poPaymentTypeList" element={<PoPaymentTypeList />} />
+          <Route exact path="/balanceHistory/:id" element={<BalanceHistory />} />
+
           <Route exact path="/poEditPaymentType/:id" element={<PoEditPaymentType />} />
 
           <Route path="/supplier" element={<Supplier />} />
@@ -333,6 +347,17 @@ const App = () => {
 
           <Route path="/productSupplier" element={<ProductSupplier />} />
           <Route path="/productSupplierList" element={<ProductSupplierListV2 />} />
+
+
+          <Route path="/expensesV2/addExpenseTypeV2" element={<AddExpenseTypeV2 />} />
+          <Route path="/expensesV2/addExpenseCategoryV2" element={<AddExpenseCategoryV2 />} />
+          <Route path="/expensesV2/addExpenseV2" element={<AddExpenseV2 />} />
+          <Route path="/expensesV2/expenseTransaction" element={<ExpenseTransaction />} />
+          <Route path="/expensesV2/editExpenseTransaction/:id" element={<EditExpenseTransaction />} />
+
+
+
+
 
           <Route path="/addCategory" element={<AddCategory />} />
           <Route path="/categoryList" element={<CategoryList />} />
