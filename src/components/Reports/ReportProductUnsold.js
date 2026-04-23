@@ -209,7 +209,15 @@ const ReportProductUnsold = () => {
                                         <td>{data.stock}</td>
                                         <td>{data.stock_pc}</td>
                                         <td>{numberFormat(data.total_value)}</td>
-                                        <td>{covertDateString(data.last_sold_at)}</td>
+                                        <td>
+                                            {data.last_sold_at ? (
+                                                covertDateString(data.last_sold_at)
+                                            ) : (
+                                                <span style={{ color: 'red', fontWeight: 'bold' }}>
+                                                    No Sales Ever!
+                                                </span>
+                                            )}
+                                        </td>
                                     </tr>
                                 )
                                 )
