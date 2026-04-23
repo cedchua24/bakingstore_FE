@@ -43,6 +43,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
 
+import MoneyOffIcon from '@mui/icons-material/MoneyOff';
+import CurrencyFrancIcon from '@mui/icons-material/CurrencyFranc';
+import CurrencyLiraIcon from '@mui/icons-material/CurrencyLira';
+import CurrencyPoundIcon from '@mui/icons-material/CurrencyPound';
+import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
@@ -550,16 +555,41 @@ export default function PersistentDrawerLeft() {
     ]);
 
     const [expense, setExpense] = useState([
-        {
-            "name": "Add Expense",
-            "url": "/expenses",
-            "icon": <AddIcon />
-        },
-        {
-            "name": "Add Expense Type",
-            "url": "/expensesType",
-            "icon": <ListIcon />
-        },
+        // {
+        //     "name": "Add Expense",
+        //     "url": "/expenses",
+        //     "icon": <AddIcon />
+        // },
+        // {
+        //     "name": "Add Expense Type",
+        //     "url": "/expensesType",
+        //     "icon": <ListIcon />
+        // },
+        // {
+        //     "name": "Expense Type",
+        //     "url": "/expensesV2/addExpenseTypeV2",
+        //     "icon": <AddIcon />
+        // },
+        // {
+        //     "name": "Expense Category",
+        //     "url": "/expensesV2/addExpenseCategoryV2",
+        //     "icon": <AddIcon />
+        // },
+        // {
+        //     "name": "Expenses",
+        //     "url": "/expensesV2/addExpenseV2",
+        //     "icon": <AddIcon />
+        // },
+        // {
+        //     "name": "Expense Transaction",
+        //     "url": "/expensesV2/expenseTransaction",
+        //     "icon": <AddIcon />
+        // },
+
+
+
+
+
 
     ]);
 
@@ -638,7 +668,13 @@ export default function PersistentDrawerLeft() {
             "name": "Pending Pick Up List",
             "url": "/shopOrderTransaction/pendingPickUp",
             "icon": <ListIcon />
+        },
+        {
+            "name": "Pending/Floated Product",
+            "url": "/shopOrderTransaction/pendingProduct",
+            "icon": <ListIcon />
         }
+
     ]);
 
     const [purchaseOrderReportList, setPurchaseOrderReportList] = useState([
@@ -698,11 +734,86 @@ export default function PersistentDrawerLeft() {
     ]);
 
     const [expenseReportList, setExpenseReportList] = useState([
+        // {
+        //     "name": "Expenses List",
+        //     "url": "/reports/reportExpenses",
+        //     "icon": <ListIcon />
+        // },
         {
-            "name": "Expenses List",
-            "url": "/reports/reportExpenses",
+            "name": "Expenses Transaction",
+            "url": "/reports/reportExpenseTransaction",
             "icon": <ListIcon />
         },
+    ]);
+
+    const [expenseTypeList, setExpenseTypeList] = useState([
+        {
+            "name": "Add Expense Type",
+            "url": "/expensesV2/addExpenseTypeV2",
+            "icon": <AddIcon />
+        }
+        ,
+        {
+            "name": "Expense Type List",
+            "url": "/expensesV2/expenseTypeList",
+            "icon": <ListIcon />
+        }
+
+    ]);
+
+    const [expenseCategoryList, setExpenseCategoryList] = useState([
+        {
+            "name": "Add Expense Category",
+            "url": "/expensesV2/addExpenseCategoryV2",
+            "icon": <AddIcon />
+        }
+        ,
+        {
+            "name": "Expense Category List",
+            "url": "/expensesV2/viewExpenseCategory",
+            "icon": <ListIcon />
+        }
+
+    ]);
+
+    const [expenseV2List, setExpenseV2List] = useState([
+        {
+            "name": "Add Expense",
+            "url": "/expensesV2/addExpenseV2",
+            "icon": <AddIcon />
+        }
+        ,
+        {
+            "name": "Expense List",
+            "url": "/expensesV2/viewExpense",
+            "icon": <ListIcon />
+        }
+
+    ]);
+
+
+
+    const [expenseTransactionList, setExpenseTransactionList] = useState([
+        {
+            "name": "Add Expense Transaction",
+            "url": "/expensesV2/expenseTransaction",
+            "icon": <AddIcon />
+        },
+        {
+            "name": "Pending Approval Expense",
+            "url": "/expensesV2/viewExpenseTransactionApproval",
+            "icon": <ListIcon />
+        }
+        ,
+        {
+            "name": "Expense Transaction List",
+            "url": "/expensesV2/viewExpenseTransaction",
+            "icon": <ListIcon />
+        }
+
+
+
+
     ]);
 
     const [productReportList, setProductReportList] = useState([
@@ -712,10 +823,16 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
+            "name": "Product UnSold Record List",
+            "url": "/reports/reportProductUnsold",
+            "icon": <ListIcon />
+        },
+        {
             "name": "Product Capital Record List",
             "url": "/reports/productValueReport",
             "icon": <ListIcon />
         },
+
     ]);
 
     const [categoryReportList, setCategoryReportList] = useState([
@@ -828,6 +945,31 @@ export default function PersistentDrawerLeft() {
         });
 
     }
+
+    //Expense
+    // Expense Type
+    const [openExpenseType, setOpenExpenseType] = React.useState(false);
+    const handleClickExpenseType = () => {
+        setOpenExpenseType(!openExpenseType);
+    };
+
+    // Expense Category
+    const [openExpenseCategory, setOpenExpenseCategory] = React.useState(false);
+    const handleClickExpenseCategory = () => {
+        setOpenExpenseCategory(!openExpenseCategory);
+    };
+
+    // Expense V2 
+    const [openExpenseV2, setOpenExpenseV2] = React.useState(false);
+    const handleClickExpenseV2 = () => {
+        setOpenExpenseV2(!openExpenseV2);
+    };
+
+    // Expense Transaction
+    const [openExpenseTransaction, setOpenExpenseTransaction] = React.useState(false);
+    const handleClickExpenseTransaction = () => {
+        setOpenExpenseTransaction(!openExpenseTransaction);
+    };
 
     //Report
     const [openReport, setOpenReport] = React.useState(false);
@@ -1513,7 +1655,99 @@ export default function PersistentDrawerLeft() {
                                     </ListItemButton>
                                 </ListItem>
                             ))}
+
+                            {/* Expense Type */}
+                            <ListItemButton sx={{ pl: 4 }} onClick={handleClickExpenseType}>
+                                <ListItemIcon>
+                                    <CurrencyFrancIcon color="success" />
+                                </ListItemIcon>
+                                <ListItemText primary="Expense Type" />
+                                {openExpenseType ? <ExpandLess /> : <ExpandMore />}
+                            </ListItemButton>
+
+                            <Collapse in={openExpenseType} timeout="auto" unmountOnExit>
+                                {expenseTypeList.map((nav, index) => (
+                                    <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                        <ListItemButton sx={{ pl: 6 }}>
+                                            <ListItemIcon>
+                                                {nav.icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </Collapse>
+
+                            {/* Expense Category */}
+
+                            <ListItemButton sx={{ pl: 4 }} onClick={handleClickExpenseCategory}>
+                                <ListItemIcon>
+                                    <CurrencyLiraIcon color="success" />
+                                </ListItemIcon>
+                                <ListItemText primary="Expense Category" />
+                                {openExpenseCategory ? <ExpandLess /> : <ExpandMore />}
+                            </ListItemButton>
+
+                            <Collapse in={openExpenseCategory} timeout="auto" unmountOnExit>
+                                {expenseCategoryList.map((nav, index) => (
+                                    <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                        <ListItemButton sx={{ pl: 6 }}>
+                                            <ListItemIcon>
+                                                {nav.icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </Collapse>
+
+                            {/* Expense v2 */}
+
+                            <ListItemButton sx={{ pl: 4 }} onClick={handleClickExpenseV2}>
+                                <ListItemIcon>
+                                    <CurrencyPoundIcon color="success" />
+                                </ListItemIcon>
+                                <ListItemText primary="Expense" />
+                                {openExpenseV2 ? <ExpandLess /> : <ExpandMore />}
+                            </ListItemButton>
+
+                            <Collapse in={openExpenseV2} timeout="auto" unmountOnExit>
+                                {expenseV2List.map((nav, index) => (
+                                    <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                        <ListItemButton sx={{ pl: 6 }}>
+                                            <ListItemIcon>
+                                                {nav.icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </Collapse>
+
+                            {/* Expense Transaction */}
+
+                            <ListItemButton sx={{ pl: 4 }} onClick={handleClickExpenseTransaction}>
+                                <ListItemIcon>
+                                    <CurrencyRupeeIcon color="success" />
+                                </ListItemIcon>
+                                <ListItemText primary="Expense Transaction" />
+                                {openExpenseTransaction ? <ExpandLess /> : <ExpandMore />}
+                            </ListItemButton>
+
+                            <Collapse in={openExpenseTransaction} timeout="auto" unmountOnExit>
+                                {expenseTransactionList.map((nav, index) => (
+                                    <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                        <ListItemButton sx={{ pl: 6 }}>
+                                            <ListItemIcon>
+                                                {nav.icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </Collapse>
                         </List>
+
                     </Collapse>
                 </List>
 

@@ -33,7 +33,35 @@ import PaymentTypeList from "./components/PaymentType/PaymentTypeList";
 import EditPaymentType from "./components/PaymentType/EditPaymentType";
 import PoPaymentType from "./components/PaymentType/PoPaymentType";
 import PoPaymentTypeList from "./components/PaymentType/PoPaymentTypeList";
+import BalanceHistory from "./components/PaymentType/BalanceHistory";
+
 import PoEditPaymentType from "./components/PaymentType/PoEditPaymentType";
+
+import AddExpenseTypeV2 from "./components/ExpensesV2/AddExpenseTypeV2";
+import ExpenseTypeList from "./components/ExpensesV2/ExpenseTypeList";
+import ViewExpenseTypeList from "./components/ExpensesV2/ViewExpenseTypeList";
+import ViewExpenseTypeCategoryList from "./components/ExpensesV2/ViewExpenseTypeCategoryList";
+import ViewExpenseCategory from "./components/ExpensesV2/ViewExpenseCategory";
+import ViewExpense from "./components/ExpensesV2/ViewExpense";
+import ViewExpenseTransaction from "./components/ExpensesV2/ViewExpenseTransaction";
+import ViewExpenseTransactionDate from "./components/ExpensesV2/ViewExpenseTransactionDate";
+import ViewExpenseTransactionApproval from "./components/ExpensesV2/ViewExpenseTransactionApproval";
+
+
+
+
+
+
+
+
+import AddExpenseCategoryV2 from "./components/ExpensesV2/AddExpenseCategoryV2";
+import AddExpenseV2 from "./components/ExpensesV2/AddExpenseV2";
+import ExpenseTransaction from "./components/ExpensesV2/ExpenseTransaction";
+import EditExpenseTransaction from "./components/ExpensesV2/EditExpenseTransaction";
+
+
+
+
 
 import AddCategory from "./components/Category/AddCategory";
 import CategoryList from "./components/Category/CategoryList";
@@ -126,12 +154,18 @@ import ReportCustomerSorted from "./components/Reports/ReportCustomerSorted";
 import ReportProductSorted from "./components/Reports/ReportProductSorted";
 import ProductValueReport from "./components/Reports/ProductValueReport";
 import ReportCategorySales from "./components/Reports/ReportCategorySales";
+import ReportProductUnsold from "./components/Reports/ReportProductUnsold";
+
 
 
 
 import TransactionReportList from "./components/ShopOrderTransaction/TransactionReportList";
 import PendingTransactionList from "./components/ShopOrderTransaction/PendingTransactionList";
 import PendingPickUp from "./components/ShopOrderTransaction/PendingPickUp";
+import PendingProduct from "./components/ShopOrderTransaction/PendingProduct";
+import ViewPendingProduct from "./components/ShopOrderTransaction/ViewPendingProduct";
+
+
 
 import CancelTransactionList from "./components/ShopOrderTransaction/CancelTransactionList";
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
@@ -250,6 +284,8 @@ import ViewSpoilageReport from "./components/Reports/ViewSpoilageReport";
 
 import ReportExpenses from "./components/Reports/ReportExpenses";
 import ReportExpensesView from "./components/Reports/ReportExpensesView";
+import ReportExpenseTransaction from "./components/Reports/ReportExpenseTransaction";
+
 
 
 
@@ -319,6 +355,8 @@ const App = () => {
 
           <Route path="/poPaymentType" element={<PoPaymentType />} />
           <Route path="/poPaymentTypeList" element={<PoPaymentTypeList />} />
+          <Route exact path="/balanceHistory/:id" element={<BalanceHistory />} />
+
           <Route exact path="/poEditPaymentType/:id" element={<PoEditPaymentType />} />
 
           <Route path="/supplier" element={<Supplier />} />
@@ -333,6 +371,34 @@ const App = () => {
 
           <Route path="/productSupplier" element={<ProductSupplier />} />
           <Route path="/productSupplierList" element={<ProductSupplierListV2 />} />
+
+
+          <Route path="/expensesV2/addExpenseTypeV2" element={<AddExpenseTypeV2 />} />
+          <Route path="/expensesV2/expenseTypeList" element={<ExpenseTypeList />} />
+          <Route path="/expensesV2/viewExpenseTypeList/:id" element={<ViewExpenseTypeList />} />
+          <Route path="/expensesV2/viewExpenseTypeCategoryList/:id/:id2" element={<ViewExpenseTypeCategoryList />} />
+
+
+          <Route path="/expensesV2/viewExpenseCategory" element={<ViewExpenseCategory />} />
+
+          <Route path="/expensesV2/viewExpense" element={<ViewExpense />} />
+          <Route path="/expensesV2/viewExpenseTransaction" element={<ViewExpenseTransaction />} />
+          <Route path="/expensesV2/viewExpenseTransactionApproval" element={<ViewExpenseTransactionApproval />} />
+
+          <Route path="/expensesV2/viewExpenseTransactionDate/:date" element={<ViewExpenseTransactionDate />} />
+
+
+
+
+
+          <Route path="/expensesV2/addExpenseCategoryV2" element={<AddExpenseCategoryV2 />} />
+          <Route path="/expensesV2/addExpenseV2" element={<AddExpenseV2 />} />
+          <Route path="/expensesV2/expenseTransaction" element={<ExpenseTransaction />} />
+          <Route path="/expensesV2/editExpenseTransaction/:id" element={<EditExpenseTransaction />} />
+
+
+
+
 
           <Route path="/addCategory" element={<AddCategory />} />
           <Route path="/categoryList" element={<CategoryList />} />
@@ -479,6 +545,10 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/transactionReportList/:id" element={<TransactionReportList />} />
           <Route exact path="/shopOrderTransaction/pendingTransactionList/" element={<PendingTransactionList />} />
           <Route exact path="/shopOrderTransaction/pendingPickUp/" element={<PendingPickUp />} />
+          <Route exact path="/shopOrderTransaction/pendingProduct/" element={<PendingProduct />} />
+          <Route exact path="/shopOrderTransaction/viewPendingProduct/:id/:status/:dateFrom/:dateTo" element={<ViewPendingProduct />} />
+
+
 
           <Route exact path="/shopOrderTransaction/cancelTransactionList/" element={<CancelTransactionList />} />
           <Route exact path="/shopOrderTransaction/finalizeShopOrder/:id" element={<FinalizeShopOrder />} />
@@ -578,9 +648,14 @@ const App = () => {
           <Route exact path="/reports/reportExpensesView/:id" element={<ReportExpensesView />} />
           <Route exact path="/reports/reportCustomerSorted/" element={<ReportCustomerSorted />} />
           <Route exact path="/reports/reportProductSorted/" element={<ReportProductSorted />} />
+          <Route exact path="/reports/reportProductUnsold/" element={<ReportProductUnsold />} />
+
           <Route exact path="/reports/reportCategorySales/" element={<ReportCategorySales />} />
+          <Route exact path="/reports/reportExpenseTransaction/" element={<ReportExpenseTransaction />} />
+
 
           <Route exact path="/reports/productValueReport/" element={<ProductValueReport />} />
+
 
 
           <Route exact path="/customers/" element={<Customer />} />
