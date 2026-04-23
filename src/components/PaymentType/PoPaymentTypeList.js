@@ -19,7 +19,7 @@ const PoPaymentTypeList = (props) => {
 
     return (
         <div>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Payment Type  Supplier </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Payment Type Supplier </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
@@ -73,7 +73,14 @@ const PoPaymentTypeList = (props) => {
                                     </Link>
                                 </td>
                                 <td>
-                                    <Button variant="danger" onClick={(e) => deletePaymentType(paymentType.id, e)} >
+                                    <Link variant="primary" to={"/balanceHistory/" + paymentType.id}   >
+                                        <Button variant="primary" >
+                                            View History
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
+                                    <Button variant="danger" onClick={(e) => deletePaymentType(paymentType.id, e)} disabled>
                                         Delete
                                     </Button>
                                 </td>

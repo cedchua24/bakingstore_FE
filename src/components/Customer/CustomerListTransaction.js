@@ -85,6 +85,11 @@ const CustomerListTransaction = () => {
         return numberFormat(numbers.reduce((acc, { total_profit }) => acc + total_profit, 0));
     }
 
+    const formatStatementDate = (date) => {
+        var d = new Date(date);
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
+    }
+
 
 
 
@@ -152,6 +157,7 @@ const CustomerListTransaction = () => {
                         <th>Sales</th>
                         <th>Profit</th>
                         <th>Active</th>
+                        <th>Date Created</th>
                         <th></th>
                         <th></th>
 
@@ -179,6 +185,7 @@ const CustomerListTransaction = () => {
                                         <td>{numberFormat(customer.total_balance)}</td>
                                         <td>{numberFormat(customer.total_profit)}</td>
                                         <td>{customer.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                        <td>{formatStatementDate(customer.created_at)}</td>
                                         <td>
 
                                             <Link variant="primary" to={"/customers/customerTransactionList/" + customer.id}   >

@@ -170,7 +170,7 @@ const NoStock = (props) => {
                 console.log("error", e)
             });
     }
-
+    // formatDate
     const covertDateString = (day) => {
         var d = new Date(day);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);

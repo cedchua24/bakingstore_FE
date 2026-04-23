@@ -17,6 +17,10 @@ class ShopOrderTransactionService {
         // return axios.post("/api/customers/customerLastOrderList", data);
         return axios.post(`/api/shopOrderTransaction/fetctProductOrderTransaction/${id}`, data);
     }
+    fetctPendingProductOrderTransaction(id, data) {
+        // return axios.post("/api/customers/customerLastOrderList", data);
+        return axios.post(`/api/shopOrderTransaction/fetctPendingProductOrderTransaction/${id}`, data);
+    }
     fetchSortedProduct(id) {
         return axios.get(`/api/shopOrderTransaction/fetchSortedProduct/${id}`);
     }

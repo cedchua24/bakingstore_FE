@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import CustomerService from "../Customer/CustomerService";
 import ExpensesService from "../Expenses/ExpensesService";
+import ExpenseTransactionService from "../ExpensesV2/ExpenseTransactionService";
 import ShopService from "../Shop/ShopService";
 import DiscountService from "../OtherService/DiscountService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
@@ -50,6 +51,12 @@ const CustomerOrderTransactionList = () => {
         status: 0
     });
 
+    const [searchExpense, setSearchExpense] = useState({
+        dateFrom: id,
+        dateTo: id,
+        approval_status: 'APPROVED'
+    });
+
 
     const [role, setRole] = useState(localStorage.getItem('role_as'));
 
@@ -85,6 +92,8 @@ const CustomerOrderTransactionList = () => {
         code: '',
         message: '',
     });
+
+    const [expenseV2, setExpenseV2] = useState({});
 
     const [shop, setShop] = useState({
         id: 0,
@@ -227,6 +236,16 @@ const CustomerOrderTransactionList = () => {
             .catch(e => {
                 console.log("error", e)
             });
+
+        ExpenseTransactionService.getTotalExpense(searchExpense)
+            .then(response => {
+                setExpenseV2(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+
+
 
         ShopService.fetchShopCurrent()
             .then(response => {
@@ -688,6 +707,15 @@ const CustomerOrderTransactionList = () => {
                     </Link>
                     <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
                 </Form.Group>
+                {expenseV2.total_expense != 0 && expenseV2.total_expense != null &&
+                    <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
+                        <Form.Label> Expenses V2</Form.Label>
+                        <Link variant="primary" to={"../expensesV2/viewExpenseTransactionDate/" + customerOrderDate.date}   >
+                            <PageviewIcon color="primary" />
+                        </Link>
+                        <Form.Control type="text" value={numberFormat(expenseV2.total_expense)} />
+                    </Form.Group>
+                }
                 <br></br>
                 <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
                     <Form.Label> Spoilage</Form.Label>
@@ -736,8 +764,14 @@ const CustomerOrderTransactionList = () => {
                         </tr>
                         <tr  >
                             <td>Total Expenses: </td>
-                            <td>{numberFormat(expensesMandatory.total_expenses)}</td>
+                            <td>{numberFormat(expensesMandatory.total_expense)}</td>
                         </tr>
+                        {expenseV2.total_expense != 0 && expenseV2.total_expense != null &&
+                            <tr  >
+                                <td>Total Expenses: </td>
+                                <td>{numberFormat(expenseV2.total_expense)}</td>
+                            </tr>
+                        }
                         <tr  >
                             <td>Total Spoilage: </td>
                             <td>{numberFormat(spoilage.total_cost)}</td>

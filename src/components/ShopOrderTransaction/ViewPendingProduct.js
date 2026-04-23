@@ -2,21 +2,33 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
-import SupplierServiceService from "../Supplier/SupplierService.service";
-import ProductServiceService from "./ProductService.service";
+import ProductServiceService from "../Product/ProductService.service";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
 import LinearProgress from '@mui/material/LinearProgress';
 
-const ProductOrderTransactionList = () => {
+const ViewPendingProduct = () => {
 
 
-    const { id } = useParams();
+    const { id, status, dateFrom, dateTo } = useParams();
+
+    const safeDateFrom = dateFrom && dateFrom !== "null" ? dateFrom : "";
+    const safeDateTo = dateTo && dateTo !== "null" ? dateTo : "";
+    const safeStatus = status && status !== "null" ? status : "";
+
 
     useEffect(() => {
         fetchProduct(id);
-        fetchShopOrderTransactionList(id);
+        submitSortedCustomerList();
 
     }, []);
+
+    const [customerOrderDate, setCustomerOrderDate] = useState({
+        id: id,
+        dateFrom: safeDateFrom,
+        dateTo: safeDateTo,
+        status: safeStatus
+    });
+
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         data: [],
@@ -63,28 +75,11 @@ const ProductOrderTransactionList = () => {
     }
 
 
-
-    const fetchShopOrderTransactionList = (id) => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        ShopOrderTransactionService.fetctProductOrderTransaction(id)
-            .then(response => {
-                console.log("fetchOnlineShopOrderTransactionList :", response.data)
-                setShopOrderTransaction(response.data);
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-            })
-            .catch(e => {
-                console.log("error", e)
-
-            });
-    }
-
     const submitSortedCustomerList = () => {
 
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ShopOrderTransactionService.fetctProductOrderTransaction(id, sortedCustomer)
+        ShopOrderTransactionService.fetctPendingProductOrderTransaction(customerOrderDate.id, customerOrderDate)
             .then(response => {
                 console.log("response.data", response.data)
                 setShopOrderTransaction(response.data);
@@ -121,12 +116,12 @@ const ProductOrderTransactionList = () => {
 
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date From:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
+                    <Form.Control type="date" value={customerOrderDate.dateFrom} name="dateFrom" onChange={onChangeInput} />
                 </Form.Group>
 
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date To:</Form.Label>
-                    <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
+                    <Form.Control type="date" value={customerOrderDate.dateTo} name="dateTo" onChange={onChangeInput} />
                 </Form.Group>
                 <Button variant="primary"
                     onClick={submitSortedCustomerList}
@@ -140,7 +135,10 @@ const ProductOrderTransactionList = () => {
                     <LinearProgress color="warning" />
                 }
                 <br></br>
-
+                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Label>Payment Status:</Form.Label>
+                    <Form.Control type="text" value={status == 1 ? "COMPLETED PAYMENT" : status == 2 ? "PENDING PAYMENT" : "ALL"} disabled />
+                </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Total Count:</Form.Label>
                     <Form.Control type="text" value={totalSum(shopOrderTransaction.data)} disabled />
@@ -214,15 +212,15 @@ const ProductOrderTransactionList = () => {
 
                                             <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price != 0 ? numberFormat(shopOrderTransaction.shop_order_transaction_total_price) : ""}</td>
                                             <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}</td>
-
                                             <td>{shopOrderTransaction.date}</td>
                                             <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                                 : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                                    <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                                    <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
+                                            </td>
                                             <td>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                                 : <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p>}
                                             </td>
-                                            {/* <td style={{ color: "red" }}>{shopOrderTransaction.shop_order_quantity}</td> */}
+
                                             <td style={{ color: "red" }}>{shopOrderTransaction.business_type == 'WHOLESALE' ? shopOrderTransaction.shop_order_quantity * shopOrderTransaction.quantity : shopOrderTransaction.shop_order_quantity}</td>
                                             <td>
                                                 <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
@@ -247,4 +245,4 @@ const ProductOrderTransactionList = () => {
     )
 }
 
-export default ProductOrderTransactionList
+export default ViewPendingProduct

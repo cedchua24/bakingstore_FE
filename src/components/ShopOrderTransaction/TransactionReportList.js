@@ -646,7 +646,7 @@ const TransactionReportList = () => {
                 </Form >
             </div>
 
-            <legend align="center" style={{ fontWeight: 'bold' }} >Online Orders   </legend>
+            <legend align="center" style={{ fontWeight: 'bold' }} >Transaction Reports   </legend>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
