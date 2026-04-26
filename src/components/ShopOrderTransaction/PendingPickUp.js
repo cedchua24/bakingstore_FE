@@ -470,24 +470,7 @@ const PendingPickUp = () => {
 
     return (
         <div>
-            {/* <div style={{ float: 'right', marginRight: 500 }}>
 
-                {
-                    shopOrderTransaction.payment.map((payment, index) => (
-                        <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
-                            <Form.Control type="text" value={"₱ " + payment.total_amount} />
-                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
-                                <Button variant="primary" >
-                                    View
-                                </Button>
-                            </Link>
-                        </Form.Group>
-                    )
-                    )
-                }
-
-            </div> */}
 
             <div>
                 <Form>
@@ -666,17 +649,6 @@ const PendingPickUp = () => {
                                                 </Tooltip>
                                             }
                                         </td>
-                                        {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
-                                        deleteShopOrderTransaction
-                                    </Button>
-                                </td> */}
-
-                                        {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteOrderTransaction(shopOrderTransaction.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td> */}
                                     </tr>
                                 )
                                 )
