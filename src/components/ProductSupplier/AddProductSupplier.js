@@ -78,7 +78,7 @@ const AddProductSupplier = (props) => {
     }
 
     const fetchProduct = () => {
-        ProductService.getAll()
+        ProductService.fetchProductEnabled()
             .then(response => {
                 console.log(response.data);
                 setProducts(response.data);
@@ -165,7 +165,7 @@ const AddProductSupplier = (props) => {
             <br></br>
             <Box
                 sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
+                    '& .MuiTextField-root': { m: 1, width: '50ch' },
                 }}
                 noValidate
                 autoComplete="off"
@@ -174,14 +174,14 @@ const AddProductSupplier = (props) => {
 
                 <form onSubmit={saveProductSupplier} >
                     {formErrors.supplier_id && <p style={{ color: "red" }}>{formErrors.supplier_id}</p>}
+
                     <FormControl variant="standard" >
                         <Autocomplete
-                            // {...defaultProps}
+                            fullWidth
                             options={suppliers}
                             className="mb-3"
-                            id="disable-close-on-select"
                             onChange={handleInputSupplierChange}
-                            getOptionLabel={(suppliers) => suppliers.supplier_name}
+                            getOptionLabel={(option) => option.supplier_name}
                             renderInput={(params) => (
                                 <TextField {...params} label="Choose Supplier" variant="standard" />
                             )}
@@ -190,14 +190,23 @@ const AddProductSupplier = (props) => {
 
                     <br></br>
                     {formErrors.product_id && <p style={{ color: "red" }}>{formErrors.product_id}</p>}
-                    <FormControl variant="standard" >
+                    <FormControl variant="standard" sx={{ width: 700 }}>
                         <Autocomplete
-                            // {...defaultProps}
+                            fullWidth
                             options={products}
                             className="mb-3"
-                            id="disable-close-on-select"
                             onChange={handleInputProductChange}
-                            getOptionLabel={(products) => products.product_name}
+                            getOptionLabel={(option) => {
+                                const weightPerPiece = option.quantity > 0
+                                    ? option.weight / option.quantity
+                                    : 0;
+
+                                const formattedWeight = Number.isInteger(weightPerPiece)
+                                    ? weightPerPiece
+                                    : weightPerPiece.toFixed(2);
+
+                                return `${option.product_name} - (${formattedWeight}${option.variation} x ${option.quantity})`;
+                            }}
                             renderInput={(params) => (
                                 <TextField {...params} label="Choose Product" variant="standard" />
                             )}

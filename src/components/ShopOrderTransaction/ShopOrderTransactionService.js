@@ -54,8 +54,8 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionListByDate(date) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByDate/${date}`);
     }
-    fetchPendingPickUp(date) {
-        return axios.get(`/api/shopOrderTransaction/fetchPendingPickUp/${date}`);
+    fetchPendingPickUp(data) {
+        return axios.post("/api/shopOrderTransaction/fetchPendingPickUp", data);
     }
     fetchOnlineShopOrderTransactionListByStatus(status) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByStatus/${status}`);
