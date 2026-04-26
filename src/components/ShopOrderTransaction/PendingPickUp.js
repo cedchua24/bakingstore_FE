@@ -28,7 +28,10 @@ const PendingPickUp = () => {
     }, []);
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
-        date: ""
+        is_pickup_status: 0,
+        status: null,
+        dateTo: null,
+        dateFrom: null,
     });
 
     const [transactionStatus, setTransactionStatus] = useState({
@@ -117,11 +120,13 @@ const PendingPickUp = () => {
 
     const fetchShopOrderTransactionList = () => {
         setSubmitLoading(true);
-        ShopOrderTransactionService.fetchPendingPickUp(0)
+        setIsDeliveryDisabled(true);
+        ShopOrderTransactionService.fetchPendingPickUp(customerOrderDate)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
                 setSubmitLoading(false);
+                setIsDeliveryDisabled(false);
             })
             .catch(e => {
                 console.log("error", e)
@@ -188,14 +193,17 @@ const PendingPickUp = () => {
     }));
     const onChangeInput = (e) => {
         setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
-        setDate(e.target.value);
     }
 
     const saveOrderTransaction = () => {
+        setSubmitLoading(true);
+        setIsDeliveryDisabled(true);
         console.log('orderTransaction', customerOrderDate.date);
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDate(customerOrderDate.date)
+        ShopOrderTransactionService.fetchPendingPickUp(customerOrderDate)
             .then(response => {
                 setShopOrderTransaction(response.data);
+                setSubmitLoading(false);
+                setIsDeliveryDisabled(false);
             })
             .catch(e => {
                 console.log("error", e)
@@ -482,16 +490,33 @@ const PendingPickUp = () => {
             </div> */}
 
             <div>
-                {/* <Form>
+                <Form>
                     <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                        <Form.Label>Date</Form.Label>
-                        <Form.Control type="date" name="date" onChange={onChangeInput} />
+                        <Form.Label>Date From:</Form.Label>
+                        <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
                     </Form.Group>
+                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                        <Form.Label>Date To:</Form.Label>
+                        <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
+                    </Form.Group>
+                    <Form.Select
+                        className="mb-3"
+                        name="status"
+                        onChange={onChangeInput}
+                    >
+                        <option value="null">All</option>
+                        <option value="2">Pending Payment</option>
+                        <option value="1">Completed Payment</option>
+                    </Form.Select>
 
-                    <Button variant="primary" onClick={saveOrderTransaction}>
+                    <Button variant="primary" onClick={saveOrderTransaction} disabled={isDeliveryDisabled}>
                         Find
                     </Button>
-                </Form > */}
+                    {submitDeliveryLoadingDisabled &&
+                        <LinearProgress color="warning" />
+                    }
+                </Form >
+                <br></br>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Total Count:</Form.Label>
                     <Form.Control type="text" value={shopOrderTransaction.data.length} disabled />
@@ -536,7 +561,12 @@ const PendingPickUp = () => {
                                         <td>{shopOrderTransaction.id}</td>
                                         <td>{shopOrderTransaction.shop_name}</td>
                                         <td>{shopOrderTransaction.customer_type}</td>
-                                        <td>{shopOrderTransaction.requestor_name}</td>
+                                        <td>
+                                            {shopOrderTransaction.requestor_name}
+                                            {shopOrderTransaction.store_name
+                                                ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")"
+                                                : ""}
+                                        </td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                         <td>{shopOrderTransaction.total_cash}</td>
                                         <td>{shopOrderTransaction.total_online}</td>

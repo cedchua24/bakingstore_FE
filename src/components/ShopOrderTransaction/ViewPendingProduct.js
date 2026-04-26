@@ -192,7 +192,7 @@ const ViewPendingProduct = () => {
                                             <td >{shopOrderTransaction.id}</td>
                                             <td>{shopOrderTransaction.shop_name}</td>
                                             <td>{shopOrderTransaction.customer_type}</td>
-                                            <td>{shopOrderTransaction.requestor_name}</td>
+                                            <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
                                             <td>{shopOrderTransaction.shop_order_transaction_total_quantity != 0 ? shopOrderTransaction.shop_order_transaction_total_quantity : ""}</td>
                                             <td>{shopOrderTransaction.total_cash != 0 ? numberFormat(shopOrderTransaction.total_cash) : ""}</td>
                                             <td>{shopOrderTransaction.total_online != 0 ? numberFormat(shopOrderTransaction.total_online) : ""}</td>

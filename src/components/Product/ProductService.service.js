@@ -16,6 +16,9 @@ class ProductService {
     fetchProductByCategoryIdV2(id) {
         return axios.get(`/api/products/fetchProductByCategoryIdV2/${id}`);
     }
+    fetchProductEnabled(id) {
+        return axios.get(`/api/products/fetchProductEnabled/${id}`);
+    }
     fetchProductListV2(id) {
         return axios.get(`/api/products/fetchProductListV2/${id}`);
     }
