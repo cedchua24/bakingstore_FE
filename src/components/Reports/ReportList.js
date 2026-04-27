@@ -157,7 +157,9 @@ const ReportList = () => {
                             type="text"
                             value={
                                 shopOrderTransaction?.data && shopOrderTransaction?.total_count
-                                    ? (shopOrderTransaction.total_count / shopOrderTransaction.data.length)
+                                    ? Math.floor(
+                                        shopOrderTransaction.total_count / shopOrderTransaction.data.length
+                                    )
                                     : 0
                             }
                         />
