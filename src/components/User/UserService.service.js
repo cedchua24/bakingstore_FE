@@ -18,8 +18,16 @@ class UserService {
     login(user) {
         return axios.post(`/api/login`, user);
     }
-    logout(user) {
-        return axios.post(`/api/logout`, user);
+    // logout(user) {
+    //     return axios.post(`/api/logout`, user);
+    // }
+    logout() {
+        return axios.post('/api/logout', {}, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+                Accept: 'application/json',
+            }
+        });
     }
     update(id, data) {
         return axios.put(`/api/register/${id}`, data);

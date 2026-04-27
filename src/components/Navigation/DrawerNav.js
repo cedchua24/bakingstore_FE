@@ -909,6 +909,7 @@ export default function PersistentDrawerLeft() {
 
     const [auth, setAuth] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState(null);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (event) => {
         setAuth(event.target.checked);
@@ -924,24 +925,29 @@ export default function PersistentDrawerLeft() {
 
     const logoutSubmit = (e) => {
         e.preventDefault();
-        UserService.sanctum().then(response => {
-            UserService.logout().then(response => {
+        setLoading(true);
+
+        UserService.logout()
+            .then((response) => {
                 if (response.data.status === 200) {
-                    localStorage.removeItem('auth_token');
-                    localStorage.removeItem('name');
-                    localStorage.removeItem('auth_user_id');
-                    localStorage.removeItem('role_as');
+
+                    localStorage.clear();
 
                     navigate('/login');
                     window.location.reload();
-
-                } else if (response.data.status === 401) {
-                    swal("warning", response.data.message, "warning")
                 }
-            });
-        });
+            })
+            .catch((error) => {
+                console.log(error.response?.data);
 
-    }
+                localStorage.clear();
+                navigate('/login');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    };
+
 
     //Expense
     // Expense Type
@@ -1144,7 +1150,7 @@ export default function PersistentDrawerLeft() {
                             onClose={handleClose}
                         >
                             <MenuItem onClick={handleClose}>Profile</MenuItem>
-                            <MenuItem onClick={logoutSubmit}>Logout</MenuItem>
+                            <MenuItem onClick={logoutSubmit} disabled={loading}>    {loading ? 'Logging out...' : 'Logout'}</MenuItem>
                         </Menu>
                     </div>
 
