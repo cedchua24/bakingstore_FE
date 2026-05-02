@@ -382,7 +382,7 @@ const ReportExpenseTransaction = () => {
 
                                 {/* GROUP HEADER */}
                                 <tr style={{ backgroundColor: '#d3d3d3', fontWeight: 'bold' }}>
-                                    <td colSpan="13" style={{ textAlign: 'center' }}>
+                                    <td colSpan="14" style={{ textAlign: 'center' }}>
                                         {type.toUpperCase()}
                                     </td>
                                 </tr>
@@ -448,7 +448,7 @@ const ReportExpenseTransaction = () => {
                                 <tr style={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
                                     <td colSpan="7" align="right">Total:</td>
                                     <td>{numberFormat(groupedData[type].total)}</td>
-                                    <td colSpan="5"></td>
+                                    <td colSpan="6"></td>
                                 </tr>
 
                             </React.Fragment>

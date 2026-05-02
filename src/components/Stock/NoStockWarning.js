@@ -249,7 +249,7 @@ const NoStockWarning = (props) => {
                                     : <p >{product.stock_pc}</p>}
                                 </td>
                                 {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                <td>{product.quantity === 1 ? <p >{product.weight}kg</p>
+                                <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
                                     : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
                                 </td>
                                 <td>{product.stock_warning}</td>
