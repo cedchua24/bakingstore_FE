@@ -149,11 +149,14 @@ const AddExpenseCategoryV2 = () => {
                 >
                     <option value="0">Select Category Code</option>
                     {
-                        Array.from({ length: 10 }, (_, i) => (
-                            <option key={i + 1} value={i + 1}>
-                                {i + 1}
-                            </option>
-                        ))
+                        Array.from({ length: 99 }, (_, i) => {
+                            const value = String(i + 1).padStart(2, '0'); // 01, 02 ... 99
+                            return (
+                                <option key={value} value={value}>
+                                    {value}
+                                </option>
+                            );
+                        })
                     }
                 </Form.Select>
 

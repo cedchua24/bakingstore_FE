@@ -246,7 +246,8 @@ const SupplierTransactionListV2 = () => {
                                         </IconButton>
                                     }
 
-                                    <td>{orderTransaction.order_date}  </td>
+                                    <td>{orderTransaction.send_date}</td>
+                                    <td>{orderTransaction.order_date}</td>
 
 
                                     <td style={{ color: statusColor[orderTransaction.status], fontWeight: 'bold' }}>

@@ -54,7 +54,7 @@ const ViewExpenseTransaction = () => {
         expense_category_id: 0,
         expense_id: 0,
         approval_status: '',
-        is_received: 0,
+        is_received: null,
         dateTo: moment().format("YYYY-MM-DD"),
         dateFrom: moment().format("YYYY-MM-DD")
     });
