@@ -51,6 +51,7 @@ const EditExpenseTransaction = () => {
     const [expenseList, setExpenseList] = useState([]);
     const [expenseTransactionList, setExpenseTransactionList] = useState([]);
     const [requestorList, setRequestorList] = useState([]);
+    const [role] = useState(localStorage.getItem('role_as'));
 
     const [expenseTransaction, setExpenseTransaction] = useState({
         id: 0,
@@ -552,6 +553,7 @@ const EditExpenseTransaction = () => {
                 </Box>
 
 
+
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <TextField
@@ -564,20 +566,39 @@ const EditExpenseTransaction = () => {
                         />
                     </FormControl>
                 </Box>
+                {
+                    role == 2 ? <>
+                        <Box sx={{ minWidth: 120 }}>
+                            <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                                <TextField
+                                    id="outlined-basic"
+                                    label="Expense"
+                                    value={expenseTransaction.expense_name}
+                                    variant="outlined"
+                                    InputLabelProps={{ shrink: true }}
+                                    disabled
+                                />
+                            </FormControl>
+                        </Box>
+                    </> :
+                        <>
+                            <Box sx={{ minWidth: 120 }}>
+                                <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                                    <TextField
+                                        id="outlined-basic"
+                                        label="Expense"
+                                        value="*********"
+                                        variant="outlined"
+                                        InputLabelProps={{ shrink: true }}
+                                        disabled
+                                    />
+                                </FormControl>
+                            </Box>
+                        </>
+                }
 
 
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <TextField
-                            id="outlined-basic"
-                            label="Expense"
-                            value={expenseTransaction.expense_name}
-                            variant="outlined"
-                            InputLabelProps={{ shrink: true }}
-                            disabled
-                        />
-                    </FormControl>
-                </Box>
+
 
 
 
