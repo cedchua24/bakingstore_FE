@@ -587,7 +587,7 @@ const EditExpenseTransaction = () => {
                                     <TextField
                                         id="outlined-basic"
                                         label="Expense"
-                                        value="*********"
+                                        value={expenseTransaction.is_hidden ? "********" : expenseTransaction.expense_name}
                                         variant="outlined"
                                         InputLabelProps={{ shrink: true }}
                                         disabled
