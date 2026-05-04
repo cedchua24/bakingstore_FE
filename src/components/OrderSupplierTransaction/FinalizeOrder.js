@@ -7,6 +7,7 @@ import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import ModeOfPaymentPoService from "../OtherService/ModeOfPaymentPoService";
+import UserService from '../User/UserService.service'
 import PaymentTermService from "../OtherService/PaymentTermService";
 import TextField from '@mui/material/TextField';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
@@ -59,6 +60,7 @@ const FinalizeOrder = () => {
         fetchPaymentTypePo();
         fetchPaymentTerm();
         fetchPaymentTypePoByShopTransactionId(id);
+        fetchRequestor();
     }, []);
 
     const steps = [
@@ -88,7 +90,7 @@ const FinalizeOrder = () => {
         return `${num.toFixed(2)}`;
     }
 
-
+    const [requestorList, setRequestorList] = useState([]);
     const [invoiceSubtotal, setinvoiceSubtotal] = useState(0);
     const [invoiceTaxes, setinvoiceTaxes] = useState(0);
     const [invoiceTotal, setinvoiceTotal] = useState(0);
@@ -113,6 +115,8 @@ const FinalizeOrder = () => {
         total_transaction_price: 0,
         approval: useState(localStorage.getItem('name')),
         approval_status: '',
+        receiver: '',
+        checker: '',
         note: '',
         order_date: '',
         created_at: '',
@@ -241,6 +245,16 @@ const FinalizeOrder = () => {
                     console.log(e);
                 });
         }
+    }
+
+    const fetchRequestor = () => {
+        UserService.getAll()
+            .then(response => {
+                setRequestorList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
     }
 
     const fetchModeOfPayment = async (id) => {
@@ -392,7 +406,7 @@ const FinalizeOrder = () => {
     const updateOrderTransaction = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        OrderSupplierTransactionService.setToCompleteTransaction(id)
+        OrderSupplierTransactionService.updateReceivedOrder(id, orderSupplierTransaction)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
@@ -616,47 +630,59 @@ const FinalizeOrder = () => {
                     flexDirection: { xs: 'column', md: 'row' },
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: 2,
                 }}
             >
+                {orderSupplierTransaction.status == 'COMPLETED' ? <>
+                    <FormControl sx={{ minWidth: 320 }}>
+                        <TextField
+                            label="Checker"
+                            value={orderSupplierTransaction.checker}
+                            disabled
+                        />
+                        <br></br>
+                        <TextField
+                            label="Receiver"
+                            value={orderSupplierTransaction.receiver}
+                            disabled
+                        />
+                    </FormControl>
+                </> :
+                    <>
+                        <FormControl sx={{ minWidth: 320 }}>
+                            <InputLabel>Checker <span style={{ color: 'red' }}>*</span></InputLabel>
+                            <Select name="checker" onChange={onChange}>
+                                {requestorList.map((requestor) => (
+                                    <MenuItem key={requestor.id} value={requestor.name}>
+                                        {requestor.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
 
-                {
-                    orderSupplierTransaction.approval_status == 'APPROVED' && orderSupplierTransaction.status == 'SEND_TO_SUPPLIER' ?
-                        <>
-
-                            <Button
-                                disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                                variant="contained"
-                                type="submit"
-                                onClick={updateOrderTransaction}
-                                color="success"
-                                size="large" >
-                                Received Orders
-                            </Button>
+                        <FormControl sx={{ minWidth: 320 }}>
+                            <InputLabel>Receiver <span style={{ color: 'red' }}>*</span></InputLabel>
+                            <Select name="receiver" onChange={onChange}>
+                                {requestorList.map((requestor) => (
+                                    <MenuItem key={requestor.id} value={requestor.name}>
+                                        {requestor.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl></>}
 
 
-                        </>
-                        :
-                        <>
-                            <TextField
-                                label="Status"
-                                value="Received Orders"
-
-                                InputProps={{
-                                    readOnly: true,
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <CheckCircleIcon color="success" />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                                disabled
-                            />
-                        </>
 
 
-                }
+                <Button
+                    disabled={orderSupplierTransaction.status == 'COMPLETED'}
+                    variant="contained"
+                    onClick={updateOrderTransaction}
+                    color="success"
+                >
+                    Received Orders
+                </Button>
             </Box>
-
 
             <Modal
                 keepMounted
@@ -688,7 +714,8 @@ const FinalizeOrder = () => {
                         />
                     </FormControl>
 
-
+                    <br></br>
+                    <br></br>
 
                     <Box
                         sx={{

@@ -19,6 +19,9 @@ class OrderSupplierTransactionService {
     setToCompleteTransaction(id) {
         return axios.put(`/api/orderSupplierTransaction/setToCompleteTransaction/${id}`);
     }
+    updateReceivedOrder(id, data) {
+        return axios.put(`/api/orderSupplierTransaction/updateReceivedOrder/${id}`, data);
+    }
     setSendtoSupplierStatus(data) {
         return axios.post("/api/orderSupplierTransaction/setSendtoSupplierStatus", data);
     }

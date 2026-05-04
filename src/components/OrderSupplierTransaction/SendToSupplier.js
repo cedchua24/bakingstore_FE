@@ -644,7 +644,7 @@ const SendToSupplier = () => {
                                     </Box>
                                 </> : <>
 
-                                    <InputLabel id="demo-simple-select-label" >Select Order Status</InputLabel>
+                                    <InputLabel id="demo-simple-select-label" >Select Order Status <span style={{ color: 'red' }}>*</span></InputLabel>
                                     <Select
                                         labelId="demo-simple-select-label"
                                         id="demo-simple-select"
@@ -658,7 +658,7 @@ const SendToSupplier = () => {
                                     </Select>
                                     <br></br>
                                     <Form.Group controlId="dateFrom">
-                                        <Form.Label>Date Sent</Form.Label>
+                                        <Form.Label>Date Sent<span style={{ color: 'red' }}> *</span></Form.Label>
                                         <Form.Control
                                             type="date"
                                             value={orderSupplierTransaction.send_date}
