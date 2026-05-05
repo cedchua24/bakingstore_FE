@@ -6,6 +6,7 @@ import SupplierServiceService from "../Supplier/SupplierService.service";
 import ProductServiceService from "./ProductService.service";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
 import LinearProgress from '@mui/material/LinearProgress';
+import moment from "moment";
 
 const ProductOrderTransactionList = () => {
 
@@ -13,8 +14,8 @@ const ProductOrderTransactionList = () => {
     const { id } = useParams();
 
     useEffect(() => {
+        submitSortedCustomerList();
         fetchProduct(id);
-        fetchShopOrderTransactionList(id);
 
     }, []);
 
@@ -38,6 +39,8 @@ const ProductOrderTransactionList = () => {
 
     const [sortedCustomer, setSortedCustomer] = useState({
         data: [],
+        dateFrom: moment().subtract(29, 'days').format("YYYY-MM-DD"),
+        dateTo: moment().format("YYYY-MM-DD"),
         code: '',
         message: '',
         id: 0
@@ -64,21 +67,6 @@ const ProductOrderTransactionList = () => {
 
 
 
-    const fetchShopOrderTransactionList = (id) => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        ShopOrderTransactionService.fetctProductOrderTransaction(id)
-            .then(response => {
-                console.log("fetchOnlineShopOrderTransactionList :", response.data)
-                setShopOrderTransaction(response.data);
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-            })
-            .catch(e => {
-                console.log("error", e)
-
-            });
-    }
 
     const submitSortedCustomerList = () => {
 
@@ -121,12 +109,12 @@ const ProductOrderTransactionList = () => {
 
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date From:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
+                    <Form.Control type="date" name="dateFrom" value={sortedCustomer.dateFrom} onChange={onChangeInput} />
                 </Form.Group>
 
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date To:</Form.Label>
-                    <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
+                    <Form.Control type="date" name="dateTo" value={sortedCustomer.dateTo} onChange={onChangeInput} />
                 </Form.Group>
                 <Button variant="primary"
                     onClick={submitSortedCustomerList}
