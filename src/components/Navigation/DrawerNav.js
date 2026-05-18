@@ -1079,6 +1079,12 @@ export default function PersistentDrawerLeft() {
                     </Typography>
 
                     <Nav >
+                        <NavDropdown title="Dashboard" id="basic-nav-dropdown">
+                            <NavDropdown.Item href={`/dashboard/employeePerformance/${moment().format("YYYY-MM-DD")}`}> Employee Performance </NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
+
+                    <Nav >
                         <NavDropdown title="Customer" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>

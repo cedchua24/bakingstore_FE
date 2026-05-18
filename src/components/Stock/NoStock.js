@@ -230,6 +230,7 @@ const NoStock = (props) => {
                         <th>Last Stock Date</th>
                         {/* <th>Update Stock</th> */}
                         <th>Transaction</th>
+                        <th>OOS History</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -262,6 +263,13 @@ const NoStock = (props) => {
                                 <td>{covertDateString(product.updated_at)}</td>
                                 <td>
                                     <Link variant="primary" to={"/viewTransaction/" + product.id}   >
+                                        <Button variant="contained" >
+                                            View
+                                        </Button>
+                                    </Link>
+                                </td>
+                                <td>
+                                    <Link variant="primary" to={"/viewOutOfStockHistory/" + product.id}   >
                                         <Button variant="contained" >
                                             View
                                         </Button>

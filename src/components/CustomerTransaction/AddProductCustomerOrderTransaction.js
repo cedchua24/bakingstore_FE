@@ -192,11 +192,7 @@ const AddProductCustomerOrderTransaction = () => {
                 console.log('orderCustomer', orderCustomer);
                 console.log('orderCustomerDTO', orderCustomerDTO);
                 if (index.length === 0) {
-                    setValidator({
-                        severity: 'success',
-                        message: 'Successfuly Added!',
-                        isShow: true,
-                    });
+
                     // setorderCustomerList([...orderCustomerList, orderCustomer]);
                     // let arr = orderCustomerList.concat(orderCustomer);
                     // setorderCustomerDTO({ orderCustomerList: arr, grandTotal: subtotal(arr) });
@@ -205,17 +201,35 @@ const AddProductCustomerOrderTransaction = () => {
                     ShopOrderService.sanctum().then(response => {
                         ShopOrderService.create(orderCustomer)
                             .then(response => {
-                                fetchShopOrder(id);
-                                setOrderCustomer({
-                                    order_customer_transaction_id: id,
-                                    product_id: 0,
-                                    price: 0,
-                                    quantity: 0,
-                                    total_price: 0,
-                                });
-                                fetchShopOrderDTO(id);
-                                // fetchProductList();
-                                // window.location.reload();
+                                if (response.data.code == 200) {
+                                    setValidator({
+                                        severity: 'success',
+                                        message: response.data.message,
+                                        isShow: true,
+                                    });
+                                    fetchShopOrder(id);
+                                    setOrderCustomer({
+                                        order_customer_transaction_id: id,
+                                        product_id: 0,
+                                        price: 0,
+                                        quantity: 0,
+                                        total_price: 0,
+                                    });
+                                    fetchShopOrderDTO(id);
+                                } else if (response.data.code == 500) {
+                                    setValidator({
+                                        severity: 'error',
+                                        message: response.data.message,
+                                        isShow: true,
+                                    });
+                                }
+                                else if (response.data.code == 400) {
+                                    setValidator({
+                                        severity: 'error',
+                                        message: response.data.message,
+                                        isShow: true,
+                                    });
+                                }
                             })
                             .catch(e => {
                                 console.log(e);

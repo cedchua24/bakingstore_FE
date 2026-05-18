@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
+import UserService from '../User/UserService.service'
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -18,6 +19,10 @@ import UpdateIcon from '@mui/icons-material/Update';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
 import LinearProgress from '@mui/material/LinearProgress';
 
 const PendingPickUp = () => {
@@ -25,7 +30,10 @@ const PendingPickUp = () => {
 
     useEffect(() => {
         fetchShopOrderTransactionList();
+        fetchRequestor();
     }, []);
+
+    const [requestorList, setRequestorList] = useState([]);
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         is_pickup_status: 0,
@@ -87,6 +95,9 @@ const PendingPickUp = () => {
         first_name: '',
         last_name: '',
         contact_number: '',
+        preparer_id: 0,
+        checker_id: 0,
+        dispatcher_id: 0,
         email: '',
         address: '',
         store_name: '',
@@ -131,6 +142,16 @@ const PendingPickUp = () => {
             .catch(e => {
                 console.log("error", e)
 
+            });
+    }
+
+    const fetchRequestor = () => {
+        UserService.getAll()
+            .then(response => {
+                setRequestorList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
             });
     }
 
@@ -444,6 +465,10 @@ const PendingPickUp = () => {
     }
 
     const onChangeCustomer = (e) => {
+        setPickUpModal({ ...pickUpModal, [e.target.name]: e.target.value });
+    }
+
+    const onChange = (e) => {
         setPickUpModal({ ...pickUpModal, [e.target.name]: e.target.value });
     }
 
@@ -765,6 +790,43 @@ const PendingPickUp = () => {
                             inputProps={{ 'aria-label': 'controlled' }}
                         />
                     </Form.Group>
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Preparer </InputLabel>
+                        <Select name="preparer_id" onChange={onChange} value={pickUpModal.preparer_id}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Checker </InputLabel>
+                        <Select name="checker_id" onChange={onChange} value={pickUpModal.checker_id}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Dispatcher</InputLabel>
+                        <Select name="dispatcher_id" onChange={onChange} value={pickUpModal.dispatcher_id} disabled={!pickUpModal.is_pickup}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
                         Customer Details
                     </Typography>

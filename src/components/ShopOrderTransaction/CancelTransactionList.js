@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import UserService from '../User/UserService.service'
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -16,13 +17,20 @@ import UpdateIcon from '@mui/icons-material/Update';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
 
 const CancelTransactionList = () => {
 
 
     useEffect(() => {
         fetchShopOrderTransactionList();
+        fetchRequestor();
     }, []);
+
+    const [requestorList, setRequestorList] = useState([]);
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: ""
@@ -69,6 +77,9 @@ const CancelTransactionList = () => {
         shop_order_transaction_total_quantity: '',
         shop_type_id: 0,
         rider_name: '',
+        preparer_id: 0,
+        checker_id: 0,
+        dispatcher_id: 0,
         pick_up: 0,
         status: 0,
         date: '',
@@ -90,6 +101,16 @@ const CancelTransactionList = () => {
             .catch(e => {
                 console.log("error", e)
 
+            });
+    }
+
+    const fetchRequestor = () => {
+        UserService.getAll()
+            .then(response => {
+                setRequestorList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
             });
     }
 
@@ -503,6 +524,43 @@ const CancelTransactionList = () => {
                             inputProps={{ 'aria-label': 'controlled' }}
                         />
                     </Form.Group>
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Preparer </InputLabel>
+                        <Select name="preparer_id" onChange={onChangeDate} value={shopOrderTransactionUpdateModal.preparer_id}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Checker </InputLabel>
+                        <Select name="checker_id" onChange={onChangeDate} value={shopOrderTransactionUpdateModal.checker_id}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Dispatcher</InputLabel>
+                        <Select name="dispatcher_id" onChange={onChangeDate} value={shopOrderTransactionUpdateModal.dispatcher_id} disabled={!shopOrderTransactionUpdateModal.is_pickup}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
 
                     <Box
                         sx={{

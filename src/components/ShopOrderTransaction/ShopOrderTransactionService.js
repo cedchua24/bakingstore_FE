@@ -66,6 +66,18 @@ class ShopOrderTransactionService {
     fetchSalesList(data) {
         return axios.post("/api/shopOrderTransaction/fetchSalesList", data);
     }
+    fetchEmployeePrepare(data) {
+        return axios.post("/api/shopOrderTransaction/fetchEmployeePrepare", data);
+    }
+    fetchEmployeeChecker(data) {
+        return axios.post("/api/shopOrderTransaction/fetchEmployeeChecker", data);
+    }
+    fetchEmployeeDispatcher(data) {
+        return axios.post("/api/shopOrderTransaction/fetchEmployeeDispatcher", data);
+    }
+    fetchEmployeeSales(data) {
+        return axios.post("/api/shopOrderTransaction/fetchEmployeeSales", data);
+    }
     fetchSortedCustomerReport(data) {
         return axios.post("/api/shopOrderTransaction/fetchSortedCustomerReport", data);
     }
