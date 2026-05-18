@@ -11,6 +11,7 @@ import ShopService from "../Shop/ShopService";
 import DiscountService from "../OtherService/DiscountService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
 import SpoilageService from "../Spoilage/SpoilageService";
+import UserService from '../User/UserService.service'
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -44,7 +45,10 @@ const CustomerOrderTransactionList = () => {
     useEffect(() => {
         fetchOnlineShopOrderTransactionList();
         fetchExpensesList();
+        fetchRequestor();
     }, []);
+
+    const [requestorList, setRequestorList] = useState([]);
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: id,
@@ -165,6 +169,9 @@ const CustomerOrderTransactionList = () => {
         first_name: '',
         last_name: '',
         contact_number: '',
+        preparer_id: 0,
+        checker_id: 0,
+        dispatcher_id: 0,
         email: '',
         address: '',
         store_name: '',
@@ -217,6 +224,16 @@ const CustomerOrderTransactionList = () => {
             .catch(e => {
                 console.log("error", e)
 
+            });
+    }
+
+    const fetchRequestor = () => {
+        UserService.getAll()
+            .then(response => {
+                setRequestorList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
             });
     }
 
@@ -650,6 +667,10 @@ const CustomerOrderTransactionList = () => {
         } else {
             setPickUpModal({ ...pickUpModal, is_pickup: e.target.value });
         }
+    }
+
+    const onChange = (e) => {
+        setPickUpModal({ ...pickUpModal, [e.target.name]: e.target.value });
     }
 
 
@@ -1362,6 +1383,45 @@ const CustomerOrderTransactionList = () => {
                             inputProps={{ 'aria-label': 'controlled' }}
                         />
                     </Form.Group>
+
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Preparer </InputLabel>
+                        <Select name="preparer_id" onChange={onChange} value={pickUpModal.preparer_id}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Checker </InputLabel>
+                        <Select name="checker_id" onChange={onChange} value={pickUpModal.checker_id}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Dispatcher</InputLabel>
+                        <Select name="dispatcher_id" onChange={onChange} value={pickUpModal.dispatcher_id} disabled={!pickUpModal.is_pickup}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
                         Customer Details
                     </Typography>

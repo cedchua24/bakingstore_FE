@@ -327,6 +327,7 @@ const StockList = (props) => {
                         <th>Modify Stock</th>
                         <th>Add Customer Follow Up</th>
                         <th>Transaction</th>
+                        <th>OOS History</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -386,12 +387,20 @@ const StockList = (props) => {
                                             </Link>
                                         </td>
                                         <td>
+                                            <Link variant="primary" to={"/viewOutOfStockHistory/" + product.id}   >
+                                                <Button variant="contained" >
+                                                    View
+                                                </Button>
+                                            </Link>
+                                        </td>
+                                        <td>
                                             <Link variant="primary" to={"/viewTransaction/" + product.id}   >
                                                 <Button variant="contained" disabled>
                                                     View
                                                 </Button>
                                             </Link>
                                         </td>
+
                                     </tr>
                                 )
                                 )

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
+import UserService from '../User/UserService.service'
 import DiscountService from "../OtherService/DiscountService";
 import SpoilageService from "../Spoilage/SpoilageService";
 import ExpensesService from "../Expenses/ExpensesService";
@@ -23,6 +24,10 @@ import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import PageviewIcon from '@mui/icons-material/Pageview';
 import Tooltip from '@mui/material/Tooltip';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select from '@mui/material/Select';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { useParams } from 'react-router-dom';
@@ -36,7 +41,10 @@ const TransactionReportList = () => {
 
     useEffect(() => {
         fetchExpensesList(id);
+        fetchRequestor();
     }, []);
+
+    const [requestorList, setRequestorList] = useState([]);
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: id,
@@ -128,6 +136,9 @@ const TransactionReportList = () => {
         shop_order_transaction_total_quantity: '',
         shop_type_id: 0,
         rider_name: '',
+        preparer_id: 0,
+        checker_id: 0,
+        dispatcher_id: 0,
         pick_up: 0,
         status: 0,
         date: '',
@@ -192,6 +203,16 @@ const TransactionReportList = () => {
             .catch(e => {
                 console.log("error", e)
 
+            });
+    }
+
+    const fetchRequestor = () => {
+        UserService.getAll()
+            .then(response => {
+                setRequestorList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
             });
     }
 
@@ -922,6 +943,43 @@ const TransactionReportList = () => {
                             inputProps={{ 'aria-label': 'controlled' }}
                         />
                     </Form.Group>
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Preparer </InputLabel>
+                        <Select name="preparer_id" onChange={onChangeDate} value={shopOrderTransactionUpdateModal.preparer_id}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Checker </InputLabel>
+                        <Select name="checker_id" onChange={onChangeDate} value={shopOrderTransactionUpdateModal.checker_id}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
+
+                    <FormControl sx={{ minWidth: 200 }}>
+                        <InputLabel>Dispatcher</InputLabel>
+                        <Select name="dispatcher_id" onChange={onChangeDate} value={shopOrderTransactionUpdateModal.dispatcher_id} disabled={!shopOrderTransactionUpdateModal.is_pickup}>
+                            {requestorList.map((requestor) => (
+                                <MenuItem key={requestor.id} value={requestor.id}>
+                                    {requestor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <br></br>
+                    <br></br>
 
                     <Box
                         sx={{

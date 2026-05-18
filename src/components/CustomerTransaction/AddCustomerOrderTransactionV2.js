@@ -114,6 +114,10 @@ const AddCustomerOrderTransactionV2 = (props) => {
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
                         navigate('/shopOrderTransaction/addProductShopOrderTransaction/' + response.data.id);
+                        window.open(
+                            '/customers/customerProductList/' + shopOrderTransaction.requestor,
+                            '_blank'
+                        );
                     })
                     .catch(e => {
                         setSubmitLoadingAdd(false);

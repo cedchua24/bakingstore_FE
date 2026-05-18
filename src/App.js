@@ -114,6 +114,7 @@ import ModifiedStock from "./components/Stock/ModifiedStock";
 
 import EditStock from "./components/Stock/EditStock";
 import ViewTransaction from "./components/Stock/ViewTransaction";
+import ViewOutOfStockHistory from "./components/Stock/ViewOutOfStockHistory";
 import ViewStockTransactionList from "./components/Stock/ViewStockTransactionList";
 import ViewCustomerNotify from "./components/Stock/ViewCustomerNotify";
 
@@ -142,6 +143,7 @@ import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrd
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
 import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
 import ProductSoldToday from "./components/dashboard/ProductSoldToday";
+import EmployeePerformance from "./components/dashboard/EmployeePerformance";
 import ProductSoldTodayCheckList from "./components/dashboard/ProductSoldTodayCheckList";
 
 import StartOfDay from "./components/dashboard/StartOfDay";
@@ -437,6 +439,7 @@ const App = () => {
           <Route exact path="/modifiedStock" element={<ModifiedStock />} />
 
           <Route exact path="/viewTransaction/:id" element={<ViewTransaction />} />
+          <Route exact path="/viewOutOfStockHistory/:id" element={<ViewOutOfStockHistory />} />
           <Route exact path="/viewStockTransactionList/:id" element={<ViewStockTransactionList />} />
           <Route exact path="/viewCustomerNotify/:id" element={<ViewCustomerNotify />} />
 
@@ -527,6 +530,8 @@ const App = () => {
           {/* // Dashoard */}
           <Route exact path="/dashboard/productSoldToday/:id" element={<ProductSoldToday />} />
           <Route exact path="/dashboard/productSoldTodayCheckList/:id" element={<ProductSoldTodayCheckList />} />
+          <Route exact path="/dashboard/employeePerformance/:date" element={<EmployeePerformance />} />
+
           <Route exact path="/dashboard/startOfDay/:id" element={<StartOfDay />} />
 
 
