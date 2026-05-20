@@ -221,6 +221,11 @@ const ReportPendingDelivery = () => {
 
     const [openRider, setOpenRider] = React.useState(false);
 
+    const disabledPickUp =
+        !shopOrderTransactionUpdateModal?.checker_id ||
+        !shopOrderTransactionUpdateModal?.dispatcher_id ||
+        !shopOrderTransactionUpdateModal?.preparer_id;
+
     const [openPickUp, setOpenPickUp] = React.useState(false);
 
     const handleOpenRider = (id, e) => {
@@ -464,7 +469,7 @@ const ReportPendingDelivery = () => {
                         <th>Payment Status</th>
                         <th>For Trucking</th>
                         <th>Rider</th>
-                        <th >Pick Up Status</th>
+                        <th>Pick Up Status</th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -665,13 +670,24 @@ const ReportPendingDelivery = () => {
                     </Typography>
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>is Pick-up ? </Form.Label>
+                        <Form.Label>Is Pick-up ?</Form.Label>
 
-                        <Checkbox
-                            checked={shopOrderTransactionUpdateModal.is_pickup === 0 ? false : true}
-                            onChange={onChangePaymentTypeStatus}
-                            inputProps={{ 'aria-label': 'controlled' }}
-                        />
+                        <Tooltip
+                            title={
+                                disabledPickUp
+                                    ? "Please fill up all 3 required fields (Checker, Dispatcher, Preparer)"
+                                    : ""
+                            }
+                        >
+                            <span>
+                                <Checkbox
+                                    checked={shopOrderTransactionUpdateModal.is_pickup !== 0}
+                                    onChange={onChangePaymentTypeStatus}
+                                    inputProps={{ 'aria-label': 'controlled' }}
+                                    disabled={disabledPickUp}
+                                />
+                            </span>
+                        </Tooltip>
                     </Form.Group>
                     <FormControl sx={{ minWidth: 200 }}>
                         <InputLabel>Preparer </InputLabel>
@@ -700,7 +716,7 @@ const ReportPendingDelivery = () => {
 
                     <FormControl sx={{ minWidth: 200 }}>
                         <InputLabel>Dispatcher</InputLabel>
-                        <Select name="dispatcher_id" onChange={onChangeDate} value={shopOrderTransactionUpdateModal.dispatcher_id} disabled={!shopOrderTransactionUpdateModal.is_pickup} value={shopOrderTransactionUpdateModal.dispatcher_id} disabled={!shopOrderTransactionUpdateModal.is_pickup}>
+                        <Select name="dispatcher_id" onChange={onChangeDate} value={shopOrderTransactionUpdateModal.dispatcher_id}>
                             {requestorList.map((requestor) => (
                                 <MenuItem key={requestor.id} value={requestor.id}>
                                     {requestor.name}

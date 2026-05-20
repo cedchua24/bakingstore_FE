@@ -477,6 +477,11 @@ const CustomerOrderTransactionList = () => {
 
     const [openRider, setOpenRider] = React.useState(false);
 
+    const disabledPickUp =
+        !pickUpModal?.checker_id ||
+        !pickUpModal?.dispatcher_id ||
+        !pickUpModal?.preparer_id;
+
     const handleClosePickUp = () => setOpenPickUp(false);
     const [openPickUp, setOpenPickUp] = React.useState(false);
 
@@ -550,11 +555,13 @@ const CustomerOrderTransactionList = () => {
             });
     }
 
+
     const validatePickUp = (values) => {
         const errors = {};
         if (pickUpModal.last_name == null || pickUpModal.last_name.length == 0) {
             errors.last_name = "Last Name is Required!";
         }
+
         // if (pickUpModal.address == null || pickUpModal.address.length == 0) {
         //     errors.address = "Address is Required!";
         // }
@@ -1075,8 +1082,8 @@ const CustomerOrderTransactionList = () => {
                         <th>Payment Status</th>
                         <th>For Trucking</th>
                         <th>Rider</th>
-                        <th >Pick Up Status</th>
-                        <th></th>
+                        <th>Pick Up Status</th>
+                        <th ></th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -1376,12 +1383,24 @@ const CustomerOrderTransactionList = () => {
                     </Typography>
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>is Pick-up ? </Form.Label>
-                        <Checkbox
-                            checked={pickUpModal.is_pickup === 0 ? false : true}
-                            onChange={onChangePaymentTypeStatus}
-                            inputProps={{ 'aria-label': 'controlled' }}
-                        />
+                        <Form.Label>Is Pick-up ?</Form.Label>
+
+                        <Tooltip
+                            title={
+                                disabledPickUp
+                                    ? "Please fill up all 3 required fields (Checker, Dispatcher, Preparer)"
+                                    : ""
+                            }
+                        >
+                            <span>
+                                <Checkbox
+                                    checked={pickUpModal.is_pickup !== 0}
+                                    onChange={onChangePaymentTypeStatus}
+                                    inputProps={{ 'aria-label': 'controlled' }}
+                                    disabled={disabledPickUp}
+                                />
+                            </span>
+                        </Tooltip>
                     </Form.Group>
 
                     <FormControl sx={{ minWidth: 200 }}>
@@ -1411,7 +1430,7 @@ const CustomerOrderTransactionList = () => {
 
                     <FormControl sx={{ minWidth: 200 }}>
                         <InputLabel>Dispatcher</InputLabel>
-                        <Select name="dispatcher_id" onChange={onChange} value={pickUpModal.dispatcher_id} disabled={!pickUpModal.is_pickup}>
+                        <Select name="dispatcher_id" onChange={onChange} value={pickUpModal.dispatcher_id} >
                             {requestorList.map((requestor) => (
                                 <MenuItem key={requestor.id} value={requestor.id}>
                                     {requestor.name}
