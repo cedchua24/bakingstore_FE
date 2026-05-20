@@ -268,36 +268,69 @@ const AddProductCustomerOrderTransaction = () => {
                     setIsAddDisabled(true);
 
 
-                    ShopOrderService.sanctum().then(response => {
+                    ShopOrderService.sanctum().then(() => {
                         ShopOrderService.create(orderShop)
                             .then(response => {
-                                fetchShopOrder(id);
-                                setOrderShop({
-                                    shop_transaction_id: id,
-                                    product_id: 0,
-                                    shop_order_price: 0,
-                                    shop_order_quantity: 0,
-                                    shop_order_total_price: 0,
-                                    fixed_price: 0,
-                                    discount: '',
-                                    discount_percentage: 0,
-                                    discount_amount: 0,
-                                });
-                                fetchShopOrderDTO(id);
-                                setSubmitLoadingAdd(false);
-                                setIsAddDisabled(false);
-                                setValidator({
-                                    severity: 'success',
-                                    message: 'Successfuly Added!',
-                                    isShow: true,
-                                });
-                                // fetchProductList();
-                                // window.location.reload();
+
+                                if (response.data.code == 200) {
+                                    setValidator({
+                                        severity: 'success',
+                                        message: response.data.message,
+                                        isShow: true,
+                                    });
+
+                                    window.scrollTo({
+                                        top: 0,
+                                        behavior: 'smooth'
+                                    });
+
+                                    fetchShopOrder(id);
+
+                                    setOrderShop({
+                                        shop_transaction_id: id,
+                                        product_id: 0,
+                                        shop_order_price: 0,
+                                        shop_order_quantity: 0,
+                                        shop_order_total_price: 0,
+                                        fixed_price: 0,
+                                        discount: '',
+                                        discount_percentage: 0,
+                                        discount_amount: 0,
+                                    });
+
+                                    fetchShopOrderDTO(id);
+
+                                } else {
+                                    setValidator({
+                                        severity: 'error',
+                                        message: response.data.message,
+                                        isShow: true,
+                                    });
+
+                                    window.scrollTo({
+                                        top: 0,
+                                        behavior: 'smooth'
+                                    });
+                                }
+
                             })
                             .catch(e => {
+
+                                setValidator({
+                                    severity: 'error',
+                                    message: e.response?.data?.message || 'Something went wrong.',
+                                    isShow: true,
+                                });
+
+                                window.scrollTo({
+                                    top: 0,
+                                    behavior: 'smooth'
+                                });
+
+                            })
+                            .finally(() => {
                                 setSubmitLoadingAdd(false);
                                 setIsAddDisabled(false);
-                                console.log(e);
                             });
                     });
 
@@ -1143,7 +1176,7 @@ const AddProductCustomerOrderTransaction = () => {
             </Modal>
             <div>
                 <br></br>
-                <h6>Reference Number: #{shopOrderTransaction.id} </h6> 
+                <h6>Reference Number: #{shopOrderTransaction.id} </h6>
                 <h6> {shopOrderTransaction.requestor_name} </h6>
 
                 <br></br>

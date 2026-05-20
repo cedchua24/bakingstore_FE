@@ -198,14 +198,20 @@ const AddProductCustomerOrderTransaction = () => {
                     // setorderCustomerDTO({ orderCustomerList: arr, grandTotal: subtotal(arr) });
                     // setValue(products[1]);
 
-                    ShopOrderService.sanctum().then(response => {
+                    ShopOrderService.sanctum().then(() => {
                         ShopOrderService.create(orderCustomer)
                             .then(response => {
+
                                 if (response.data.code == 200) {
                                     setValidator({
                                         severity: 'success',
                                         message: response.data.message,
                                         isShow: true,
+                                    });
+
+                                    window.scrollTo({
+                                        top: 0,
+                                        behavior: 'smooth'
                                     });
                                     fetchShopOrder(id);
                                     setOrderCustomer({
@@ -216,23 +222,37 @@ const AddProductCustomerOrderTransaction = () => {
                                         total_price: 0,
                                     });
                                     fetchShopOrderDTO(id);
-                                } else if (response.data.code == 500) {
+
+                                } else {
                                     setValidator({
                                         severity: 'error',
                                         message: response.data.message,
                                         isShow: true,
                                     });
-                                }
-                                else if (response.data.code == 400) {
-                                    setValidator({
-                                        severity: 'error',
-                                        message: response.data.message,
-                                        isShow: true,
+
+                                    window.scrollTo({
+                                        top: 0,
+                                        behavior: 'smooth'
                                     });
                                 }
+
                             })
                             .catch(e => {
-                                console.log(e);
+
+                                setValidator({
+                                    severity: 'error',
+                                    message: e.response?.data?.message || 'Something went wrong.',
+                                    isShow: true,
+                                });
+
+                                window.scrollTo({
+                                    top: 0,
+                                    behavior: 'smooth'
+                                });
+
+                            })
+                            .finally(() => {
+
                             });
                     });
 
