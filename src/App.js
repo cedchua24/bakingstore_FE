@@ -121,6 +121,7 @@ import ViewCustomerNotify from "./components/Stock/ViewCustomerNotify";
 
 import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
 import MarkUpPriceListV2 from "./components/MarkUpPrice/MarkUpPriceListV2";
+import ViewMarkUpHistory from "./components/MarkUpPrice/ViewMarkUpHistory";
 import MarkUpNewPrice from "./components/MarkUpPrice/MarkUpNewPrice";
 
 
@@ -446,6 +447,8 @@ const App = () => {
 
           <Route exact path="/markUpPrice/" element={<MarkUpPrice />} />
           <Route exact path="/markUpPriceListV2/" element={<MarkUpPriceListV2 />} />
+          <Route exact path="/viewMarkUpHistory/:id" element={<ViewMarkUpHistory />} />
+
           <Route exact path="/markUpNewPrice/" element={<MarkUpNewPrice />} />
 
           <Route exact path="/orderCustomerTransaction/" element={<OrderCustomerTransaction />} />

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-// import { Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import MarkUpPriceService from "./MarkUpPriceService.service";
 
@@ -15,7 +15,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
 
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography'
 import CircularProgress from '@mui/material/CircularProgress';
@@ -165,7 +165,8 @@ const MarkUpPriceList = (props) => {
                         <th>Mark Up Price</th>
                         {/* <th>Descrepancy</th> */}
                         <th>New Price</th>
-                        <th></th>
+                        <th>Update</th>
+                        <th>Price History</th>
 
 
                     </tr>
@@ -195,11 +196,14 @@ const MarkUpPriceList = (props) => {
                                     </Tooltip>
                                 </td>
 
-                                {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteMarkUpPrice(mark_up.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td> */}
+                                <td>
+                                    <Link variant="primary" to={"../viewMarkUpHistory/" + mark_up.product_id}   >
+                                        <Button variant="primary" >
+                                            View
+                                        </Button>
+                                    </Link>
+                                </td>
+
                             </tr>
                         )
                         )
