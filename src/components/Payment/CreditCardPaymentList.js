@@ -32,6 +32,7 @@ const CreditCardPaymentList = () => {
             });
     }
 
+    //formateDate
     const formatStatementDate = (day) => {
         var d = new Date();
         var month = d.getMonth();
