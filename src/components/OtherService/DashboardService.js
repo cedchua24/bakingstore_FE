@@ -26,6 +26,14 @@ class DashboardService {
             withCredentials: true,
         });
     }
+
+    submitExportPriceList(id, data) {
+        return axios.post(`/api/dashboard/submitExportPriceList/${id}`, data, {
+            responseType: 'blob',
+            withCredentials: true,
+        });
+    }
+
     delete(brand, data) {
         return axios.delete(`/api/dashboard/${brand}`, data);
     }

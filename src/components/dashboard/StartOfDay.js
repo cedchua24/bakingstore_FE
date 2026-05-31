@@ -47,6 +47,43 @@ const StartOfDay = () => {
             });
     }
 
+    const submitExportPriceList = async () => {
+        try {
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+            console.log("dateToday" + date.today)
+            await DashboardService.sanctum();
+
+            const response = await DashboardService.submitExportPriceList(date.today, date);
+
+            // Verify that content type is correct
+            if (response.headers["content-type"].includes("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", "price_list_" + date.today + ".xlsx");
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                fetchDailySessionByDate();
+                setValidator({
+                    severity: 'success',
+                    message: 'Updated Price List.!',
+                    isShow: true,
+                });
+                ;
+            } else {
+                console.error("Invalid file type — backend may be returning HTML or JSON:", response);
+            }
+            setSubmitLoadingAdd(false);
+            setIsAddDisabled(false)
+        } catch (e) {
+            console.error("Excel download failed:", e);
+            setSubmitLoadingAdd(false);
+            setIsAddDisabled(false);
+        }
+    };
+
     const startOfdaySubmit = async () => {
         try {
             setSubmitLoadingAdd(true);
@@ -131,6 +168,24 @@ const StartOfDay = () => {
                         onClick={startOfdaySubmit}
                     >
                         Start of Day
+                    </Button>
+                    <br></br>
+                    <br></br>
+
+
+                </div>
+                <br></br>
+                <br></br>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
+
+                    <Button
+                        align="center"
+                        variant="contained"
+                        type="submit"
+                        disabled={isAddDisabled}
+                        onClick={submitExportPriceList}
+                    >
+                        Export Updated Price List
                     </Button>
                     <br></br>
                     <br></br>
