@@ -78,6 +78,7 @@ import ListIcon from '@mui/icons-material/List';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
+import ChecklistIcon from '@mui/icons-material/Checklist';
 import moment from "moment";
 
 import { pink } from '@mui/material/colors';
@@ -151,6 +152,11 @@ export default function PersistentDrawerLeft() {
 
     const navigate = useNavigate();
     const [open, setOpen] = React.useState(false);
+
+    const [open1, setOpen1] = React.useState(false);
+    const handleClick1 = () => {
+        setOpen1(!open1);
+    };
 
     const [open2, setOpen2] = React.useState(false);
     const handleClick2 = () => {
@@ -271,6 +277,24 @@ export default function PersistentDrawerLeft() {
             {
                 "name": "Category List",
                 "url": "/categoryList",
+                "icon": <ListIcon />
+            }
+        ]
+    });
+
+    const [checkList, setCheckList] = useState({
+        "nameCheckList": "Employee Check List",
+        "iconCheckList": <ChecklistIcon color="primary" />,
+        "data": [
+            {
+                "name": "Add CheckList",
+                "url": "/checkList/addCheckList",
+                "icon": <AddIcon />
+            },
+            {
+                "name": "Check List",
+                "url": "/checkList/checkList",
+
                 "icon": <ListIcon />
             }
         ]
@@ -1086,6 +1110,11 @@ export default function PersistentDrawerLeft() {
                             <NavDropdown.Item href={`/dashboard/employeePerformance/${moment().format("YYYY-MM-DD")}`}> Employee Performance </NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
+                    <Nav >
+                        <NavDropdown title="Employee Check List" id="basic-nav-dropdown">
+                            <NavDropdown.Item href={`/employee/staffCheckList/${moment().format("YYYY-MM-DD")}`}> Employee Check List </NavDropdown.Item>
+                        </NavDropdown>
+                    </Nav>
 
                     <Nav >
                         <NavDropdown title="Customer" id="basic-nav-dropdown">
@@ -1122,6 +1151,7 @@ export default function PersistentDrawerLeft() {
                             <NavDropdown.Item href={`/dashboard/startOfDay/${moment().format("YYYY-MM-DD")}`}>  Start of Day </NavDropdown.Item>
                             <NavDropdown.Item href={`/dashboard/productSoldToday/${moment().format("YYYY-MM-DD")}`}> End of Day </NavDropdown.Item>
                             <NavDropdown.Item href={`/dashboard/productSoldTodayCheckList/${moment().format("YYYY-MM-DD")}`}> Product Sold Checklist </NavDropdown.Item>
+
 
                         </NavDropdown>
                     </Nav>
@@ -1187,6 +1217,37 @@ export default function PersistentDrawerLeft() {
                     </IconButton>
                 </DrawerHeader>
                 <Divider />
+
+                <div>
+                    <List
+                        sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                        component="nav"
+                        aria-labelledby="nested-list-subheader"
+                    >
+                        <ListItemButton onClick={handleClick1}>
+                            <ListItemIcon>
+                                {checkList.iconCheckList}
+                            </ListItemIcon>
+                            <ListItemText primary={checkList.nameCheckList} />
+                            {open1 ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+                        <Collapse in={open1} timeout="auto" unmountOnExit>
+                            <List component="div" disablePadding>
+                                {checkList.data.map((nav, index) => (
+                                    <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                        <ListItemButton sx={{ pl: 6 }}>
+                                            <ListItemIcon>
+                                                {nav.icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Collapse>
+                    </List>
+
+                </div>
 
                 <div>
                     <List

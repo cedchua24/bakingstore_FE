@@ -60,7 +60,9 @@ import ExpenseTransaction from "./components/ExpensesV2/ExpenseTransaction";
 import EditExpenseTransaction from "./components/ExpensesV2/EditExpenseTransaction";
 
 
-
+import AddCheckList from "./components/CheckList/AddCheckList";
+import EditCheckList from "./components/CheckList/EditCheckList";
+import CheckList from "./components/CheckList/CheckList";
 
 
 import AddCategory from "./components/Category/AddCategory";
@@ -146,6 +148,9 @@ import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
 import ProductSoldToday from "./components/dashboard/ProductSoldToday";
 import EmployeePerformance from "./components/dashboard/EmployeePerformance";
 import ProductSoldTodayCheckList from "./components/dashboard/ProductSoldTodayCheckList";
+import StaffCheckList from "./components/Employee/StaffCheckList";
+import UpdateStaffCheckList from "./components/Employee/UpdateStaffCheckList";
+
 
 import StartOfDay from "./components/dashboard/StartOfDay";
 
@@ -401,6 +406,10 @@ const App = () => {
 
 
 
+          <Route path="/checkList/AddCheckList" element={<AddCheckList />} />
+          <Route exact path="/checkList/editCheckList/:id" element={<EditCheckList />} />
+          <Route exact path="/checkList/checkList" element={<CheckList />} />
+
 
 
           <Route path="/addCategory" element={<AddCategory />} />
@@ -532,6 +541,9 @@ const App = () => {
           />
           {/* // Dashoard */}
           <Route exact path="/dashboard/productSoldToday/:id" element={<ProductSoldToday />} />
+          <Route exact path="/employee/staffCheckList/:id" element={<StaffCheckList />} />
+          <Route exact path="/employee/updateStaffCheckList/:id" element={<UpdateStaffCheckList />} />
+
           <Route exact path="/dashboard/productSoldTodayCheckList/:id" element={<ProductSoldTodayCheckList />} />
           <Route exact path="/dashboard/employeePerformance/:date" element={<EmployeePerformance />} />
 
