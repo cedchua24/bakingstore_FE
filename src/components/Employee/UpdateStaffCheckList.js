@@ -25,6 +25,7 @@ const UpdateStaffCheckList = () => {
         comment: '',
         time_of_day: '',
         status: '',
+        grade: '',
         created_at: '',
         updated_at: ''
     });
@@ -99,12 +100,12 @@ const UpdateStaffCheckList = () => {
                 <Form.Group className="mb-3" controlId="formAssignee">
                     <Form.Label>Assignee</Form.Label>
                     <Form.Select name="assignee" value={checkList.assignee} onChange={onChangeCheckList}>
+
                         <option value={0}>Select Assignee</option>
                         {userList.map((user) => (
                             <option value={user.id} key={user.id}>{user.name}</option>
                         ))}
                     </Form.Select>
-
                 </Form.Group>
 
                 <Form.Group className="mb-3" controlId="formChecker">
@@ -181,6 +182,25 @@ const UpdateStaffCheckList = () => {
                             🌙 EVENING
                         </option>
                     </Form.Select>
+
+                    <Form.Group className="mb-3" controlId="formGrade">
+                        <Form.Label>Grade</Form.Label>
+                        <Form.Select
+                            name="grade"
+                            value={checkList.grade}
+                            onChange={onChangeCheckList}
+                        >
+                            <option value={0}>Select Grade</option>
+
+                            <option value={1}>❌ 1 - Poor</option>
+                            <option value={2}>⚠️ 2 - Needs Improvement</option>
+                            <option value={3}>👌 3 - Satisfactory</option>
+                            <option value={4}>👍 4 - Good</option>
+                            <option value={5}>🏆 5 - Excellent</option>
+                        </Form.Select>
+
+
+                    </Form.Group>
 
                 </Form.Group>
 

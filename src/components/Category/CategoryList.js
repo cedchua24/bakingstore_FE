@@ -74,6 +74,7 @@ const CategoryList = () => {
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
+                        <th>Ordering</th>
                         <th>Category Name</th>
                         <th></th>
                         <th></th>
@@ -85,6 +86,7 @@ const CategoryList = () => {
                         categoryList.map((category, index) => (
                             <tr key={category.id} >
                                 <td>{category.id}</td>
+                                <td>{category.ordering}</td>
                                 <td>{category.category_name}</td>
                                 <td>
                                     <Link variant="primary" to={"/editCategory/" + category.id}   >

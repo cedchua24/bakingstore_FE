@@ -206,6 +206,7 @@ const StaffCheckList = () => {
                         <th>Frequency</th>
                         <th>Comment</th>
                         <th>Status</th>
+                        <th>Grade</th>
                         <th>Date</th>
                         <th></th>
                     </tr>
@@ -263,7 +264,44 @@ const StaffCheckList = () => {
                                 </td>
                                 <td><h6>{data.comment}</h6></td>
                                 <td style={{ color: statusColorTd[data.status] }}>{data.status}</td>
+                                <td style={{ textAlign: 'center', verticalAlign: 'middle' }}>
+                                    {(() => {
+                                        const gradeMap = {
+                                            1: { label: 'Poor', color: '#dc3545', icon: '❌' },
+                                            2: { label: 'Needs Improvement', color: '#fd7e14', icon: '⚠️' },
+                                            3: { label: 'Satisfactory', color: '#ffc107', icon: '👌' },
+                                            4: { label: 'Good', color: '#0d6efd', icon: '👍' },
+                                            5: { label: 'Excellent', color: '#198754', icon: '🏆' },
+                                        };
 
+                                        const grade = gradeMap[data.grade];
+
+                                        return grade ? (
+                                            <span
+                                                style={{
+                                                    backgroundColor: grade.color,
+                                                    color: '#fff',
+                                                    padding: '5px 10px',
+                                                    borderRadius: '20px',
+                                                    fontWeight: 'bold',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '6px',
+                                                    fontSize: '13px',
+                                                    lineHeight: 1.2,
+                                                    textAlign: 'center'
+                                                }}
+                                            >
+                                                <span>{grade.icon}</span>
+                                                <span>{data.grade}</span>
+                                                <span>{grade.label}</span>
+                                            </span>
+                                        ) : (
+                                            <span style={{ color: '#6c757d' }}></span>
+                                        );
+                                    })()}
+                                </td>
                                 <td>{data.date}</td>
                                 <td>
                                     <Link variant="primary" to={"/employee/updateStaffCheckList/" + data.id}   >
