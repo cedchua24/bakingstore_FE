@@ -13,6 +13,8 @@ const AddCategory = () => {
     const [category, setCategory] = useState({
         id: 0,
         category_name: '',
+        ordering: 0,
+        status: 0,
         created_at: '',
         updated_at: ''
     });
@@ -23,6 +25,16 @@ const AddCategory = () => {
 
     const onChangeCategory = (e) => {
         setCategory({ category_name: e.target.value });
+    }
+
+    const onChangeOrdering = (e) => {
+        setCategory({ ...category, ordering: Number(e.target.value) });
+    }
+
+    const isOrderingTaken = (ordering) => {
+        return categoryList.some(categoryItem =>
+            Number(categoryItem.ordering) === ordering && Number(categoryItem.id) !== Number(category.id)
+        );
     }
 
     const saveCategory = () => {
@@ -83,9 +95,30 @@ const AddCategory = () => {
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Category</Form.Label>
                     <Form.Control type="text" value={category.category_name} name="category_name" placeholder="Enter Category" onChange={onChangeCategory} />
-                    <Form.Text className="text-muted"  >
-                        ..
-                    </Form.Text>
+                </Form.Group>
+
+                <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Ordering</Form.Label>
+                    <Form.Select name="ordering" value={category.ordering} onChange={onChangeOrdering}>
+                        <option value={0}>Select Ordering</option>
+                        {
+                            [...Array(categoryList.length)].map((_, index) => {
+                                const ordering = index + 1;
+                                const orderingTaken = isOrderingTaken(ordering);
+
+                                return (
+                                    <option
+                                        key={ordering}
+                                        value={ordering}
+                                        disabled={orderingTaken}
+                                        style={orderingTaken ? { color: 'red', backgroundColor: '#f8d7da' } : {}}
+                                    >
+                                        {ordering}
+                                    </option>
+                                )
+                            })
+                        }
+                    </Form.Select>
                 </Form.Group>
 
                 <Button variant="primary" onClick={saveCategory}>
@@ -99,6 +132,7 @@ const AddCategory = () => {
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
+                        <th>Ordering</th>
                         <th>Category Name</th>
                         <th></th>
                         <th></th>
@@ -110,6 +144,7 @@ const AddCategory = () => {
                         categoryList.map((category, index) => (
                             <tr key={category.id} >
                                 <td>{category.id}</td>
+                                <td>{category.ordering}</td>
                                 <td>{category.category_name}</td>
                                 <td>
                                     <Link variant="primary" to={"/editCategory/" + category.id}   >
