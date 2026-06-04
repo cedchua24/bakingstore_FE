@@ -559,7 +559,7 @@ const AddProductCustomerOrderTransaction = () => {
                     constant_shop_order_price: response.data.shop_order_price,
                     fixed_price: response.data.new_price,
                     mup_profit: response.data.profit,
-                    mark_up_product_id: response.data.id,
+                    mark_up_product_id: response.data.mark_up_product_id,
                     order_profit: response.data.shop_order_profit,
                     product_id: response.data.product_id,
                     stock: response.data.business_type == 'WHOLESALE' ? response.data.stock : response.data.stock_pc,
@@ -675,11 +675,13 @@ const AddProductCustomerOrderTransaction = () => {
             ShopOrderService.update(orderSupplierModal.id, orderSupplierModal)
                 .then(response => {
                     console.log(response.data);
+                    setSubmitLoading(false);
+                    setOpen(false);
                     if (response.data.code == 200) {
                         setSubmitLoading(false);
                         setOpen(false);
                         window.scrollTo(0, 0);
-                        setValidator({
+                        setValidatorModal({
                             severity: 'success',
                             message: 'Successfuly Added!',
                             isShow: true,
@@ -689,7 +691,7 @@ const AddProductCustomerOrderTransaction = () => {
                         setSubmitLoading(false);
                         setOpen(false);
                         window.scrollTo(0, 0);
-                        setValidator({
+                        setValidatorModal({
                             severity: 'error',
                             message: response.data.message,
                             isShow: true,
@@ -697,7 +699,7 @@ const AddProductCustomerOrderTransaction = () => {
                     } else {
                         setSubmitLoading(false);
                         setOpen(false);
-                        setValidator({
+                        setValidatorModal({
                             severity: 'error',
                             message: "Unknown Error",
                             isShow: true,
@@ -706,6 +708,11 @@ const AddProductCustomerOrderTransaction = () => {
                 })
                 .catch(e => {
                     console.log(e);
+                    setValidatorModal({
+                        severity: 'error',
+                        message: e.response.data.message,
+                        isShow: true,
+                    });
                 });
         }
     }

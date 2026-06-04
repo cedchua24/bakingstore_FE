@@ -48,18 +48,12 @@ const ViewPendingProduct = () => {
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
 
-    const [sortedCustomer, setSortedCustomer] = useState({
-        data: [],
-        code: '',
-        message: '',
-        id: 0
-    });
 
 
     const onChangeInput = (e) => {
         console.log("status", e.target.value);
         console.log("status", e.target.name);
-        setSortedCustomer({ ...sortedCustomer, [e.target.name]: e.target.value });
+        setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
 
     }
 

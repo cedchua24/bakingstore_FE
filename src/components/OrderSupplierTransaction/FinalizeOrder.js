@@ -406,18 +406,43 @@ const FinalizeOrder = () => {
     const updateOrderTransaction = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
+
         OrderSupplierTransactionService.updateReceivedOrder(id, orderSupplierTransaction)
             .then(response => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-                navigate('/supplierTransactionList/');
+
+                if (response.data.code === 200) {
+                    setValidator({
+                        severity: 'success',
+                        message: response.data.message,
+                        isShow: true,
+                    });
+
+                    setTimeout(() => {
+                        navigate('/supplierTransactionList/');
+                    }, 2000);
+                } else {
+                    setValidator({
+                        severity: 'error',
+                        message: response.data.message || 'Something went wrong',
+                        isShow: true,
+                    });
+                }
             })
             .catch(e => {
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-                console.log(e);
+
+                setValidator({
+                    severity: 'error',
+                    message: e.response?.data?.message || e.message || 'Server Error',
+                    isShow: true,
+                });
+
+                console.log(e.response?.data || e);
             });
-    }
+    };
 
     const submitApproval = () => {
         setSubmitLoadingAdd(true);
@@ -523,14 +548,6 @@ const FinalizeOrder = () => {
 
     return (
         <div>
-            {message &&
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
-
-            }
             <Stack sx={{ width: '100%' }} spacing={2}>
                 {validator.isShow &&
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>

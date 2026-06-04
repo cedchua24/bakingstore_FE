@@ -66,6 +66,12 @@ const AddProductCustomerOrderTransaction = () => {
         isShow: false
     });
 
+    const [validatorModal, setValidatorModal] = useState({
+        severity: '',
+        message: '',
+        isShow: false
+    });
+
     const [submitLoading, setSubmitLoading] = useState(false);
     const [products, setProducts] = useState([]);
     const [value, setValue] = useState(products[0])
@@ -101,6 +107,7 @@ const AddProductCustomerOrderTransaction = () => {
         product_id: 0,
         product_name: '',
         price: 0,
+        stock: 0,
         quantity: 0,
         total_price: 0
     });
@@ -125,6 +132,11 @@ const AddProductCustomerOrderTransaction = () => {
 
     const handleOpen = (id, e) => {
         console.log('e', id);
+        setValidatorModal({
+            severity: '',
+            message: '',
+            isShow: false,
+        });
         fetchShopOrder(id);
         setOpen(true);
     }
@@ -410,13 +422,42 @@ const AddProductCustomerOrderTransaction = () => {
         setDeleteOpenModal(true);
     }
 
-    const updateOrderSupplier = () => {
+    const updateOrderSupplier = async () => {
         setSubmitLoading(true);
-        ShopOrderService.update(orderSupplierModal.id, orderSupplierModal)
-            .then(response => {
+
+        if (Number(orderSupplierModal.quantity) < 1 || orderSupplierModal.quantity === '') {
+            setValidatorModal({
+                severity: 'warning',
+                message: 'Please insert Quantity',
+                isShow: true,
+            });
+            setSubmitLoading(false);
+        } else if (orderSupplierModal.stock !== undefined && Number(orderSupplierModal.quantity) > Number(orderSupplierModal.stock)) {
+            setValidatorModal({
+                severity: 'error',
+                message: 'Quantity is more than to Stock',
+                isShow: true,
+            });
+            setSubmitLoading(false);
+        } else if (Number(orderSupplierModal.price) < 1) {
+            setValidatorModal({
+                severity: 'warning',
+                message: 'Please input Valid Price',
+                isShow: true,
+            });
+            setSubmitLoading(false);
+        } else {
+            setValidatorModal({
+                severity: '',
+                message: '',
+                isShow: false,
+            });
+
+            try {
+                const response = await ShopOrderService.update(orderSupplierModal.id, orderSupplierModal);
                 console.log(response.data);
+
                 if (response.data.code == 200) {
-                    setSubmitLoading(false);
                     setOpen(false);
                     window.scrollTo(0, 0);
                     setValidator({
@@ -425,28 +466,27 @@ const AddProductCustomerOrderTransaction = () => {
                         isShow: true,
                     });
                     fetchShopOrderDTO(id);
-                } else if (response.data.code == 400) {
                     setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
+                } else {
+                    setSubmitLoading(false);
+                    setValidatorModal({
                         severity: 'error',
                         message: response.data.message,
                         isShow: true,
                     });
-                } else {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    setValidator({
-                        severity: 'error',
-                        message: "Unknown Error",
-                        isShow: true,
-                    });
                 }
-            })
-            .catch(e => {
+            } catch (e) {
                 console.log(e);
-            });
+                setSubmitLoading(false);
+                setValidatorModal({
+                    severity: 'error',
+                    message: e.response?.data?.message || 'Something went wrong.',
+                    isShow: true,
+                });
+            } finally {
+                setSubmitLoading(false);
+            }
+        }
     }
 
     const finalizeOrder = () => {
@@ -694,7 +734,12 @@ const AddProductCustomerOrderTransaction = () => {
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
                         Update Product
                     </Typography>
-                    {submitLoading &&
+                    <Stack sx={{ width: '100%', mt: 2, mb: 2 }} spacing={2}>
+                        {(validatorModal.isShow || validatorModal.message) &&
+                            <Alert variant="filled" severity={validatorModal.severity}>{validatorModal.message}</Alert>
+                        }
+                    </Stack>
+                    {submitLoading && !validatorModal.message &&
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
                             <CircularProgress />
                         </div>
@@ -753,8 +798,9 @@ const AddProductCustomerOrderTransaction = () => {
                     >
                         <Button
                             variant="contained"
-                            type="submit"
+                            type="button"
                             onClick={updateOrderSupplier}
+                            disabled={submitLoading}
                             size="large" >
                             Submit
                         </Button>

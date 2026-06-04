@@ -24,6 +24,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import LinearProgress from '@mui/material/LinearProgress';
+import "./CustomerOrderTransactionList.css";
 
 const PendingTransactionList = () => {
 
@@ -500,7 +501,7 @@ const PendingTransactionList = () => {
 
 
     return (
-        <div>
+        <div className="customer-report-page">
             {/* <div style={{ float: 'right', marginRight: 500 }}>
 
                 {
@@ -520,18 +521,24 @@ const PendingTransactionList = () => {
 
             </div> */}
 
-            <div>
-                <Form>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+            <section className="customer-report-hero">
+                <div>
+                    <p className="customer-report-eyebrow">Payment report</p>
+                    <h1>Pending Payments</h1>
+                    <p className="customer-report-date">Transactions that still need payment review</p>
+                </div>
+
+                <Form className="customer-report-filter customer-report-filter-wide">
+                    <Form.Group controlId="pendingTransactionDateFrom">
                         <Form.Label>Date From:</Form.Label>
                         <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
                     </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Group controlId="pendingTransactionDateTo">
                         <Form.Label>Date To:</Form.Label>
                         <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
                     </Form.Group>
                     <Form.Select
-                        className="mb-3"
+                        className="customer-report-form-select"
                         name="is_pickup_status"
                         onChange={onChangeInput}
                     >
@@ -543,52 +550,58 @@ const PendingTransactionList = () => {
                     <Button variant="primary" onClick={saveOrderTransaction} disabled={isDeliveryDisabled}>
                         Find
                     </Button>
-                    {submitDeliveryLoadingDisabled &&
-                        <LinearProgress color="warning" />
-                    }
-                    <br></br>
-                    <br></br>
                 </Form >
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Total Count:</Form.Label>
-                    <Form.Control type="text" value={shopOrderTransaction.data.length} disabled />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Total Balance:</Form.Label>
-                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_price - (shopOrderTransaction.total_cash + shopOrderTransaction.total_online))} disabled />
-                </Form.Group>
-            </div>
+            </section>
 
+            <section className="customer-report-kpis customer-report-kpis-compact">
+                <article className="customer-report-kpi">
+                    <span>Total Count</span>
+                    <strong>{shopOrderTransaction.data.length}</strong>
+                </article>
+                <article className="customer-report-kpi">
+                    <span>Total Balance</span>
+                    <strong>{numberFormat(shopOrderTransaction.total_price - (shopOrderTransaction.total_cash + shopOrderTransaction.total_online))}</strong>
+                </article>
+            </section>
 
+            {submitDeliveryLoadingDisabled &&
+                <div className="customer-report-progress">
+                    <LinearProgress color="warning" />
+                </div>
+            }
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Pending Payment transaction </legend>
+            <section className="customer-report-table-card">
+                <div className="customer-report-table-header">
+                    <div>
+                        <p className="customer-report-eyebrow">Details</p>
+                        <h2>Pending Payment Transaction</h2>
+                    </div>
+                    <span>{shopOrderTransaction.data.length} records</span>
+                </div>
             {submitLoading ?
                 (<LinearProgress />)
                 :
                 (<>
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr class="table-secondary">
+                    <div className="customer-report-table-wrap">
+                    <table className="customer-report-table customer-report-table-transaction">
+                        <thead>
+                            <tr>
                                 <th>ID</th>
-                                <th>Shop Name</th>
-                                <th>Customer Type</th>
+                                <th>Shop</th>
+                                <th className="customer-report-optional-col">Customer Type</th>
                                 <th>Customer</th>
-                                <th>Total Quantity</th>
-                                <th>Total Cash</th>
-                                <th>Total Online</th>
+                                <th>Qty</th>
+                                <th className="customer-report-optional-col">Total Cash</th>
+                                <th className="customer-report-optional-col">Total Online</th>
                                 <th>Bank</th>
-                                <th>Total Amount</th>
-                                <th>Profit</th>
+                                <th>Total</th>
+                                <th className="customer-report-optional-col">Profit</th>
                                 <th>Date</th>
-                                <th>Payment Status</th>
-                                <th>For Trucking</th>
+                                <th>Payment</th>
+                                <th>Delivery</th>
                                 <th>Rider</th>
-                                <th>Pick Up Status</th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
+                                <th>Pick Up</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -598,26 +611,24 @@ const PendingTransactionList = () => {
                                     <tr key={shopOrderTransaction.id} >
                                         <td>{shopOrderTransaction.id}</td>
                                         <td>{shopOrderTransaction.shop_name}</td>
-                                        <td>{shopOrderTransaction.customer_type}</td>
+                                        <td className="customer-report-optional-col">{shopOrderTransaction.customer_type}</td>
                                         <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                        <td>{shopOrderTransaction.total_cash}</td>
-                                        <td>{shopOrderTransaction.total_online}</td>
-                                        <td>{
-                                            shopOrderTransaction.mode_of_payment.map((sot, index) => (
-                                                <>
-                                                    <tr>
-                                                        <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
-                                                        <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
-                                                    </tr>
-                                                </>
-                                            )
-                                            )
-                                        }</td>
+                                        <td className="customer-report-optional-col">{shopOrderTransaction.total_cash}</td>
+                                        <td className="customer-report-optional-col">{shopOrderTransaction.total_online}</td>
+                                        <td>
+                                            <div className="customer-report-bank-list">
+                                                {shopOrderTransaction.mode_of_payment.map((sot, index) => (
+                                                    <span key={`${shopOrderTransaction.id}-${sot.payment_type}-${index}`}>
+                                                        {numberFormat(sot.amount)} <small>{sot.payment_type}</small>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </td>
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                         {
                                             role == 2 && (
-                                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
+                                                <td className="customer-report-optional-col" style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
                                                 </td>
                                             )
                                         }
@@ -662,45 +673,39 @@ const PendingTransactionList = () => {
                                         </td>
 
                                         <td>
-                                            <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id + "+" + date}   >
-                                                <Button variant="primary" >
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            {shopOrderTransaction.shop_order_transaction_total_quantity != 0 ? (
-                                                <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
-                                                    <Button variant="primary" >
-                                                        Print Receipt
+                                            <div className="customer-report-actions">
+                                                <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}>
+                                                    <Button className="customer-report-update-btn" size="sm" variant="success">
+                                                        Update
                                                     </Button>
                                                 </Link>
-                                            ) : ""
-                                            }
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}   >
-                                                <Button variant="success" >
-                                                    Update
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            {
-                                                shopOrderTransaction.status != 3 &&
-                                                <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
-                                                    <span>
-                                                        <Button
-                                                            variant="danger"
-                                                            onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
-                                                            disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
-                                                            color="error"
-                                                        >
-                                                            Delete
+                                                <Link to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id + "+" + date}>
+                                                    <Button size="sm" variant="outline-primary">
+                                                        View
+                                                    </Button>
+                                                </Link>
+                                                {shopOrderTransaction.shop_order_transaction_total_quantity != 0 && (
+                                                    <Link to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}>
+                                                        <Button size="sm" variant="outline-secondary">
+                                                            Receipt
                                                         </Button>
-                                                    </span>
-                                                </Tooltip>
-                                            }
+                                                    </Link>
+                                                )}
+                                                {shopOrderTransaction.status != 3 &&
+                                                    <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
+                                                        <span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline-danger"
+                                                                onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
+                                                                disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                            >
+                                                                Delete
+                                                            </Button>
+                                                        </span>
+                                                    </Tooltip>
+                                                }
+                                            </div>
                                         </td>
                                         {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
@@ -719,8 +724,10 @@ const PendingTransactionList = () => {
                             }
                         </tbody>
                     </table>
+                    </div>
                 </>)
             }
+            </section>
             <Dialog
                 open={submitOpenModal}
                 onClose={handleSubmitCloseModal}
