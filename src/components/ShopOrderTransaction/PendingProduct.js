@@ -19,6 +19,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import LinearProgress from '@mui/material/LinearProgress';
+import "./CustomerOrderTransactionList.css";
 
 const PendingProduct = () => {
 
@@ -123,22 +124,27 @@ const PendingProduct = () => {
 
 
     return (
-        <div>
+        <div className="customer-report-page">
+            <section className="customer-report-hero">
+                <div>
+                    <p className="customer-report-eyebrow">Inventory report</p>
+                    <h1>Pending Products</h1>
+                    <p className="customer-report-date">Floated product summary</p>
+                </div>
 
-            <div>
-                <Form>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                <Form className="customer-report-filter customer-report-filter-wide">
+                    <Form.Group controlId="pendingProductDateFrom">
                         <Form.Label>Date From:</Form.Label>
                         <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
                     </Form.Group>
 
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Group controlId="pendingProductDateTo">
                         <Form.Label>Date To:</Form.Label>
                         <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
                     </Form.Group>
 
                     <Form.Select
-                        className="mb-3"
+                        className="customer-report-form-select"
                         name="status"
                         onChange={onChangeInput}
                     >
@@ -152,30 +158,44 @@ const PendingProduct = () => {
                         disabled={isAddDisabled}>
                         Find
                     </Button>
-                    <br></br>
-                    <br></br>
-                    {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
-                    }
-                    <br></br>
-                    <br></br>
-
                 </Form >
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Total Count:</Form.Label>
-                    <Form.Control type="text" value={shopOrderTransaction.data.length} disabled />
-                </Form.Group>
-            </div>
+            </section>
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Pending/Floated Product </legend>
+            <section className="customer-report-kpis customer-report-kpis-compact">
+                <article className="customer-report-kpi">
+                    <span>Total Count</span>
+                    <strong>{shopOrderTransaction.data.length}</strong>
+                </article>
+                <article className="customer-report-kpi">
+                    <span>Report Type</span>
+                    <strong>Pending</strong>
+                    <small>Floated products requiring review</small>
+                </article>
+            </section>
+
+                    {submitLoadingAdd &&
+                <div className="customer-report-progress">
+                        <LinearProgress color="warning" />
+                </div>
+                    }
+
+            <section className="customer-report-table-card">
+                <div className="customer-report-table-header">
+                    <div>
+                        <p className="customer-report-eyebrow">Details</p>
+                        <h2>Pending/Floated Product</h2>
+                    </div>
+                    <span>{shopOrderTransaction.data.length} records</span>
+                </div>
             {
                 submitLoading ?
                     (<LinearProgress />)
                     :
                     (<>
-                        <table class="table table-bordered">
-                            <thead class="table-dark">
-                                <tr class="table-secondary">
+                            <div className="customer-report-table-wrap">
+                        <table className="customer-report-table customer-report-table-simple">
+                            <thead>
+                                <tr>
                                     <th>ID</th>
                                     <th>Product Name</th>
                                     <th>Floated Quantity</th>
@@ -188,14 +208,14 @@ const PendingProduct = () => {
                                 {
                                     shopOrderTransaction.data.map((data, index) => (
                                         <tr key={data.id} >
-                                            <td>{data.id}</td>
-                                            <td>{data.product_name}</td>
+                                            <td className="customer-report-id">#{data.id}</td>
+                                            <td><strong>{data.product_name}</strong></td>
 
                                             <td style={{ fontWeight: 'bold', }}>{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td>
 
                                             <td>
                                                 <Link variant="primary" to={"../shopOrderTransaction/viewPendingProduct/" + data.id + "/" + customerOrderDate.status + "/" + customerOrderDate.dateFrom + "/" + customerOrderDate.dateTo}   >
-                                                    <Button variant="primary" >
+                                                    <Button size="sm" variant="outline-primary" >
                                                         View
                                                     </Button>
                                                 </Link>
@@ -207,8 +227,10 @@ const PendingProduct = () => {
                                 }
                             </tbody>
                         </table>
+                            </div>
                     </>)
             }
+            </section>
 
 
         </div >

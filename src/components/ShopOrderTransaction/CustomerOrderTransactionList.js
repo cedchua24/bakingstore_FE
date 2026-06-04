@@ -37,6 +37,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import moment from "moment";
 
 import LinearProgress from '@mui/material/LinearProgress';
+import "./CustomerOrderTransactionList.css";
 
 const CustomerOrderTransactionList = () => {
 
@@ -721,494 +722,348 @@ const CustomerOrderTransactionList = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    const money = (value) => numberFormat(value || 0);
+
+    const totalPaidToday = (shopOrderTransaction.total_paid || 0) + (shopOrderTransaction.total_paid_prev || 0);
+    const totalCashToday = (shopOrderTransaction.total_cash || 0) + (shopOrderTransaction.total_cash_prev || 0);
+    const totalOnlineToday = (shopOrderTransaction.total_online || 0) + (shopOrderTransaction.total_online_prev || 0);
+    const totalReportExpenses = expensesMandatory.total_expense || expensesMandatory.total_expenses || 0;
+    const netProfit = (discountLoss.total_amount || 0) + (shopOrderTransaction.total_profit || 0) - totalReportExpenses + (spoilage.total_cost || 0);
+
+    const paymentStatusClass = (status) => {
+        if (status === 1) return "status-pill status-success";
+        if (status === 2) return "status-pill status-warning";
+        return "status-pill status-danger";
+    };
+
+    const paymentStatusLabel = (status) => {
+        if (status === 1) return "Completed";
+        if (status === 2) return "Pending";
+        return "Cancelled";
+    };
+
+    const pickupStatusClass = (isPickup) => isPickup === 1 ? "status-pill status-success" : "status-pill status-warning";
 
 
     return (
-        <div style={{ marginLeft: -250 }}>
+        <div className="customer-report-page">
+            <section className="customer-report-hero">
+                <div>
+                    <p className="customer-report-eyebrow">Daily customer order report</p>
+                    <h1>Online Orders</h1>
+                    <p className="customer-report-date">{moment(customerOrderDate.date).format("MMMM D, YYYY")}</p>
+                </div>
 
-
-            <div style={{ float: 'right' }}>
-                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label> Expenses</Form.Label>
-                    <Link variant="primary" to={"../reports/reportExpensesView/" + customerOrderDate.date}   >
-                        <PageviewIcon color="primary" />
-                    </Link>
-                    <Form.Control type="text" value={numberFormat(expenses.total_expenses)} />
-                </Form.Group>
-                {expenseV2.total_expense != 0 && expenseV2.total_expense != null &&
-                    <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label> Expenses V2</Form.Label>
-                        <Link variant="primary" to={"../expensesV2/viewExpenseTransactionDate/" + customerOrderDate.date}   >
-                            <PageviewIcon color="primary" />
-                        </Link>
-                        <Form.Control type="text" value={numberFormat(expenseV2.total_expense)} />
-                    </Form.Group>
-                }
-                <br></br>
-                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label> Spoilage</Form.Label>
-                    <Link variant="primary" to={"../reports/viewSpoilageReport/" + customerOrderDate.date}   >
-                        <PageviewIcon color="primary" />
-                    </Link>
-                    <Form.Control type="text" value={numberFormat(spoilage.total_cost)} />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label> Discount</Form.Label>
-                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscount/" + customerOrderDate.date}   >
-                        <PageviewIcon color="primary" />
-                    </Link>
-                    <Form.Control type="text" value={numberFormat(discount.total_amount)} />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label> Discount Loss</Form.Label>
-                    <Link variant="primary" to={"../shopOrderTransaction/viewDiscountLoss/" + customerOrderDate.date}   >
-                        <PageviewIcon color="primary" />
-                    </Link>
-                    <Form.Control type="text" value={numberFormat(discountLoss.total_amount)} />
-                </Form.Group>
-                <br></br>
-                <legend align="center" style={{ fontWeight: 'bold' }} >  Report   </legend>
-                <table class="table table-bordered">
-                    <thead class="table-dark">
-                        <tr class="table-secondary">
-                            <th></th>
-                            <th></th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            role == 2 && (
-                                <tr  >
-                                    <td>Total Profit: </td>
-                                    <td>{numberFormat(shopOrderTransaction.total_profit)}</td>
-                                </tr>
-                            )
-                        }
-
-                        <tr  >
-                            <td>Total Discount Loss: </td>
-                            <td>{numberFormat(discountLoss.total_amount)}</td>
-                        </tr>
-                        <tr  >
-                            <td>Total Expenses: </td>
-                            <td>{numberFormat(expensesMandatory.total_expense)}</td>
-                        </tr>
-                        {expenseV2.total_expense != 0 && expenseV2.total_expense != null &&
-                            <tr  >
-                                <td>Total Expenses: </td>
-                                <td>{numberFormat(expenseV2.total_expense)}</td>
-                            </tr>
-                        }
-                        <tr  >
-                            <td>Total Spoilage: </td>
-                            <td>{numberFormat(spoilage.total_cost)}</td>
-                        </tr>
-                        {
-                            role == 2 && (
-                                <tr  >
-                                    <td style={{ fontWeight: 'bold', }}>Net Profit: </td>
-                                    <td style={{ fontWeight: 'bold', }}>{numberFormat(discountLoss.total_amount + shopOrderTransaction.total_profit - expensesMandatory.total_expenses + spoilage.total_cost)}</td>
-                                </tr>
-                            )
-                        }
-
-                        <br></br>
-                        <Button
-                            variant="success"
-                            onClick={sendReport}
-                            disabled={isAddDisabled}
-                        >
-                            Send Report
-                        </Button>
-                        <br></br>
-                        <br></br>
-                        {submitLoadingReport &&
-                            <Box sx={{ width: '100%' }}>
-                                <LinearProgress />
-                            </Box>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-
-            <div style={{ float: 'right', marginRight: 30 }}>
-
-                {
-                    shopOrderTransaction.payment.map((payment, index) => (
-                        <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description} </Form.Label>
-                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + customerOrderDate.date}   >
-                                <PageviewIcon color="primary" />
-                            </Link>
-                            {payment.total_paid_count != payment.total_count ?
-                                <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
-                                    <span>
-                                        <CloseIcon style={{ color: 'red', }} />
-                                    </span>
-                                </Tooltip> : <CheckIcon style={{ color: 'green', }} />}
-                            <Form.Control type="text" value={numberFormat(payment.total_amount)} />
-
-                        </Form.Group>
-                    )
-                    )
-                }
-
-            </div>
-
-
-            <div style={{ float: 'right', marginRight: 100 }}>
-
-                {
-                    <>
-                        {shopOrderTransaction.total_paid != 0 &&
-                            <>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label style={{ fontWeight: 'bold', }} >Current Transaction </Form.Label>
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Total Paid: </Form.Label>
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_paid)} />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Cash: </Form.Label>
-
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash)} />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Online: </Form.Label>
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online)} />
-                                </Form.Group>
-                            </>
-                        }
-                        {shopOrderTransaction.total_paid_prev != 0 &&
-                            <>
-                                <br></br>
-                                <br></br>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label style={{ fontWeight: 'bold', }}>Previous Transaction Paid Today </Form.Label>
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Total Paid : </Form.Label>
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_paid_prev)} />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Cash: </Form.Label>
-                                    <Link
-                                        variant="primary"
-                                        to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/1`}
-                                    >
-                                        <PageviewIcon color="primary" />
-                                    </Link>
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash_prev)} />
-                                </Form.Group>
-
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Online: </Form.Label>
-                                    <Link
-                                        variant="primary"
-                                        to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/1`}
-                                    >
-                                        <PageviewIcon color="primary" />
-                                    </Link>
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online_prev)} />
-
-                                </Form.Group>
-
-                            </>
-                        }
-
-                        {shopOrderTransaction.total_paid_outdated != 0 &&
-                            <>
-                                <br></br>
-                                <br></br>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label style={{ fontWeight: 'bold', }}>Post Transaction Paid</Form.Label>
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Total Paid : </Form.Label>
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_paid_outdated)} />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Cash: </Form.Label>
-                                    <Link
-                                        variant="primary"
-                                        to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/2`}
-                                    >
-                                        <PageviewIcon color="primary" />
-                                    </Link>
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash_outdated)} />
-                                </Form.Group>
-                                <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                    <Form.Label>Online: </Form.Label>
-                                    <Link
-                                        variant="primary"
-                                        to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/2`}
-                                    >
-                                        <PageviewIcon color="primary" />
-                                    </Link>
-                                    <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online_outdated)} />
-                                </Form.Group>
-                            </>
-                        }
-                    </>
-
-                }
-
-            </div>
-
-            <div>
-                <Form>
-
-                    {/* <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                        <Form.Label>Date</Form.Label>
-                        <Form.Control type="date" name="date" onChange={onChangeInput} />
-                    </Form.Group> */}
-                    {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                <Form className="customer-report-filter">
+                    {formErrors.date && <p className="customer-report-error">{formErrors.date}</p>}
+                    <Form.Group controlId="customerOrderReportDate">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" name="date" value={customerOrderDate.date} onChange={onChangeInput} />
                     </Form.Group>
-
-                    <Box sx={{ minWidth: 120 }}>
-                        <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                            <InputLabel id="demo-simple-select-label">Choose Status</InputLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={status}
-                                label="Status"
-                                name="status"
-                                onChange={onChangeInput}
-                                disabled
-                            >
-                                <MenuItem disabled value="" style={{ fontWeight: 'bold' }}>
-                                    <em>Payment Status</em>
-                                </MenuItem>
-                                <MenuItem value="1" style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</MenuItem>
-                                <MenuItem value="2" style={{ color: 'orange', }}>PENDING</MenuItem>
-                                <MenuItem value="3" style={{ color: 'red', }}>CANCELLED</MenuItem>
-                                <MenuItem disabled value="" style={{ fontWeight: 'bold' }}>
-                                    <em>Rider Status</em>
-                                </MenuItem>
-                                <MenuItem value="5" style={{ color: 'green', }}>DONE</MenuItem>
-                                <MenuItem value="4" style={{ color: 'orange', }}>WAITING</MenuItem>
-
-                            </Select>
-                        </FormControl>
-                    </Box>
-                    <Button variant="primary"
-                        onClick={saveOrderTransaction}
-                        disabled={isAddDisabled}
-                    >
+                    <FormControl className="customer-report-status-select" size="small">
+                        <InputLabel id="customer-order-status-label">Status</InputLabel>
+                        <Select
+                            labelId="customer-order-status-label"
+                            id="customer-order-status"
+                            value={status}
+                            label="Status"
+                            name="status"
+                            onChange={onChangeInput}
+                            disabled
+                        >
+                            <MenuItem value={0}>All Status</MenuItem>
+                            <MenuItem disabled value=""><em>Payment Status</em></MenuItem>
+                            <MenuItem value="1">COMPLETED</MenuItem>
+                            <MenuItem value="2">PENDING</MenuItem>
+                            <MenuItem value="3">CANCELLED</MenuItem>
+                            <MenuItem disabled value=""><em>Rider Status</em></MenuItem>
+                            <MenuItem value="5">DONE</MenuItem>
+                            <MenuItem value="4">WAITING</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <Button variant="light" onClick={saveOrderTransaction} disabled={isAddDisabled}>
                         Find
                     </Button>
-                    <br></br>
-                    <br></br>
-                    {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
+                </Form>
+            </section>
+
+            {submitLoadingAdd &&
+                <div className="customer-report-progress">
+                    <LinearProgress color="warning" />
+                </div>
+            }
+
+            <section className="customer-report-kpis">
+                <article className="customer-report-kpi">
+                    <span>Transactions</span>
+                    <strong>{shopOrderTransaction.total_count || 0}</strong>
+                </article>
+                <article className="customer-report-kpi">
+                    <span>Completed Sales</span>
+                    <strong>{money(shopOrderTransaction.total_sales_completed)}</strong>
+                </article>
+                <article className="customer-report-kpi">
+                    <span>Paid Today</span>
+                    <strong>{money(totalPaidToday)}</strong>
+                    <small>{money(totalCashToday)} cash / {money(totalOnlineToday)} online</small>
+                </article>
+                <article className="customer-report-kpi customer-report-photo-card">
+                    <img src="/mapi_blossom.jpg" alt="Mapi Blossom" />
+                </article>
+                {role == 2 && (
+                    <article className="customer-report-kpi customer-report-kpi-profit">
+                        <span>Total Profit</span>
+                        <strong>{money(shopOrderTransaction.total_profit)}</strong>
+                    </article>
+                )}
+            </section>
+
+            <section className="customer-report-summary-grid">
+                <article className="customer-report-panel">
+                    <div className="customer-report-panel-header">
+                        <div>
+                            <p className="customer-report-eyebrow">Collection</p>
+                            <h2>Payment Breakdown</h2>
+                        </div>
+                    </div>
+
+                    <div className="customer-report-payment-list">
+                        {shopOrderTransaction.payment.length == 0 ? (
+                            <p className="customer-report-muted">No payment data available.</p>
+                        ) : shopOrderTransaction.payment.map((payment) => (
+                            <div className="customer-report-payment-row" key={payment.id}>
+                                <div>
+                                    <strong>{payment.payment_type}</strong>
+                                    <span>{payment.payment_type_description}</span>
+                                </div>
+                                <div className="customer-report-payment-actions">
+                                    <Link to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + customerOrderDate.date}>
+                                        <PageviewIcon color="primary" />
+                                    </Link>
+                                    {payment.total_paid_count != payment.total_count ?
+                                        <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
+                                            <span><CloseIcon className="customer-report-icon-danger" /></span>
+                                        </Tooltip> : <CheckIcon className="customer-report-icon-success" />}
+                                    <strong>{money(payment.total_amount)}</strong>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="customer-report-mini-grid">
+                        <div>
+                            <span>Current Paid</span>
+                            <strong>{money(shopOrderTransaction.total_paid)}</strong>
+                        </div>
+                        <div>
+                            <span>Previous Paid</span>
+                            <strong>{money(shopOrderTransaction.total_paid_prev)}</strong>
+                            <Link to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/1`}>Cash</Link>
+                            <Link to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/1`}>Online</Link>
+                        </div>
+                        <div>
+                            <span>Post Paid</span>
+                            <strong>{money(shopOrderTransaction.total_paid_outdated)}</strong>
+                            <Link to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/2`}>Cash</Link>
+                            <Link to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/2`}>Online</Link>
+                        </div>
+                    </div>
+                </article>
+
+                <article className="customer-report-panel">
+                    <div className="customer-report-panel-header">
+                        <div>
+                            <p className="customer-report-eyebrow">Report</p>
+                            <h2>Costs and Adjustments</h2>
+                        </div>
+                        <Button variant="success" onClick={sendReport} disabled={isAddDisabled}>
+                            Send Report
+                        </Button>
+                    </div>
+
+                    {submitLoadingReport &&
+                        <div className="customer-report-progress">
+                            <LinearProgress />
+                        </div>
                     }
-                    <br></br>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label style={{ fontWeight: 'bold', }}>Transaction Today</Form.Label>
-                    </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Transaction Count: </Form.Label>
-                        <Form.Control type="text" value={shopOrderTransaction.total_count} />
-                    </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Transaction Completed: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_sales_completed)} />
-                    </Form.Group>
-                    {
-                        role == 2 && (
-                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label>Total Profit: </Form.Label>
-                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_profit)} />
-                            </Form.Group>
-                        )
-                    }
 
-                    <br></br>
-                    <br></br>
-                    {shopOrderTransaction.total_paid != 0 &&
-                        <>
-                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold', }}>Sales Today</Form.Label>
-                            </Form.Group>
-                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label>Total Paid : </Form.Label>
-                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_paid + shopOrderTransaction.total_paid_prev)} />
-                            </Form.Group>
-                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label>Cash: </Form.Label>
-                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_cash + shopOrderTransaction.total_cash_prev)} />
-                            </Form.Group>
-                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label>Online: </Form.Label>
-                                <Form.Control type="text" value={numberFormat(shopOrderTransaction.total_online + shopOrderTransaction.total_online_prev)} />
-                            </Form.Group>
-                        </>
-                    }
-
-
-
-                </Form >
-            </div>
-
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Online Orders  </legend>
-
-
-            <table class="table table-bordered" >
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Shop Name</th>
-                        <th>Customer Type</th>
-                        <th>Customer</th>
-                        <th>Total Quantity</th>
-                        <th>Total Cash</th>
-                        <th>Total Online</th>
-                        <th>Bank</th>
-                        <th>Total Amount</th>
-                        {
-                            role == 2 && (
-                                <th>Profit</th>
-                            )
+                    <div className="customer-report-stat-list">
+                        {role == 2 && <div><span>Total Profit</span><strong>{money(shopOrderTransaction.total_profit)}</strong></div>}
+                        <div>
+                            <span>Expenses</span>
+                            <strong>{money(expenses.total_expenses)}</strong>
+                            <Link to={"../reports/reportExpensesView/" + customerOrderDate.date}><PageviewIcon color="primary" /></Link>
+                        </div>
+                        {expenseV2.total_expense != 0 && expenseV2.total_expense != null &&
+                            <div>
+                                <span>Expenses V2</span>
+                                <strong>{money(expenseV2.total_expense)}</strong>
+                                <Link to={"../expensesV2/viewExpenseTransactionDate/" + customerOrderDate.date}><PageviewIcon color="primary" /></Link>
+                            </div>
                         }
-                        <th>Date</th>
-                        <th>Payment Status</th>
-                        <th>For Trucking</th>
-                        <th>Rider</th>
-                        <th>Pick Up Status</th>
-                        <th ></th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                {shopOrderTransaction.data.length == 0 ?
-                    (<tr style={{ color: "red", }}>{"No Data Available"}</tr>)
-                    :
-                    (
+                        <div>
+                            <span>Discount Loss</span>
+                            <strong>{money(discountLoss.total_amount)}</strong>
+                            <Link to={"../shopOrderTransaction/viewDiscountLoss/" + customerOrderDate.date}><PageviewIcon color="primary" /></Link>
+                        </div>
+                        <div>
+                            <span>Discount</span>
+                            <strong>{money(discount.total_amount)}</strong>
+                            <Link to={"../shopOrderTransaction/viewDiscount/" + customerOrderDate.date}><PageviewIcon color="primary" /></Link>
+                        </div>
+                        <div>
+                            <span>Spoilage</span>
+                            <strong>{money(spoilage.total_cost)}</strong>
+                            <Link to={"../reports/viewSpoilageReport/" + customerOrderDate.date}><PageviewIcon color="primary" /></Link>
+                        </div>
+                        {role == 2 && <div className="customer-report-net"><span>Net Profit</span><strong>{money(netProfit)}</strong></div>}
+                    </div>
+                </article>
+            </section>
+
+            <section className="customer-report-table-card">
+                <div className="customer-report-table-header">
+                    <div>
+                        <p className="customer-report-eyebrow">Details</p>
+                        <h2>Online Orders</h2>
+                    </div>
+                    <span>{shopOrderTransaction.data.length} records</span>
+                </div>
+
+                <div className="customer-report-table-wrap">
+                    <table className="customer-report-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Shop</th>
+                                <th>Customer</th>
+                                <th>Qty</th>
+                                <th>Cash</th>
+                                <th>Online</th>
+                                <th>Bank</th>
+                                <th>Total</th>
+                                {role == 2 && <th>Profit</th>}
+                                <th>Date</th>
+                                <th>Payment</th>
+                                <th>Delivery</th>
+                                <th>Pick Up</th>
+                                <th>Rider</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
                         <tbody>
-
-                            {
-                                shopOrderTransaction.data.map((shopOrderTransaction, index) => (
-                                    <tr key={shopOrderTransaction.id} style={{ border: "2px solid black" }}>
-                                        <td >{shopOrderTransaction.id}</td>
-                                        <td>{shopOrderTransaction.shop_name}</td>
-                                        <td>{shopOrderTransaction.customer_type}</td>
-                                        <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
-                                        <td>{shopOrderTransaction.shop_order_transaction_total_quantity != 0 ? shopOrderTransaction.shop_order_transaction_total_quantity : ""}</td>
-                                        <td>{shopOrderTransaction.total_cash != 0 ? numberFormat(shopOrderTransaction.total_cash) : ""}</td>
-                                        <td>{shopOrderTransaction.total_online != 0 ? numberFormat(shopOrderTransaction.total_online) : ""}</td>
-                                        <td>{
-                                            shopOrderTransaction.mode_of_payment.map((sot, index) => (
-                                                <>
-                                                    <tr>
-                                                        <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
-                                                        <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
-                                                    </tr>
-                                                </>
-                                            )
-                                            )
-                                        }</td>
-
-                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price != 0 ? numberFormat(shopOrderTransaction.shop_order_transaction_total_price) : ""}</td>
-                                        {
-                                            role == 2 && (
-                                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
-                                                </td>
-                                            )
-                                        }
-                                        <td>{shopOrderTransaction.date != shopOrderTransaction.created_at ? <p style={{ fontWeight: 'bold', color: 'orange', }}>{shopOrderTransaction.date}</p>
-                                            : shopOrderTransaction.date}
-                                            {shopOrderTransaction.status == 2 && shopOrderTransaction.is_pickup == 0 ?
-                                                <IconButton>
-                                                    <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
-                                                </IconButton> : ""
+                            {shopOrderTransaction.data.length == 0 ? (
+                                <tr>
+                                    <td className="customer-report-empty" colSpan={role == 2 ? 15 : 14}>No Data Available</td>
+                                </tr>
+                            ) : shopOrderTransaction.data.map((transaction) => (
+                                <tr key={transaction.id}>
+                                    <td className="customer-report-id">#{transaction.id}</td>
+                                    <td>
+                                        <strong>{transaction.shop_name}</strong>
+                                        <span>{transaction.customer_type}</span>
+                                    </td>
+                                    <td>
+                                        <strong>{transaction.requestor_name}</strong>
+                                        {transaction.store_name && <span>{transaction.store_name.toUpperCase()}</span>}
+                                    </td>
+                                    <td>{transaction.shop_order_transaction_total_quantity != 0 ? transaction.shop_order_transaction_total_quantity : "-"}</td>
+                                    <td>{transaction.total_cash != 0 ? money(transaction.total_cash) : "-"}</td>
+                                    <td>{transaction.total_online != 0 ? money(transaction.total_online) : "-"}</td>
+                                    <td>
+                                        <div className="customer-report-bank-list">
+                                            {transaction.mode_of_payment.map((sot, index) => (
+                                                <span key={`${transaction.id}-${sot.payment_type}-${index}`}>
+                                                    {money(sot.amount)} <small>{sot.payment_type}</small>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </td>
+                                    <td className="customer-report-amount">{transaction.shop_order_transaction_total_price != 0 ? money(transaction.shop_order_transaction_total_price) : "-"}</td>
+                                    {role == 2 && <td className="customer-report-amount">{transaction.profit != 0 ? money(transaction.profit) : "-"}</td>}
+                                    <td>
+                                        <div className="customer-report-date-cell">
+                                            <span className={transaction.date != transaction.created_at ? "customer-report-date-changed" : ""}>{transaction.date}</span>
+                                            {transaction.status == 2 && transaction.is_pickup == 0 &&
+                                                <IconButton size="small">
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpen(transaction.id, e)} />
+                                                </IconButton>
                                             }
-                                        </td>
-                                        <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                            : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
-                                        </td>
-                                        <td>
-                                            <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
-                                                shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 ? <>                                    <Tooltip title="Delete">
-                                                    <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING DELIVERY</p>
-                                                    <IconButton>
-                                                        <DeleteIcon color="error" onClick={(e) => openDelete(shopOrderTransaction.id, e)} />
-                                                    </IconButton>
-                                                </Tooltip></> : ''}</p>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(shopOrderTransaction.id, e)} />
-                                            </IconButton>
-                                        </td>
-                                        <td>
-                                            <p>{shopOrderTransaction.rider_name}</p>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
-                                            </IconButton>
-                                        </td>
-
-                                        <td>
-                                            <p>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DONE</p> :
-                                                <p style={{ fontWeight: 'bold', color: 'orange', }}>WAITING</p>}</p>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
-                                            </IconButton>
-                                        </td>
-
-                                        <td>
-                                            <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id}   >
-                                                <Button variant="primary" >
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            {shopOrderTransaction.shop_order_transaction_total_quantity != 0 ? (
-                                                <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
-                                                    <Button variant="primary" >
-                                                        Print Receipt
-                                                    </Button>
-                                                </Link>
-                                            ) : ""
+                                        </div>
+                                    </td>
+                                    <td><span className={paymentStatusClass(transaction.status)}>{paymentStatusLabel(transaction.status)}</span></td>
+                                    <td>
+                                        <div className="customer-report-status-action">
+                                            {transaction.delivery_customer_id != 0 && transaction.delivery_status == 1 &&
+                                                <span className="status-pill status-success">Delivered</span>
                                             }
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}   >
-                                                <Button variant="success" >
-                                                    Update
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            {
-                                                shopOrderTransaction.status != 3 &&
-                                                <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
-
-                                                    <Button
-                                                        variant="danger"
-                                                        onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
-                                                        disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
-                                                        color="error"
-                                                    >
-                                                        Delete
-                                                    </Button>
+                                            {transaction.delivery_customer_id != 0 && transaction.delivery_status == 0 &&
+                                                <Tooltip title="Delete">
+                                                    <span className="customer-report-delivery-pending">
+                                                        <span className="status-pill status-warning">Pending Delivery</span>
+                                                        <IconButton size="small">
+                                                            <DeleteIcon color="error" onClick={(e) => openDelete(transaction.id, e)} />
+                                                        </IconButton>
+                                                    </span>
                                                 </Tooltip>
                                             }
-                                        </td>
-                                    </tr>
-                                )
-                                )
-                            }
-                        </tbody>)}
-            </table>
+                                            {transaction.delivery_customer_id == 0 && <span className="customer-report-muted">None</span>}
+                                            <IconButton size="small">
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(transaction.id, e)} />
+                                            </IconButton>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="customer-report-status-action customer-report-pickup-action">
+                                            <span className={pickupStatusClass(transaction.is_pickup)}>{transaction.is_pickup === 1 ? "Done" : "Waiting"}</span>
+                                            <IconButton size="small">
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(transaction.id, e)} />
+                                            </IconButton>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="customer-report-status-action customer-report-rider-action">
+                                            <span>{transaction.rider_name || "-"}</span>
+                                            <IconButton size="small">
+                                                <UpdateIcon color="primary" onClick={(e) => handleOpenRider(transaction.id, e)} />
+                                            </IconButton>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="customer-report-actions">
+                                            <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + transaction.id}>
+                                                <Button className="customer-report-update-btn" size="sm" variant="success">Update</Button>
+                                            </Link>
+                                            <Link to={"../shopOrderTransaction/completedShopOrderTransaction/" + transaction.id}>
+                                                <Button size="sm" variant="outline-primary">View</Button>
+                                            </Link>
+                                            {transaction.shop_order_transaction_total_quantity != 0 && (
+                                                <Link to={"../shopOrderTransaction/receiptOrder/" + transaction.id}>
+                                                    <Button size="sm" variant="outline-secondary">Receipt</Button>
+                                                </Link>
+                                            )}
+                                            {transaction.status != 3 &&
+                                                <Tooltip title={transaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
+                                                    <span>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline-danger"
+                                                            onClick={(e) => deleteShopOrderTransaction(transaction)}
+                                                            disabled={transaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                        >
+                                                            Delete
+                                                        </Button>
+                                                    </span>
+                                                </Tooltip>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
             <Dialog
                 open={submitOpenModal}

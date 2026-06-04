@@ -24,6 +24,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import LinearProgress from '@mui/material/LinearProgress';
+import "./CustomerOrderTransactionList.css";
 
 const PendingPickUp = () => {
 
@@ -499,21 +500,25 @@ const PendingPickUp = () => {
 
 
     return (
-        <div>
+        <div className="customer-report-page">
+            <section className="customer-report-hero">
+                <div>
+                    <p className="customer-report-eyebrow">Fulfillment report</p>
+                    <h1>Pending Pick Up</h1>
+                    <p className="customer-report-date">Customer orders waiting for pick up</p>
+                </div>
 
-
-            <div>
-                <Form>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                <Form className="customer-report-filter customer-report-filter-wide">
+                    <Form.Group controlId="pendingPickupDateFrom">
                         <Form.Label>Date From:</Form.Label>
                         <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
                     </Form.Group>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                    <Form.Group controlId="pendingPickupDateTo">
                         <Form.Label>Date To:</Form.Label>
                         <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
                     </Form.Group>
                     <Form.Select
-                        className="mb-3"
+                        className="customer-report-form-select"
                         name="status"
                         onChange={onChangeInput}
                     >
@@ -525,45 +530,64 @@ const PendingPickUp = () => {
                     <Button variant="primary" onClick={saveOrderTransaction} disabled={isDeliveryDisabled}>
                         Find
                     </Button>
-                    {submitDeliveryLoadingDisabled &&
-                        <LinearProgress color="warning" />
-                    }
                 </Form >
-                <br></br>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Total Count:</Form.Label>
-                    <Form.Control type="text" value={shopOrderTransaction.data.length} disabled />
-                </Form.Group>
-            </div>
+            </section>
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Pending Pick Up Transaction   </legend>
+            <section className="customer-report-kpis customer-report-kpis-compact">
+                <article className="customer-report-kpi">
+                    <span>Total Count</span>
+                    <strong>{shopOrderTransaction.data.length}</strong>
+                </article>
+                <article className="customer-report-kpi">
+                    <span>Pick Up Status</span>
+                    <strong>Waiting</strong>
+                    <small>Orders that still need pick up confirmation</small>
+                </article>
+            </section>
+
+            {submitDeliveryLoadingDisabled &&
+                <div className="customer-report-progress">
+                    <LinearProgress color="warning" />
+                </div>
+            }
+
+            <section className="customer-report-table-card">
+                <div className="customer-report-table-header">
+                    <div>
+                        <p className="customer-report-eyebrow">Details</p>
+                        <h2>Pending Pick Up Transaction</h2>
+                    </div>
+                    <span>{shopOrderTransaction.data.length} records</span>
+                </div>
             {submitLoading ?
                 (<LinearProgress />)
                 :
                 (<>
-                    <table class="table table-bordered">
-                        <thead class="table-dark">
-                            <tr class="table-secondary">
+                    <div className="customer-report-table-wrap">
+                    <table className="customer-report-table customer-report-table-transaction">
+                        <thead>
+                            <tr>
                                 <th>ID</th>
-                                <th>Shop Name</th>
-                                <th>Customer Type</th>
+                                <th>Shop</th>
+                                <th className="customer-report-optional-col">Customer Type</th>
                                 <th>Customer</th>
-                                <th>Total Quantity</th>
-                                <th>Total Cash</th>
-                                <th>Total Online</th>
+                                <th>Qty</th>
+                                <th className="customer-report-optional-col">Total Cash</th>
+                                <th className="customer-report-optional-col">Total Online</th>
                                 <th>Bank</th>
-                                <th>Total Amount</th>
-                                <th>Profit</th>
+                                <th>Total</th>
+                                {
+                                    role == 2 && (
+                                        <th className="customer-report-optional-col">Profit</th>
+                                    )
+                                }
+
                                 <th>Date</th>
-                                <th>Payment Status</th>
-                                <th>For Trucking</th>
+                                <th>Payment</th>
+                                <th>Delivery</th>
                                 <th>Rider</th>
-                                <th>Pick Up Status</th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
+                                <th>Pick Up</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -573,7 +597,7 @@ const PendingPickUp = () => {
                                     <tr key={shopOrderTransaction.id} >
                                         <td>{shopOrderTransaction.id}</td>
                                         <td>{shopOrderTransaction.shop_name}</td>
-                                        <td>{shopOrderTransaction.customer_type}</td>
+                                        <td className="customer-report-optional-col">{shopOrderTransaction.customer_type}</td>
                                         <td>
                                             {shopOrderTransaction.requestor_name}
                                             {shopOrderTransaction.store_name
@@ -581,23 +605,21 @@ const PendingPickUp = () => {
                                                 : ""}
                                         </td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                        <td>{shopOrderTransaction.total_cash}</td>
-                                        <td>{shopOrderTransaction.total_online}</td>
-                                        <td>{
-                                            shopOrderTransaction.mode_of_payment.map((sot, index) => (
-                                                <>
-                                                    <tr>
-                                                        <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
-                                                        <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
-                                                    </tr>
-                                                </>
-                                            )
-                                            )
-                                        }</td>
+                                        <td className="customer-report-optional-col">{shopOrderTransaction.total_cash}</td>
+                                        <td className="customer-report-optional-col">{shopOrderTransaction.total_online}</td>
+                                        <td>
+                                            <div className="customer-report-bank-list">
+                                                {shopOrderTransaction.mode_of_payment.map((sot, index) => (
+                                                    <span key={`${shopOrderTransaction.id}-${sot.payment_type}-${index}`}>
+                                                        {numberFormat(sot.amount)} <small>{sot.payment_type}</small>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </td>
                                         <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                         {
                                             role == 2 && (
-                                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
+                                                <td className="customer-report-optional-col" style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
                                                 </td>
                                             )
                                         }
@@ -642,42 +664,37 @@ const PendingPickUp = () => {
                                             </IconButton>
                                         </td>
                                         <td>
-                                            <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id + "+" + date}   >
-                                                <Button variant="primary" >
-                                                    View
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}   >
-                                                <Button variant="primary" >
-                                                    Print Receipt
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}   >
-                                                <Button variant="success" >
-                                                    Update
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        <td>
-                                            {
-                                                shopOrderTransaction.status != 3 &&
-                                                <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
-                                                    <span>
-                                                        <Button
-                                                            variant="danger"
-                                                            onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
-                                                            disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
-                                                            color="error"
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    </span>
-                                                </Tooltip>
-                                            }
+                                            <div className="customer-report-actions">
+                                                <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}>
+                                                    <Button className="customer-report-update-btn" size="sm" variant="success">
+                                                        Update
+                                                    </Button>
+                                                </Link>
+                                                <Link to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id + "+" + date}>
+                                                    <Button size="sm" variant="outline-primary">
+                                                        View
+                                                    </Button>
+                                                </Link>
+                                                <Link to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}>
+                                                    <Button size="sm" variant="outline-secondary">
+                                                        Receipt
+                                                    </Button>
+                                                </Link>
+                                                {shopOrderTransaction.status != 3 &&
+                                                    <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
+                                                        <span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline-danger"
+                                                                onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
+                                                                disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                            >
+                                                                Delete
+                                                            </Button>
+                                                        </span>
+                                                    </Tooltip>
+                                                }
+                                            </div>
                                         </td>
                                     </tr>
                                 )
@@ -685,7 +702,9 @@ const PendingPickUp = () => {
                             }
                         </tbody>
                     </table>
+                    </div>
                 </>)}
+            </section>
             <Dialog
                 open={submitOpenModal}
                 onClose={handleSubmitCloseModal}
