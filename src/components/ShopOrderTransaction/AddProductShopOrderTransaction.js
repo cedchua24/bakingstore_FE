@@ -278,28 +278,6 @@ const AddProductCustomerOrderTransaction = () => {
                                         message: response.data.message,
                                         isShow: true,
                                     });
-
-                                    window.scrollTo({
-                                        top: 0,
-                                        behavior: 'smooth'
-                                    });
-
-                                    fetchShopOrder(id);
-
-                                    setOrderShop({
-                                        shop_transaction_id: id,
-                                        product_id: 0,
-                                        shop_order_price: 0,
-                                        shop_order_quantity: 0,
-                                        shop_order_total_price: 0,
-                                        fixed_price: 0,
-                                        discount: '',
-                                        discount_percentage: 0,
-                                        discount_amount: 0,
-                                    });
-
-                                    fetchShopOrderDTO(id);
-
                                 } else {
                                     setValidator({
                                         severity: 'error',
@@ -312,7 +290,23 @@ const AddProductCustomerOrderTransaction = () => {
                                         behavior: 'smooth'
                                     });
                                 }
-
+                                fetchShopOrder(id);
+                                setOrderShop({
+                                    shop_transaction_id: id,
+                                    product_id: 0,
+                                    shop_order_price: 0,
+                                    shop_order_quantity: 0,
+                                    shop_order_total_price: 0,
+                                    fixed_price: 0,
+                                    discount: '',
+                                    discount_percentage: 0,
+                                    discount_amount: 0,
+                                });
+                                fetchShopOrderDTO(id);
+                                window.scrollTo({
+                                    top: 0,
+                                    behavior: 'smooth'
+                                });
                             })
                             .catch(e => {
 
@@ -686,7 +680,6 @@ const AddProductCustomerOrderTransaction = () => {
                             message: 'Successfuly Added!',
                             isShow: true,
                         });
-                        fetchShopOrderDTO(id);
                     } else if (response.data.code == 400) {
                         setSubmitLoading(false);
                         setOpen(false);
@@ -705,6 +698,7 @@ const AddProductCustomerOrderTransaction = () => {
                             isShow: true,
                         });
                     }
+                    fetchShopOrderDTO(id);
                 })
                 .catch(e => {
                     console.log(e);
