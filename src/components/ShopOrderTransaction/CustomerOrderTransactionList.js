@@ -958,7 +958,27 @@ const CustomerOrderTransactionList = () => {
                                 </tr>
                             ) : shopOrderTransaction.data.map((transaction) => (
                                 <tr key={transaction.id}>
-                                    <td className="customer-report-id">#{transaction.id}</td>
+                                    <td className="customer-report-id customer-report-id-cell">
+                                        {transaction.vip_name &&
+                                            <span
+                                                className="customer-report-vip-stripe"
+                                                style={{ backgroundColor: transaction.vip_color || '#6c757d' }}
+                                            ></span>
+                                        }
+                                        <span className="customer-report-id-stack">
+                                            <span className="customer-report-order-id">#{transaction.id}</span>
+                                            {transaction.vip_name &&
+                                                <Tooltip title={"VIP Customer: " + transaction.vip_name}>
+                                                    <span
+                                                        className="customer-report-vip-badge"
+                                                        style={{ backgroundColor: transaction.vip_color || '#6c757d' }}
+                                                    >
+                                                        {transaction.vip_name}
+                                                    </span>
+                                                </Tooltip>
+                                            }
+                                        </span>
+                                    </td>
                                     <td>
                                         <strong>{transaction.shop_name}</strong>
                                         <span>{transaction.customer_type}</span>

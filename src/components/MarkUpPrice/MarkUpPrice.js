@@ -22,7 +22,7 @@ const MarkUpPrice = () => {
 
 
     const fetchMarkUpPriceList = () => {
-        MarkUpPriceServiceService.getAll()
+        MarkUpPriceServiceService.indexLimit100()
             .then(response => {
                 setMarkupPriceList(response.data);
             })

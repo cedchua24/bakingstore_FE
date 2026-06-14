@@ -595,7 +595,27 @@ const PendingPickUp = () => {
                             {
                                 shopOrderTransaction.data.map((shopOrderTransaction, index) => (
                                     <tr key={shopOrderTransaction.id} >
-                                        <td>{shopOrderTransaction.id}</td>
+                                        <td className="customer-report-id customer-report-id-cell">
+                                            {shopOrderTransaction.vip_name &&
+                                                <span
+                                                    className="customer-report-vip-stripe"
+                                                    style={{ backgroundColor: shopOrderTransaction.vip_color || '#6c757d' }}
+                                                ></span>
+                                            }
+                                            <span className="customer-report-id-stack">
+                                                <span className="customer-report-order-id">#{shopOrderTransaction.id}</span>
+                                                {shopOrderTransaction.vip_name &&
+                                                    <Tooltip title={"VIP Customer: " + shopOrderTransaction.vip_name}>
+                                                        <span
+                                                            className="customer-report-vip-badge"
+                                                            style={{ backgroundColor: shopOrderTransaction.vip_color || '#6c757d' }}
+                                                        >
+                                                            {shopOrderTransaction.vip_name}
+                                                        </span>
+                                                    </Tooltip>
+                                                }
+                                            </span>
+                                        </td>
                                         <td>{shopOrderTransaction.shop_name}</td>
                                         <td className="customer-report-optional-col">{shopOrderTransaction.customer_type}</td>
                                         <td>

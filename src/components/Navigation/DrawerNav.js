@@ -263,6 +263,16 @@ export default function PersistentDrawerLeft() {
         setOpen21(!open21);
     };
 
+    const [open22, setOpen22] = React.useState(false);
+    const handleClick22 = () => {
+        setOpen22(!open22);
+    };
+
+    const [open24, setOpen24] = React.useState(false);
+    const handleClick24 = () => {
+        setOpen24(!open24);
+    };
+
 
 
     const [categoryList, setCategoryList] = useState({
@@ -345,15 +355,20 @@ export default function PersistentDrawerLeft() {
             "icon": <AddIcon />
         },
         {
+            "name": "Search Customer",
+            "url": "/searchCustomer",
+            "icon": <PageviewIcon />
+        },
+        {
             "name": "Customer List",
             "url": "/customerListV2",
             "icon": <ListIcon />
         },
-        {
-            "name": "Customer Ads",
-            "url": "/customerAds",
-            "icon": <ListIcon />
-        },
+        // {
+        //     "name": "Customer Ads",
+        //     "url": "/customerAds",
+        //     "icon": <ListIcon />
+        // },
         {
             "name": "Customer List Transaction",
             "url": "/customerListTransaction",
@@ -365,6 +380,37 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         }
 
+    ]);
+
+    const [vipCustomerList] = useState([
+        {
+            "name": "Add VIP Customer Template",
+            "url": "/vipCustomer",
+            "icon": <AddIcon />
+        },
+        {
+            "name": "VIP Customer Template List",
+            "url": "/vipCustomerListV2",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Add VIP Customer",
+            "url": "/vipCustomerTransaction",
+            "icon": <AddIcon />
+        },
+        {
+            "name": "VIP Customer List",
+            "url": "/vipCustomerTransactionListV2",
+            "icon": <ListIcon />
+        }
+    ]);
+
+    const [vipCustomerTransactionNavList] = useState([
+        {
+            "name": "VIP Customer Transaction",
+            "url": "/vipCustomerTransactionTemplateList",
+            "icon": <ListIcon />
+        }
     ]);
 
     const [productList, setProductList] = useState([
@@ -1119,8 +1165,9 @@ export default function PersistentDrawerLeft() {
                     <Nav >
                         <NavDropdown title="Customer" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
+                            <NavDropdown.Item href="/searchCustomer">Search Customer</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item>
+                            {/* <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item> */}
                             <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
 
 
@@ -1364,6 +1411,62 @@ export default function PersistentDrawerLeft() {
                         </List>
                     </Collapse>
                 </List> */}
+
+                <List
+                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                >
+                    <ListItemButton onClick={handleClick22}>
+                        <ListItemIcon>
+                            <StarBorder color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary="VIP Customer Template" />
+                        {open22 ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={open22} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {vipCustomerList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
+
+                <List
+                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                >
+                    <ListItemButton onClick={handleClick24}>
+                        <ListItemIcon>
+                            <ReceiptIcon color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary="VIP Customer Transaction" />
+                        {open24 ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={open24} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {vipCustomerTransactionNavList.map((nav, index) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>
+                                            {nav.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
 
                 <List
                     sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}

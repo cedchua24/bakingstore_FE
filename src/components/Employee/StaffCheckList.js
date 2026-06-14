@@ -304,11 +304,13 @@ const StaffCheckList = () => {
                                 </td>
                                 <td>{data.date}</td>
                                 <td>
-                                    <Link variant="primary" to={"/employee/updateStaffCheckList/" + data.id}   >
-                                        <Button variant="primary" >
-                                            Update
-                                        </Button>
-                                    </Link>
+                                    {data.status !== "APPROVED" && (
+                                        <Link variant="primary" to={"/employee/updateStaffCheckList/" + data.id}   >
+                                            <Button variant="primary" >
+                                                Update
+                                            </Button>
+                                        </Link>
+                                    )}
                                 </td>
                             </tr>
                         )
