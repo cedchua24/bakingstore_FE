@@ -200,6 +200,7 @@ import ShopBranchReportList from "./components/Reports/ShopBranchReportList";
 import Customer from "./components/Customer/Customer";
 import CustomerListV2 from "./components/Customer/CustomerListV2";
 import EditCustomer from "./components/Customer/EditCustomer";
+import SearchCustomer from "./components/Customer/SearchCustomer";
 import CustomerTransactionList from "./components/Customer/CustomerTransactionList";
 import CustomerListTransaction from "./components/Customer/CustomerListTransaction";
 import CustomerAds from "./components/Customer/CustomerAds";
@@ -207,6 +208,14 @@ import CustomerHistory from "./components/Customer/CustomerHistory";
 import CustomerBacklog from "./components/Customer/CustomerBacklog";
 import CustomerConvo from "./components/Customer/CustomerConvo";
 import CustomerReOrder from "./components/Customer/CustomerReOrder";
+import VipCustomer from "./components/VipCustomer/VipCustomer";
+import VipCustomerListV2 from "./components/VipCustomer/VipCustomerListV2";
+import VipCustomerTransaction from "./components/VipCustomer/VipCustomerTransaction";
+import VipCustomerTransactionListV2 from "./components/VipCustomer/VipCustomerTransactionListV2";
+import VipCustomerTransactionTemplateList from "./components/VipCustomer/VipCustomerTransactionTemplateList";
+import VipTransaction from "./components/VipCustomer/VipTransaction";
+import EditVipCustomer from "./components/VipCustomer/EditVipCustomer";
+import VipNote from "./components/VipCustomer/VipNote";
 
 
 import CustomerProductList from "./components/Customer/CustomerProductList";
@@ -679,6 +688,7 @@ const App = () => {
 
 
           <Route exact path="/customers/" element={<Customer />} />
+          <Route exact path="/searchCustomer" element={<SearchCustomer />} />
           <Route exact path="/customerListV2" element={<CustomerListV2 />} />
           <Route exact path="/customerListTransaction" element={<CustomerListTransaction />} />
           <Route exact path="/customerAds" element={<CustomerAds />} />
@@ -688,6 +698,15 @@ const App = () => {
 
           <Route exact path="/customerConvo" element={<CustomerConvo />} />
           <Route exact path="/customerReOrder" element={<CustomerReOrder />} />
+
+          <Route exact path="/vipCustomer" element={<VipCustomer />} />
+          <Route exact path="/vipCustomerListV2" element={<VipCustomerListV2 />} />
+          <Route exact path="/vipCustomer/:id" element={<EditVipCustomer />} />
+          <Route exact path="/vipCustomerTransaction" element={<VipCustomerTransaction />} />
+          <Route exact path="/vipCustomerTransactionListV2" element={<VipCustomerTransactionListV2 />} />
+          <Route exact path="/vipCustomerTransactionTemplateList" element={<VipCustomerTransactionTemplateList />} />
+          <Route exact path="/vipTransaction/:id" element={<VipTransaction />} />
+          <Route exact path="/vipNote/:id" element={<VipNote />} />
 
 
 

@@ -497,6 +497,54 @@
     white-space: nowrap;
 }
 
+.customer-report-id-cell {
+    position: relative;
+    min-width: 72px;
+    padding-left: 16px !important;
+}
+
+.customer-report-id-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.customer-report-vip-stripe {
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 0;
+    width: 5px;
+    border-radius: 0 999px 999px 0;
+}
+
+.customer-report-order-id {
+    color: #172033 !important;
+    font-size: 13px !important;
+    line-height: 1;
+}
+
+.customer-report-vip-badge {
+    display: inline-flex !important;
+    align-items: center;
+    max-width: 76px;
+    min-height: 18px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    color: #fff !important;
+    font-size: 9px !important;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-shadow: 0 6px 14px rgba(23, 32, 51, 0.18);
+    cursor: help;
+}
+
 .customer-report-bank-list {
     display: grid;
     gap: 6px;

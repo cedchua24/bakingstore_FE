@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import moment from "moment";
 import LinearProgress from '@mui/material/LinearProgress';
+import CustomerService from "../Customer/CustomerService";
 
 
 
@@ -39,16 +40,19 @@ const AddCustomerOrderTransactionV2 = (props) => {
         updated_at: ''
     });
     const shopList = props.shopList;
-    const customerList = props.customerList;
     const customerTypeList = props.customerTypeList;
     const salesRepList = props.salesRepList;
     const dailySessionUpdate = props.dailySessionUpdate;
 
-
+    useEffect(() => {
+        searchCustomerList('');
+    }, []);
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
+    const [customerList, setCustomerList] = useState([]);
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
 
 
 
@@ -64,12 +68,63 @@ const AddCustomerOrderTransactionV2 = (props) => {
         setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
     }
 
-    const handleInputChange = (e, value) => {
-        e.persist();
-        setShopOrderTransaction({
-            ...shopOrderTransaction,
-            requestor: value.id,
-        });
+    const searchCustomerList = (search) => {
+        CustomerService.searchVipCustomerList({
+            search: search,
+            limit: 50
+        })
+            .then(response => {
+                setCustomerList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const getCustomerName = (customer) => {
+        if (!customer) {
+            return '';
+        }
+
+        return customer.customer_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+    }
+
+    const getVipCustomerColors = (customer) => {
+        if (!customer || !Array.isArray(customer.vip_customers)) {
+            return [];
+        }
+
+        return customer.vip_customers
+            .map(vipCustomer => vipCustomer.vip_color)
+            .filter(vipColor => vipColor);
+    }
+
+    const renderVipColorDots = (customer) => {
+        const vipColors = getVipCustomerColors(customer);
+
+        if (vipColors.length === 0) {
+            return null;
+        }
+
+        return (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                {vipColors.map((vipColor, index) => (
+                    <span
+                        key={index}
+                        title="VIP Customer"
+                        style={{
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '999px',
+                            backgroundColor: vipColor,
+                            border: '1px solid #ced4da',
+                            display: 'inline-block',
+                            flex: '0 0 auto'
+                        }}
+                    ></span>
+                ))}
+            </span>
+        );
     }
 
     const validate = (values) => {
@@ -127,8 +182,6 @@ const AddCustomerOrderTransactionV2 = (props) => {
             });
         }
     }
-
-    const memoizedCustomerList = useMemo(() => customerList, [customerList]);
 
     return (
         <div>
@@ -243,30 +296,66 @@ const AddCustomerOrderTransactionV2 = (props) => {
                                 </FormControl>
                             </Box>
                             {formErrors.requestor && <p style={{ color: "red" }}>{formErrors.requestor}</p>}
-                            <FormControl variant="standard">
+                            <Form.Group className="mb-3" style={{ maxWidth: '560px' }} controlId="formCustomer">
                                 <Autocomplete
-                                    options={memoizedCustomerList} // use the memoized list here
-                                    className="mb-3"
-                                    id="disable-close-on-select"
+                                    sx={{
+                                        width: 320,
+                                        '& .MuiTextField-root': {
+                                            m: 0,
+                                            width: '100%'
+                                        }
+                                    }}
+                                    options={customerList}
+                                    value={selectedCustomer}
                                     isOptionEqualToValue={(option, value) => option.id === value.id}
-                                    onChange={handleInputChange}
-                                    getOptionLabel={(customer) =>
-                                        `${customer.first_name} ${customer.last_name}`
-                                    }
-                                    filterOptions={(options, { inputValue }) =>
-                                        options
-                                            .filter((cust) =>
-                                                `${cust.first_name} ${cust.last_name}`
-                                                    .toLowerCase()
-                                                    .includes(inputValue.toLowerCase())
-                                            )
-                                            .slice(0, 50)
-                                    }
+                                    getOptionLabel={(option) => getCustomerName(option)}
+                                    renderOption={(props, option) => (
+                                        <li {...props}>
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', width: '100%' }}>
+                                                <span>{getCustomerName(option)}</span>
+                                                {getVipCustomerColors(option).length > 0 &&
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                                        {renderVipColorDots(option)}
+                                                        <span style={{ color: '#6c757d', fontSize: '11px', fontWeight: '700' }}>VIP</span>
+                                                    </span>
+                                                }
+                                            </span>
+                                        </li>
+                                    )}
+                                    onInputChange={(event, value) => {
+                                        searchCustomerList(value);
+                                    }}
+                                    onChange={(event, value) => {
+                                        setSelectedCustomer(value);
+                                        setShopOrderTransaction({
+                                            ...shopOrderTransaction,
+                                            requestor: value ? value.id : 0
+                                        });
+                                    }}
                                     renderInput={(params) => (
-                                        <TextField {...params} label="Choose Customer" variant="standard" />
+                                        <TextField
+                                            {...params}
+                                            label="Search Customer"
+                                            InputProps={{
+                                                ...params.InputProps,
+                                                startAdornment: (
+                                                    <>
+                                                        {selectedCustomer &&
+                                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginRight: '10px' }}>
+                                                                {renderVipColorDots(selectedCustomer)}
+                                                                {getVipCustomerColors(selectedCustomer).length > 0 &&
+                                                                    <span style={{ color: '#495057', fontSize: '11px', fontWeight: '700' }}>VIP</span>
+                                                                }
+                                                            </span>
+                                                        }
+                                                        {params.InputProps.startAdornment}
+                                                    </>
+                                                )
+                                            }}
+                                        />
                                     )}
                                 />
-                            </FormControl>
+                            </Form.Group>
                         </Box>
                         {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
                         <Form.Group className="w-25 mb-3" controlId="formBasicEmail">

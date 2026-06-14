@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
 import CheckListTransactionService from "../CheckList/CheckListTransactionService";
+import CheckListHistoryService from "../CheckList/CheckListHistoryService";
 import UserService from "../User/UserService.service";
 
 
@@ -12,6 +13,7 @@ const UpdateStaffCheckList = () => {
 
     useEffect(() => {
         fetchCheckList(id);
+        fetchCheckListHistory(id);
         fetchUserList();
     }, []);
 
@@ -30,11 +32,20 @@ const UpdateStaffCheckList = () => {
         updated_at: ''
     });
     const [userList, setUserList] = useState([]);
+    const [checkListHistoryList, setCheckListHistoryList] = useState([]);
+    const [currentStatus, setCurrentStatus] = useState('');
 
     const [message, setMessage] = useState(false);
 
     const onChangeCheckList = (e) => {
-        setCheckList({ ...checkList, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        if (name === 'status' && value !== 'REJECTED' && value !== 'APPROVED') {
+            setCheckList({ ...checkList, status: value, grade: '' });
+            return;
+        }
+
+        setCheckList({ ...checkList, [name]: value });
     }
 
     const updateCheckList = (e) => {
@@ -42,8 +53,23 @@ const UpdateStaffCheckList = () => {
 
         CheckListTransactionService.update(checkList.id, checkList)
             .then(response => {
-                setCheckList(response.data);
-                setMessage(true);
+                const updatedCheckList = response.data;
+                const checkListTransactionId = updatedCheckList.id || checkList.id;
+                setCheckList(updatedCheckList);
+                setCurrentStatus(updatedCheckList.status || checkList.status);
+
+                const checkListHistory = {
+                    check_list_transaction_id: checkListTransactionId,
+                    comment: updatedCheckList.comment || checkList.comment,
+                    user_id: localStorage.getItem('auth_user_id'),
+                    status: updatedCheckList.status || checkList.status
+                };
+
+                return CheckListHistoryService.create(checkListHistory)
+                    .then(() => {
+                        setMessage(true);
+                        fetchCheckListHistory(checkListTransactionId);
+                    });
             })
             .catch(e => {
                 console.log(e);
@@ -65,6 +91,17 @@ const UpdateStaffCheckList = () => {
         CheckListTransactionService.get(id)
             .then(response => {
                 setCheckList(response.data);
+                setCurrentStatus(response.data.status);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const fetchCheckListHistory = (id) => {
+        CheckListHistoryService.fetchByCheckListTransactionId(id)
+            .then(response => {
+                setCheckListHistoryList(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -77,6 +114,33 @@ const UpdateStaffCheckList = () => {
         APPROVED: 'green',
         REJECTED: 'red',
     };
+
+    const statusOptions = [
+        { value: 'PENDING', label: 'PENDING', color: 'orange' },
+        { value: 'SENT_TO_SUPERVISOR', label: 'SENT TO SUPERVISOR', color: '#1976d2' },
+        { value: 'APPROVED', label: 'APPROVED', color: 'green' },
+        { value: 'REJECTED', label: 'REJECTED', color: 'red' }
+    ];
+
+    const allowedStatusByCurrentStatus = {
+        PENDING: ['PENDING', 'SENT_TO_SUPERVISOR'],
+        SENT_TO_SUPERVISOR: ['REJECTED', 'APPROVED'],
+        REJECTED: ['PENDING', 'APPROVED'],
+        APPROVED: ['PENDING', 'REJECTED']
+    };
+
+    const allowedStatusList = allowedStatusByCurrentStatus[currentStatus] || statusOptions.map((status) => status.value);
+    const isGradeAvailable = checkList.status === 'REJECTED' || checkList.status === 'APPROVED';
+    const getStatusOptionStyle = (status, color) => {
+        if (!allowedStatusList.includes(status)) {
+            return {
+                color: '#9ca3af',
+                backgroundColor: '#f3f4f6'
+            };
+        }
+
+        return { color };
+    }
 
     return (
         <div>
@@ -120,7 +184,7 @@ const UpdateStaffCheckList = () => {
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Comment</Form.Label>
-                    <Form.Control type="text" value={checkList.comment} name="comment" placeholder="Enter Comment" onChange={onChangeCheckList} />
+                    <Form.Control type="text" name="comment" placeholder="Enter Comment" onChange={onChangeCheckList} />
 
                 </Form.Group>
 
@@ -138,16 +202,16 @@ const UpdateStaffCheckList = () => {
                         }}
 
                     >
-                        <option value="PENDING" style={{ color: 'orange' }}>
+                        <option value="PENDING" style={getStatusOptionStyle('PENDING', 'orange')} disabled={!allowedStatusList.includes('PENDING')}>
                             🟠 PENDING
                         </option>
-                        <option value="SENT_TO_SUPERVISOR" style={{ color: '#1976d2' }}>
+                        <option value="SENT_TO_SUPERVISOR" style={getStatusOptionStyle('SENT_TO_SUPERVISOR', '#1976d2')} disabled={!allowedStatusList.includes('SENT_TO_SUPERVISOR')}>
                             🔵 SENT TO SUPERVISOR
                         </option>
-                        <option value="APPROVED" style={{ color: 'green' }}>
+                        <option value="APPROVED" style={getStatusOptionStyle('APPROVED', 'green')} disabled={!allowedStatusList.includes('APPROVED')}>
                             🟢 APPROVED
                         </option>
-                        <option value="REJECTED" style={{ color: 'red' }}>
+                        <option value="REJECTED" style={getStatusOptionStyle('REJECTED', 'red')} disabled={!allowedStatusList.includes('REJECTED')}>
                             🔴 REJECTED
                         </option>
                     </Form.Select>
@@ -189,6 +253,7 @@ const UpdateStaffCheckList = () => {
                             name="grade"
                             value={checkList.grade}
                             onChange={onChangeCheckList}
+                            disabled={!isGradeAvailable}
                         >
                             <option value={0}>Select Grade</option>
 
@@ -208,6 +273,33 @@ const UpdateStaffCheckList = () => {
                     Submit
                 </Button>
             </Form>
+
+            <br></br>
+            <legend align="center" style={{ fontWeight: 'bold' }} > Check List History </legend>
+            <table className="table table-bordered">
+                <thead className="table-dark">
+                    <tr className="table-secondary">
+                        <th>ID</th>
+                        <th>Comment</th>
+                        <th>User</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        checkListHistoryList.map((history) => (
+                            <tr key={history.id}>
+                                <td>{history.id}</td>
+                                <td>{history.comment}</td>
+                                <td>{history.user_name || history.name || history.user_id}</td>
+                                <td style={{ color: statusColor[history.status] || 'black' }}>{history.status}</td>
+                                <td>{history.created_at}</td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
         </div>
     )
 }

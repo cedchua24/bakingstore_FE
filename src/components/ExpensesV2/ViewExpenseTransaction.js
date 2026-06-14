@@ -339,7 +339,7 @@ const ViewExpenseTransaction = () => {
                             <MenuItem value={0} disabled></MenuItem>
                             {
                                 expenseList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.expense_name}</MenuItem>
+                                    <MenuItem value={data.id}>{data.is_hidden == 1 ? "*****" : data.expense_name}</MenuItem>
                                 ))
                             }
                         </Select>

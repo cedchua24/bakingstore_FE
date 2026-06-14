@@ -4,7 +4,6 @@ import ShopService from "../Shop/ShopService";
 import CustomerTypeService from "../OtherService/CustomerTypeService";
 import DailySessionService from "../OtherService/DailySessionService";
 import SalesRepService from "../OtherService/SalesRepService";
-import CustomerService from "../Customer/CustomerService";
 import moment from "moment";
 
 const CustomerOrderTransaction = () => {
@@ -13,16 +12,12 @@ const CustomerOrderTransaction = () => {
     useEffect(() => {
         fetchSalesRep();
         fetchShopActive();
-        fetchUserList();
         fetchCustomerTypeList();
         fetchDailySession();
     }, []);
 
     const [shopList, setShopList] = useState([]);
     const [salesRepList, setSalesRepList] = useState([]);
-
-
-    const [customerList, setCustomerList] = useState([]);
 
     const [customerTypeList, setCustomerTypeList] = useState([]);
     const [dailySessionUpdate, setDailySessionUpdate] = useState('');
@@ -69,26 +64,12 @@ const CustomerOrderTransaction = () => {
             });
     }
 
-
-
-    const fetchUserList = () => {
-        CustomerService.fetchCustomerEnabled()
-            .then(response => {
-                setCustomerList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-
     return (
         <div>
             <AddCustomerOrderTransactionV2
                 shopList={shopList}
                 salesRepList={salesRepList}
                 customerTypeList={customerTypeList}
-                customerList={customerList}
                 dailySessionUpdate={dailySessionUpdate}
             />
         </div>

@@ -38,6 +38,7 @@ const CheckList = () => {
                         <th>Assignee </th>
                         <th>Checker</th>
                         <th>Time of Day</th>
+                        <th>Frequency</th>
                         <th>Status</th>
                         <th></th>
                     </tr>
@@ -69,6 +70,29 @@ const CheckList = () => {
                                             🌙 EVENING
                                         </span>
                                     )}
+                                </td>
+                                <td>
+                                    <span
+                                        style={{
+                                            padding: '4px 10px',
+                                            borderRadius: '12px',
+                                            fontSize: '12px',
+                                            fontWeight: 'bold',
+                                            color: '#fff',
+                                            backgroundColor:
+                                                data.frequency === 'DAILY'
+                                                    ? '#22c55e'
+                                                    : data.frequency === 'WEEKLY'
+                                                        ? '#3b82f6'
+                                                        : data.frequency === 'MONTHLY'
+                                                            ? '#8b5cf6'
+                                                            : '#6b7280'
+                                        }}
+                                    >
+                                        {data.frequency === 'DAILY' && '📅 DAILY'}
+                                        {data.frequency === 'WEEKLY' && '📆 WEEKLY'}
+                                        {data.frequency === 'MONTHLY' && '🗓️ MONTHLY'}
+                                    </span>
                                 </td>
                                 <td>
                                     {data.status == 0 ? (
