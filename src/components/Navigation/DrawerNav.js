@@ -1449,7 +1449,7 @@ export default function PersistentDrawerLeft() {
                         <ListItemIcon>
                             <ReceiptIcon color="primary" />
                         </ListItemIcon>
-                        <ListItemText primary="VIP Customer Transaction" />
+                        <ListItemText primary="VIP Customer" />
                         {open24 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open24} timeout="auto" unmountOnExit>
