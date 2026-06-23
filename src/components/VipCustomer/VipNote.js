@@ -13,16 +13,43 @@ const styles = {
         backgroundColor: '#ffffff',
         border: '1px solid #e5e7eb',
         borderRadius: '8px',
-        padding: '14px 16px',
+        padding: '18px 18px',
         marginBottom: '18px',
+        boxShadow: '0 8px 22px rgba(23, 32, 51, 0.06)',
     },
-    detailTitle: {
-        fontWeight: '700',
-        marginBottom: '10px',
+    vipHeader: {
+        textAlign: 'center',
+        paddingBottom: '16px',
+        marginBottom: '16px',
+        borderBottom: '1px solid #edf0f3',
+    },
+    vipLabel: {
+        color: '#6c757d',
+        fontSize: '12px',
+        fontWeight: '800',
+        letterSpacing: '0.4px',
+        marginBottom: '8px',
+        textTransform: 'uppercase',
+    },
+    vipNameWrap: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px',
+        padding: '9px 16px',
+        borderRadius: '999px',
+        backgroundColor: '#f8f9fa',
+        border: '1px solid #e9ecef',
+    },
+    vipName: {
+        color: '#172033',
+        fontWeight: '800',
+        fontSize: '20px',
+        marginBottom: '0',
     },
     detailGrid: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: '10px',
     },
     detailItem: {
@@ -42,22 +69,16 @@ const styles = {
         color: '#172033',
         fontWeight: '600',
         marginBottom: '0',
-    },
-    vipTemplateValue: {
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '8px',
-        color: '#172033',
-        fontWeight: '700',
-        marginBottom: '0',
+        overflowWrap: 'anywhere',
     },
     vipColorSwatch: {
-        width: '18px',
-        height: '18px',
-        borderRadius: '5px',
-        border: '1px solid #ced4da',
+        width: '22px',
+        height: '22px',
+        borderRadius: '999px',
+        border: '2px solid #ffffff',
         display: 'inline-block',
         flex: '0 0 auto',
+        boxShadow: '0 0 0 1px #ced4da, 0 6px 14px rgba(23, 32, 51, 0.18)',
     },
 }
 
@@ -222,25 +243,37 @@ const VipNote = () => {
             <br></br>
 
             <div style={styles.detailPanel}>
-                <h5 style={styles.detailTitle}>Customer Details</h5>
-                <div style={styles.detailGrid}>
-                    <div style={styles.detailItem}>
-                        <p style={styles.detailLabel}>VIP Template</p>
-                        <p style={styles.vipTemplateValue}>
-                            {vipCustomerTransaction.vip_color &&
-                                <span
-                                    style={{
-                                        ...styles.vipColorSwatch,
-                                        backgroundColor: vipCustomerTransaction.vip_color,
-                                    }}
-                                ></span>
-                            }
-                            <span>{vipCustomerTransaction.vip_name || '-'}</span>
-                        </p>
+                <div style={styles.vipHeader}>
+
+                    <div style={styles.vipNameWrap}>
+                        {vipCustomerTransaction.vip_color &&
+                            <span
+                                style={{
+                                    ...styles.vipColorSwatch,
+                                    backgroundColor: vipCustomerTransaction.vip_color,
+                                }}
+                            ></span>
+                        }
+                        <p style={styles.vipName}>{vipCustomerTransaction.vip_name || '-'}</p>
                     </div>
+                </div>
+
+                <div style={styles.detailGrid}>
                     <div style={styles.detailItem}>
                         <p style={styles.detailLabel}>Customer</p>
                         <p style={styles.detailValue}>{vipCustomerTransaction.customer_name || '-'}</p>
+                    </div>
+                    <div style={styles.detailItem}>
+                        <p style={styles.detailLabel}>Address</p>
+                        <p style={styles.detailValue}>{vipCustomerTransaction.address || '-'}</p>
+                    </div>
+                    <div style={styles.detailItem}>
+                        <p style={styles.detailLabel}>Contact Number</p>
+                        <p style={styles.detailValue}>{vipCustomerTransaction.contact_number || '-'}</p>
+                    </div>
+                    <div style={styles.detailItem}>
+                        <p style={styles.detailLabel}>Email</p>
+                        <p style={styles.detailValue}>{vipCustomerTransaction.email || '-'}</p>
                     </div>
                     <div style={styles.detailItem}>
                         <p style={styles.detailLabel}>Details</p>

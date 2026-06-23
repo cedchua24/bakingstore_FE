@@ -24,6 +24,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import LinearProgress from '@mui/material/LinearProgress';
+import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
 import "./CustomerOrderTransactionList.css";
 
 const PendingTransactionList = () => {

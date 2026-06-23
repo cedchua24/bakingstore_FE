@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ProductService from "../Product/ProductService.service";
+import SupplierServiceService from "../Supplier/SupplierService.service";
+import CategoryServiceService from "../Category/CategoryService.service";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -30,14 +32,20 @@ const ReportProductUnsold = () => {
 
     useEffect(() => {
         fetchsortedQuantityList();
+        fetchSupplierList();
+        fetchCategoryList();
     }, []);
 
     const [role] = useState(localStorage.getItem('role_as'));
     const [productSortedDate, setProductSortedDate] = useState({
+        supplier_id: '',
+        category_id: '',
         dateFrom: "",
         dateTo: ""
     });
 
+    const [supplierList, setSupplierList] = useState([]);
+    const [categoryList, setCategoryList] = useState([]);
 
     const [sortedQuantity, setSortedQuantity] = useState({
         data: [],
@@ -101,6 +109,26 @@ const ReportProductUnsold = () => {
         }
     }
 
+    const fetchSupplierList = () => {
+        SupplierServiceService.getAll()
+            .then(response => {
+                setSupplierList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const fetchCategoryList = () => {
+        CategoryServiceService.getAll()
+            .then(response => {
+                setCategoryList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
     const fetchsortedQuantityList = () => {
         ProductService.getUnsoldProducts(productSortedDate)
             .then(response => {
@@ -155,6 +183,46 @@ const ReportProductUnsold = () => {
                 </Form.Group>
             </div>
             <Form>
+                <Box sx={{ minWidth: 120 }}>
+                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                        <InputLabel id="supplier-select-label">Supplier</InputLabel>
+                        <Select
+                            labelId="supplier-select-label"
+                            id="supplier-select"
+                            label="Supplier"
+                            name="supplier_id"
+                            value={productSortedDate.supplier_id}
+                            onChange={onChangeInput}
+                        >
+                            <MenuItem value="">All Suppliers</MenuItem>
+                            {
+                                supplierList.map((supplier, index) => (
+                                    <MenuItem key={supplier.id} value={supplier.id}>{supplier.supplier_name}</MenuItem>
+                                ))
+                            }
+                        </Select>
+                    </FormControl>
+                </Box>
+                <Box sx={{ minWidth: 120 }}>
+                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                        <InputLabel id="category-select-label">Category</InputLabel>
+                        <Select
+                            labelId="category-select-label"
+                            id="category-select"
+                            label="Category"
+                            name="category_id"
+                            value={productSortedDate.category_id}
+                            onChange={onChangeInput}
+                        >
+                            <MenuItem value="">All Categories</MenuItem>
+                            {
+                                categoryList.map((category, index) => (
+                                    <MenuItem key={category.id} value={category.id}>{category.category_name}</MenuItem>
+                                ))
+                            }
+                        </Select>
+                    </FormControl>
+                </Box>
                 {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date From*:</Form.Label>

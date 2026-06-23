@@ -1,20 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Form, Alert } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useLocation } from 'react-router-dom';
+import { Button, Form } from 'react-bootstrap';
 import CustomerService from "./CustomerService";
 import { Link } from "react-router-dom";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Tooltip from '@mui/material/Tooltip';
-import PageviewIcon from '@mui/icons-material/Pageview';
 
 const CustomerTransactionList = () => {
 
     const { id } = useParams();
-
-    useEffect(() => {
-        fetchCustomerTransaction(id);
-    }, []);
+    const location = useLocation();
 
     const [customerTransactionList, setCustomerTransactionList] = useState({
         data: [],
@@ -27,10 +23,27 @@ const CustomerTransactionList = () => {
         total_profit: 0
     });
 
-    const [date, setDate] = useState('');
+    const [dateFilter, setDateFilter] = useState(() => {
+        const searchParams = new URLSearchParams(location.search);
+        return {
+            dateFrom: searchParams.get('dateFrom') || '',
+            dateTo: searchParams.get('dateTo') || '',
+        };
+    });
 
-    const fetchCustomerTransaction = (id) => {
-        CustomerService.fetchCustomerTransaction(id)
+    const buildCustomerTransactionPayload = (customerId, filters) => {
+        const payload = { id: customerId };
+        if (filters.dateFrom) {
+            payload.dateFrom = filters.dateFrom;
+        }
+        if (filters.dateTo) {
+            payload.dateTo = filters.dateTo;
+        }
+        return payload;
+    }
+
+    const fetchCustomerTransaction = useCallback((customerId, filters) => {
+        CustomerService.fetchCustomerTransaction(buildCustomerTransactionPayload(customerId, filters))
             .then(response => {
                 console.log('data', response.data)
                 setCustomerTransactionList(response.data);
@@ -38,6 +51,26 @@ const CustomerTransactionList = () => {
             .catch(e => {
                 console.log("error", e)
             });
+    }, []);
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const filters = {
+            dateFrom: searchParams.get('dateFrom') || '',
+            dateTo: searchParams.get('dateTo') || '',
+        };
+        setDateFilter(filters);
+        fetchCustomerTransaction(id, filters);
+    }, [id, location.search, fetchCustomerTransaction]);
+
+    const onChangeInput = (e) => {
+        const { name, value } = e.target;
+        setDateFilter({ ...dateFilter, [name]: value });
+    }
+
+    const submitCustomerTransaction = (e) => {
+        e.preventDefault();
+        fetchCustomerTransaction(id, dateFilter);
     }
 
     const numberFormat = (value) =>
@@ -56,6 +89,21 @@ const CustomerTransactionList = () => {
     return (
         <div>
             <h1>{customerTransactionList.customerDetails.first_name + " " + customerTransactionList.customerDetails.last_name}</h1>
+            <Form onSubmit={submitCustomerTransaction} className="mb-3">
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
+                    <Form.Group controlId="customerTransactionDateFrom">
+                        <Form.Label>Date From:</Form.Label>
+                        <Form.Control type="date" name="dateFrom" value={dateFilter.dateFrom} onChange={onChangeInput} />
+                    </Form.Group>
+                    <Form.Group controlId="customerTransactionDateTo">
+                        <Form.Label>Date To:</Form.Label>
+                        <Form.Control type="date" name="dateTo" value={dateFilter.dateTo} onChange={onChangeInput} />
+                    </Form.Group>
+                    <Button variant="primary" type="submit">
+                        Find
+                    </Button>
+                </div>
+            </Form>
             <div style={{ width: 600, marginRight: 100 }}>
 
                 {

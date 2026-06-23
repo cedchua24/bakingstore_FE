@@ -1,20 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Form, Alert } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams, useLocation } from 'react-router-dom';
+import { Button, Form } from 'react-bootstrap';
 import CustomerService from "./CustomerService";
-import { Link } from "react-router-dom";
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import Tooltip from '@mui/material/Tooltip';
-import PageviewIcon from '@mui/icons-material/Pageview';
 
 const CustomerProductList = () => {
 
     const { id } = useParams();
-
-    useEffect(() => {
-        fetchCustomerTransaction(id);
-    }, []);
+    const location = useLocation();
 
     const [sortedProduct, setSortedProduct] = useState({
         data: [],
@@ -24,10 +16,27 @@ const CustomerProductList = () => {
         id: 0
     });
 
-    const [date, setDate] = useState('');
+    const [dateFilter, setDateFilter] = useState(() => {
+        const searchParams = new URLSearchParams(location.search);
+        return {
+            dateFrom: searchParams.get('dateFrom') || '',
+            dateTo: searchParams.get('dateTo') || '',
+        };
+    });
 
-    const fetchCustomerTransaction = (id) => {
-        CustomerService.fetchCustomerProduct(id)
+    const buildCustomerProductPayload = (customerId, filters) => {
+        const payload = { id: customerId };
+        if (filters.dateFrom) {
+            payload.dateFrom = filters.dateFrom;
+        }
+        if (filters.dateTo) {
+            payload.dateTo = filters.dateTo;
+        }
+        return payload;
+    }
+
+    const fetchCustomerProduct = useCallback((customerId, filters) => {
+        CustomerService.fetchCustomerProduct(buildCustomerProductPayload(customerId, filters))
             .then(response => {
                 console.log('data', response.data)
                 setSortedProduct(response.data);
@@ -35,6 +44,26 @@ const CustomerProductList = () => {
             .catch(e => {
                 console.log("error", e)
             });
+    }, []);
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const filters = {
+            dateFrom: searchParams.get('dateFrom') || '',
+            dateTo: searchParams.get('dateTo') || '',
+        };
+        setDateFilter(filters);
+        fetchCustomerProduct(id, filters);
+    }, [id, location.search, fetchCustomerProduct]);
+
+    const onChangeInput = (e) => {
+        const { name, value } = e.target;
+        setDateFilter({ ...dateFilter, [name]: value });
+    }
+
+    const submitCustomerProduct = (e) => {
+        e.preventDefault();
+        fetchCustomerProduct(id, dateFilter);
     }
 
     const numberFormat = (value) =>
@@ -47,7 +76,21 @@ const CustomerProductList = () => {
     return (
         <div>
             <h1>{sortedProduct.customerDetails.first_name + " " + sortedProduct.customerDetails.last_name}</h1>
-            <br></br>
+            <Form onSubmit={submitCustomerProduct} className="mb-3">
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
+                    <Form.Group controlId="customerProductDateFrom">
+                        <Form.Label>Date From:</Form.Label>
+                        <Form.Control type="date" name="dateFrom" value={dateFilter.dateFrom} onChange={onChangeInput} />
+                    </Form.Group>
+                    <Form.Group controlId="customerProductDateTo">
+                        <Form.Label>Date To:</Form.Label>
+                        <Form.Control type="date" name="dateTo" value={dateFilter.dateTo} onChange={onChangeInput} />
+                    </Form.Group>
+                    <Button variant="primary" type="submit">
+                        Find
+                    </Button>
+                </div>
+            </Form>
             <table class="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">

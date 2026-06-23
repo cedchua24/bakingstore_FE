@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+import SupplierServiceService from "../Supplier/SupplierService.service";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -30,6 +31,7 @@ const ReportProductSorted = () => {
 
     useEffect(() => {
         fetchsortedQuantityList();
+        fetchSupplierList();
     }, []);
 
     const [role] = useState(localStorage.getItem('role_as'));
@@ -37,10 +39,12 @@ const ReportProductSorted = () => {
         status: 0,
         limit: 0,
         type: '',
+        supplier_id: '',
         dateFrom: "",
         dateTo: ""
     });
 
+    const [supplierList, setSupplierList] = useState([]);
 
     const [sortedQuantity, setSortedQuantity] = useState({
         data: [],
@@ -108,6 +112,16 @@ const ReportProductSorted = () => {
 
                 });
         }
+    }
+
+    const fetchSupplierList = () => {
+        SupplierServiceService.getAll()
+            .then(response => {
+                setSupplierList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
     }
 
     const fetchsortedQuantityList = () => {
@@ -225,6 +239,26 @@ const ReportProductSorted = () => {
                             <MenuItem value="100" >100</MenuItem>
                             <MenuItem value="200" >200</MenuItem>
                             <MenuItem value="500" >500</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
+                <Box sx={{ minWidth: 120 }}>
+                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                        <InputLabel id="supplier-select-label">Supplier</InputLabel>
+                        <Select
+                            labelId="supplier-select-label"
+                            id="supplier-select"
+                            label="Supplier"
+                            name="supplier_id"
+                            value={productSortedDate.supplier_id}
+                            onChange={onChangeInput}
+                        >
+                            <MenuItem value="">All Suppliers</MenuItem>
+                            {
+                                supplierList.map((supplier, index) => (
+                                    <MenuItem key={supplier.id} value={supplier.id}>{supplier.supplier_name}</MenuItem>
+                                ))
+                            }
                         </Select>
                     </FormControl>
                 </Box>
