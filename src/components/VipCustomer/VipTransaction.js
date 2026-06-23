@@ -171,6 +171,9 @@ const styles = {
     noteButton: {
         whiteSpace: 'nowrap',
     },
+    actionButton: {
+        whiteSpace: 'nowrap',
+    },
 }
 
 const VipTransaction = () => {
@@ -344,6 +347,22 @@ const VipTransaction = () => {
         return getPossibleSales() + getGrandTotal();
     }
 
+    const buildCustomerTransactionLink = (customerId) => {
+        var params = new URLSearchParams({
+            dateFrom: dateFilter.dateFrom,
+            dateTo: dateFilter.dateTo,
+        });
+        return "/customers/customerTransactionList/" + customerId + "?" + params.toString();
+    }
+
+    const buildCustomerProductLink = (customerId) => {
+        var params = new URLSearchParams({
+            dateFrom: dateFilter.dateFrom,
+            dateTo: dateFilter.dateTo,
+        });
+        return "/customers/customerProductList/" + customerId + "?" + params.toString();
+    }
+
     return (
         <div style={styles.page}>
 
@@ -388,12 +407,12 @@ const VipTransaction = () => {
                             <th rowSpan="2" style={styles.groupHeader}>#</th>
                             <th rowSpan="2" style={styles.groupHeader}>Customer</th>
                             <th rowSpan="2" style={styles.groupHeader}>Store Name</th>
-                            <th rowSpan="2" style={styles.groupHeader}>Contact Number</th>
-                            <th rowSpan="2" style={styles.groupHeader}>Email</th>
                             <th colSpan="2" style={styles.groupHeader}>Draft Order</th>
                             <th colSpan="2" style={styles.groupHeader}>Last Order</th>
                             <th rowSpan="2" style={styles.groupHeader}>Total Amount Completed</th>
                             <th rowSpan="2" style={styles.groupHeader}>Note</th>
+                            <th rowSpan="2" style={styles.groupHeader}>Transaction</th>
+                            <th rowSpan="2" style={styles.groupHeader}>Products</th>
                         </tr>
                         <tr>
                             <th style={styles.subHeader}>Dates</th>
@@ -409,8 +428,6 @@ const VipTransaction = () => {
                                     <td>{index + 1}</td>
                                     <td>{vipTransaction.customer_name}</td>
                                     <td>{vipTransaction.store_name}</td>
-                                    <td>{vipTransaction.contact_number}</td>
-                                    <td>{vipTransaction.email}</td>
                                     <td>{renderDraftOrderDates(vipTransaction)}</td>
                                     <td>{formatTotalOrderPrice(vipTransaction.draft_order_total_price)}</td>
                                     <td>{formatStatementDate(vipTransaction.last_order_date)}</td>
@@ -423,6 +440,24 @@ const VipTransaction = () => {
                                             </Button>
                                         </Link>
                                     </td>
+                                    <td>
+                                        {vipTransaction.customer_id &&
+                                            <Link variant="primary" to={buildCustomerTransactionLink(vipTransaction.customer_id)}>
+                                                <Button variant="primary" size="sm" style={styles.actionButton}>
+                                                    View Transaction
+                                                </Button>
+                                            </Link>
+                                        }
+                                    </td>
+                                    <td>
+                                        {vipTransaction.customer_id &&
+                                            <Link variant="primary" to={buildCustomerProductLink(vipTransaction.customer_id)}>
+                                                <Button variant="primary" size="sm" style={styles.actionButton}>
+                                                    View Products
+                                                </Button>
+                                            </Link>
+                                        }
+                                    </td>
                                 </tr>
                             )) : (
                                 <tr>
@@ -433,12 +468,12 @@ const VipTransaction = () => {
                     </tbody>
                     <tfoot>
                         <tr style={styles.possibleSalesRow}>
-                            <td colSpan="6" style={styles.footerLabel}>Possible Sales</td>
+                            <td colSpan="4" style={styles.footerLabel}>Possible Sales</td>
                             <td style={styles.footerValue}>{formatTotalOrderPrice(getPossibleSales())}</td>
-                            <td colSpan="4"></td>
+                            <td colSpan="6"></td>
                         </tr>
                         <tr style={styles.grandTotalRow}>
-                            <td colSpan="9" style={styles.footerLabel}>Grand Total</td>
+                            <td colSpan="7" style={styles.footerLabel}>Grand Total</td>
                             <td style={styles.footerValue}>{formatTotalOrderPrice(getGrandTotal())}</td>
                             <td colSpan="3"></td>
                         </tr>

@@ -17,15 +17,18 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography'
 import UpdateIcon from '@mui/icons-material/Update';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import StorefrontIcon from '@mui/icons-material/Storefront';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-
-import CheckIcon from '@mui/icons-material/Check';
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
@@ -41,11 +44,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import LinearProgress from '@mui/material/LinearProgress';
-
-
-import { styled } from '@mui/material/styles';
 
 const AddProductCustomerOrderTransaction = () => {
 
@@ -162,12 +163,14 @@ const AddProductCustomerOrderTransaction = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: { xs: 'calc(100% - 32px)', sm: 440 },
+        maxHeight: '90vh',
+        overflowY: 'auto',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        borderRadius: 2,
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: { xs: 2.5, sm: 3 },
+        '& .MuiTextField-root': { width: '100%' },
     };
 
     const [open, setOpen] = React.useState(false);
@@ -188,12 +191,6 @@ const AddProductCustomerOrderTransaction = () => {
     ];
 
     const TAX_RATE = 0.12;
-
-    function ccyFormat(num) {
-
-        return `${num.toFixed(2)}`;
-    }
-
 
     const [invoiceSubtotal, setinvoiceSubtotal] = useState(0);
     const [invoiceTaxes, setinvoiceTaxes] = useState(0);
@@ -470,6 +467,30 @@ const AddProductCustomerOrderTransaction = () => {
     const handleInputChange = (e, value) => {
         e.persist();
         console.log('eym', value)
+        if (!value) {
+            setOrderShop({
+                ...orderShop,
+                shop_transaction_id: id,
+                branch_stock_transaction_id: 0,
+                shop_order_price: 0,
+                fixed_price: 0,
+                mark_up_product_id: 0,
+                order_profit: 0,
+                profit: 0,
+                product_id: 0,
+                stock: 0,
+                sale_price: 0,
+                business_type: '',
+                shop_order_quantity: 0,
+                shop_order_profit: 0,
+                shop_order_total_price: 0,
+                discount_percentage: 0,
+                discount: '',
+                discount_amount: 0,
+            });
+            setStock(0);
+            return;
+        }
         if (orderShop.business_type === 'WHOLESALE') {
             setStock(value.stock);
         } else {
@@ -715,493 +736,505 @@ const AddProductCustomerOrderTransaction = () => {
         navigate('/shopOrderTransaction/finalizeShopOrder/' + id);
     }
 
-
-    const Div = styled('div')(({ theme }) => ({
-        ...theme.typography.button,
-        backgroundColor: theme.palette.background.paper,
-        fontSize: "2rem",
-        padding: theme.spacing(1),
-        textAlign: "center",
-    }));
     const numberFormat = (value) =>
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    const productLabel = (product) => {
+        if (!product) {
+            return '';
+        }
+
+        const productWeight = product.business_type === 'WHOLESALE'
+            ? product.weight
+            : Number.isInteger(product.weight / product.quantity)
+                ? product.weight / product.quantity
+                : (product.weight / product.quantity).toPrecision(2);
+        const packageName = product.business_type === 'WHOLESALE' ? ` ${product.packaging}` : '';
+        const saleText = product.sale_price > 0 ? ' | SALE' : '';
+
+        return `${product.product_name}${packageName} - ${productWeight}${product.variation} (${numberFormat(product.new_price)}) | Stock ${product.stock}${saleText}`;
+    };
+
+    const itemDescription = (row) => row.business_type === 'WHOLESALE'
+        ? `${row.packaging} (${row.weight / row.quantity}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
+        : `(${Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}${row.variation})`;
+
+    const discountText = (row) => row.discount === 'PERCENTAGE'
+        ? `${row.discount_percentage}%, -${row.discount_amount}`
+        : row.discount === 'AMOUNT'
+            ? `-${row.discount_amount}`
+            : 'None';
+
+    const currentOrderType = shopOrderTransaction.checker !== 0 ? 'Shop Branch Order' : 'Online Order';
+    const selectedProductReady = orderShop.product_id !== 0;
+    const transactionVipCustomers = Array.isArray(shopOrderTransaction.vip_customers)
+        ? shopOrderTransaction.vip_customers
+        : [];
+
+    const renderTransactionVipCustomers = () => {
+        if (transactionVipCustomers.length === 0) {
+            return null;
+        }
+
+        return (
+            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.75 }}>
+                {transactionVipCustomers.map((vipCustomer) => (
+                    <Chip
+                        key={`${vipCustomer.vip_customer_transaction_id}-${vipCustomer.vip_customer_id}`}
+                        size="small"
+                        variant="outlined"
+                        label={vipCustomer.vip_name || 'VIP'}
+                        icon={
+                            <Box
+                                component="span"
+                                sx={{
+                                    width: 10,
+                                    height: 10,
+                                    borderRadius: '50%',
+                                    bgcolor: vipCustomer.vip_color || '#9ca3af',
+                                    border: '1px solid #cbd5e1',
+                                    ml: '6px !important'
+                                }}
+                            />
+                        }
+                    />
+                ))}
+            </Stack>
+        );
+    };
 
     return (
-        <div>
-            {shopOrderTransaction.checker != 0 ? (
-                <Div>{"Shop Branch Order"}</Div>)
-                :
-                (<Div>{"Online Order"}</Div>)
-            }
+        <Box sx={{ bgcolor: '#f6f7f9', minHeight: '100vh', p: { xs: 2, md: 3 } }}>
+            <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
+                <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, border: '1px solid #e5e7eb', mb: 2 }}>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }}>
+                        <Box>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1, flexWrap: 'wrap', rowGap: 1 }}>
+                                <StorefrontIcon color="primary" />
+                                <Chip size="small" color={shopOrderTransaction.checker !== 0 ? 'primary' : 'success'} label={currentOrderType} />
+                                <Chip size="small" variant="outlined" label={`Ref #${shopOrderTransaction.id || id}`} />
+                            </Stack>
+                            <Typography variant="h4" component="h1" sx={{ fontWeight: 700, letterSpacing: 0 }}>
+                                Add Products
+                            </Typography>
+                            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+                                <Typography color="text.secondary">
+                                    {shopOrderTransaction.shop_name || 'Shop'} order for {shopOrderTransaction.requestor_name || 'customer'}
+                                </Typography>
 
-            <Stack sx={{ width: '100%' }} spacing={2}>
+                            </Stack>
+                        </Box>
+                        <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                            <Typography variant="overline" color="text.secondary">Current Total</Typography>
+                            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                                {numberFormat(invoiceTotal || 0)}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {orderShopDTO.shopOrderList.length} item{orderShopDTO.shopOrderList.length === 1 ? '' : 's'} in order
+                            </Typography>
+                        </Box>
+                    </Stack>
+
+                    <Box sx={{ mt: 3 }}>
+                        <Stepper activeStep={1} alternativeLabel>
+                            {steps.map((label) => (
+                                <Step key={label}>
+                                    <StepLabel>{label}</StepLabel>
+                                </Step>
+                            ))}
+                        </Stepper>
+                    </Box>
+                </Paper>
+
                 {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                    <Alert variant="filled" severity={validator.severity} sx={{ mb: 2 }}>{validator.message}</Alert>
                 }
-            </Stack>
-            <br></br>
-            <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1 },
-                }}
-                noValidate
-                autoComplete="off">
-                <Stepper activeStep={1} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
 
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1.15fr) minmax(320px, .85fr)' }, gap: 2, mb: 2 }}>
+                    <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, border: '1px solid #e5e7eb' }}>
+                        <Stack spacing={2.5}>
+                            <Box>
+                                <Typography variant="h6" sx={{ fontWeight: 700 }}>Order Details</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Confirm the transaction information before adding items.
+                                </Typography>
+                            </Box>
 
-                        </Step>
-                    ))}
-                </Stepper>
-                <br></br>
-                <TableContainer component={Paper}>
-
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                        <TableBody>
-                            <TableRow >
-                                <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
-                                <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
-
-                                {shopOrderTransaction.checker != 0 ?
-                                    <>
-                                        <TableCell align="right" >Checker</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
-                                        <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
-                                    :
-                                    <>  <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 1.5 }}>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary">Shop</Typography>
+                                    <Typography sx={{ fontWeight: 600 }}>{shopOrderTransaction.shop_name || '-'}</Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary">{shopOrderTransaction.checker !== 0 ? 'Requestor' : 'Customer'}</Typography>
+                                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.75 }}>
+                                        <Typography sx={{ fontWeight: 600 }}>{shopOrderTransaction.requestor_name || '-'}</Typography>
+                                        {renderTransactionVipCustomers()}
+                                    </Stack>
+                                </Box>
+                                {shopOrderTransaction.checker !== 0 &&
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Checker</Typography>
+                                        <Typography sx={{ fontWeight: 600 }}>{shopOrderTransaction.checker_name || '-'}</Typography>
+                                    </Box>
                                 }
-
-                                <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
-                                <TableCell align="right">{shopOrderTransaction.updated_at}</TableCell>
-                                {shopOrderTransaction.checker == 0 &&
-                                    <>
-                                        <TableCell style={{ fontWeight: 'bold' }}>  Sales Representative:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.sr_name}</TableCell>
-                                    </>
+                                {shopOrderTransaction.checker === 0 &&
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Sales Rep</Typography>
+                                        <Typography sx={{ fontWeight: 600 }}>{shopOrderTransaction.sr_name || '-'}</Typography>
+                                    </Box>
                                 }
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary">Date</Typography>
+                                    <Typography sx={{ fontWeight: 600 }}>{shopOrderTransaction.updated_at || '-'}</Typography>
+                                </Box>
+                            </Box>
+                        </Stack>
+                    </Paper>
 
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                    <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, border: '1px solid #e5e7eb' }}>
+                        <Stack spacing={1.5}>
+                            <Typography variant="h6" sx={{ fontWeight: 700 }}>Summary</Typography>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography color="text.secondary">Quantity</Typography>
+                                <Typography sx={{ fontWeight: 600 }}>{shopOrderTransaction.shop_order_transaction_total_quantity || 0}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography color="text.secondary">Subtotal</Typography>
+                                <Typography sx={{ fontWeight: 600 }}>{numberFormat(invoiceSubtotal || 0)}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Typography color="text.secondary">Tax estimate</Typography>
+                                <Typography sx={{ fontWeight: 600 }}>{numberFormat(invoiceTaxes || 0)}</Typography>
+                            </Stack>
+                            <Divider />
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Typography sx={{ fontWeight: 700 }}>Grand Total</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 800 }}>{numberFormat(invoiceTotal || 0)}</Typography>
+                            </Stack>
+                        </Stack>
+                    </Paper>
+                </Box>
 
-                <br></br>
+                <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, border: '1px solid #e5e7eb', mb: 2 }}>
+                    <form onSubmit={saveCustomerOrder}>
+                        <Stack spacing={2.5}>
+                            <Box>
+                                <Typography variant="h6" sx={{ fontWeight: 700 }}>Add Product</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Choose a product, set quantity, and apply discount when available.
+                                </Typography>
+                            </Box>
 
-                <form onSubmit={saveCustomerOrder} >
+                            <Autocomplete
+                                fullWidth
+                                options={[...products].sort((a, b) =>
+                                    b.category_name.toString().localeCompare(a.category_name.toString())
+                                )}
+                                getOptionDisabled={(products) => products.stock < 1}
+                                value={value}
+                                id="disable-close-on-select"
+                                onChange={handleInputChange}
+                                groupBy={(products) => products.category_name}
+                                getOptionLabel={productLabel}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Choose Product" variant="outlined" />
+                                )}
+                            />
 
-                    <FormControl variant="standard"  >
-                        <Autocomplete
-                            sx={{
-                                width: 700
-                            }}
-                            // options={products}
-                            options={products.sort((a, b) =>
-                                b.category_name.toString().localeCompare(a.category_name.toString())
-                            )}
-                            getOptionDisabled={(products) =>
-                                products.stock < 1
+                            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2 }}>
+                                <FormControl fullWidth variant="outlined">
+                                    <InputLabel htmlFor="shop-order-quantity">Quantity</InputLabel>
+                                    <Input
+                                        type="number"
+                                        id="shop-order-quantity"
+                                        name="shop_order_quantity"
+                                        value={orderShop.shop_order_quantity}
+                                        onChange={onChangeQuantity}
+                                        disabled={!selectedProductReady}
+                                    />
+                                </FormControl>
+
+                                <FormControl fullWidth variant="outlined">
+                                    <InputLabel htmlFor="shop-order-price">Price</InputLabel>
+                                    <Input
+                                        type="number"
+                                        id="shop-order-price"
+                                        name="fixed_price"
+                                        value={orderShop.fixed_price}
+                                        startAdornment={<InputAdornment position="start">PHP</InputAdornment>}
+                                        disabled={!selectedProductReady}
+                                    />
+                                </FormControl>
+
+                                <FormControl fullWidth>
+                                    <InputLabel id="discount-select-label">Discount</InputLabel>
+                                    <Select
+                                        labelId="discount-select-label"
+                                        id="discount-select"
+                                        value={orderShop.discount}
+                                        name="discount"
+                                        label="Discount"
+                                        onChange={onChangeDiscount}
+                                        disabled={shopOrderTransaction.checker !== 0}
+                                    >
+                                        <MenuItem value="PERCENTAGE">Percentage</MenuItem>
+                                        <MenuItem value="AMOUNT">Amount</MenuItem>
+                                    </Select>
+                                </FormControl>
+
+                                <FormControl fullWidth variant="outlined">
+                                    <InputLabel htmlFor="shop-order-total">Total Price</InputLabel>
+                                    <Input
+                                        id="shop-order-total"
+                                        name="shop_order_total_price"
+                                        value={orderShop.shop_order_total_price}
+                                        onChange={onChangeInput}
+                                        startAdornment={<InputAdornment position="start">PHP</InputAdornment>}
+                                        disabled
+                                    />
+                                </FormControl>
+                            </Box>
+
+                            {orderShop.discount &&
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2 }}>
+                                    <FormControl fullWidth variant="outlined">
+                                        <InputLabel htmlFor="discount-value">
+                                            {orderShop.discount === 'PERCENTAGE' ? 'Discount Percentage' : 'Discount Amount'}
+                                        </InputLabel>
+                                        <Input
+                                            id="discount-value"
+                                            name="discount_percentage"
+                                            value={orderShop.discount_percentage}
+                                            onChange={orderShop.discount === 'PERCENTAGE' ? onChangeMarkUpPercentage : onChangeMarkUpPrice}
+                                            startAdornment={orderShop.discount === 'AMOUNT' ? <InputAdornment position="start">PHP</InputAdornment> : null}
+                                            endAdornment={orderShop.discount === 'PERCENTAGE' ? <InputAdornment position="end">%</InputAdornment> : null}
+                                        />
+                                    </FormControl>
+
+                                    <TextField
+                                        label="Discount Value"
+                                        value={numberFormat(orderShop.discount_amount || 0)}
+                                        disabled
+                                    />
+                                </Box>
                             }
 
-                            value={value}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleInputChange}
-                            groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + (products.business_type === 'WHOLESALE' ? " " + products.packaging : '') + ' - ' + (products.business_type === 'WHOLESALE' ? (" ") + products.weight : Number.isInteger(products.weight / products.quantity) ? products.weight / products.quantity : (products.weight / products.quantity).toPrecision(2)) + products.variation + ' (₱' + (products.new_price) + ')' + ' | Stocks - ' + products.stock + (products.sale_price > 0 ? " SALE" : "")}
+                            {submitLoadingAdd && <LinearProgress color="warning" />}
 
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params} label='Choose Product' variant="standard" />
-                            )}
-                        />
-                    </FormControl>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                <Button
+                                    variant="contained"
+                                    type="submit"
+                                    disabled={isAddDisabled}
+                                    startIcon={<AddShoppingCartIcon />}
+                                    size="large"
+                                >
+                                    Add Product
+                                </Button>
+                            </Box>
+                        </Stack>
+                    </form>
+                </Paper>
 
-                    <br></br>
-                    <FormControl sx={{ minWidth: 210 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
-                        <Input
-                            type='number'
-                            className="mb-3"
-                            id="filled-required"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            value={orderShop.shop_order_quantity}
-                            onChange={onChangeQuantity}
-                            disabled={orderShop.product_id === 0 ? true : false}
-                        />
-                    </FormControl>
-                    <br></br>
+                <Paper elevation={0} sx={{ borderRadius: 2, border: '1px solid #e5e7eb', overflow: 'hidden', mb: 2 }}>
+                    <Box sx={{ p: { xs: 2, md: 3 }, pb: 0 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>Products in Order</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Review, edit, or remove items before finalizing.
+                        </Typography>
+                    </Box>
+                    <TableContainer sx={{ mt: 2 }}>
+                        <Table sx={{ minWidth: 860 }} aria-label="shop order items">
+                            <TableHead>
+                                <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                                    <TableCell sx={{ fontWeight: 700 }}>Product</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Qty.</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Unit</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Price</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Discount</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Amount</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Total</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {orderShopDTO.shopOrderList.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                                            <Typography sx={{ fontWeight: 600 }}>No products added yet</Typography>
+                                            <Typography variant="body2" color="text.secondary">Select a product above to start building this order.</Typography>
+                                        </TableCell>
+                                    </TableRow>
+                                ) : orderShopDTO.shopOrderList.map((row) => (
+                                    <TableRow key={row.id} hover>
+                                        <TableCell>
+                                            <Typography sx={{ fontWeight: 600 }}>{row.product_name}</Typography>
+                                            <Typography variant="body2" color="text.secondary">{itemDescription(row)}</Typography>
+                                        </TableCell>
+                                        <TableCell align="right">{row.shop_order_quantity}</TableCell>
+                                        <TableCell align="right">{row.unit}</TableCell>
+                                        <TableCell align="right">{numberFormat(row.fixed_price)}</TableCell>
+                                        <TableCell align="right">{discountText(row)}</TableCell>
+                                        <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
+                                        <TableCell align="right" sx={{ fontWeight: 700 }}>{numberFormat(row.shop_order_total_price)}</TableCell>
+                                        <TableCell align="right">
+                                            <Tooltip title="Update">
+                                                <IconButton onClick={(e) => handleOpen(row.id, e)} color="primary">
+                                                    <UpdateIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Delete">
+                                                <IconButton onClick={(e) => openDelete(row.id, e)} color="error">
+                                                    <DeleteIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
 
-                    <FormControl sx={{ minWidth: 210 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
-                        <Input
-                            type='number'
-                            className="mb-3"
-                            id="filled-required"
-                            label="Price"
-                            variant="filled"
-                            name='fixed_price'
-                            value={orderShop.fixed_price}
-                            // onChange={onChangePrice}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                            disabled={orderShop.product_id === 0 ? true : false}
-                        />
-                    </FormControl>
+                                <TableRow sx={{ bgcolor: '#f8fafc' }}>
+                                    <TableCell colSpan={6} sx={{ fontWeight: 800 }}>Grand Total</TableCell>
+                                    <TableCell align="right" sx={{ fontWeight: 800 }}>{numberFormat(invoiceTotal || 0)}</TableCell>
+                                    <TableCell />
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Paper>
 
-                    {orderShop.discount == 'AMOUNT' && orderShop.discount == 'PERCENTAGE' &&
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                    <Button
+                        variant="contained"
+                        onClick={finalizeOrder}
+                        disabled={orderShopDTO.shopOrderList.length === 0}
+                        size="large"
+                        endIcon={<ArrowForwardIcon />}
+                    >
+                        Next
+                    </Button>
+                </Box>
 
-                        <FormControl variant="standard" style={{ float: 'right', color: "red", marginRight: 800 }}>
-                            <InputLabel htmlFor="standard-adornment-amount" style={{ color: "red" }}>Discounted Price</InputLabel>
-                            <Input
-                                className="mb-3"
-                                id="filled-required"
+                <Paper elevation={0} sx={{ p: { xs: 2, md: 3 }, borderRadius: 2, border: '1px solid #e5e7eb' }}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', rowGap: 0.75 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700 }}>{shopOrderTransaction.requestor_name}</Typography>
+                    </Stack>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Reference Number: #{shopOrderTransaction.id}
+                    </Typography>
+                    <Stack spacing={1}>
+                        {orderShopDTO.shopOrderList.map((row) => (
+                            <Typography key={row.id} variant="body2">
+                                {row.shop_order_quantity} x {numberFormat(row.shop_order_price)} - {row.product_name} {itemDescription(row)}
+                                {row.discount === 'PERCENTAGE' ? `, Disc ${row.discount_percentage}% -${row.discount_amount}` : row.discount === 'AMOUNT' ? `, Disc -${row.discount_amount}` : ''} = {numberFormat(row.shop_order_total_price)}
+                            </Typography>
+                        ))}
+                    </Stack>
+                    {/* <Divider sx={{ my: 2 }} /> */}
+                    <Typography sx={{ fontWeight: 800 }}>Total: {numberFormat(orderShopDTO.shopOrderTransaction.shop_order_transaction_total_price || 0)}</Typography>
+                </Paper>
+
+                <Dialog
+                    open={deleteOpenModal}
+                    onClose={handleDeleteCloseModal}
+                    aria-labelledby="alert-dialog-title"
+                >
+                    <DialogTitle id="alert-dialog-title">Delete product?</DialogTitle>
+                    <DialogContent>
+                        <Typography color="text.secondary">
+                            This item will be removed from the order.
+                        </Typography>
+                        {submitLoading &&
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                <CircularProgress />
+                            </Box>
+                        }
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                        <Button color="error" variant="contained" onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
+                            Delete
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Modal
+                    keepMounted
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="keep-mounted-modal-title"
+                    aria-describedby="keep-mounted-modal-description"
+                >
+                    <Box sx={style}>
+                        <Typography id="keep-mounted-modal-title" variant="h6" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+                            Update Product
+                        </Typography>
+                        {validatorModal.isShow &&
+                            <Alert variant="filled" severity={validatorModal.severity} sx={{ mb: 2 }}>{validatorModal.message}</Alert>
+                        }
+                        {submitLoading &&
+                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                                <CircularProgress />
+                            </Box>
+                        }
+                        <Stack spacing={2}>
+                            <TextField
+                                disabled
+                                label="Product Name"
+                                variant="filled"
+                                name="product_name"
+                                value={orderSupplierModal.product_name}
+                            />
+
+                            <FormControl fullWidth variant="standard">
+                                <InputLabel htmlFor="update-shop-order-price">Price</InputLabel>
+                                <Input
+                                    id="update-shop-order-price"
+                                    name="shop_order_price"
+                                    value={orderSupplierModal.shop_order_price}
+                                    onChange={onChangeInputPriceModal}
+                                    startAdornment={<InputAdornment position="start">PHP</InputAdornment>}
+                                />
+                            </FormControl>
+
+                            <FormControl fullWidth variant="standard">
+                                <InputLabel htmlFor="update-shop-order-quantity">Quantity</InputLabel>
+                                <Input
+                                    type="number"
+                                    id="update-shop-order-quantity"
+                                    name="quantity"
+                                    value={orderSupplierModal.shop_order_quantity}
+                                    onChange={onChangeInputQuantityModal}
+                                />
+                            </FormControl>
+
+                            <TextField
+                                disabled
                                 label="Total Price"
                                 variant="filled"
-                                name='discount_newshop_order_price_amount'
-                                value={orderShop.shop_order_price}
-                                startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                                disabled
+                                name="total_price"
+                                value={numberFormat(orderSupplierModal.shop_order_total_price || 0)}
                             />
-                        </FormControl>
 
-                    }
-                    <br></br>
-                    <FormControl sx={{ minWidth: 210 }}>
-                        <InputLabel id="demo-simple-select-label">Discount</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            className="mb-3"
-                            id="demo-simple-select"
-                            value={orderShop.discount}
-                            name='discount'
-                            label="Mark Up Option"
-                            onChange={onChangeDiscount}
-                            disabled={shopOrderTransaction.checker != 0}
-                        >
-                            <MenuItem value='PERCENTAGE'>PERCENTAGE</MenuItem>
-                            <MenuItem value='AMOUNT'>AMOUNT</MenuItem>
-                        </Select>
-                    </FormControl>
-                    <br></br>
-                    {orderShop.discount === 'PERCENTAGE' ? (
-
-                        <div>
-                            <FormControl variant="standard" >
-                                <InputLabel htmlFor="standard-adornment-amount">Discounted Percentage</InputLabel>
-                                <Input
-                                    className="mb-3"
-                                    id="filled-required"
-                                    label="Mark Up Price"
-                                    variant="filled"
-                                    name='discount_percentage'
-                                    value={orderShop.discount_percentage}
-                                    onChange={onChangeMarkUpPercentage}
-                                    endAdornment={<InputAdornment position="end">%</InputAdornment>}
-                                />
-                            </FormControl>
-
-                            <FormControl variant="standard" style={{ float: 'right', color: "red", marginRight: 800 }}>
-                                <InputLabel htmlFor="standard-adornment-amount" style={{ color: "red" }}>Discounted Amount</InputLabel>
-                                <Input
-                                    className="mb-3"
-                                    id="filled-required"
-                                    label="Total Price"
-                                    variant="filled"
-                                    value={orderShop.discount_amount}
-                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                                    disabled
-                                />
-                            </FormControl>
-
-                        </div>
-                    ) : orderShop.discount === 'AMOUNT' ? (
-                        <div>
-                            <FormControl variant="standard" >
-                                <InputLabel htmlFor="standard-adornment-amount">Discounted Amount</InputLabel>
-                                <Input
-                                    className="mb-3"
-                                    id="filled-required"
-                                    label="Mark Up Price"
-                                    variant="filled"
-                                    name='discount_percentage'
-                                    value={orderShop.discount_percentage}
-                                    onChange={onChangeMarkUpPrice}
-                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                                />
-                            </FormControl>
-                            <FormControl variant="standard" style={{ float: 'right', color: "red", marginRight: 800 }}>
-                                <InputLabel htmlFor="standard-adornment-amount" style={{ color: "red" }}>Discounted Amount</InputLabel>
-                                <Input
-                                    className="mb-3"
-                                    id="filled-required"
-                                    label="Total Price"
-                                    variant="filled"
-                                    value={orderShop.discount_amount}
-                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                                    disabled
-                                />
-                            </FormControl>
-                        </div>
-                    ) : (
-                        <div></div>
-                    )}
-
-                    <br></br>
-                    <FormControl variant="standard" >
-                        <InputLabel htmlFor="standard-adornment-amount">Total Price</InputLabel>
-                        <Input
-                            className="mb-3"
-                            id="filled-required"
-                            label="Total Price"
-                            variant="filled"
-                            name='shop_order_total_price'
-                            value={orderShop.shop_order_total_price}
-                            onChange={onChangeInput}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                            disabled
-                        />
-                    </FormControl>
-                    <br></br>
-                    {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
-                    }
-                    {/* <LinearProgress color="secondary" /> */}
-                    <br></br>
-                    <div>
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            disabled={isAddDisabled}
-                        >
-                            Add
-                        </Button>
-                    </div>
-                    <br></br>
-                </form>
-            </Box>
-
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Price</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Discount</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Total Cost</TableCell>
-                            <TableCell align="right"></TableCell>
-                            <TableCell align="right"></TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {orderShopDTO.shopOrderList.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.product_name} {
-                                    row.business_type === 'WHOLESALE' ? <></>
-                                        : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) </>
-                                }</TableCell>
-                                <TableCell align="right">{row.shop_order_quantity}</TableCell>
-                                <TableCell align="right">{row.unit}</TableCell>
-                                <TableCell align="right">{numberFormat(row.fixed_price)}</TableCell>
-                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
-                                <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
-                                <TableCell align="right">{numberFormat(row.shop_order_total_price)}</TableCell>
-                                <TableCell align="right">
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCell>
-                                <TableCell align="right">
-                                    <Tooltip title="Delete">
-                                        <IconButton>
-                                            <DeleteIcon color="error" onClick={(e) => openDelete(row.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-
-                        {/* <TableRow>
-                            <TableCell rowSpan={3} />
-                            <TableCell colSpan={2}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Tax</TableCell>
-                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow> */}
-                        <br></br>
-                        <TableRow>
-                            <TableCell colSpan={6} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <br></br>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <Button
-                    variant="contained"
-                    type="submit"
-                    onClick={finalizeOrder}
-                    disabled={orderShopDTO.shopOrderList.length === 0 ? true : false}
-                    size="large" >
-                    Next
-                </Button>
-            </Box>
-
-            <Dialog
-                open={deleteOpenModal}
-                onClose={handleDeleteCloseModal}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-
-                <DialogTitle id="alert-dialog-title">
-                    {"Are you sure you want to Delete?"}
-                </DialogTitle>
-                {submitLoading &&
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <CircularProgress />
-                    </div>
-                }
-                <DialogActions>
-                    <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                    <Button onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
-                        Agree
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Product
-                    </Typography>
-                    {validatorModal.isShow &&
-                        <Alert variant="filled" severity={validatorModal.severity}>{validatorModal.message}</Alert>
-                    }
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <TextField
-                        disabled
-                        id="filled-required"
-                        label="Product Name"
-                        variant="filled"
-                        name='product_name'
-                        value={orderSupplierModal.product_name}
-                    />
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
-                        <Input
-                            id="filled-required"
-                            label="=Price"
-                            variant="filled"
-                            name='shop_order_price'
-                            value={orderSupplierModal.shop_order_price}
-                            onChange={onChangeInputPriceModal}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
-                        <Input
-                            type='number'
-                            id="filled-required"
-                            label="=Price"
-                            variant="filled"
-                            name='quantity'
-                            value={orderSupplierModal.shop_order_quantity}
-                            onChange={onChangeInputQuantityModal}
-                        />
-                    </FormControl>
-
-                    <TextField
-                        disabled
-                        id="filled-required"
-                        label="Total Price"
-                        variant="filled"
-                        name='total_price'
-                        startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        value={'₱ ' + orderSupplierModal.shop_order_total_price}
-                    />
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
+                            <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                <Button onClick={handleClose}>Cancel</Button>
+                                <Button
+                                    variant="contained"
+                                    type="button"
+                                    onClick={updateOrderSupplier}
+                                    disabled={submitLoading}
+                                >
+                                    Save Changes
+                                </Button>
+                            </Stack>
+                        </Stack>
                     </Box>
-                </Box>
-            </Modal>
-            <div>
-                <br></br>
-                <h6>Reference Number: #{shopOrderTransaction.id} </h6>
-                <h6> {shopOrderTransaction.requestor_name} </h6>
-
-                <br></br>
-                {orderShopDTO.shopOrderList.map((row) => (
-                    <>
-                        <h6>{row.shop_order_quantity} x {row.shop_order_price} -
-                            &nbsp;{row.product_name}  {
-                                row.business_type === 'WHOLESALE' ? <>{row.packaging} ({row.weight / row.quantity}{row.variation}{row.quantity == 1 ? '' : ' x ' + row.quantity}) {row.discount == 'PERCENTAGE' ? ",Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''}</>
-                                    : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) {row.discount == 'PERCENTAGE' ? ",Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''}</>
-                            }
-
-
-                            <> = </>{row.shop_order_total_price}</h6>
-
-                    </>
-
-                ))
-                }
-                <br></br>
-                <h6>Total: {numberFormat(orderShopDTO.shopOrderTransaction.shop_order_transaction_total_price)} </h6>
-
-            </div>
-            <br></br>
-        </div >
+                </Modal>
+            </Box>
+        </Box>
     )
 }
 

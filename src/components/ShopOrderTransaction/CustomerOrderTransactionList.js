@@ -35,6 +35,7 @@ import Select from '@mui/material/Select';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import moment from "moment";
+import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
 
 import LinearProgress from '@mui/material/LinearProgress';
 import "./CustomerOrderTransactionList.css";
@@ -956,26 +957,37 @@ const CustomerOrderTransactionList = () => {
                                 <tr>
                                     <td className="customer-report-empty" colSpan={role == 2 ? 15 : 14}>No Data Available</td>
                                 </tr>
-                            ) : shopOrderTransaction.data.map((transaction) => (
+                            ) : shopOrderTransaction.data.map((transaction) => {
+                                const primaryVipCustomer = getPrimaryTransactionVipCustomer(transaction);
+                                const vipCustomers = getTransactionVipCustomers(transaction);
+
+                                return (
                                 <tr key={transaction.id}>
                                     <td className="customer-report-id customer-report-id-cell">
-                                        {transaction.vip_name &&
+                                        {primaryVipCustomer &&
                                             <span
                                                 className="customer-report-vip-stripe"
-                                                style={{ backgroundColor: transaction.vip_color || '#6c757d' }}
+                                                style={{ backgroundColor: primaryVipCustomer.vip_color || '#6c757d' }}
                                             ></span>
                                         }
                                         <span className="customer-report-id-stack">
                                             <span className="customer-report-order-id">#{transaction.id}</span>
-                                            {transaction.vip_name &&
-                                                <Tooltip title={"VIP Customer: " + transaction.vip_name}>
-                                                    <span
-                                                        className="customer-report-vip-badge"
-                                                        style={{ backgroundColor: transaction.vip_color || '#6c757d' }}
-                                                    >
-                                                        {transaction.vip_name}
-                                                    </span>
-                                                </Tooltip>
+                                            {vipCustomers.length > 0 &&
+                                                <span className="customer-report-vip-badge-list">
+                                                    {vipCustomers.map((vipCustomer, index) => (
+                                                        <Tooltip
+                                                            key={vipCustomer.vip_customer_transaction_id || vipCustomer.vip_customer_id || `${transaction.id}-${index}`}
+                                                            title={"VIP Customer: " + getTransactionVipCustomerNames(transaction)}
+                                                        >
+                                                            <span
+                                                                className="customer-report-vip-badge"
+                                                                style={{ backgroundColor: vipCustomer.vip_color || '#6c757d' }}
+                                                            >
+                                                                {vipCustomer.vip_name}
+                                                            </span>
+                                                        </Tooltip>
+                                                    ))}
+                                                </span>
                                             }
                                         </span>
                                     </td>
@@ -1079,7 +1091,8 @@ const CustomerOrderTransactionList = () => {
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>

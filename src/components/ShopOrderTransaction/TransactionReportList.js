@@ -195,7 +195,7 @@ const TransactionReportList = () => {
                 console.log("error", e)
             });
 
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList(customerOrderDate.date)
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList(customerOrderDate)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);

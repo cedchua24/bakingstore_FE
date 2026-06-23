@@ -24,6 +24,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import LinearProgress from '@mui/material/LinearProgress';
+import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
 import "./CustomerOrderTransactionList.css";
 
 const PendingPickUp = () => {
@@ -593,26 +594,37 @@ const PendingPickUp = () => {
                         <tbody>
 
                             {
-                                shopOrderTransaction.data.map((shopOrderTransaction, index) => (
+                                shopOrderTransaction.data.map((shopOrderTransaction, index) => {
+                                    const primaryVipCustomer = getPrimaryTransactionVipCustomer(shopOrderTransaction);
+                                    const vipCustomers = getTransactionVipCustomers(shopOrderTransaction);
+
+                                    return (
                                     <tr key={shopOrderTransaction.id} >
                                         <td className="customer-report-id customer-report-id-cell">
-                                            {shopOrderTransaction.vip_name &&
+                                            {primaryVipCustomer &&
                                                 <span
                                                     className="customer-report-vip-stripe"
-                                                    style={{ backgroundColor: shopOrderTransaction.vip_color || '#6c757d' }}
+                                                    style={{ backgroundColor: primaryVipCustomer.vip_color || '#6c757d' }}
                                                 ></span>
                                             }
                                             <span className="customer-report-id-stack">
                                                 <span className="customer-report-order-id">#{shopOrderTransaction.id}</span>
-                                                {shopOrderTransaction.vip_name &&
-                                                    <Tooltip title={"VIP Customer: " + shopOrderTransaction.vip_name}>
-                                                        <span
-                                                            className="customer-report-vip-badge"
-                                                            style={{ backgroundColor: shopOrderTransaction.vip_color || '#6c757d' }}
-                                                        >
-                                                            {shopOrderTransaction.vip_name}
-                                                        </span>
-                                                    </Tooltip>
+                                                {vipCustomers.length > 0 &&
+                                                    <span className="customer-report-vip-badge-list">
+                                                        {vipCustomers.map((vipCustomer, vipIndex) => (
+                                                            <Tooltip
+                                                                key={vipCustomer.vip_customer_transaction_id || vipCustomer.vip_customer_id || `${shopOrderTransaction.id}-${vipIndex}`}
+                                                                title={"VIP Customer: " + getTransactionVipCustomerNames(shopOrderTransaction)}
+                                                            >
+                                                                <span
+                                                                    className="customer-report-vip-badge"
+                                                                    style={{ backgroundColor: vipCustomer.vip_color || '#6c757d' }}
+                                                                >
+                                                                    {vipCustomer.vip_name}
+                                                                </span>
+                                                            </Tooltip>
+                                                        ))}
+                                                    </span>
                                                 }
                                             </span>
                                         </td>
@@ -717,7 +729,8 @@ const PendingPickUp = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                )
+                                    );
+                                }
                                 )
                             }
                         </tbody>
