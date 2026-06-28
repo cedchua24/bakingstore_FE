@@ -1,5 +1,5 @@
 import React, { Component, useState, useEffect } from "react";
-import { BrowserRouter as Router, Redirect, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Redirect, Routes, Route, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import NavBar from "./components/Navigation/NavBar";
@@ -70,6 +70,14 @@ import CategoryList from "./components/Category/CategoryList";
 import EditCategory from "./components/Category/EditCategory";
 import UserRegistration from "./components/User/UserRegistration";
 import UserLogin from "./components/User/UserLogin";
+import UserChangePassword from "./components/User/UserChangePassword";
+import ForgotPassword from "./components/User/ForgotPassword";
+import ResetPassword from "./components/User/ResetPassword";
+import {
+  clearAuthSession,
+  hasValidAuthSession,
+  scheduleSessionExpiration,
+} from "./components/User/authSession";
 import Logout from "./components/User/Logout";
 import Home from "./components/Home/Home";
 import AdminPrivateRoute from "./components/AdminPrivateRoute";
@@ -312,6 +320,12 @@ import ReportExpenseTransaction from "./components/Reports/ReportExpenseTransact
 const App = () => {
 
   const [items, setItems] = useState('');
+  const isAuthenticated = hasValidAuthSession();
+
+  useEffect(() => scheduleSessionExpiration(() => {
+    clearAuthSession();
+    window.location.replace("/login?reason=session-expired");
+  }), []);
 
   // useEffect(() => {
   //   const items = JSON.parse(localStorage.getItem('auth_token'));
@@ -319,6 +333,26 @@ const App = () => {
 
   //   setItems(items);
   // }, []);
+
+  if (!isAuthenticated) {
+    return (
+      <div>
+        <NewNavBar />
+        <br />
+        <br />
+        <br />
+        <div className="container mt-3">
+          <Routes>
+            <Route path="/login" element={<UserLogin />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* Required for the secure link sent by the forgot-password email. */}
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -631,6 +665,9 @@ const App = () => {
                 : <UserLogin />
             }
           />
+          <Route exact path="/changePassword" element={<UserChangePassword />} />
+          <Route exact path="/forgot-password" element={<ForgotPassword />} />
+          <Route exact path="/reset-password" element={<ResetPassword />} />
           <Route
             exact
             path="/userRegistration"

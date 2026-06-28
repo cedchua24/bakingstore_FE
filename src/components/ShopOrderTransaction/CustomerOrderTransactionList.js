@@ -38,11 +38,13 @@ import moment from "moment";
 import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
 
 import LinearProgress from '@mui/material/LinearProgress';
+import useActiveShopColor from "../Shop/useActiveShopColor";
 import "./CustomerOrderTransactionList.css";
 
 const CustomerOrderTransactionList = () => {
 
     const { id } = useParams();
+    const activeShopColor = useActiveShopColor();
 
     useEffect(() => {
         fetchOnlineShopOrderTransactionList();
@@ -745,9 +747,67 @@ const CustomerOrderTransactionList = () => {
 
     const pickupStatusClass = (isPickup) => isPickup === 1 ? "status-pill status-success" : "status-pill status-warning";
 
+    const getCustomerKey = (transaction) => transaction.customer_id ||
+        transaction.requestor_id ||
+        `${transaction.requestor_name || ""}-${transaction.store_name || ""}`.toLowerCase();
+
+    const isNewCustomer = (transaction) => (
+        transaction.customer_created_date &&
+        moment(transaction.customer_created_date).isValid() &&
+        moment(transaction.customer_created_date).format("YYYY-MM-DD") === customerOrderDate.date
+    );
+
+    const newCustomers = Array.from(
+        shopOrderTransaction.data
+            .filter(isNewCustomer)
+            .reduce((customers, transaction) => {
+                const customerKey = getCustomerKey(transaction);
+                const existingCustomer = customers.get(customerKey);
+
+                if (existingCustomer) {
+                    existingCustomer.totalSales += Number(transaction.shop_order_transaction_total_price) || 0;
+                } else {
+                    customers.set(customerKey, {
+                        ...transaction,
+                        totalSales: Number(transaction.shop_order_transaction_total_price) || 0
+                    });
+                }
+
+                return customers;
+            }, new Map())
+            .values()
+    );
+
+    const topSalesCustomers = Array.from(
+        shopOrderTransaction.data
+            .filter((transaction) => (
+                Number(transaction.status) === 1 &&
+                moment(transaction.date).isValid() &&
+                moment(transaction.date).format("YYYY-MM-DD") === customerOrderDate.date
+            ))
+            .reduce((customers, transaction) => {
+                const customerKey = getCustomerKey(transaction);
+                const existingCustomer = customers.get(customerKey);
+
+                if (existingCustomer) {
+                    existingCustomer.totalSales += Number(transaction.shop_order_transaction_total_price) || 0;
+                } else {
+                    customers.set(customerKey, {
+                        ...transaction,
+                        totalSales: Number(transaction.shop_order_transaction_total_price) || 0
+                    });
+                }
+
+                return customers;
+            }, new Map())
+            .values()
+    )
+        .sort((customerA, customerB) => customerB.totalSales - customerA.totalSales)
+        .slice(0, 5);
+
 
     return (
-        <div className="customer-report-page">
+        <div className="customer-report-page" style={{ "--shop-color": activeShopColor }}>
             <section className="customer-report-hero">
                 <div>
                     <p className="customer-report-eyebrow">Daily customer order report</p>
@@ -922,6 +982,88 @@ const CustomerOrderTransactionList = () => {
                 </article>
             </section>
 
+            <div className="customer-report-customer-grid">
+                <section className="customer-report-table-card customer-report-new-customers">
+                <div className="customer-report-table-header">
+                    <div>
+                        <p className="customer-report-eyebrow">Customer growth</p>
+                        <h2>New Customers</h2>
+                    </div>
+                    <span>{newCustomers.length} records</span>
+                </div>
+
+                <div className="customer-report-table-wrap customer-report-new-customers-wrap">
+                    <table className="customer-report-table customer-report-table-simple customer-report-table-compact">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Customer Created</th>
+                                <th>Total Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {newCustomers.length === 0 ? (
+                                <tr>
+                                    <td className="customer-report-empty" colSpan="3">
+                                        No new customers for this date
+                                    </td>
+                                </tr>
+                            ) : newCustomers.map((customer) => (
+                                <tr key={customer.customer_id || customer.requestor_id || `${customer.requestor_name}-${customer.store_name}`}>
+                                    <td>
+                                        <strong>{customer.requestor_name || "-"}</strong>
+                                        {customer.store_name && <span>{customer.store_name}</span>}
+                                    </td>
+                                    <td>{moment(customer.customer_created_date).format("MMMM D, YYYY")}</td>
+                                    <td className="customer-report-amount">{money(customer.totalSales)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                </section>
+
+                <section className="customer-report-table-card customer-report-top-customers">
+                    <div className="customer-report-table-header">
+                        <div>
+                            <p className="customer-report-eyebrow">Daily leaders</p>
+                            <h2>Top Sales Customers</h2>
+                        </div>
+                        <span>Top 5</span>
+                    </div>
+
+                    <div className="customer-report-table-wrap">
+                        <table className="customer-report-table customer-report-table-simple customer-report-table-compact">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Customer</th>
+                                    <th>Total Sales</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {topSalesCustomers.length === 0 ? (
+                                    <tr>
+                                        <td className="customer-report-empty" colSpan="3">
+                                            No completed sales for this date
+                                        </td>
+                                    </tr>
+                                ) : topSalesCustomers.map((customer, index) => (
+                                    <tr key={getCustomerKey(customer)}>
+                                        <td className="customer-report-rank">#{index + 1}</td>
+                                        <td>
+                                            <strong>{customer.requestor_name || "-"}</strong>
+                                            {customer.store_name && <span>{customer.store_name}</span>}
+                                        </td>
+                                        <td className="customer-report-amount">{money(customer.totalSales)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
             <section className="customer-report-table-card">
                 <div className="customer-report-table-header">
                     <div>
@@ -960,9 +1102,13 @@ const CustomerOrderTransactionList = () => {
                             ) : shopOrderTransaction.data.map((transaction) => {
                                 const primaryVipCustomer = getPrimaryTransactionVipCustomer(transaction);
                                 const vipCustomers = getTransactionVipCustomers(transaction);
+                                const transactionIsNewCustomer = isNewCustomer(transaction);
 
                                 return (
-                                <tr key={transaction.id}>
+                                <tr
+                                    key={transaction.id}
+                                    className={transactionIsNewCustomer ? "customer-report-new-customer-row" : ""}
+                                >
                                     <td className="customer-report-id customer-report-id-cell">
                                         {primaryVipCustomer &&
                                             <span
@@ -998,6 +1144,11 @@ const CustomerOrderTransactionList = () => {
                                     <td>
                                         <strong>{transaction.requestor_name}</strong>
                                         {transaction.store_name && <span>{transaction.store_name.toUpperCase()}</span>}
+                                        {transactionIsNewCustomer &&
+                                            <Tooltip title={`Customer created ${moment(transaction.customer_created_date).format("MMMM D, YYYY")}`}>
+                                                <span className="customer-report-new-customer-badge">New Customer</span>
+                                            </Tooltip>
+                                        }
                                     </td>
                                     <td>{transaction.shop_order_transaction_total_quantity != 0 ? transaction.shop_order_transaction_total_quantity : "-"}</td>
                                     <td>{transaction.total_cash != 0 ? money(transaction.total_cash) : "-"}</td>

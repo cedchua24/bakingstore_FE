@@ -1061,7 +1061,7 @@ const FinalizeShopOrder = () => {
                             </Stack>
                             <Stack direction="row" justifyContent="space-between">
                                 <Typography color="text.secondary">Tax estimate</Typography>
-                                <Typography sx={{ fontWeight: 600 }}>{numberFormat(invoiceTaxes || 0)}</Typography>
+                                <Typography sx={{ fontWeight: 600 }}>{numberFormat((invoiceTaxes || 0) / 1.12)}</Typography>
                             </Stack>
                             <Stack direction="row" justifyContent="space-between">
                                 <Typography color="text.secondary">Paid</Typography>

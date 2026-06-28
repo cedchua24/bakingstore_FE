@@ -1,93 +1,68 @@
+import React, { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import ShopService from "../Shop/ShopService";
+import { normalizeShopColor } from "../Shop/shopBranding";
+import "./UserLoginNav.css";
 
-import React, { useState, useEffect } from "react";
-import { styled, useTheme } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import MuiAppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
+const UserLoginNav = () => {
+    const location = useLocation();
+    const [shopName, setShopName] = useState("MDR Baking Supplies");
+    const [shopColor, setShopColor] = useState("#35221c");
 
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import swal from 'sweetalert';
+    useEffect(() => {
+        ShopService.fetchShopActive()
+            .then((response) => {
+                const payload = response.data?.data || response.data;
+                const activeShop = Array.isArray(payload) ? payload[0] : payload;
 
-const drawerWidth = 240;
+                if (activeShop?.shop_name) {
+                    setShopName(activeShop.shop_name);
+                }
 
+                const color = normalizeShopColor(activeShop?.color);
+                if (color) {
+                    setShopColor(color);
+                }
+            })
+            .catch((error) => {
+                console.error("Unable to load the active shop name.", error);
+            });
+    }, []);
 
-const AppBar = styled(MuiAppBar, {
-    shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme }) => ({
-    transition: theme.transitions.create(['margin', 'width'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-
-    }),
-    variants: [
-        {
-            props: ({ open }) => open,
-            style: {
-                width: `calc(100% - ${drawerWidth}px)`,
-
-                marginLeft: `${drawerWidth}px`,
-                transition: theme.transitions.create(['margin', 'width'], {
-                    easing: theme.transitions.easing.easeOut,
-                    duration: theme.transitions.duration.enteringScreen,
-                }),
-            },
-        },
-    ],
-}));
-
-
-export default function PersistentDrawerLeft() {
-
-    const navigate = useNavigate();
-
-    const loginSubmit = (e) => {
-        navigate('/');
-        window.location.reload();
-    }
-
-    const registerSubmit = (e) => {
-        navigate('/userRegistration');
-        window.location.reload();
-
-    }
+    const isLoginPage = location.pathname === "/" || location.pathname === "/login";
+    const isRegistrationPage = location.pathname === "/userRegistration";
 
     return (
-        <Box sx={{ display: 'flex' }} >
-            <CssBaseline />
-            <AppBar position="fixed" sx={{ bgcolor: "maroon" }} >
-                <Toolbar>
+        <header className="public-nav" style={{ "--shop-color": shopColor }}>
+            <div className="public-nav-inner">
+                <Link className="public-nav-brand" to="/login" aria-label={`${shopName} login`}>
+                    <span className="public-nav-logo" aria-hidden="true">M</span>
+                    <span className="public-nav-brand-copy">
+                        <strong>{shopName}</strong>
+                        <small>Operations Management System</small>
+                    </span>
+                </Link>
 
-
-                    <Typography variant="h5" noWrap component="div">
-                        MDR Caloocan
-                    </Typography>
-                    <List>
-
-                        <ListItem disablePadding>
-                            <ListItemButton sx={{ textAlign: 'center', marginLeft: 10 }} onClick={loginSubmit}>
-                                <ListItemText primary="Login" />
-                            </ListItemButton>
-                            {/* <ListItemButton sx={{ textAlign: 'center' }} onClick={registerSubmit}>
-                                <ListItemText primary="Register" />
-                            </ListItemButton> */}
-                        </ListItem>
-
-                    </List>
-
-                    {/* <button className="nav-link btn btn-danger btn-sm text-white" type='button' onClick={loginSubmit} >Login</button>
-                    <button className="nav-link btn btn-danger btn-sm text-white" type='button' o >Register</button>
-                    <button className="nav-link btn btn-danger btn-sm text-white" type='button' onClick={logoutSubmit} >Logout</button> */}
-
-                </Toolbar>
-            </AppBar>
-
-        </Box >
+                <nav className="public-nav-actions" aria-label="Account navigation">
+                    <Link
+                        className={`public-nav-link${isLoginPage ? " active" : ""}`}
+                        to="/login"
+                        aria-current={isLoginPage ? "page" : undefined}
+                    >
+                        Sign in
+                    </Link>
+                    <Link
+                        className={`public-nav-access${isRegistrationPage ? " active" : ""}`}
+                        to="/userRegistration"
+                        aria-current={isRegistrationPage ? "page" : undefined}
+                    >
+                        <span aria-hidden="true">＋</span>
+                        Create access
+                    </Link>
+                </nav>
+            </div>
+        </header>
     );
-}
+};
+
+export default UserLoginNav;

@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import swal from 'sweetalert';
 import { useLocation } from "react-router-dom";
+import { hasValidAuthSession } from "../User/authSession";
 
 const NewNavBar = (props) => {
     const location = useLocation();
@@ -24,7 +25,7 @@ const NewNavBar = (props) => {
     if (isReceiptOrderPage || isReceiptSupplierPage || isReceipShopBranchPage) {
         AuthButtons = null; // or empty fragment <></>
     } else {
-        if (!localStorage.getItem('auth_token')) {
+        if (!hasValidAuthSession()) {
             AuthButtons = <UserLoginNav />;
         } else {
             AuthButtons = <DrawerNav />;

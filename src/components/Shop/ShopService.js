@@ -17,7 +17,7 @@ class ShopService {
         return axios.get(`/api/shop/fetchOnlineOrderList/${id}`);
     }
     fetchShopActive(id) {
-        return axios.get(`/api/shop/fetchShopActive/${id}`);
+        return axios.get(`/api/shop/fetchShopActive/${id ?? "active"}`);
     }
     fetchShopCurrent(id) {
         return axios.get(`/api/shop/fetchShopCurrent/${id}`);

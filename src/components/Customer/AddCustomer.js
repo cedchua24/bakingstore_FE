@@ -31,6 +31,7 @@ const AddCustomer = (props) => {
         contact_number: '',
         email: '',
         ads: 0,
+        user_id: localStorage.getItem('auth_user_id'),
         address: '',
         updated_at: ''
     });

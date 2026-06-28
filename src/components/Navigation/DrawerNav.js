@@ -26,6 +26,9 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import UserService from '../User/UserService.service'
 
 import DraftsIcon from '@mui/icons-material/Drafts';
@@ -78,6 +81,9 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import moment from "moment";
+import ShopService from "../Shop/ShopService";
+import { normalizeShopColor } from "../Shop/shopBranding";
+import "./DrawerNav.css";
 
 import { pink } from '@mui/material/colors';
 
@@ -150,6 +156,35 @@ export default function PersistentDrawerLeft() {
 
     const navigate = useNavigate();
     const [open, setOpen] = React.useState(false);
+    const [shopBrand, setShopBrand] = useState({
+        name: "MDR Baking Supplies",
+        color: "#35221c",
+    });
+
+    useEffect(() => {
+        ShopService.fetchShopActive()
+            .then((response) => {
+                const payload = response.data?.data || response.data;
+                const activeShop = Array.isArray(payload) ? payload[0] : payload;
+                const nextBrand = {};
+
+                if (activeShop?.shop_name) {
+                    nextBrand.name = activeShop.shop_name;
+                }
+
+                const color = normalizeShopColor(activeShop?.color);
+                if (color) {
+                    nextBrand.color = color;
+                }
+
+                if (Object.keys(nextBrand).length > 0) {
+                    setShopBrand((current) => ({ ...current, ...nextBrand }));
+                }
+            })
+            .catch((error) => {
+                console.error("Unable to load the active shop branding.", error);
+            });
+    }, []);
 
     const [open1, setOpen1] = React.useState(false);
     const handleClick1 = () => {
@@ -1126,17 +1161,23 @@ export default function PersistentDrawerLeft() {
     return (
         <Box sx={{ display: 'flex' }} >
             <CssBaseline />
-            <AppBar position="fixed" open={open} sx={{ bgcolor: "maroon" }} >
-                <Toolbar>
+            <AppBar
+                position="fixed"
+                open={open}
+                className="drawer-topbar"
+                style={{ "--shop-color": shopBrand.color }}
+            >
+                <Toolbar className="drawer-toolbar">
 
                     <IconButton
                         color="inherit"
                         aria-label="open drawer"
                         onClick={handleDrawerOpen}
                         edge="start"
+                        className="drawer-menu-button"
                         sx={[
                             {
-                                mr: 2,
+                                mr: 1,
                             },
                             open && { display: 'none' },
                         ]}
@@ -1144,70 +1185,79 @@ export default function PersistentDrawerLeft() {
                         <MenuIcon />
                     </IconButton>
 
-                    <Typography variant="h5" noWrap component="div" >
-                        MDR Caloocan
-                    </Typography>
+                    <div className="drawer-brand">
+                        <span className="drawer-brand-mark">
+                            <img src="/mdr_nav_logo.png" alt="MDR" />
+                        </span>
+                        <span className="drawer-brand-copy">
+                            <strong>{shopBrand.name}</strong>
+                            <small>Operations System</small>
+                        </span>
+                    </div>
 
-                    <Nav >
-                        <NavDropdown title="Dashboard" id="basic-nav-dropdown">
-                            <NavDropdown.Item href={`/dashboard/employeePerformance/${moment().format("YYYY-MM-DD")}`}> Employee Performance </NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-                    <Nav >
-                        <NavDropdown title="Employee Check List" id="basic-nav-dropdown">
-                            <NavDropdown.Item href={`/employee/staffCheckList/${moment().format("YYYY-MM-DD")}`}> Employee Check List </NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
+                    <div className="drawer-primary-nav">
+                        <Nav>
+                            <NavDropdown title="Dashboard" id="basic-nav-dropdown">
+                                <NavDropdown.Item href={`/dashboard/employeePerformance/${moment().format("YYYY-MM-DD")}`}> Employee Performance </NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
+                        <Nav >
+                            <NavDropdown title="Employee Check List" id="basic-nav-dropdown">
+                                <NavDropdown.Item href={`/employee/staffCheckList/${moment().format("YYYY-MM-DD")}`}> Employee Check List </NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
 
-                    <Nav >
-                        <NavDropdown title="Customer" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
-                            <NavDropdown.Item href="/searchCustomer">Search Customer</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
-                            {/* <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item> */}
-                            <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
-
-
-                        </NavDropdown>
-                    </Nav>
-
-                    <Nav >
-                        <NavDropdown title="Customer Reminder" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/customerHistory">Customer Need to Follow up </NavDropdown.Item>
-                            <NavDropdown.Item href="/customerConvo">Customer Done Following up</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerReOrder">List of Customer Successfully Reordered</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerBacklog">Customer Backlog List</NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-
-                    <Nav >
-                        <NavDropdown title="Customer Order" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
-                            <NavDropdown.Item href={`/shopOrderTransaction/customerOrderTransactionList/${moment().format("YYYY-MM-DD")}`}>  Customer Order List </NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Top Product Today</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Top Customer Today</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/pendingDelivery">For Delivery</NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-
-                    <Nav >
-                        <NavDropdown title="Daily Store Session" id="basic-nav-dropdown">
-                            <NavDropdown.Item href={`/dashboard/startOfDay/${moment().format("YYYY-MM-DD")}`}>  Start of Day </NavDropdown.Item>
-                            <NavDropdown.Item href={`/dashboard/productSoldToday/${moment().format("YYYY-MM-DD")}`}> End of Day </NavDropdown.Item>
-                            <NavDropdown.Item href={`/dashboard/productSoldTodayCheckList/${moment().format("YYYY-MM-DD")}`}> Product Sold Checklist </NavDropdown.Item>
+                        <Nav >
+                            <NavDropdown title="Customer" id="basic-nav-dropdown">
+                                <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
+                                <NavDropdown.Item href="/searchCustomer">Search Customer</NavDropdown.Item>
+                                <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
+                                {/* <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item> */}
+                                <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
 
 
-                        </NavDropdown>
-                    </Nav>
+                            </NavDropdown>
+                        </Nav>
+
+                        <Nav >
+                            <NavDropdown title="Customer Reminder" id="basic-nav-dropdown">
+                                <NavDropdown.Item href="/customerHistory">Customer Need to Follow up </NavDropdown.Item>
+                                <NavDropdown.Item href="/customerConvo">Customer Done Following up</NavDropdown.Item>
+                                <NavDropdown.Item href="/customerReOrder">List of Customer Successfully Reordered</NavDropdown.Item>
+                                <NavDropdown.Item href="/customerBacklog">Customer Backlog List</NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
+
+                        <Nav >
+                            <NavDropdown title="Customer Order" id="basic-nav-dropdown">
+                                <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
+                                <NavDropdown.Item href={`/shopOrderTransaction/customerOrderTransactionList/${moment().format("YYYY-MM-DD")}`}>  Customer Order List </NavDropdown.Item>
+                                <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Top Product Today</NavDropdown.Item>
+                                <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Top Customer Today</NavDropdown.Item>
+                                <NavDropdown.Item href="/shopOrderTransaction/pendingDelivery">For Delivery</NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
+
+                        <Nav >
+                            <NavDropdown title="Daily Store Session" id="basic-nav-dropdown">
+                                <NavDropdown.Item href={`/dashboard/startOfDay/${moment().format("YYYY-MM-DD")}`}>  Start of Day </NavDropdown.Item>
+                                <NavDropdown.Item href={`/dashboard/productSoldToday/${moment().format("YYYY-MM-DD")}`}> End of Day </NavDropdown.Item>
+                                <NavDropdown.Item href={`/dashboard/productSoldTodayCheckList/${moment().format("YYYY-MM-DD")}`}> Product Sold Checklist </NavDropdown.Item>
+
+
+                            </NavDropdown>
+                        </Nav>
+                    </div>
 
 
 
-                    <Typography variant="h6" noWrap component="div" sx={{ color: "LightGray", marginLeft: 100 }}>
-                        {localStorage.getItem('name')}
-                    </Typography>
-                    <div >
+                    <div className="drawer-account">
+                        <span className="drawer-account-copy">
+                            <small>Signed in as</small>
+                            <strong>{localStorage.getItem('name') || 'Staff'}</strong>
+                        </span>
                         <IconButton
-                            sx={{ textAlign: 'center' }}
+                            className="drawer-account-button"
                             size="large"
                             aria-label="account of current user"
                             aria-controls="menu-appbar"
@@ -1221,7 +1271,7 @@ export default function PersistentDrawerLeft() {
                             id="menu-appbar"
                             anchorEl={anchorEl}
                             anchorOrigin={{
-                                vertical: 'top',
+                                vertical: 'bottom',
                                 horizontal: 'right',
                             }}
                             keepMounted
@@ -1231,9 +1281,45 @@ export default function PersistentDrawerLeft() {
                             }}
                             open={Boolean(anchorEl)}
                             onClose={handleClose}
+                            PaperProps={{
+                                className: 'drawer-account-menu',
+                                elevation: 0,
+                                style: { '--shop-color': shopBrand.color },
+                            }}
                         >
-                            <MenuItem onClick={handleClose}>Profile</MenuItem>
-                            <MenuItem onClick={logoutSubmit} disabled={loading}>    {loading ? 'Logging out...' : 'Logout'}</MenuItem>
+                            <div className="drawer-account-menu-header">
+                                <span className="drawer-account-avatar">
+                                    {(localStorage.getItem('name') || 'Staff').charAt(0).toUpperCase()}
+                                </span>
+                                <span>
+                                    <small>Signed in account</small>
+                                    <strong>{localStorage.getItem('name') || 'Staff'}</strong>
+                                </span>
+                            </div>
+                            <Divider className="drawer-account-divider" />
+                            <MenuItem className="drawer-account-menu-item" onClick={handleClose}>
+                                <PersonOutlineRoundedIcon />
+                                <span>Profile</span>
+                            </MenuItem>
+                            <MenuItem
+                                className="drawer-account-menu-item"
+                                onClick={() => {
+                                    handleClose();
+                                    navigate('/changePassword');
+                                }}
+                            >
+                                <LockOutlinedIcon />
+                                <span>Change password</span>
+                            </MenuItem>
+                            <Divider className="drawer-account-divider" />
+                            <MenuItem
+                                className="drawer-account-menu-item drawer-account-logout"
+                                onClick={logoutSubmit}
+                                disabled={loading}
+                            >
+                                <LogoutRoundedIcon />
+                                <span>{loading ? 'Logging out...' : 'Logout'}</span>
+                            </MenuItem>
                         </Menu>
                     </div>
 
@@ -1255,7 +1341,10 @@ export default function PersistentDrawerLeft() {
                 anchor="left"
                 open={open}
             >
-                <DrawerHeader sx={{ bgcolor: "maroon" }}>
+                <DrawerHeader
+                    className="drawer-panel-header"
+                    style={{ "--shop-color": shopBrand.color }}
+                >
                     <IconButton onClick={handleDrawerClose}>
                         {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                     </IconButton>

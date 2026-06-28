@@ -25,9 +25,11 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import LinearProgress from '@mui/material/LinearProgress';
 import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
+import useActiveShopColor from "../Shop/useActiveShopColor";
 import "./CustomerOrderTransactionList.css";
 
 const PendingTransactionList = () => {
+    const activeShopColor = useActiveShopColor();
 
 
     useEffect(() => {
@@ -502,7 +504,7 @@ const PendingTransactionList = () => {
 
 
     return (
-        <div className="customer-report-page">
+        <div className="customer-report-page" style={{ "--shop-color": activeShopColor }}>
             {/* <div style={{ float: 'right', marginRight: 500 }}>
 
                 {

@@ -19,9 +19,11 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import LinearProgress from '@mui/material/LinearProgress';
+import useActiveShopColor from "../Shop/useActiveShopColor";
 import "./CustomerOrderTransactionList.css";
 
 const PendingProduct = () => {
+    const activeShopColor = useActiveShopColor();
 
 
     useEffect(() => {
@@ -124,7 +126,7 @@ const PendingProduct = () => {
 
 
     return (
-        <div className="customer-report-page">
+        <div className="customer-report-page" style={{ "--shop-color": activeShopColor }}>
             <section className="customer-report-hero">
                 <div>
                     <p className="customer-report-eyebrow">Inventory report</p>
