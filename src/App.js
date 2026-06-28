@@ -345,6 +345,7 @@ const App = () => {
           <Routes>
             <Route path="/login" element={<UserLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/userRegistration" element={<UserRegistration />} />
             {/* Required for the secure link sent by the forgot-password email. */}
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
