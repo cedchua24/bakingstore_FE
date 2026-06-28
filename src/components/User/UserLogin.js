@@ -54,7 +54,7 @@ const UserLogin = () => {
 
         try {
             await axios.get("/sanctum/csrf-cookie");
-            const response = await axios.post("/api/login/", credentials);
+            const response = await axios.post("/api/login", credentials);
             const status = Number(response.data.status);
 
             if (status >= 200 && status < 300) {
@@ -65,7 +65,7 @@ const UserLogin = () => {
                     return;
                 }
 
-                const destination = response.data.role === "admin"
+                const destination = Number(response.data.role_as) === 1
                     ? "/orderSupplierTransaction"
                     : "/customerOrderTransaction";
 
