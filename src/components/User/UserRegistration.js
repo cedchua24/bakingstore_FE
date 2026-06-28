@@ -1,214 +1,258 @@
-import React, { useState, useEffect } from "react";
-import UserService from './UserService.service'
-import { Button, Form, Alert } from 'react-bootstrap';
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import swal from 'sweetalert';
+import React, { useMemo, useState } from "react";
+import { Alert, Button, Form } from "react-bootstrap";
+import { Link } from "react-router-dom";
+import moment from "moment";
+import UserService from "./UserService.service";
+import "./UserRegistration.css";
+import { saveAuthSession } from "./authSession";
 
+const initialUser = {
+    name: "",
+    role_as: 1,
+    email: "",
+    password: "",
+    password_confirmation: "",
+};
+
+const passwordChecks = [
+    { label: "At least 12 characters", test: (password) => password.length >= 12 },
+    { label: "One uppercase letter", test: (password) => /[A-Z]/.test(password) },
+    { label: "One lowercase letter", test: (password) => /[a-z]/.test(password) },
+    { label: "One number", test: (password) => /\d/.test(password) },
+    { label: "One special character", test: (password) => /[^A-Za-z0-9]/.test(password) },
+];
 
 const UserRegistration = () => {
+    const [user, setUser] = useState(initialUser);
+    const [errors, setErrors] = useState({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const navigate = useNavigate();
+    const passwordStatus = useMemo(
+        () => passwordChecks.map((check) => ({ ...check, passed: check.test(user.password) })),
+        [user.password]
+    );
 
-    useEffect(() => {
-        fetchUserList();
-    }, []);
+    const passwordIsStrong = passwordStatus.every((check) => check.passed);
+    const passwordsMatch =
+        user.password_confirmation.length > 0 &&
+        user.password === user.password_confirmation;
 
-    const [user, setUser] = useState({
-        id: 0,
-        name: '',
-        role_as: 1,
-        email: '',
-        password: ''
-    });
+    const updateField = (event) => {
+        const { name, value } = event.target;
+        setUser((currentUser) => ({ ...currentUser, [name]: value }));
+        setErrors((currentErrors) => ({ ...currentErrors, [name]: undefined }));
+    };
 
-    const [error_message, setErrorMessage] = useState({});
+    const validateForm = () => {
+        const validationErrors = {};
 
-    const [message, setMessage] = useState(false);
+        if (!user.name.trim()) validationErrors.name = "Please enter your name.";
+        if (!user.email.trim()) validationErrors.email = "Please enter your email address.";
+        if (!passwordIsStrong) {
+            validationErrors.password = "Your password must meet all five security rules.";
+        }
+        if (!user.password_confirmation) {
+            validationErrors.password_confirmation = "Please confirm your password.";
+        } else if (!passwordsMatch) {
+            validationErrors.password_confirmation = "Passwords do not match.";
+        }
 
-    const [userList, setUserList] = useState([]);
+        setErrors(validationErrors);
+        return Object.keys(validationErrors).length === 0;
+    };
 
-    const onChangeUser = (e) => {
-        setUser({ ...user, name: e.target.value });
-    }
+    const saveUser = async (event) => {
+        event.preventDefault();
+        if (!validateForm()) return;
 
-    const onChangeEmail = (e) => {
-        setUser({ ...user, email: e.target.value });
-    }
+        setIsSubmitting(true);
 
-    const onChangePassword = (e) => {
-        setUser({ ...user, password: e.target.value });
-    }
+        try {
+            await UserService.sanctum();
+            const response = await UserService.create(user);
+            const registrationStatus = Number(response.data.status);
 
-    const saveUser = () => {
-        UserService.sanctum().then(response => {
-            // axios.get('/sanctum/csrf-cookie').then(response => {
-
-            UserService.create(user).then(response => {
-                // axios.post(`/api/register`, user).then(response => {
-
-                console.log('response', response);
-                console.log('response', response.data.validator_errors)
-
-                if (response.data.status === 200) {
-                    setUserList([...userList, response.data]);
-                    setErrorMessage('');
-                    setMessage(true);
-                    localStorage.setItem('auth_token', response.data.token);
-                    localStorage.setItem('name', response.data.name);
-                    localStorage.setItem('auth_user_id', response.data.id);
-                    localStorage.setItem('role_as', response.data.role_as);
-                    navigate('/customerOrderTransaction');
-                    window.location.reload();
-                    swal("Success", response.data.message, "success")
-                }
-                else {
-                    setErrorMessage(response.data.validator_errors);
-                }
-
-            });
-
-        });
-    }
-
-    const fetchUserList = () => {
-        axios.get('/sanctum/csrf-cookie').then(response => {
-            UserService.getAll()
-                .then(response => {
-                    setUserList(response.data);
-                })
-                .catch(e => {
-                    console.log("error", e)
-                });
-        });
-    }
-
-    const deleteUser = (id, e) => {
-
-        swal({
-            title: "Are you sure?",
-            text: "Once deleted, you will not be able to recover this imaginary file!",
-            icon: "warning",
-            buttons: true,
-            dangerMode: true,
-        })
-            .then((willDelete) => {
-                if (willDelete) {
-                    const index = userList.findIndex(user => user.id === id);
-                    const newUser = [...userList];
-                    newUser.splice(index, 1);
-                    axios.get('/sanctum/csrf-cookie').then(response => {
-                        // UserService.sanctum().then(response => {
-                        axios.delete(`/api/register/${id}`)
-                            .then(response => {
-                                setUserList(newUser);
-                            })
-                            .catch(e => {
-                                console.log('error', e);
-                            });
-
-                        // UserService.delete(id)
-                        //     .then(response => {
-                        //         setUserList(newUser);
-                        //     })
-                        //     .catch(e => {
-                        //         console.log('error', e);
-                        //     });
-
+            if (registrationStatus >= 200 && registrationStatus < 300) {
+                if (!saveAuthSession(response.data)) {
+                    setErrors({
+                        form: "Your account was created, but the session expiration was invalid. Please sign in.",
                     });
-                    swal("Poof! Your imaginary file has been deleted!", {
-                        icon: "success",
-                    });
-                } else {
-                    swal("Your imaginary file is safe!");
+                    return;
                 }
-            });
-    }
 
-
-    return (
-        <div>
-            {message &&
-                <Alert variant="success" dismissible>
-                    <Alert.Heading>Successfully Added!</Alert.Heading>
-                    <p>
-                        Change this and that and try again. Duis mollis, est non commodo
-                        luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-                        Cras mattis consectetur purus sit amet fermentum.
-                    </p>
-                </Alert>
+                window.location.replace(
+                    `/shopOrderTransaction/customerOrderTransactionList/${moment().format("YYYY-MM-DD")}`
+                );
+                return;
             }
 
-            <Form>
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Name</Form.Label>
-                    <Form.Control type="text" value={user.name} placeholder="Enter name" onChange={onChangeUser} />
-                    <Form.Text className="text-danger"   >
-                        {error_message.name}
-                    </Form.Text>
-                </Form.Group>
+            setErrors(response.data.validator_errors || {
+                form: response.data.message || "We couldn't create your account. Please try again.",
+            });
+        } catch (error) {
+            setErrors({
+                form: error.response?.data?.message || "Something went wrong. Please try again.",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Email</Form.Label>
-                    <Form.Control type="text" value={user.email} placeholder="Enter email" onChange={onChangeEmail} />
-                    <Form.Text className="text-danger"  >
-                        {error_message.email}
-                    </Form.Text>
-                </Form.Group>
+    const getError = (field) => {
+        const error = errors[field];
+        return Array.isArray(error) ? error[0] : error;
+    };
 
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control type="password" value={user.password} placeholder="Enter password" onChange={onChangePassword} />
-                    <Form.Text className="text-danger"  >
-                        {error_message.password}
-                    </Form.Text>
-                </Form.Group>
+    return (
+        <main className="registration-page">
+            <section className="registration-intro" aria-labelledby="registration-heading">
+                <span className="registration-eyebrow">Internal operations</span>
+                <h1 id="registration-heading">Create your account</h1>
+                <p>
+                    Access the tools your team uses to manage daily sales, stock,
+                    purchasing, customer orders, and financial records.
+                </p>
 
-                <Button variant="primary" onClick={saveUser}>
-                    Submit
-                </Button>
-            </Form>
-            <br></br>
-            <legend align="center" style={{ fontWeight: 'bold' }} > User Registration   </legend>
+                <div className="registration-feature">
+                    <span aria-hidden="true">✓</span>
+                    <div>
+                        <strong>Sales and operations</strong>
+                        <small>Manage POS transactions, inventory, purchase orders, and customers.</small>
+                    </div>
+                </div>
+                <div className="registration-feature">
+                    <span aria-hidden="true">✓</span>
+                    <div>
+                        <strong>Clear business insights</strong>
+                        <small>Review sales, expenses, reports, and the chart of accounts.</small>
+                    </div>
+                </div>
+            </section>
 
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
+            <section className="registration-card" aria-label="Registration form">
+                <div className="registration-card-heading">
+                    <span className="registration-icon" aria-hidden="true">📦</span>
+                    <div>
+                        <h2>Create staff access</h2>
+                        <p>Enter your details to access the internal system.</p>
+                    </div>
+                </div>
 
-                    {
-                        userList.map((user, index) => (
-                            <tr key={user.id} >
-                                <td>{user.id}</td>
-                                <td>{user.name}</td>
-                                <td>{user.email}</td>
-                                <td>
-                                    <Link variant="primary" to={"/editUser/" + user.id}   >
-                                        <Button variant="primary" >
-                                            Update
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Button variant="danger" onClick={(e) => deleteUser(user.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td>
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-        </div>
-    )
-}
+                {errors.form && <Alert variant="danger">{errors.form}</Alert>}
 
-export default UserRegistration
+                <Form noValidate onSubmit={saveUser}>
+                    <Form.Group className="mb-3" controlId="registrationName">
+                        <Form.Label>Full name</Form.Label>
+                        <Form.Control
+                            type="text"
+                            name="name"
+                            value={user.name}
+                            placeholder="e.g. Jamie Baker"
+                            onChange={updateField}
+                            isInvalid={Boolean(getError("name"))}
+                            autoComplete="name"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {getError("name")}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="registrationEmail">
+                        <Form.Label>Email address</Form.Label>
+                        <Form.Control
+                            type="email"
+                            name="email"
+                            value={user.email}
+                            placeholder="you@example.com"
+                            onChange={updateField}
+                            isInvalid={Boolean(getError("email"))}
+                            autoComplete="email"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {getError("email")}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3" controlId="registrationPassword">
+                        <Form.Label>Password</Form.Label>
+                        <div className="password-input">
+                            <Form.Control
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                value={user.password}
+                                placeholder="Create a strong password"
+                                onChange={updateField}
+                                isInvalid={Boolean(getError("password"))}
+                                autoComplete="new-password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((visible) => !visible)}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? "Hide" : "Show"}
+                            </button>
+                        </div>
+                        {getError("password") && (
+                            <div className="field-error">{getError("password")}</div>
+                        )}
+
+                        <div className="password-rules" aria-live="polite">
+                            <p>Use a strong password with:</p>
+                            <ul>
+                                {passwordStatus.map((check) => (
+                                    <li className={check.passed ? "passed" : ""} key={check.label}>
+                                        <span aria-hidden="true">{check.passed ? "✓" : "○"}</span>
+                                        {check.label}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </Form.Group>
+
+                    <Form.Group className="mb-4" controlId="registrationPasswordConfirmation">
+                        <Form.Label>Confirm password</Form.Label>
+                        <div className="password-input">
+                            <Form.Control
+                                type={showConfirmation ? "text" : "password"}
+                                name="password_confirmation"
+                                value={user.password_confirmation}
+                                placeholder="Enter your password again"
+                                onChange={updateField}
+                                isInvalid={Boolean(getError("password_confirmation"))}
+                                autoComplete="new-password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmation((visible) => !visible)}
+                                aria-label={showConfirmation ? "Hide confirmation password" : "Show confirmation password"}
+                            >
+                                {showConfirmation ? "Hide" : "Show"}
+                            </button>
+                        </div>
+                        {user.password_confirmation && !getError("password_confirmation") && (
+                            <Form.Text className={passwordsMatch ? "match-success" : "match-error"}>
+                                {passwordsMatch ? "✓ Passwords match" : "Passwords do not match"}
+                            </Form.Text>
+                        )}
+                        {getError("password_confirmation") && (
+                            <div className="field-error">{getError("password_confirmation")}</div>
+                        )}
+                    </Form.Group>
+
+                    <Button className="registration-submit" type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Creating account…" : "Create account"}
+                    </Button>
+                </Form>
+
+                <p className="registration-login">
+                    Already have an account? <Link to="/login">Sign in</Link>
+                </p>
+            </section>
+        </main>
+    );
+};
+
+export default UserRegistration;

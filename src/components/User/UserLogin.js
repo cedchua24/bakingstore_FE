@@ -1,83 +1,201 @@
-import React, { useState, useEffect } from "react";
-import UserService from './UserService.service'
-import { Button, Form, Alert } from 'react-bootstrap';
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Alert, Button, Form } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import axios from "axios";
-import swal from 'sweetalert';
+import "./UserLogin.css";
+import { saveAuthSession } from "./authSession";
 
-const UserLogin = (props) => {
-    const navigate = useNavigate();
-
-    const [user, setUser] = useState({
-        id: 0,
-        name: '',
-        email: '',
-        password: ''
+const UserLogin = () => {
+    const [sessionExpired, setSessionExpired] = useState(
+        () => new URLSearchParams(window.location.search).get("reason") === "session-expired"
+    );
+    const [credentials, setCredentials] = useState({
+        email: "",
+        password: "",
     });
-    const [error_message, setErrorMessage] = useState({});
-    const onChangeEmail = (e) => {
-        setUser({ ...user, email: e.target.value });
-    }
+    const [errors, setErrors] = useState({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const onChangePassword = (e) => {
-        setUser({ ...user, password: e.target.value });
-    }
+    useEffect(() => {
+        if (sessionExpired) {
+            window.history.replaceState({}, "", "/login");
+        }
+    }, [sessionExpired]);
 
+    const updateField = (event) => {
+        const { name, value } = event.target;
+        setCredentials((current) => ({ ...current, [name]: value }));
+        setErrors((current) => ({ ...current, [name]: undefined, form: undefined }));
+        setSessionExpired(false);
+    };
 
-    const login = (e) => {
-        e.preventDefault();
-        axios.get('/sanctum/csrf-cookie').then(response => {
-            axios.post(`api/login/`, user).then(response => {
-                if (response.data.status === 200) {
-                    setErrorMessage('');
-                    localStorage.setItem('auth_token', response.data.token);
-                    localStorage.setItem('auth_user_id', response.data.id);
-                    localStorage.setItem('name', response.data.name);
-                    localStorage.setItem('role_as', response.data.role_as);
-                    // swal("Success", response.data.message, "success")
+    const validateForm = () => {
+        const validationErrors = {};
 
-                    if (response.data.role === 'admin') {
-                        navigate('/orderSupplierTransaction');
-                    } else if (response.data.role === 'user') {
-                        navigate('/customerOrderTransaction');
-                    }
-                    window.location.reload();
+        if (!credentials.email.trim()) {
+            validationErrors.email = "Please enter your email address.";
+        }
 
-                } else if (response.data.status === 401) {
-                    swal("warning", response.data.message, "warning")
+        if (!credentials.password) {
+            validationErrors.password = "Please enter your password.";
+        }
+
+        setErrors(validationErrors);
+        return Object.keys(validationErrors).length === 0;
+    };
+
+    const login = async (event) => {
+        event.preventDefault();
+        setSessionExpired(false);
+        if (!validateForm()) return;
+
+        setIsSubmitting(true);
+
+        try {
+            await axios.get("/sanctum/csrf-cookie");
+            const response = await axios.post("/api/login/", credentials);
+            const status = Number(response.data.status);
+
+            if (status >= 200 && status < 300) {
+                if (!saveAuthSession(response.data)) {
+                    setErrors({
+                        form: "The server did not provide a valid session expiration. Please sign in again.",
+                    });
+                    return;
                 }
-                else {
-                    setErrorMessage(response.data.validator_errors);
-                }
+
+                const destination = response.data.role === "admin"
+                    ? "/orderSupplierTransaction"
+                    : "/customerOrderTransaction";
+
+                window.location.replace(destination);
+                return;
+            }
+
+            if (status === 401) {
+                setErrors({ form: response.data.message || "The email or password is incorrect." });
+                return;
+            }
+
+            setErrors(response.data.validator_errors || {
+                form: response.data.message || "Unable to sign in. Please try again.",
             });
+        } catch (error) {
+            setErrors({
+                form: error.response?.data?.message || "Unable to connect. Please try again.",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-        });
-    }
+    const getError = (field) => {
+        const error = errors[field];
+        return Array.isArray(error) ? error[0] : error;
+    };
 
     return (
-        <Form onSubmit={login}>
+        <main className="login-page">
+            <section className="login-overview" aria-labelledby="login-heading">
+                <div className="login-brand-mark" aria-hidden="true">
+                    <span>☕</span>
+                    <span>📦</span>
+                </div>
+                <span className="login-eyebrow">Internal business system</span>
+                <h1 id="login-heading">Operations, all in one place.</h1>
+                <p>
+                    Sign in to manage sales, stock, purchasing, customer orders,
+                    expenses, and business reporting.
+                </p>
 
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Label>Email</Form.Label>
-                <Form.Control type="text" value={user.email} placeholder="Enter email" onChange={onChangeEmail} />
-                <Form.Text className="text-danger"  >
-                    {error_message.email}
-                </Form.Text>
-            </Form.Group>
+                <div className="login-module-grid" aria-label="System modules">
+                    <div><span aria-hidden="true">▦</span> POS & sales</div>
+                    <div><span aria-hidden="true">□</span> Inventory</div>
+                    <div><span aria-hidden="true">↗</span> Purchase orders</div>
+                    <div><span aria-hidden="true">⌁</span> Reports & accounts</div>
+                </div>
+            </section>
 
-            <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Label>Password</Form.Label>
-                <Form.Control type="password" value={user.password} placeholder="Enter password" onChange={onChangePassword} />
-                <Form.Text className="text-danger"  >
-                    {error_message.password}
-                </Form.Text>
-            </Form.Group>
+            <section className="login-card" aria-label="Login form">
+                <div className="login-card-heading">
+                    <span className="login-lock" aria-hidden="true">🔐</span>
+                    <div>
+                        <h2>Welcome back</h2>
+                        <p>Enter your staff account details.</p>
+                    </div>
+                </div>
 
-            <Button variant="primary" type='submit'>
-                Login
-            </Button>
-        </Form>
-    )
-}
+                {errors.form && <Alert variant="danger">{errors.form}</Alert>}
+                {sessionExpired && !errors.form && (
+                    <Alert variant="warning">Your previous session expired. Please sign in again.</Alert>
+                )}
 
-export default UserLogin
+                <Form noValidate onSubmit={login}>
+                    <Form.Group className="mb-3" controlId="loginEmail">
+                        <Form.Label>Email address</Form.Label>
+                        <Form.Control
+                            type="email"
+                            name="email"
+                            value={credentials.email}
+                            placeholder="you@mdrbakingsupplies.com"
+                            onChange={updateField}
+                            isInvalid={Boolean(getError("email"))}
+                            autoComplete="email"
+                            autoFocus
+                        />
+                        <Form.Control.Feedback type="invalid">
+                            {getError("email")}
+                        </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-4" controlId="loginPassword">
+                        <div className="login-label-row">
+                            <Form.Label>Password</Form.Label>
+                            <Link to="/forgot-password">Forgot password?</Link>
+                        </div>
+                        <div className="login-password-input">
+                            <Form.Control
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                value={credentials.password}
+                                placeholder="Enter your password"
+                                onChange={updateField}
+                                isInvalid={Boolean(getError("password"))}
+                                autoComplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword((visible) => !visible)}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                            >
+                                {showPassword ? "Hide" : "Show"}
+                            </button>
+                        </div>
+                        {getError("password") && (
+                            <div className="login-field-error">{getError("password")}</div>
+                        )}
+                    </Form.Group>
+
+                    <Button className="login-submit" type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? "Signing in…" : "Sign in to system"}
+                    </Button>
+                </Form>
+
+                <p className="login-register">
+                    Forgot your credentials? <Link to="/forgot-password">Reset your password</Link>
+                </p>
+
+                <div className="login-security-note">
+                    <span aria-hidden="true">✓</span>
+                    <p>
+                        <strong>Authorized personnel only</strong>
+                        Your session and account access are protected.
+                    </p>
+                </div>
+            </section>
+        </main>
+    );
+};
+
+export default UserLogin;

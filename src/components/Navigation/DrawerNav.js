@@ -26,6 +26,9 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import MenuItem from '@mui/material/MenuItem';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import UserService from '../User/UserService.service'
 
 
@@ -80,6 +83,9 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
 import ChecklistIcon from '@mui/icons-material/Checklist';
 import moment from "moment";
+import ShopService from "../Shop/ShopService";
+import { normalizeShopColor } from "../Shop/shopBranding";
+import "./DrawerNav.css";
 
 import { pink } from '@mui/material/colors';
 
@@ -152,6 +158,35 @@ export default function PersistentDrawerLeft() {
 
     const navigate = useNavigate();
     const [open, setOpen] = React.useState(false);
+    const [shopBrand, setShopBrand] = useState({
+        name: "MDR Baking Supplies",
+        color: "#35221c",
+    });
+
+    useEffect(() => {
+        ShopService.fetchShopActive()
+            .then((response) => {
+                const payload = response.data?.data || response.data;
+                const activeShop = Array.isArray(payload) ? payload[0] : payload;
+                const nextBrand = {};
+
+                if (activeShop?.shop_name) {
+                    nextBrand.name = activeShop.shop_name;
+                }
+
+                const color = normalizeShopColor(activeShop?.color);
+                if (color) {
+                    nextBrand.color = color;
+                }
+
+                if (Object.keys(nextBrand).length > 0) {
+                    setShopBrand((current) => ({ ...current, ...nextBrand }));
+                }
+            })
+            .catch((error) => {
+                console.error("Unable to load the active shop branding.", error);
+            });
+    }, []);
 
     const [open1, setOpen1] = React.useState(false);
     const handleClick1 = () => {
@@ -1129,17 +1164,23 @@ export default function PersistentDrawerLeft() {
     return (
         <Box sx={{ display: 'flex' }} >
             <CssBaseline />
-            <AppBar position="fixed" open={open} sx={{ bgcolor: "black" }} >
-                <Toolbar>
+            <AppBar
+                position="fixed"
+                open={open}
+                className="drawer-topbar"
+                style={{ "--shop-color": shopBrand.color }}
+            >
+                <Toolbar className="drawer-toolbar">
 
                     <IconButton
                         color="inherit"
                         aria-label="open drawer"
                         onClick={handleDrawerOpen}
                         edge="start"
+                        className="drawer-menu-button"
                         sx={[
                             {
-                                mr: 2,
+                                mr: 1,
                             },
                             open && { display: 'none' },
                         ]}
@@ -1147,11 +1188,18 @@ export default function PersistentDrawerLeft() {
                         <MenuIcon />
                     </IconButton>
 
-                    <Typography variant="h5" noWrap component="div" sx={{ color: "#bfbfbf" }}>
-                        MDR Commonwealth
-                    </Typography>
+                    <div className="drawer-brand">
+                        <span className="drawer-brand-mark">
+                            <img src="/mdr_nav_logo.png" alt="MDR" />
+                        </span>
+                        <span className="drawer-brand-copy">
+                            <strong>{shopBrand.name}</strong>
+                            <small>Operations System</small>
+                        </span>
+                    </div>
 
-                    <Nav >
+                    <div className="drawer-primary-nav">
+                    <Nav>
                         <NavDropdown title="Dashboard" id="basic-nav-dropdown">
                             <NavDropdown.Item href={`/dashboard/employeePerformance/${moment().format("YYYY-MM-DD")}`}> Employee Performance </NavDropdown.Item>
                         </NavDropdown>
@@ -1202,15 +1250,17 @@ export default function PersistentDrawerLeft() {
 
                         </NavDropdown>
                     </Nav>
+                    </div>
 
 
 
-                    <Typography variant="h6" noWrap component="div" sx={{ color: "LightGray", marginLeft: 100 }}>
-                        {localStorage.getItem('name')}
-                    </Typography>
-                    <div >
+                    <div className="drawer-account">
+                        <span className="drawer-account-copy">
+                            <small>Signed in as</small>
+                            <strong>{localStorage.getItem('name') || 'Staff'}</strong>
+                        </span>
                         <IconButton
-                            sx={{ textAlign: 'center' }}
+                            className="drawer-account-button"
                             size="large"
                             aria-label="account of current user"
                             aria-controls="menu-appbar"
@@ -1224,7 +1274,7 @@ export default function PersistentDrawerLeft() {
                             id="menu-appbar"
                             anchorEl={anchorEl}
                             anchorOrigin={{
-                                vertical: 'top',
+                                vertical: 'bottom',
                                 horizontal: 'right',
                             }}
                             keepMounted
@@ -1234,9 +1284,45 @@ export default function PersistentDrawerLeft() {
                             }}
                             open={Boolean(anchorEl)}
                             onClose={handleClose}
+                            PaperProps={{
+                                className: 'drawer-account-menu',
+                                elevation: 0,
+                                style: { '--shop-color': shopBrand.color },
+                            }}
                         >
-                            <MenuItem onClick={handleClose}>Profile</MenuItem>
-                            <MenuItem onClick={logoutSubmit} disabled={loading}>    {loading ? 'Logging out...' : 'Logout'}</MenuItem>
+                            <div className="drawer-account-menu-header">
+                                <span className="drawer-account-avatar">
+                                    {(localStorage.getItem('name') || 'Staff').charAt(0).toUpperCase()}
+                                </span>
+                                <span>
+                                    <small>Signed in account</small>
+                                    <strong>{localStorage.getItem('name') || 'Staff'}</strong>
+                                </span>
+                            </div>
+                            <Divider className="drawer-account-divider" />
+                            <MenuItem className="drawer-account-menu-item" onClick={handleClose}>
+                                <PersonOutlineRoundedIcon />
+                                <span>Profile</span>
+                            </MenuItem>
+                            <MenuItem
+                                className="drawer-account-menu-item"
+                                onClick={() => {
+                                    handleClose();
+                                    navigate('/changePassword');
+                                }}
+                            >
+                                <LockOutlinedIcon />
+                                <span>Change password</span>
+                            </MenuItem>
+                            <Divider className="drawer-account-divider" />
+                            <MenuItem
+                                className="drawer-account-menu-item drawer-account-logout"
+                                onClick={logoutSubmit}
+                                disabled={loading}
+                            >
+                                <LogoutRoundedIcon />
+                                <span>{loading ? 'Logging out...' : 'Logout'}</span>
+                            </MenuItem>
                         </Menu>
                     </div>
 
@@ -1258,7 +1344,10 @@ export default function PersistentDrawerLeft() {
                 anchor="left"
                 open={open}
             >
-                <DrawerHeader sx={{ bgcolor: "black" }}>
+                <DrawerHeader
+                    className="drawer-panel-header"
+                    style={{ "--shop-color": shopBrand.color }}
+                >
                     <IconButton onClick={handleDrawerClose}>
                         {theme.direction === 'ltr' ? <ChevronLeftIcon sx={{ color: "white" }} /> : <ChevronRightIcon sx={{ color: "white" }} />}
                     </IconButton>

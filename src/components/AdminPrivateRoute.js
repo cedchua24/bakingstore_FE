@@ -26,15 +26,6 @@ const AdminPrivateRoute = () => {
 
     }, []);
 
-    axios.interceptors.response.use(undefined, function axiosRetryInterceptor(err) {
-        console.log('err.response.status', err.response.status);
-        if (err.response.status === 401) {
-            swal('Unauthorize', err.response.data.message, "warning");
-            navigate('/Page401');
-        }
-        return Promise.reject(err)
-    });
-
     axios.interceptors.response.use(function (response) {
         return response;
     }, function (error) {
@@ -53,7 +44,7 @@ const AdminPrivateRoute = () => {
 
 
     if (loading) {
-        return <div>Loading...</div>
+        return null;
     }
 
     return (

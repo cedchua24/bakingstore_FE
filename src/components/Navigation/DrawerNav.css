@@ -1,0 +1,320 @@
+.drawer-topbar.MuiAppBar-root {
+    color: #fff;
+    background:
+        radial-gradient(circle at 8% -160%, rgba(255, 221, 176, 0.2), transparent 42%),
+        linear-gradient(105deg, rgba(18, 12, 10, 0.48), rgba(18, 12, 10, 0.08) 58%, rgba(18, 12, 10, 0.4)),
+        var(--shop-color, #35221c);
+    box-shadow: 0 5px 24px rgba(32, 23, 20, 0.22);
+}
+
+.drawer-topbar.MuiAppBar-root::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #d79250, #f0c285 42%, transparent 85%);
+}
+
+.drawer-toolbar.MuiToolbar-root {
+    min-height: 70px;
+    padding: 0 18px;
+    gap: 0.55rem;
+}
+
+.drawer-menu-button.MuiIconButton-root {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.drawer-menu-button.MuiIconButton-root:hover {
+    background: rgba(255, 255, 255, 0.13);
+}
+
+.drawer-brand {
+    display: flex;
+    min-width: 0;
+    max-width: 230px;
+    flex: 0 1 230px;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.drawer-brand-mark {
+    display: grid;
+    overflow: hidden;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border: 2px solid rgba(255, 230, 198, 0.78);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.22),
+        inset 0 0 0 1px rgba(89, 0, 0, 0.08);
+}
+
+.drawer-brand-mark img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    user-select: none;
+}
+
+.drawer-brand-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.drawer-brand-copy strong,
+.drawer-account-copy strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.drawer-brand-copy strong {
+    color: #fff;
+    font-size: 0.94rem;
+    line-height: 1.2;
+}
+
+.drawer-brand-copy small,
+.drawer-account-copy small {
+    color: rgba(255, 235, 213, 0.58);
+    font-size: 0.58rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.drawer-primary-nav {
+    display: flex;
+    min-width: 120px;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.1rem;
+    overflow: visible;
+}
+
+.drawer-primary-nav .nav {
+    flex: 0 0 auto;
+}
+
+.drawer-primary-nav .nav-link {
+    padding: 0.55rem 0.68rem;
+    border-radius: 9px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.76rem;
+    font-weight: 650;
+    white-space: nowrap;
+    transition: color 150ms ease, background-color 150ms ease;
+}
+
+.drawer-primary-nav .nav-link:hover,
+.drawer-primary-nav .nav-link:focus,
+.drawer-primary-nav .nav-link.show {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.drawer-primary-nav .dropdown-menu {
+    z-index: 1400;
+    margin-top: 0.6rem;
+    padding: 0.45rem;
+    border: 1px solid #eadfd8;
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(45, 30, 24, 0.18);
+}
+
+.drawer-primary-nav .dropdown-item {
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    color: #4c3a33;
+    font-size: 0.8rem;
+}
+
+.drawer-primary-nav .dropdown-item:hover,
+.drawer-primary-nav .dropdown-item:focus {
+    color: #4f2d23;
+    background: #fff3e5;
+}
+
+.drawer-account {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.3rem;
+    padding-left: 0.65rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.drawer-account-copy {
+    display: flex;
+    max-width: 120px;
+    flex-direction: column;
+    text-align: right;
+}
+
+.drawer-account-copy strong {
+    color: #fff;
+    font-size: 0.78rem;
+}
+
+.drawer-account-button.MuiIconButton-root {
+    width: 42px;
+    height: 42px;
+    color: #ffe0b2;
+}
+
+.drawer-account-button.MuiIconButton-root:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.drawer-account-menu.MuiPaper-root {
+    min-width: 240px;
+    margin-top: 10px;
+    overflow: hidden;
+    border: 1px solid #eadfd8;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 45px rgba(37, 24, 19, 0.2);
+}
+
+.drawer-account-menu .MuiList-root {
+    padding: 8px;
+}
+
+.drawer-account-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 8px 9px 12px;
+}
+
+.drawer-account-menu-header > span:last-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.drawer-account-menu-header small {
+    color: #8b746a;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.drawer-account-menu-header strong {
+    overflow: hidden;
+    color: #35221c;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.drawer-account-avatar {
+    display: grid;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border-radius: 11px;
+    color: #fff;
+    background: var(--shop-color, #35221c);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.drawer-account-divider.MuiDivider-root {
+    margin: 2px 5px 6px;
+    border-color: #eee4de;
+}
+
+.drawer-account-menu-item.MuiMenuItem-root {
+    min-height: 42px;
+    gap: 11px;
+    margin: 2px 0;
+    padding: 8px 10px;
+    border-radius: 9px;
+    color: #4d3b34;
+    font-size: 0.86rem;
+    font-weight: 600;
+}
+
+.drawer-account-menu-item.MuiMenuItem-root svg {
+    width: 19px;
+    height: 19px;
+    color: #9a7564;
+}
+
+.drawer-account-menu-item.MuiMenuItem-root:hover {
+    background: #fff5ec;
+}
+
+.drawer-account-logout.MuiMenuItem-root,
+.drawer-account-logout.MuiMenuItem-root svg {
+    color: #b83a3a;
+}
+
+.drawer-account-logout.MuiMenuItem-root:hover {
+    background: #fff0f0;
+}
+
+.drawer-panel-header {
+    color: #fff;
+    background:
+        linear-gradient(rgba(18, 12, 10, 0.3), rgba(18, 12, 10, 0.3)),
+        var(--shop-color, #35221c);
+}
+
+@media (max-width: 1050px) {
+    .drawer-brand {
+        max-width: 185px;
+        flex-basis: 185px;
+    }
+
+    .drawer-brand-copy small,
+    .drawer-account-copy {
+        display: none;
+    }
+
+    .drawer-account {
+        padding-left: 0.3rem;
+    }
+
+    .drawer-primary-nav .nav-link {
+        max-width: 145px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+@media (max-width: 720px) {
+    .drawer-toolbar.MuiToolbar-root {
+        padding: 0 10px;
+    }
+
+    .drawer-brand {
+        max-width: 150px;
+        flex-basis: 150px;
+    }
+
+    .drawer-brand-mark {
+        display: none;
+    }
+
+    .drawer-brand-copy strong {
+        font-size: 0.84rem;
+    }
+}
