@@ -3,6 +3,7 @@ import { Alert, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import UserService from "./UserService.service";
 import "./UserChangePassword.css";
+import useActiveShopColor from "../Shop/useActiveShopColor";
 
 const passwordChecks = [
     { label: "At least 12 characters", test: (password) => password.length >= 12 },
@@ -19,6 +20,7 @@ const initialForm = {
 };
 
 const UserChangePassword = () => {
+    const activeShopColor = useActiveShopColor();
     const [form, setForm] = useState(initialForm);
     const [errors, setErrors] = useState({});
     const [notice, setNotice] = useState("");
@@ -146,7 +148,10 @@ const UserChangePassword = () => {
     );
 
     return (
-        <main className="change-password-page">
+        <main
+            className="change-password-page"
+            style={{ "--shop-color": activeShopColor || "#4f2d23" }}
+        >
             <section className="change-password-overview" aria-labelledby="change-password-heading">
                 <span className="change-password-icon" aria-hidden="true">🔑</span>
                 <span className="change-password-eyebrow">Account security</span>

@@ -4,8 +4,10 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import "./UserLogin.css";
 import { saveAuthSession } from "./authSession";
+import useActiveShopColor from "../Shop/useActiveShopColor";
 
 const UserLogin = () => {
+    const activeShopColor = useActiveShopColor();
     const [sessionExpired, setSessionExpired] = useState(
         () => new URLSearchParams(window.location.search).get("reason") === "session-expired"
     );
@@ -96,7 +98,10 @@ const UserLogin = () => {
     };
 
     return (
-        <main className="login-page">
+        <main
+            className="login-page"
+            style={{ "--shop-color": activeShopColor || "#4f2d23" }}
+        >
             <section className="login-overview" aria-labelledby="login-heading">
                 <div className="login-brand-mark" aria-hidden="true">
                     <span>☕</span>

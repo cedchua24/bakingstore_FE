@@ -3,11 +3,13 @@ import { Alert, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import UserService from "./UserService.service";
 import "./UserLogin.css";
+import useActiveShopColor from "../Shop/useActiveShopColor";
 
 const GENERIC_MESSAGE =
     "If an account matches that email, a secure reset link will arrive shortly. The link expires in 60 minutes.";
 
 const ForgotPassword = () => {
+    const activeShopColor = useActiveShopColor();
     const [email, setEmail] = useState("");
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
@@ -41,7 +43,10 @@ const ForgotPassword = () => {
     };
 
     return (
-        <main className="login-page">
+        <main
+            className="login-page"
+            style={{ "--shop-color": activeShopColor || "#4f2d23" }}
+        >
             <section className="login-overview" aria-labelledby="forgot-heading">
                 <span className="login-eyebrow">Account recovery</span>
                 <h1 id="forgot-heading">Let’s get you back in.</h1>

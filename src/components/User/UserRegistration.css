@@ -1,6 +1,8 @@
 .registration-page {
-    --baker-brown: #4f2d23;
-    --baker-caramel: #c7783d;
+    --baker-brown: var(--shop-color, #4f2d23);
+    --baker-dark: color-mix(in srgb, var(--baker-brown) 78%, black);
+    --baker-light: color-mix(in srgb, var(--baker-brown) 68%, white);
+    --baker-caramel: color-mix(in srgb, var(--baker-brown) 72%, #f4a261);
     --baker-cream: #fffaf2;
     display: grid;
     grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
@@ -18,8 +20,8 @@
     padding: 4rem 3.5rem;
     color: #fff;
     background:
-        radial-gradient(circle at 15% 85%, rgba(255, 219, 165, 0.24), transparent 34%),
-        linear-gradient(145deg, #5c3327, #8b4b30);
+        radial-gradient(circle at 15% 85%, color-mix(in srgb, var(--baker-light) 34%, transparent), transparent 34%),
+        linear-gradient(145deg, var(--baker-dark), var(--baker-light));
 }
 
 .registration-intro::after {
@@ -140,7 +142,7 @@
 
 .registration-card .form-control:focus {
     border-color: var(--baker-caramel);
-    box-shadow: 0 0 0 3px rgba(199, 120, 61, 0.13);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--baker-caramel) 18%, transparent);
 }
 
 .password-input {
@@ -223,7 +225,7 @@
 
 .registration-submit:hover,
 .registration-submit:focus {
-    background: #6b3d2e;
+    background: var(--baker-dark);
 }
 
 .registration-login {
