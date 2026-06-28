@@ -5,6 +5,7 @@ import moment from "moment";
 import UserService from "./UserService.service";
 import "./UserRegistration.css";
 import { saveAuthSession } from "./authSession";
+import useActiveShopColor from "../Shop/useActiveShopColor";
 
 const initialUser = {
     name: "",
@@ -23,6 +24,7 @@ const passwordChecks = [
 ];
 
 const UserRegistration = () => {
+    const activeShopColor = useActiveShopColor();
     const [user, setUser] = useState(initialUser);
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
@@ -106,7 +108,10 @@ const UserRegistration = () => {
     };
 
     return (
-        <main className="registration-page">
+        <main
+            className="registration-page"
+            style={{ "--shop-color": activeShopColor || "#4f2d23" }}
+        >
             <section className="registration-intro" aria-labelledby="registration-heading">
                 <span className="registration-eyebrow">Internal operations</span>
                 <h1 id="registration-heading">Create your account</h1>
