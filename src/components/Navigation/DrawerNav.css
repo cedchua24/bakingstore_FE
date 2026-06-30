@@ -272,10 +272,390 @@
 }
 
 .drawer-panel-header {
+    min-height: 72px;
+    padding: 0 14px 0 16px;
+    justify-content: space-between;
     color: #fff;
     background:
-        linear-gradient(rgba(18, 12, 10, 0.3), rgba(18, 12, 10, 0.3)),
+        radial-gradient(circle at 8% -160%, rgba(255, 221, 176, 0.2), transparent 42%),
+        linear-gradient(105deg, rgba(18, 12, 10, 0.48), rgba(18, 12, 10, 0.08) 58%, rgba(18, 12, 10, 0.4)),
         var(--shop-color, #35221c);
+}
+
+.drawer-panel-brand {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 11px;
+}
+
+.drawer-panel-brand-mark {
+    display: grid;
+    overflow: hidden;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    place-items: center;
+    border: 1px solid rgba(255, 232, 203, 0.7);
+    border-radius: 11px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(20, 12, 9, 0.2);
+}
+
+.drawer-panel-brand-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.drawer-panel-brand > span:last-child {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+}
+
+.drawer-panel-brand strong {
+    font-size: 0.9rem;
+    line-height: 1.15;
+}
+
+.drawer-panel-brand small {
+    color: rgba(255, 235, 213, 0.62);
+    font-size: 0.61rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.drawer-panel-close.MuiIconButton-root {
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 10px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.drawer-panel-close.MuiIconButton-root:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.operations-drawer .MuiDrawer-paper {
+    overflow-x: hidden;
+    border-right: 1px solid #e9ded8;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.72)),
+        color-mix(in srgb, var(--shop-color, #35221c) 4%, white);
+    box-shadow: 10px 0 34px rgba(47, 31, 25, 0.14);
+    scrollbar-color: #b9aaa3 transparent;
+    scrollbar-width: thin;
+}
+
+.operations-drawer .MuiDrawer-paper::-webkit-scrollbar {
+    width: 7px;
+}
+
+.operations-drawer .MuiDrawer-paper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.operations-drawer .MuiDrawer-paper::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #b9aaa3;
+    background-clip: padding-box;
+}
+
+.operations-drawer .drawer-panel-header + .MuiDivider-root {
+    border-color: #eadfd9;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root,
+.operations-drawer .MuiDrawer-paper > div > .MuiList-root {
+    --menu-color: #64748b;
+    width: auto;
+    margin: 0;
+    padding: 3px 10px;
+    background: transparent !important;
+}
+
+.operations-drawer .MuiDrawer-paper > div:nth-of-type(2) > .MuiList-root {
+    --menu-color: #2563eb;
+}
+
+.operations-drawer .MuiDrawer-paper > div:nth-of-type(3) > .MuiList-root {
+    --menu-color: #ea580c;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root:nth-of-type(8n + 1) {
+    --menu-color: #7c3aed;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root:nth-of-type(8n + 2) {
+    --menu-color: #0891b2;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root:nth-of-type(8n + 3) {
+    --menu-color: #db2777;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root:nth-of-type(8n + 4) {
+    --menu-color: #d97706;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root:nth-of-type(8n + 5) {
+    --menu-color: #059669;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root:nth-of-type(8n + 6) {
+    --menu-color: #0284c7;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root:nth-of-type(8n + 7) {
+    --menu-color: #dc2626;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root:nth-of-type(8n) {
+    --menu-color: #4f46e5;
+}
+
+.operations-drawer .MuiDrawer-paper > div:first-of-type > .MuiList-root {
+    padding-top: 10px;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root > .MuiListItemButton-root,
+.operations-drawer .MuiDrawer-paper > div > .MuiList-root > .MuiListItemButton-root {
+    min-height: 46px;
+    margin: 1px 0;
+    padding: 8px 10px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    color: #493a35;
+    transition:
+        color 150ms ease,
+        background-color 150ms ease,
+        border-color 150ms ease,
+        transform 150ms ease;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root > .MuiListItemButton-root:hover,
+.operations-drawer .MuiDrawer-paper > div > .MuiList-root > .MuiListItemButton-root:hover {
+    color: color-mix(in srgb, var(--menu-color) 76%, #211713);
+    border-color: color-mix(in srgb, var(--menu-color) 18%, white);
+    background: color-mix(in srgb, var(--menu-color) 7%, white);
+    transform: translateX(2px);
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root > .MuiListItemButton-root:has(+ .MuiCollapse-entered),
+.operations-drawer .MuiDrawer-paper > div > .MuiList-root > .MuiListItemButton-root:has(+ .MuiCollapse-entered) {
+    color: color-mix(in srgb, var(--menu-color) 82%, #211713);
+    border-color: color-mix(in srgb, var(--menu-color) 22%, white);
+    background: color-mix(in srgb, var(--menu-color) 10%, white);
+    box-shadow: inset 3px 0 0 var(--menu-color);
+}
+
+.operations-drawer .MuiListItemIcon-root {
+    min-width: 42px;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root > .MuiListItemButton-root > .MuiListItemIcon-root svg,
+.operations-drawer .MuiDrawer-paper > div > .MuiList-root > .MuiListItemButton-root > .MuiListItemIcon-root svg {
+    width: 19px;
+    height: 19px;
+    color: var(--menu-color) !important;
+    opacity: 1;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root > .MuiListItemButton-root > .MuiListItemIcon-root,
+.operations-drawer .MuiDrawer-paper > div > .MuiList-root > .MuiListItemButton-root > .MuiListItemIcon-root {
+    display: grid;
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    margin-right: 10px;
+    place-items: center;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--menu-color) 12%, white);
+}
+
+.operations-drawer .MuiListItemText-primary {
+    overflow: hidden;
+    font-size: 0.9rem;
+    font-weight: 650;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.operations-drawer .MuiDrawer-paper > .MuiList-root > .MuiListItemButton-root > svg,
+.operations-drawer .MuiDrawer-paper > div > .MuiList-root > .MuiListItemButton-root > svg {
+    width: 19px;
+    height: 19px;
+    color: #8c7b73;
+}
+
+.operations-drawer .MuiCollapse-root {
+    position: relative;
+    margin: 2px 0 5px;
+}
+
+.operations-drawer .MuiCollapse-root::before {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    top: 4px;
+    bottom: 4px;
+    left: 28px;
+    width: 1px;
+    background: #dfd0c8;
+}
+
+.operations-drawer .MuiCollapse-root .MuiList-root {
+    padding: 2px 10px 3px;
+    background: transparent !important;
+}
+
+.operations-drawer .MuiCollapse-root .MuiListItemButton-root {
+    min-height: 40px;
+    margin: 1px 0;
+    padding-top: 7px;
+    padding-right: 10px;
+    padding-bottom: 7px;
+    border-radius: 10px;
+    color: #6b5a53;
+}
+
+.operations-drawer .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #3d2c26;
+    background: #f5ece7;
+}
+
+.operations-drawer .MuiCollapse-root .MuiListItemIcon-root {
+    min-width: 36px;
+}
+
+.operations-drawer .MuiCollapse-root .MuiListItemIcon-root svg {
+    width: 18px;
+    height: 18px;
+    color: #9b7b6d !important;
+}
+
+.operations-drawer .MuiCollapse-root .MuiListItemText-primary {
+    font-size: 0.82rem;
+    font-weight: 580;
+}
+
+.operations-drawer .drawer-reports-section .reports-menu-heading {
+    --report-color: #7c3aed;
+    color: #5b21b6;
+    border-color: #e9ddfb;
+    background: #faf7ff;
+    box-shadow: inset 3px 0 0 #8b5cf6;
+}
+
+.operations-drawer .drawer-reports-section {
+    margin: 6px 0 !important;
+    padding: 5px 10px !important;
+    border-top: 1px solid #eee8f5;
+    border-bottom: 1px solid #eee8f5;
+    background: transparent !important;
+}
+
+.operations-drawer .drawer-reports-section .reports-menu-heading:hover,
+.operations-drawer .drawer-reports-section .reports-menu-heading:has(+ .MuiCollapse-entered) {
+    color: #4c1d95;
+    border-color: #ddcdf7;
+    background: #f4edff;
+    box-shadow: inset 3px 0 0 #7c3aed;
+    transform: none;
+}
+
+.operations-drawer .drawer-reports-section .reports-menu-heading .MuiListItemText-primary {
+    font-weight: 700;
+}
+
+.operations-drawer .drawer-reports-section .reports-menu-heading > .MuiListItemIcon-root {
+    background: #eee5ff;
+}
+
+.operations-drawer .drawer-reports-section .reports-menu-heading .MuiListItemIcon-root svg {
+    color: #7c3aed !important;
+    opacity: 1;
+}
+
+.operations-drawer .drawer-reports-section .reports-menu-heading > svg {
+    color: #8b5cf6;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-item {
+    --report-color: #64748b;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-item > .MuiListItemIcon-root {
+    display: grid;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    place-items: center;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--report-color) 13%, white);
+}
+
+.operations-drawer .drawer-reports-section .report-menu-item > .MuiListItemIcon-root svg {
+    width: 18px;
+    height: 18px;
+    color: var(--report-color) !important;
+    opacity: 1;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-item:hover {
+    color: color-mix(in srgb, var(--report-color) 78%, #211713);
+    background: color-mix(in srgb, var(--report-color) 8%, white);
+}
+
+.operations-drawer .drawer-reports-section .report-menu-transaction {
+    --report-color: #2563eb;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-delivery {
+    --report-color: #0891b2;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-purchase {
+    --report-color: #7c3aed;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-discount {
+    --report-color: #db2777;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-expense {
+    --report-color: #dc2626;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-product {
+    --report-color: #d97706;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-category {
+    --report-color: #ea580c;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-stock {
+    --report-color: #059669;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-spoilage {
+    --report-color: #9333ea;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-customer {
+    --report-color: #0284c7;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-branch {
+    --report-color: #16a34a;
 }
 
 @media (max-width: 1050px) {
