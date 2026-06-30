@@ -321,6 +321,7 @@ const App = () => {
 
   const [items, setItems] = useState('');
   const isAuthenticated = hasValidAuthSession();
+  const canRegisterUsers = Number(localStorage.getItem('role_as')) === 2;
 
   useEffect(() => scheduleSessionExpiration(() => {
     clearAuthSession();
@@ -345,7 +346,7 @@ const App = () => {
           <Routes>
             <Route path="/login" element={<UserLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/userRegistration" element={<UserRegistration />} />
+            <Route path="/userRegistration" element={<Navigate to="/login" replace />} />
             {/* Required for the secure link sent by the forgot-password email. */}
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
@@ -368,12 +369,7 @@ const App = () => {
           <Route
             exact
             path="/"
-            element={
-              localStorage.getItem('auth_token')
-                // items !== null
-                ? <CustomerOrderTransaction />
-                : <UserLogin />
-            }
+            element={<Home />}
           />
 
 
@@ -673,9 +669,9 @@ const App = () => {
             exact
             path="/userRegistration"
             element={
-              localStorage.getItem('auth_token')
-                ? <Home />
-                : <UserRegistration />
+              canRegisterUsers
+                ? <UserRegistration />
+                : <Home />
             }
           />
           {/* <Route exact path="/addUser" element={<UserRegistration />} /> */}

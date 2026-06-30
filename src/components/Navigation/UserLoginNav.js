@@ -30,7 +30,6 @@ const UserLoginNav = () => {
     }, []);
 
     const isLoginPage = location.pathname === "/" || location.pathname === "/login";
-    const isRegistrationPage = location.pathname === "/userRegistration";
 
     return (
         <header className="public-nav" style={{ "--shop-color": shopColor }}>
@@ -50,14 +49,6 @@ const UserLoginNav = () => {
                         aria-current={isLoginPage ? "page" : undefined}
                     >
                         Sign in
-                    </Link>
-                    <Link
-                        className={`public-nav-access${isRegistrationPage ? " active" : ""}`}
-                        to="/userRegistration"
-                        aria-current={isRegistrationPage ? "page" : undefined}
-                    >
-                        <span aria-hidden="true">＋</span>
-                        Create access
                     </Link>
                 </nav>
             </div>

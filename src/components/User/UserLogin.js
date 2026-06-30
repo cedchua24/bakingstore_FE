@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Alert, Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import moment from "moment";
 import "./UserLogin.css";
 import { saveAuthSession } from "./authSession";
 import useActiveShopColor from "../Shop/useActiveShopColor";
@@ -67,9 +68,8 @@ const UserLogin = () => {
                     return;
                 }
 
-                const destination = Number(response.data.role_as) === 1
-                    ? "/orderSupplierTransaction"
-                    : "/customerOrderTransaction";
+                const destination =
+                    `/shopOrderTransaction/customerOrderTransactionList/${moment().format("YYYY-MM-DD")}`;
 
                 window.location.replace(destination);
                 return;

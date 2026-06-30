@@ -1,10 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { Alert, Button, Form } from "react-bootstrap";
-import { Link } from "react-router-dom";
-import moment from "moment";
+import swal from "sweetalert";
 import UserService from "./UserService.service";
 import "./UserRegistration.css";
-import { saveAuthSession } from "./authSession";
 import useActiveShopColor from "../Shop/useActiveShopColor";
 
 const initialUser = {
@@ -70,6 +68,7 @@ const UserRegistration = () => {
         if (!validateForm()) return;
 
         setIsSubmitting(true);
+        setErrors({});
 
         try {
             await UserService.sanctum();
@@ -77,15 +76,13 @@ const UserRegistration = () => {
             const registrationStatus = Number(response.data.status);
 
             if (registrationStatus >= 200 && registrationStatus < 300) {
-                if (!saveAuthSession(response.data)) {
-                    setErrors({
-                        form: "Your account was created, but the session expiration was invalid. Please sign in.",
-                    });
-                    return;
-                }
-
-                window.location.replace(
-                    `/shopOrderTransaction/customerOrderTransactionList/${moment().format("YYYY-MM-DD")}`
+                setUser(initialUser);
+                setShowPassword(false);
+                setShowConfirmation(false);
+                swal(
+                    "Successfully created",
+                    response.data.message || "The user account was successfully created.",
+                    "success"
                 );
                 return;
             }
@@ -114,10 +111,9 @@ const UserRegistration = () => {
         >
             <section className="registration-intro" aria-labelledby="registration-heading">
                 <span className="registration-eyebrow">Internal operations</span>
-                <h1 id="registration-heading">Create your account</h1>
+                <h1 id="registration-heading">Create a staff account</h1>
                 <p>
-                    Access the tools your team uses to manage daily sales, stock,
-                    purchasing, customer orders, and financial records.
+                    Add secure system access for a member of your team.
                 </p>
 
                 <div className="registration-feature">
@@ -141,7 +137,7 @@ const UserRegistration = () => {
                     <span className="registration-icon" aria-hidden="true">📦</span>
                     <div>
                         <h2>Create staff access</h2>
-                        <p>Enter your details to access the internal system.</p>
+                        <p>Enter the new staff member's account details.</p>
                     </div>
                 </div>
 
@@ -252,9 +248,6 @@ const UserRegistration = () => {
                     </Button>
                 </Form>
 
-                <p className="registration-login">
-                    Already have an account? <Link to="/login">Sign in</Link>
-                </p>
             </section>
         </main>
     );

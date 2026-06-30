@@ -1,173 +1,192 @@
-import * as React from 'react';
-import { useTheme, styled } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import { BarChart } from '@mui/x-charts/BarChart';
-import { useAnimate, useAnimateBar, useDrawingArea } from '@mui/x-charts/hooks';
-import { PiecewiseColorLegend } from '@mui/x-charts/ChartsLegend';
-import { interpolateObject } from '@mui/x-charts-vendor/d3-interpolate';
-import Box from '@mui/material/Box';
-import votestotal_sales from './votes.json';
+import React, { useMemo, useState } from "react";
+import Box from "@mui/material/Box";
+import { BarChart } from "@mui/x-charts/BarChart";
 
-const ReportBar = (props) => {
+const ReportBar = ({ transactionList, showProfit = false }) => {
+    const [view, setView] = useState("sales");
+    const data = transactionList?.data || [];
 
-    const transactionList = props.transactionList;
+    const chartData = useMemo(
+        () =>
+            data.map((day) => ({
+                ...day,
+                total_sales: Number(day.total_sales || 0),
+                total_profit: Number(day.total_profit || 0),
+                total_count: Number(day.total_count || 0),
+                displayDate: new Date(`${day.date}T00:00:00`).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                }),
+            })),
+        [data]
+    );
 
-    const scores = transactionList.data.map(user => user.total_sales);
+    const metrics = {
+        sales: {
+            title: "Total sales by day",
+            description: "Compare daily revenue across the selected period.",
+            dataKey: "total_sales",
+            label: "Total sales",
+            color: "#4f46e5",
+            currency: true,
+        },
+        profit: {
+            title: "Gross profit by day",
+            description: "See which days contributed the most gross profit.",
+            dataKey: "total_profit",
+            label: "Gross profit",
+            color: "#14a895",
+            currency: true,
+        },
+        transactions: {
+            title: "Transactions by day",
+            description: "Compare completed order volume across the selected period.",
+            dataKey: "total_count",
+            label: "Transactions",
+            color: "#f59e0b",
+            currency: false,
+        },
+    };
 
-    const highestScore = Math.max(...scores);
-    const lowestScore = Math.min(...scores);
-
-    const percentage = transactionList.total_sales / 100;
-
-    // FIXED: use highestScore instead of total_sales
-    const pct = highestScore / 100;
-
+    const activeMetric = metrics[view];
 
     const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "PHP",
+            maximumFractionDigits: 0,
+        }).format(Number(value || 0));
 
+    const compactCurrency = (value) =>
+        new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "PHP",
+            notation: "compact",
+            maximumFractionDigits: 1,
+        }).format(Number(value || 0));
+
+    const peakDay = useMemo(() => {
+        if (!chartData.length) return null;
+
+        return chartData.reduce((peak, day) =>
+            day[activeMetric.dataKey] > peak[activeMetric.dataKey] ? day : peak
+        );
+    }, [activeMetric.dataKey, chartData]);
+
+    const chartHeight = Math.max(360, chartData.length * 48 + 90);
+    const valueFormatter = (value) =>
+        activeMetric.currency
+            ? numberFormat(value)
+            : `${Number(value || 0).toLocaleString("en-US")} transactions`;
+
+    if (!chartData.length) {
+        return (
+            <div className="sales-report__empty">
+                <span className="sales-report__empty-icon">↗</span>
+                <strong>No chart data available</strong>
+                <p>Try another date range to compare daily performance.</p>
+            </div>
+        );
+    }
 
     return (
-        <Box sx={{ width: '100%', height: 700 }}>  {/* make container bigger */}
-            <Typography marginBottom={2}>
+        <>
+            <div className="sales-chart__header">
+                <div>
+                    <p className="sales-report__eyebrow">Daily performance</p>
+                    <h2>{activeMetric.title}</h2>
+                    <p>{activeMetric.description}</p>
+                </div>
+                <div className="sales-chart__toggle" aria-label="Chart metric">
+                    <button
+                        type="button"
+                        className={view === "sales" ? "active" : ""}
+                        onClick={() => setView("sales")}
+                    >
+                        Sales
+                    </button>
+                    {showProfit && (
+                        <button
+                            type="button"
+                            className={view === "profit" ? "active" : ""}
+                            onClick={() => setView("profit")}
+                        >
+                            Profit
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        className={view === "transactions" ? "active" : ""}
+                        onClick={() => setView("transactions")}
+                    >
+                        Transactions
+                    </button>
+                </div>
+            </div>
 
-            </Typography>
-            <BarChart
-                height={700}
-                margin={{ left: 120, right: 40 }}
-                dataset={transactionList.data}
-                series={[
-                    {
-                        id: 'total_sales',
-                        dataKey: 'total_sales',
-                        stack: 'voter total_sales',
-                        valueFormatter: (value) => `${numberFormat(value) + " ---- " + (value / percentage).toFixed(2)}%`
-                    },
-                ]}
-                layout="horizontal"
-                xAxis={[
-                    {
-                        id: 'color',
-                        min: lowestScore,
-                        max: highestScore,
-                        // max: 1000,
-                        colorMap: {
-                            type: 'piecewise',
-                            thresholds: [(pct * 50), (pct * 85)],
-                            colors: ['#d32f2f', '#78909c', '#1976d2'],
-                        },
-                        valueFormatter: (value) => `${numberFormat(value)}`,
-                    },
-                ]}
-                barLabel={(v) => `${numberFormat(v.value) + " ---- " + (v.value / percentage).toFixed(2)}%`}
-                yAxis={[
-                    {
-                        scaleType: 'band',
-                        dataKey: 'date',
-                        width: 140,
-                    },
-                ]}
-                slots={{
-                    legend: PiecewiseColorLegend,
-                    barLabel: BarLabelAtBase,
-                    bar: BarShadedBackground,
-                }}
-                slotProps={{
-                    legend: {
-                        axisDirection: 'x',
-                        markType: 'square',
-                        labelPosition: 'inline-start',
-                        labelFormatter: ({ index }) => {
-                            if (index === 0) {
-                                return 'Lowest Total Sales';
-                            }
-                            if (index === 1) {
-                                return 'Average';
-                            }
-                            return 'Highest Total Sales';
-                        },
-                    },
-                }}
-            />
-        </Box>
+            {peakDay && (
+                <div className="sales-chart__insight">
+                    <span>Peak day</span>
+                    <strong>
+                        {new Date(`${peakDay.date}T00:00:00`).toLocaleDateString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                            year: "numeric",
+                        })}
+                    </strong>
+                    <b>{valueFormatter(peakDay[activeMetric.dataKey])}</b>
+                </div>
+            )}
+
+            <div className="sales-chart__scroll">
+                <Box sx={{ minWidth: 700, height: chartHeight }}>
+                    <BarChart
+                        dataset={chartData}
+                        layout="horizontal"
+                        height={chartHeight}
+                        margin={{ left: 78, right: 36, top: 28, bottom: 45 }}
+                        grid={{ vertical: true }}
+                        series={[
+                            {
+                                dataKey: activeMetric.dataKey,
+                                label: activeMetric.label,
+                                color: activeMetric.color,
+                                valueFormatter,
+                            },
+                        ]}
+                        xAxis={[
+                            {
+                                min: 0,
+                                valueFormatter: activeMetric.currency
+                                    ? compactCurrency
+                                    : (value) => Number(value || 0).toLocaleString("en-US"),
+                            },
+                        ]}
+                        yAxis={[
+                            {
+                                scaleType: "band",
+                                dataKey: "displayDate",
+                                width: 72,
+                            },
+                        ]}
+                        sx={{
+                            "& .MuiChartsGrid-line": {
+                                stroke: "#e7e9f2",
+                                strokeDasharray: "4 4",
+                            },
+                            "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": {
+                                stroke: "#cfd3df",
+                            },
+                            "& .MuiChartsAxis-tickLabel": {
+                                fill: "#596174",
+                                fontSize: 12,
+                            },
+                        }}
+                    />
+                </Box>
+            </div>
+        </>
     );
-}
+};
 
-export function BarShadedBackground(props) {
-    const { ownerState, skipAnimation, id, dataIndex, xOrigin, yOrigin, ...other } =
-        props;
-    const theme = useTheme();
-
-    const animatedProps = useAnimateBar(props);
-    const { width } = useDrawingArea();
-    return (
-        <React.Fragment>
-            <rect
-                {...other}
-                fill={(theme.vars || theme).palette.text.primary}
-                opacity={theme.palette.mode === 'dark' ? 0.05 : 0.1}
-                x={other.x}
-                width={width}
-            />
-            <rect
-                {...other}
-                filter={ownerState.isHighlighted ? 'brightness(120%)' : undefined}
-                opacity={ownerState.isFaded ? 0.3 : 1}
-                data-highlighted={ownerState.isHighlighted || undefined}
-                data-faded={ownerState.isFaded || undefined}
-                {...animatedProps}
-            />
-        </React.Fragment>
-    );
-}
-
-const Text = styled('text')(({ theme }) => ({
-    ...theme?.typography?.body2,
-    stroke: 'none',
-    fill: (theme.vars || theme).palette.common.white,
-    transition: 'opacity 0.2s ease-in, fill 0.2s ease-in',
-    textAnchor: 'start',
-    dominantBaseline: 'central',
-    pointerEvents: 'none',
-    fontWeight: 600,
-}));
-
-function BarLabelAtBase(props) {
-    const {
-        seriesId,
-        dataIndex,
-        color,
-        isFaded,
-        isHighlighted,
-        classes,
-        xOrigin,
-        yOrigin,
-        x,
-        y,
-        width,
-        height,
-        layout,
-        skipAnimation,
-        ...otherProps
-    } = props;
-
-    const animatedProps = useAnimate(
-        { x: xOrigin + 8, y: y + height / 2 },
-        {
-            initialProps: { x: xOrigin, y: y + height / 2 },
-            createInterpolator: interpolateObject,
-            transformProps: (p) => p,
-            applyProps: (element, p) => {
-                element.setAttribute('x', p.x.toString());
-                element.setAttribute('y', p.y.toString());
-            },
-            skip: skipAnimation,
-        },
-    );
-
-    return <Text {...otherProps} {...animatedProps} />;
-}
-export default ReportBar
+export default ReportBar;

@@ -87,7 +87,7 @@ import "./DrawerNav.css";
 
 import { pink } from '@mui/material/colors';
 
-const drawerWidth = 300;
+const drawerWidth = 312;
 
 
 
@@ -1311,6 +1311,18 @@ export default function PersistentDrawerLeft() {
                                 <LockOutlinedIcon />
                                 <span>Change password</span>
                             </MenuItem>
+                            {Number(localStorage.getItem('role_as')) === 2 && (
+                                <MenuItem
+                                    className="drawer-account-menu-item"
+                                    onClick={() => {
+                                        handleClose();
+                                        navigate('/userRegistration');
+                                    }}
+                                >
+                                    <PersonIcon />
+                                    <span>Register user</span>
+                                </MenuItem>
+                            )}
                             <Divider className="drawer-account-divider" />
                             <MenuItem
                                 className="drawer-account-menu-item drawer-account-logout"
@@ -1328,7 +1340,8 @@ export default function PersistentDrawerLeft() {
                 </Toolbar>
             </AppBar>
             <Drawer
-
+                className="operations-drawer"
+                style={{ "--shop-color": shopBrand.color }}
                 sx={{
                     width: drawerWidth,
                     flexShrink: 0,
@@ -1345,7 +1358,20 @@ export default function PersistentDrawerLeft() {
                     className="drawer-panel-header"
                     style={{ "--shop-color": shopBrand.color }}
                 >
-                    <IconButton onClick={handleDrawerClose}>
+                    <div className="drawer-panel-brand">
+                        <span className="drawer-panel-brand-mark">
+                            <img src="/mdr_nav_logo.png" alt="" />
+                        </span>
+                        <span>
+                            <strong>Workspace</strong>
+                            <small>Navigation menu</small>
+                        </span>
+                    </div>
+                    <IconButton
+                        className="drawer-panel-close"
+                        aria-label="Close navigation menu"
+                        onClick={handleDrawerClose}
+                    >
                         {theme.direction === 'ltr' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                     </IconButton>
                 </DrawerHeader>
@@ -2098,13 +2124,14 @@ export default function PersistentDrawerLeft() {
                 </List>
 
                 <List
+                    className="drawer-reports-section"
                     sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
                 >
 
 
-                    <ListItemButton onClick={handleClickReport}>
+                    <ListItemButton className="reports-menu-heading" onClick={handleClickReport}>
                         <ListItemIcon>
                             <LeaderboardIcon color="secondary" />
                         </ListItemIcon>
@@ -2113,7 +2140,7 @@ export default function PersistentDrawerLeft() {
                     </ListItemButton>
                     <Collapse in={openReport} timeout="auto" unmountOnExit>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickTransactionReport}>
+                        <ListItemButton className="report-menu-item report-menu-transaction" sx={{ pl: 4 }} onClick={handleClickTransactionReport}>
                             <ListItemIcon>
                                 <PointOfSaleIcon color="success" />
                             </ListItemIcon>
@@ -2135,7 +2162,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickDeliveryReport}>
+                        <ListItemButton className="report-menu-item report-menu-delivery" sx={{ pl: 4 }} onClick={handleClickDeliveryReport}>
                             <ListItemIcon>
                                 <LocalShippingIcon color="success" />
                             </ListItemIcon>
@@ -2157,7 +2184,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickPurchaseOrderReport}>
+                        <ListItemButton className="report-menu-item report-menu-purchase" sx={{ pl: 4 }} onClick={handleClickPurchaseOrderReport}>
                             <ListItemIcon>
                                 <ShoppingCartIcon color="success" />
                             </ListItemIcon>
@@ -2178,7 +2205,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickDiscountReport}>
+                        <ListItemButton className="report-menu-item report-menu-discount" sx={{ pl: 4 }} onClick={handleClickDiscountReport}>
                             <ListItemIcon>
                                 <DiscountIcon color="success" />
                             </ListItemIcon>
@@ -2199,7 +2226,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickExpenseReport}>
+                        <ListItemButton className="report-menu-item report-menu-expense" sx={{ pl: 4 }} onClick={handleClickExpenseReport}>
                             <ListItemIcon>
                                 <CardTravelIcon color="success" />
                             </ListItemIcon>
@@ -2220,7 +2247,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickProductReport}>
+                        <ListItemButton className="report-menu-item report-menu-product" sx={{ pl: 4 }} onClick={handleClickProductReport}>
                             <ListItemIcon>
                                 <LocalCafeIcon color="success" />
                             </ListItemIcon>
@@ -2241,7 +2268,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickCategoryReport}>
+                        <ListItemButton className="report-menu-item report-menu-category" sx={{ pl: 4 }} onClick={handleClickCategoryReport}>
                             <ListItemIcon>
                                 <CategoryIcon color="success" />
                             </ListItemIcon>
@@ -2262,7 +2289,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickStockReport}>
+                        <ListItemButton className="report-menu-item report-menu-stock" sx={{ pl: 4 }} onClick={handleClickStockReport}>
                             <ListItemIcon>
                                 <InventoryIcon color="success" />
                             </ListItemIcon>
@@ -2283,7 +2310,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickSpoilageReport}>
+                        <ListItemButton className="report-menu-item report-menu-spoilage" sx={{ pl: 4 }} onClick={handleClickSpoilageReport}>
                             <ListItemIcon>
                                 <RemoveModeratorIcon color="success" />
                             </ListItemIcon>
@@ -2305,7 +2332,7 @@ export default function PersistentDrawerLeft() {
                         </Collapse>
 
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickCustomerReport}>
+                        <ListItemButton className="report-menu-item report-menu-customer" sx={{ pl: 4 }} onClick={handleClickCustomerReport}>
                             <ListItemIcon>
                                 <PersonIcon color="success" />
                             </ListItemIcon>
@@ -2326,7 +2353,7 @@ export default function PersistentDrawerLeft() {
                             ))}
                         </Collapse>
 
-                        <ListItemButton sx={{ pl: 4 }} onClick={handleClickShopBranchOrderReport}>
+                        <ListItemButton className="report-menu-item report-menu-branch" sx={{ pl: 4 }} onClick={handleClickShopBranchOrderReport}>
                             <ListItemIcon>
                                 <StorefrontIcon color="success" />
                             </ListItemIcon>

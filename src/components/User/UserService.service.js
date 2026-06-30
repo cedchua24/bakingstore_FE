@@ -6,6 +6,9 @@ class UserService {
     getAll() {
         return axios.get("/api/register");
     }
+    fetchUserList() {
+        return axios.get("/api/register/fetchUserList");
+    }
     get(id) {
         return axios.get(`/api/register/${id}`);
     }

@@ -1,0 +1,168 @@
+.profit-report__days {
+    padding: 7px 11px;
+    color: var(--report-muted);
+    border-radius: 999px;
+    background: #eceef5;
+    font-size: 0.78rem;
+    font-weight: 750;
+}
+
+.profit-report__metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.profit-metric--profit {
+    border-color: #bce9e2;
+    background: linear-gradient(145deg, #ffffff, #effbf9);
+    box-shadow: inset 0 3px 0 #14a895, 0 8px 26px rgba(28, 35, 62, 0.05);
+}
+
+.profit-metric--expense {
+    border-color: #ffd4d8;
+    background: linear-gradient(145deg, #ffffff, #fff4f5);
+    box-shadow: inset 0 3px 0 #e05260, 0 8px 26px rgba(28, 35, 62, 0.05);
+}
+
+.profit-metric--expense strong {
+    color: #c83d4b;
+}
+
+.profit-metric--net {
+    color: #ffffff;
+    border-color: transparent;
+    background: linear-gradient(135deg, #151a2d, #2e3552);
+}
+
+.profit-metric--net span,
+.profit-metric--net small {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.profit-report__supporting-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    overflow: hidden;
+    margin-top: 14px;
+    border: 1px solid var(--report-border);
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.profit-report__supporting-metrics article {
+    padding: 17px 20px;
+    border-right: 1px solid var(--report-border);
+}
+
+.profit-report__supporting-metrics article:last-child {
+    border-right: 0;
+}
+
+.profit-report__supporting-metrics span,
+.profit-report__supporting-metrics strong {
+    display: block;
+}
+
+.profit-report__supporting-metrics span {
+    margin-bottom: 6px;
+    color: var(--report-muted);
+    font-size: 0.74rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.profit-report__supporting-metrics strong {
+    color: var(--report-ink);
+    font-size: 1.05rem;
+}
+
+.profit-report__payments {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.profit-report__payments article {
+    padding: 18px 20px;
+    border: 1px solid var(--report-border);
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.profit-report__payment-heading {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 9px;
+    color: var(--report-muted);
+    font-size: 0.78rem;
+    font-weight: 750;
+}
+
+.profit-report__payment-heading b {
+    color: var(--report-ink);
+}
+
+.profit-report__payments article > strong {
+    display: block;
+    margin-top: 11px;
+    font-size: 1.2rem;
+    letter-spacing: -0.02em;
+}
+
+.profit-report__payment-track {
+    overflow: hidden;
+    height: 6px;
+    margin-top: 12px;
+    border-radius: 999px;
+    background: #f1f2f6;
+}
+
+.profit-report__payment-track span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #f59e0b;
+    transition: width 300ms ease;
+}
+
+.profit-report__payment-track--online span {
+    background: #4f46e5;
+}
+
+.profit-report__table {
+    min-width: 930px;
+}
+
+.profit-report__forecast-inputs {
+    width: min(100%, 340px);
+}
+
+.profit-report__forecast-inputs .sales-report__target-input {
+    width: 100%;
+}
+
+@media (max-width: 1180px) {
+    .profit-report__metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .profit-report__metrics,
+    .profit-report__supporting-metrics,
+    .profit-report__payments {
+        grid-template-columns: 1fr;
+    }
+
+    .profit-report__supporting-metrics article {
+        border-right: 0;
+        border-bottom: 1px solid var(--report-border);
+    }
+
+    .profit-report__supporting-metrics article:last-child {
+        border-bottom: 0;
+    }
+}

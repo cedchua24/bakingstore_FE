@@ -1,11 +1,11 @@
 import React from 'react'
+import moment from 'moment'
+import { Navigate } from 'react-router-dom'
 
 const Home = () => {
-    return (
-        <div>
-            <h1>Home</h1>
-        </div>
-    )
+    const today = moment().format('YYYY-MM-DD')
+
+    return <Navigate to={`/shopOrderTransaction/customerOrderTransactionList/${today}`} replace />
 }
 
 export default Home
