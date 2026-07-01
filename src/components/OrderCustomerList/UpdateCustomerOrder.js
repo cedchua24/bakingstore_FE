@@ -174,7 +174,7 @@ const UpdateCustomerOrder = () => {
         await OrderCustomerListService.get(id)
             .then(response => {
                 // setOrderCustomerTransactionList(response.data);
-                setinvoiceSubtotal(response.data.total_transaction_price - TAX_RATE * response.data.total_transaction_price);
+                setinvoiceSubtotal(response.data.total_transaction_price / (1 + TAX_RATE));
                 setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                 setinvoiceTotal(response.data.total_transaction_price);
             })
