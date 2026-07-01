@@ -38,9 +38,9 @@ const VipCustomerTransactionTemplateList = () => {
     return (
         <div>
             <legend align="center" style={{ fontWeight: 'bold' }} > VIP Customer </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+            <table className="table table-bordered">
+                <thead className="table-dark">
+                    <tr className="table-secondary">
                         <th>#</th>
                         <th>ID</th>
                         <th>VIP Customer Template</th>
@@ -61,11 +61,18 @@ const VipCustomerTransactionTemplateList = () => {
                                 <td>{renderVipColor(vipCustomer.vip_color)}</td>
                                 <td>{Number(vipCustomer.status) === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
-                                    <Link variant="primary" to={"/vipTransaction/" + vipCustomer.id}   >
-                                        <Button variant="primary" >
-                                            View
-                                        </Button>
-                                    </Link>
+                                    <div className="d-flex flex-wrap gap-2">
+                                        <Link to={"/vipTransaction/" + vipCustomer.id}>
+                                            <Button variant="primary">
+                                                Transaction View
+                                            </Button>
+                                        </Link>
+                                        <Link to={"/vipTransactionDebt/" + vipCustomer.id}>
+                                            <Button variant="warning">
+                                                Pending Balances
+                                            </Button>
+                                        </Link>
+                                    </div>
                                 </td>
                             </tr>
                         ))
