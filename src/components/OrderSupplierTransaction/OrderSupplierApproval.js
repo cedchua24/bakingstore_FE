@@ -370,7 +370,7 @@ const OrderSupplierApproval = () => {
                     setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                     setinvoiceTotal(TAX_RATE * response.data.total_transaction_price + response.data.total_transaction_price);
                 } else {
-                    setinvoiceSubtotal(response.data.total_transaction_price - TAX_RATE * response.data.total_transaction_price);
+                    setinvoiceSubtotal(response.data.total_transaction_price / (1 + TAX_RATE));
                     setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                     setinvoiceTotal(response.data.total_transaction_price);
                 }

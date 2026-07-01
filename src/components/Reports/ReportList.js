@@ -41,6 +41,7 @@ const ReportList = () => {
     const averageSales = dailyOrders.length ? totalSales / dailyOrders.length : 0;
     const averageProfit = dailyOrders.length ? totalProfit / dailyOrders.length : 0;
     const profitMargin = totalSales ? (totalProfit / totalSales) * 100 : 0;
+    const expenseMargin = totalSales ? (totalExpenses / totalSales) * 100 : 0;
     const netProfitMargin = totalSales ? (netProfit / totalSales) * 100 : 0;
 
     const paymentMix = useMemo(() => {
@@ -289,7 +290,7 @@ const ReportList = () => {
                             <article className="sales-metric profit-metric--expense">
                                 <span>Total expenses</span>
                                 <strong>{numberFormat(-Math.abs(totalExpenses))}</strong>
-                                <small>Approved and received expenses</small>
+                                <small>{expenseMargin.toFixed(2)}% expense margin</small>
                             </article>
 
                             {isAdmin && (

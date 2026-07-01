@@ -140,7 +140,7 @@ const CompletedShopOrderTransaction = () => {
         await ShopOrderService.fetchShopOrderDTO(id)
             .then(response => {
                 setOrderShopDTO(response.data);
-                setinvoiceSubtotal(response.data.shopOrderTransaction.shop_order_transaction_total_price - TAX_RATE * response.data.shopOrderTransaction.shop_order_transaction_total_price);
+                setinvoiceSubtotal(response.data.shopOrderTransaction.shop_order_transaction_total_price / (1 + TAX_RATE));
                 setinvoiceTaxes(TAX_RATE * response.data.shopOrderTransaction.shop_order_transaction_total_price);
                 setinvoiceTotal(response.data.shopOrderTransaction.shop_order_transaction_total_price);
             })
