@@ -109,6 +109,40 @@ const styles = {
         fontSize: '12px',
         whiteSpace: 'nowrap',
     },
+    customerName: {
+        fontWeight: '700',
+        marginBottom: '2px',
+    },
+    storeName: {
+        color: '#6c757d',
+        fontSize: '12px',
+    },
+    draftTotalCell: {
+        backgroundColor: '#fff8e1',
+        fontWeight: '700',
+    },
+    paymentSummary: {
+        minWidth: '105px',
+        fontSize: '12px',
+        lineHeight: '1.45',
+    },
+    paymentSummaryRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        gap: '10px',
+        whiteSpace: 'nowrap',
+    },
+    paymentLabel: {
+        color: '#6c757d',
+    },
+    paidValue: {
+        color: '#146c43',
+        fontWeight: '600',
+    },
+    balanceValue: {
+        color: '#b45309',
+        fontWeight: '600',
+    },
     emptyState: {
         textAlign: 'center',
         color: '#6c757d',
@@ -121,6 +155,10 @@ const styles = {
     grandTotalRow: {
         backgroundColor: '#d1e7dd',
         color: '#0f5132',
+    },
+    paymentsTotalRow: {
+        backgroundColor: '#cfe2ff',
+        color: '#084298',
     },
     footerLabel: {
         textAlign: 'right',
@@ -145,16 +183,80 @@ const styles = {
         gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
         gap: '10px',
     },
+    analysisSecondaryGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '10px',
+        marginTop: '10px',
+    },
     analysisItem: {
         border: '1px solid #e5e7eb',
         borderRadius: '8px',
         padding: '12px',
         backgroundColor: '#f8f9fa',
     },
+    openTransactionItem: {
+        border: '1px solid #ffecb5',
+        borderRadius: '8px',
+        padding: '12px',
+        backgroundColor: '#fff3cd',
+        color: '#664d03',
+    },
+    completedTransactionItem: {
+        border: '1px solid #a3cfbb',
+        borderRadius: '8px',
+        padding: '12px',
+        backgroundColor: '#d1e7dd',
+        color: '#0f5132',
+    },
+    collectedPaymentsHero: {
+        border: '2px solid #0d6efd',
+        borderRadius: '10px',
+        padding: '18px 20px',
+        marginBottom: '12px',
+        backgroundColor: '#e7f1ff',
+        color: '#084298',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '16px',
+        flexWrap: 'wrap',
+        boxShadow: '0 3px 10px rgba(13, 110, 253, 0.12)',
+    },
+    keyMetricBadge: {
+        display: 'inline-block',
+        padding: '3px 9px',
+        borderRadius: '999px',
+        backgroundColor: '#0d6efd',
+        color: '#ffffff',
+        fontSize: '11px',
+        fontWeight: '700',
+        letterSpacing: '0.04em',
+        marginBottom: '7px',
+    },
+    collectedPaymentsValue: {
+        color: '#084298',
+        fontSize: '30px',
+        fontWeight: '800',
+        marginBottom: '0',
+    },
+    estimatedBalanceItem: {
+        border: '1px solid #feb272',
+        borderRadius: '8px',
+        padding: '12px',
+        backgroundColor: '#ffe5d0',
+        color: '#984c0c',
+    },
     analysisLabel: {
         color: '#6c757d',
         fontSize: '13px',
         marginBottom: '4px',
+    },
+    analysisHelp: {
+        color: '#6c757d',
+        fontSize: '12px',
+        marginTop: '5px',
+        marginBottom: '0',
     },
     analysisValue: {
         fontWeight: '700',
@@ -162,11 +264,11 @@ const styles = {
         marginBottom: '0',
     },
     projectedSalesItem: {
-        border: '1px solid #b6d4fe',
+        border: '1px solid #c5b3e6',
         borderRadius: '8px',
         padding: '12px',
-        backgroundColor: '#cfe2ff',
-        color: '#084298',
+        backgroundColor: '#e2d9f3',
+        color: '#432874',
     },
     noteButton: {
         whiteSpace: 'nowrap',
@@ -336,6 +438,49 @@ const VipTransaction = () => {
         }, 0);
     }
 
+    const getTotalCompletedPayment = () => {
+        return vipTransactionList.reduce((total, vipTransaction) => {
+            var totalCompletedPayment = Number(vipTransaction.total_completed_payment || 0);
+            return total + totalCompletedPayment;
+        }, 0);
+    }
+
+    const getOpenTransactionPayment = (vipTransaction) => {
+        var completedSales = Number(vipTransaction.total_order_price || 0);
+        var allPayments = Number(vipTransaction.total_completed_payment || 0);
+        return Math.max(allPayments - completedSales, 0);
+    }
+
+    const getTotalOpenTransactionPayments = () => {
+        return vipTransactionList.reduce((total, vipTransaction) => {
+            return total + getOpenTransactionPayment(vipTransaction);
+        }, 0);
+    }
+
+    const getOpenTransactionBalance = (vipTransaction) => {
+        var openTransactionValue = Number(vipTransaction.draft_order_total_price || 0);
+        return Math.max(openTransactionValue - getOpenTransactionPayment(vipTransaction), 0);
+    }
+
+    const getEstimatedOpenBalance = () => {
+        return Math.max(getPossibleSales() - getTotalOpenTransactionPayments(), 0);
+    }
+
+    const renderPaymentSummary = (paidAmount, balance) => {
+        return (
+            <div style={styles.paymentSummary}>
+                <div style={styles.paymentSummaryRow}>
+                    <span style={styles.paymentLabel}>Paid</span>
+                    <span style={styles.paidValue}>{formatTotalOrderPrice(paidAmount)}</span>
+                </div>
+                <div style={styles.paymentSummaryRow}>
+                    <span style={styles.paymentLabel}>Balance</span>
+                    <span style={styles.balanceValue}>{formatTotalOrderPrice(balance)}</span>
+                </div>
+            </div>
+        );
+    }
+
     const getPossibleSales = () => {
         return vipTransactionList.reduce((total, vipTransaction) => {
             var draftOrderTotalPrice = Number(vipTransaction.draft_order_total_price || 0);
@@ -405,11 +550,11 @@ const VipTransaction = () => {
                     <thead>
                         <tr>
                             <th rowSpan="2" style={styles.groupHeader}>#</th>
-                            <th rowSpan="2" style={styles.groupHeader}>Customer</th>
-                            <th rowSpan="2" style={styles.groupHeader}>Store Name</th>
-                            <th colSpan="2" style={styles.groupHeader}>Draft Order</th>
+                            <th rowSpan="2" style={styles.groupHeader}>Customer / Store</th>
+                            <th colSpan="3" style={styles.groupHeader}>Draft Order</th>
                             <th colSpan="2" style={styles.groupHeader}>Last Order</th>
-                            <th rowSpan="2" style={styles.groupHeader}>Total Amount Completed</th>
+                            <th rowSpan="2" style={styles.groupHeader}>Completed Transaction</th>
+                            <th rowSpan="2" style={styles.groupHeader}>All Payments Collected</th>
                             <th rowSpan="2" style={styles.groupHeader}>Note</th>
                             <th rowSpan="2" style={styles.groupHeader}>Transaction</th>
                             <th rowSpan="2" style={styles.groupHeader}>Products</th>
@@ -417,6 +562,7 @@ const VipTransaction = () => {
                         <tr>
                             <th style={styles.subHeader}>Dates</th>
                             <th style={styles.subHeader}>Total Amount</th>
+                            <th style={styles.subHeader}>Payment Status</th>
                             <th style={styles.subHeader}>Date</th>
                             <th style={styles.subHeader}>Days Ago</th>
                         </tr>
@@ -426,13 +572,24 @@ const VipTransaction = () => {
                             vipTransactionList.length > 0 ? vipTransactionList.map((vipTransaction, index) => (
                                 <tr key={vipTransaction.vip_customer_transaction_id} >
                                     <td>{index + 1}</td>
-                                    <td>{vipTransaction.customer_name}</td>
-                                    <td>{vipTransaction.store_name}</td>
+                                    <td>
+                                        <div style={styles.customerName}>{vipTransaction.customer_name}</div>
+                                        <div style={styles.storeName}>{vipTransaction.store_name || 'No store name'}</div>
+                                    </td>
                                     <td>{renderDraftOrderDates(vipTransaction)}</td>
-                                    <td>{formatTotalOrderPrice(vipTransaction.draft_order_total_price)}</td>
+                                    <td style={styles.draftTotalCell}>
+                                        {formatTotalOrderPrice(vipTransaction.draft_order_total_price)}
+                                    </td>
+                                    <td>
+                                        {renderPaymentSummary(
+                                            getOpenTransactionPayment(vipTransaction),
+                                            getOpenTransactionBalance(vipTransaction)
+                                        )}
+                                    </td>
                                     <td>{formatStatementDate(vipTransaction.last_order_date)}</td>
                                     <td>{renderDaysAgo(vipTransaction.last_order_date)}</td>
                                     <td>{formatTotalOrderPrice(vipTransaction.total_order_price)}</td>
+                                    <td>{formatTotalOrderPrice(vipTransaction.total_completed_payment)}</td>
                                     <td>
                                         <Link to={"/vipNote/" + vipTransaction.vip_customer_transaction_id}>
                                             <Button variant="info" size="sm" style={styles.noteButton}>
@@ -461,20 +618,33 @@ const VipTransaction = () => {
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="11" style={styles.emptyState}>No VIP customer transactions found.</td>
+                                    <td colSpan="12" style={styles.emptyState}>No VIP customer transactions found.</td>
                                 </tr>
                             )
                         }
                     </tbody>
                     <tfoot>
                         <tr style={styles.possibleSalesRow}>
-                            <td colSpan="4" style={styles.footerLabel}>Possible Sales</td>
-                            <td style={styles.footerValue}>{formatTotalOrderPrice(getPossibleSales())}</td>
-                            <td colSpan="6"></td>
+                            <td colSpan="3" style={styles.footerLabel}>Open Transaction Value</td>
+                            <td style={{ ...styles.footerValue, ...styles.draftTotalCell }}>
+                                {formatTotalOrderPrice(getPossibleSales())}
+                            </td>
+                            <td style={styles.footerValue}>
+                                {renderPaymentSummary(
+                                    getTotalOpenTransactionPayments(),
+                                    getEstimatedOpenBalance()
+                                )}
+                            </td>
+                            <td colSpan="7"></td>
                         </tr>
                         <tr style={styles.grandTotalRow}>
-                            <td colSpan="7" style={styles.footerLabel}>Grand Total</td>
+                            <td colSpan="7" style={styles.footerLabel}>Completed Transaction Value</td>
                             <td style={styles.footerValue}>{formatTotalOrderPrice(getGrandTotal())}</td>
+                            <td colSpan="4"></td>
+                        </tr>
+                        <tr style={styles.paymentsTotalRow}>
+                            <td colSpan="8" style={styles.footerLabel}>All Payments Collected</td>
+                            <td style={styles.footerValue}>{formatTotalOrderPrice(getTotalCompletedPayment())}</td>
                             <td colSpan="3"></td>
                         </tr>
                     </tfoot>
@@ -482,18 +652,42 @@ const VipTransaction = () => {
             </div>
             <div style={styles.analysisPanel}>
                 <h5 style={styles.analysisTitle}>Sales Analysis</h5>
-                <div style={styles.analysisGrid}>
-                    <div style={styles.analysisItem}>
-                        <p style={styles.analysisLabel}>Possible Sales</p>
-                        <p style={styles.analysisValue}>{formatTotalOrderPrice(getPossibleSales())}</p>
+                <div style={styles.collectedPaymentsHero}>
+                    <div>
+                        <span style={styles.keyMetricBadge}>KEY METRIC</span>
+                        <p style={{ ...styles.analysisLabel, color: '#084298', marginBottom: '3px' }}>
+                            All Payments Collected
+                        </p>
+                        <p style={styles.analysisHelp}>Total cash received from full and partial payments across every status</p>
                     </div>
-                    <div style={styles.analysisItem}>
-                        <p style={styles.analysisLabel}>Grand Total Completed</p>
+                    <p style={styles.collectedPaymentsValue}>
+                        {formatTotalOrderPrice(getTotalCompletedPayment())}
+                    </p>
+                </div>
+                <div style={styles.analysisGrid}>
+                    <div style={styles.openTransactionItem}>
+                        <p style={styles.analysisLabel}>Open Transaction Value</p>
+                        <p style={styles.analysisValue}>{formatTotalOrderPrice(getPossibleSales())}</p>
+                        <p style={styles.analysisHelp}>Full value of transactions not completed yet</p>
+                    </div>
+                    <div style={styles.completedTransactionItem}>
+                        <p style={styles.analysisLabel}>Completed Transaction Value</p>
                         <p style={styles.analysisValue}>{formatTotalOrderPrice(getGrandTotal())}</p>
+                        <p style={styles.analysisHelp}>Value of fully completed transactions</p>
+                    </div>
+                </div>
+                <div style={styles.analysisSecondaryGrid}>
+                    <div style={styles.estimatedBalanceItem}>
+                        <p style={styles.analysisLabel}>Estimated Open Balance</p>
+                        <p style={{ ...styles.analysisValue, color: '#b45309' }}>
+                            {formatTotalOrderPrice(getEstimatedOpenBalance())}
+                        </p>
+                        <p style={styles.analysisHelp}>Open value less partial payments already collected</p>
                     </div>
                     <div style={styles.projectedSalesItem}>
-                        <p style={styles.analysisLabel}>Projected Sales if Completed</p>
+                        <p style={styles.analysisLabel}>Projected Sales After Completion</p>
                         <p style={styles.analysisValue}>{formatTotalOrderPrice(getProjectedSales())}</p>
+                        <p style={styles.analysisHelp}>Completed sales plus all open transaction value</p>
                     </div>
                 </div>
             </div>

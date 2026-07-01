@@ -222,6 +222,7 @@ import VipCustomerTransaction from "./components/VipCustomer/VipCustomerTransact
 import VipCustomerTransactionListV2 from "./components/VipCustomer/VipCustomerTransactionListV2";
 import VipCustomerTransactionTemplateList from "./components/VipCustomer/VipCustomerTransactionTemplateList";
 import VipTransaction from "./components/VipCustomer/VipTransaction";
+import VIPTransactionDebt from "./components/VipCustomer/VIPTransactionDebt";
 import EditVipCustomer from "./components/VipCustomer/EditVipCustomer";
 import VipNote from "./components/VipCustomer/VipNote";
 
@@ -740,6 +741,7 @@ const App = () => {
           <Route exact path="/vipCustomerTransactionListV2" element={<VipCustomerTransactionListV2 />} />
           <Route exact path="/vipCustomerTransactionTemplateList" element={<VipCustomerTransactionTemplateList />} />
           <Route exact path="/vipTransaction/:id" element={<VipTransaction />} />
+          <Route exact path="/vipTransactionDebt/:id" element={<VIPTransactionDebt />} />
           <Route exact path="/vipNote/:id" element={<VipNote />} />
 
 

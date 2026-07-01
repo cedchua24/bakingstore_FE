@@ -23,6 +23,20 @@ class VipCustomerTransactionService {
         });
     }
 
+    fetchVipCustomerDebt(id, dateFrom, dateTo) {
+        const params = {};
+        if (dateFrom) {
+            params.date_from = dateFrom;
+        }
+        if (dateTo) {
+            params.date_to = dateTo;
+        }
+
+        return axios.get(`/api/vipCustomerTransaction/fetchVIPCustomerDebt/${id}`, {
+            params,
+        });
+    }
+
     create(data) {
         return axios.post("/api/vipCustomerTransaction", data);
     }
