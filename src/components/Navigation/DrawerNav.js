@@ -403,7 +403,7 @@ export default function PersistentDrawerLeft() {
         //     "icon": <ListIcon />
         // },
         {
-            "name": "Customer List Transaction",
+            "name": "Search New Customer",
             "url": "/customerListTransaction",
             "icon": <ListIcon />
         },
@@ -1213,7 +1213,7 @@ export default function PersistentDrawerLeft() {
                                 <NavDropdown.Item href="/searchCustomer">Search Customer</NavDropdown.Item>
                                 <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
                                 {/* <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item> */}
-                                <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
+                                <NavDropdown.Item href="/customerListTransaction">Search New Customer</NavDropdown.Item>
 
 
                             </NavDropdown>
