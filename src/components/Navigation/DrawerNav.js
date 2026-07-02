@@ -405,7 +405,7 @@ export default function PersistentDrawerLeft() {
         //     "icon": <ListIcon />
         // },
         {
-            "name": "Customer List Transaction",
+            "name": "Search New Customer",
             "url": "/customerListTransaction",
             "icon": <ListIcon />
         },
@@ -1199,57 +1199,57 @@ export default function PersistentDrawerLeft() {
                     </div>
 
                     <div className="drawer-primary-nav">
-                    <Nav>
-                        <NavDropdown title="Dashboard" id="basic-nav-dropdown">
-                            <NavDropdown.Item href={`/dashboard/employeePerformance/${moment().format("YYYY-MM-DD")}`}> Employee Performance </NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-                    <Nav >
-                        <NavDropdown title="Employee Check List" id="basic-nav-dropdown">
-                            <NavDropdown.Item href={`/employee/staffCheckList/${moment().format("YYYY-MM-DD")}`}> Employee Check List </NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
+                        <Nav>
+                            <NavDropdown title="Dashboard" id="basic-nav-dropdown">
+                                <NavDropdown.Item href={`/dashboard/employeePerformance/${moment().format("YYYY-MM-DD")}`}> Employee Performance </NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
+                        <Nav >
+                            <NavDropdown title="Employee Check List" id="basic-nav-dropdown">
+                                <NavDropdown.Item href={`/employee/staffCheckList/${moment().format("YYYY-MM-DD")}`}> Employee Check List </NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
 
-                    <Nav >
-                        <NavDropdown title="Customer" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
-                            <NavDropdown.Item href="/searchCustomer">Search Customer</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
-                            {/* <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item> */}
-                            <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
-
-
-                        </NavDropdown>
-                    </Nav>
-
-                    <Nav >
-                        <NavDropdown title="Customer Reminder" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/customerHistory">Customer Need to Follow up </NavDropdown.Item>
-                            <NavDropdown.Item href="/customerConvo">Customer Done Following up</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerReOrder">List of Customer Successfully Reordered</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerBacklog">Customer Backlog List</NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-
-                    <Nav >
-                        <NavDropdown title="Customer Order" id="basic-nav-dropdown">
-                            <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
-                            <NavDropdown.Item href={`/shopOrderTransaction/customerOrderTransactionList/${moment().format("YYYY-MM-DD")}`}>  Customer Order List </NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Top Product Today</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Top Customer Today</NavDropdown.Item>
-                            <NavDropdown.Item href="/shopOrderTransaction/pendingDelivery">For Delivery</NavDropdown.Item>
-                        </NavDropdown>
-                    </Nav>
-
-                    <Nav >
-                        <NavDropdown title="Daily Store Session" id="basic-nav-dropdown">
-                            <NavDropdown.Item href={`/dashboard/startOfDay/${moment().format("YYYY-MM-DD")}`}>  Start of Day </NavDropdown.Item>
-                            <NavDropdown.Item href={`/dashboard/productSoldToday/${moment().format("YYYY-MM-DD")}`}> End of Day </NavDropdown.Item>
-                            <NavDropdown.Item href={`/dashboard/productSoldTodayCheckList/${moment().format("YYYY-MM-DD")}`}> Product Sold Checklist </NavDropdown.Item>
+                        <Nav >
+                            <NavDropdown title="Customer" id="basic-nav-dropdown">
+                                <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
+                                <NavDropdown.Item href="/searchCustomer">Search Customer</NavDropdown.Item>
+                                <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
+                                {/* <NavDropdown.Item href="/customerAds">Customer Ads</NavDropdown.Item> */}
+                                <NavDropdown.Item href="/customerListTransaction">Search New Customer</NavDropdown.Item>
 
 
-                        </NavDropdown>
-                    </Nav>
+                            </NavDropdown>
+                        </Nav>
+
+                        <Nav >
+                            <NavDropdown title="Customer Reminder" id="basic-nav-dropdown">
+                                <NavDropdown.Item href="/customerHistory">Customer Need to Follow up </NavDropdown.Item>
+                                <NavDropdown.Item href="/customerConvo">Customer Done Following up</NavDropdown.Item>
+                                <NavDropdown.Item href="/customerReOrder">List of Customer Successfully Reordered</NavDropdown.Item>
+                                <NavDropdown.Item href="/customerBacklog">Customer Backlog List</NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
+
+                        <Nav >
+                            <NavDropdown title="Customer Order" id="basic-nav-dropdown">
+                                <NavDropdown.Item href="/customerOrderTransaction">Add Customer Order</NavDropdown.Item>
+                                <NavDropdown.Item href={`/shopOrderTransaction/customerOrderTransactionList/${moment().format("YYYY-MM-DD")}`}>  Customer Order List </NavDropdown.Item>
+                                <NavDropdown.Item href="/shopOrderTransaction/quantitySortedList">Top Product Today</NavDropdown.Item>
+                                <NavDropdown.Item href="/shopOrderTransaction/customerSortedList">Top Customer Today</NavDropdown.Item>
+                                <NavDropdown.Item href="/shopOrderTransaction/pendingDelivery">For Delivery</NavDropdown.Item>
+                            </NavDropdown>
+                        </Nav>
+
+                        <Nav >
+                            <NavDropdown title="Daily Store Session" id="basic-nav-dropdown">
+                                <NavDropdown.Item href={`/dashboard/startOfDay/${moment().format("YYYY-MM-DD")}`}>  Start of Day </NavDropdown.Item>
+                                <NavDropdown.Item href={`/dashboard/productSoldToday/${moment().format("YYYY-MM-DD")}`}> End of Day </NavDropdown.Item>
+                                <NavDropdown.Item href={`/dashboard/productSoldTodayCheckList/${moment().format("YYYY-MM-DD")}`}> Product Sold Checklist </NavDropdown.Item>
+
+
+                            </NavDropdown>
+                        </Nav>
                     </div>
 
 

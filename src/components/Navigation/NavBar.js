@@ -80,7 +80,7 @@ const NavBar = () => {
                         <NavDropdown title="Customer" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/customers">Add Customer</NavDropdown.Item>
                             <NavDropdown.Item href="/customerListV2">Customer List</NavDropdown.Item>
-                            <NavDropdown.Item href="/customerListTransaction">Customer List Transaction</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerListTransaction">Search New Customer</NavDropdown.Item>
                             <NavDropdown.Item href="/customerHistory">Customer History</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>

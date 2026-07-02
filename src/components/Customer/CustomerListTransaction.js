@@ -1,218 +1,339 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import CustomerService from "./CustomerService";
 import { Link } from "react-router-dom";
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import { Button, Form, Alert } from 'react-bootstrap';
+import SearchIcon from '@mui/icons-material/Search';
+import { Button, Form } from 'react-bootstrap';
 import LinearProgress from '@mui/material/LinearProgress';
 
 const CustomerListTransaction = () => {
 
-    useEffect(() => {
-        fetchCustomerList();
-    }, []);
-
     const [sortedCustomer, setSortedCustomer] = useState({
-        data: [],
-        code: '',
-        message: '',
-        id: 0
+        dateFrom: '',
+        dateTo: '',
+        type: 'ALL'
     });
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const [customerList, setCustomerList] = useState({
         data: [],
     });
 
-    const saveCustomerDataHandler = (customer) => {
-        setCustomerList([...customerList, customer]);
-    }
-
     const onChangeInput = (e) => {
-        console.log("status", e.target.value);
-        console.log("status", e.target.name);
         setSortedCustomer({ ...sortedCustomer, [e.target.name]: e.target.value });
-
     }
 
     const submitSortedCustomerList = () => {
-
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
+        setErrorMessage('');
         CustomerService.fetchCustomerTransactionListByDate(sortedCustomer)
             .then(response => {
-                console.log("response.data", response.data)
                 setCustomerList(response.data);
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
             })
             .catch(e => {
                 console.log("error", e)
+                setErrorMessage('Unable to load customer transactions. Please try again.');
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-
             });
-
     }
 
-
-
-    const fetchCustomerList = () => {
-        // setSubmitLoadingAdd(true);
-        // CustomerService.fetchCustomerTransactionListByDate()
-        //     .then(response => {
-        //         setCustomerList(response.data);
-        //         setSubmitLoadingAdd(false);
-        //     })
-        //     .catch(e => {
-        //         console.log("error", e)
-        //     });
+    const clearFilters = () => {
+        setSortedCustomer({ dateFrom: '', dateTo: '', type: 'ALL' });
+        setCustomerList({ data: [] });
+        setErrorMessage('');
     }
+
     const numberFormat = (value) =>
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(Number(value) || 0).replace(/(\.|,)00$/g, '');
 
     const totalSum = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { total_balance }) => acc + total_balance, 0));
+        return numberFormat(numbers.reduce((acc, { total_balance }) => acc + (Number(total_balance) || 0), 0));
     }
 
     const totalProfit = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { total_profit }) => acc + total_profit, 0));
+        return numberFormat(numbers.reduce((acc, { total_profit }) => acc + (Number(total_profit) || 0), 0));
     }
 
     const formatStatementDate = (date) => {
+        if (!date) {
+            return '-';
+        }
+
         var d = new Date(date);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const getVipCustomers = (customer) => {
+        if (!customer || !Array.isArray(customer.vip_customers)) {
+            return [];
+        }
 
+        return customer.vip_customers.filter(vipCustomer => vipCustomer && vipCustomer.vip_name);
+    }
 
+    const renderVipCustomers = (customer) => {
+        const vipCustomers = getVipCustomers(customer);
+
+        if (vipCustomers.length === 0) {
+            return null;
+        }
+
+        return (
+            <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '3px', marginTop: '4px' }}>
+                {vipCustomers.map((vipCustomer, index) => (
+                    <span
+                        key={vipCustomer.vip_customer_transaction_id || `${vipCustomer.vip_customer_id}-${index}`}
+                        title={`VIP Customer: ${vipCustomer.vip_name}`}
+                        style={{
+                            display: 'inline-block',
+                            padding: '2px 7px',
+                            color: '#fff',
+                            backgroundColor: vipCustomer.vip_color || '#198754',
+                            borderRadius: '999px',
+                            boxShadow: `0 3px 7px ${(vipCustomer.vip_color || '#198754')}45`,
+                            fontSize: '9px',
+                            fontWeight: '900',
+                            lineHeight: 1.25,
+                            letterSpacing: '.02em',
+                            textShadow: '0 1px 1px rgba(0, 0, 0, .25)',
+                            textTransform: 'uppercase',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        {vipCustomer.vip_name}
+                    </span>
+                ))}
+            </span>
+        );
+    }
+
+    const customerTypeLabel = {
+        ALL: 'All customers',
+        VIP: 'VIP customers',
+        NON_VIP: 'Non-VIP customers'
+    }[sortedCustomer.type] || 'All customers';
 
     return (
-        <div>
-            <div style={{ float: 'right', marginRight: 300 }}>
-                <Form.Group controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Amount: </Form.Label>
-                    <Form.Control type="text" value={totalSum(customerList.data)} />
-                </Form.Group>
-                <br></br>
-                <Form.Group controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Profit: </Form.Label>
-                    <Form.Control type="text" value={totalProfit(customerList.data)} />
-                </Form.Group>
-
-
+        <div style={{ padding: '8px 0 32px' }}>
+            <div style={{ marginBottom: '24px' }}>
+                <div style={{ color: '#6c757d', fontSize: '13px', fontWeight: '700', letterSpacing: '.08em', textTransform: 'uppercase' }}>
+                    Customer reports
+                </div>
+                <h2 style={{ margin: '4px 0 6px', color: '#212529', fontWeight: '800' }}>Customer Transactions</h2>
+                <p style={{ margin: 0, color: '#6c757d' }}>
+                    Review customer sales, profit, and VIP membership within a date range.
+                </p>
             </div>
 
-            <Form>
-
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date From:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
-                </Form.Group>
-
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date To:</Form.Label>
-                    <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Total Count:</Form.Label>
-                    <Form.Control type="text" value={customerList.data.length} disabled />
-                </Form.Group>
-                <br></br>
-                <Button variant="primary"
-                    onClick={submitSortedCustomerList}
-                    disabled={isAddDisabled}
-                >
-                    Find
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
+            <div style={{
+                padding: '20px',
+                marginBottom: '20px',
+                backgroundColor: '#fff',
+                border: '1px solid #e9ecef',
+                borderRadius: '14px',
+                boxShadow: '0 6px 22px rgba(33, 37, 41, 0.05)'
+            }}>
+                <Form>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '16px', alignItems: 'end' }}>
+                        <Form.Group controlId="customerTransactionDateFrom">
+                            <Form.Label style={{ color: '#495057', fontSize: '13px', fontWeight: '700' }}>Date from</Form.Label>
+                            <Form.Control type="date" name="dateFrom" value={sortedCustomer.dateFrom} onChange={onChangeInput} />
+                        </Form.Group>
+                        <Form.Group controlId="customerTransactionDateTo">
+                            <Form.Label style={{ color: '#495057', fontSize: '13px', fontWeight: '700' }}>Date to</Form.Label>
+                            <Form.Control type="date" name="dateTo" value={sortedCustomer.dateTo} onChange={onChangeInput} />
+                        </Form.Group>
+                        <Form.Group controlId="customerTransactionType">
+                            <Form.Label style={{ color: '#495057', fontSize: '13px', fontWeight: '700' }}>Customer type</Form.Label>
+                            <Form.Select name="type" value={sortedCustomer.type} onChange={onChangeInput}>
+                                <option value="ALL">All customers</option>
+                                <option value="VIP">VIP customers</option>
+                                <option value="NON_VIP">Non-VIP customers</option>
+                            </Form.Select>
+                        </Form.Group>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <Button
+                                type="button"
+                                variant="primary"
+                                onClick={submitSortedCustomerList}
+                                disabled={isAddDisabled}
+                                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontWeight: '700', padding: '8px 18px' }}
+                            >
+                                <SearchIcon style={{ fontSize: '18px' }} />
+                                {submitLoadingAdd ? 'Loading...' : 'View report'}
+                            </Button>
+                            <Button type="button" variant="outline-secondary" onClick={clearFilters} disabled={submitLoadingAdd}>
+                                Clear
+                            </Button>
+                        </div>
+                    </div>
+                </Form>
+                {submitLoadingAdd && <LinearProgress color="primary" style={{ marginTop: '18px', borderRadius: '999px' }} />}
+                {errorMessage &&
+                    <div role="alert" style={{ marginTop: '16px', padding: '10px 12px', color: '#842029', backgroundColor: '#f8d7da', borderRadius: '8px' }}>
+                        {errorMessage}
+                    </div>
                 }
-                <br></br>
-                <br></br>
+            </div>
 
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: '14px', marginBottom: '20px' }}>
+                {[
+                    { label: 'Customers', value: customerList.data.length, color: '#0d6efd' },
+                    { label: 'Total sales', value: totalSum(customerList.data), color: '#198754' },
+                    { label: 'Total profit', value: totalProfit(customerList.data), color: '#6f42c1' }
+                ].map(metric => (
+                    <div key={metric.label} style={{
+                        padding: '16px 18px',
+                        backgroundColor: '#fff',
+                        border: '1px solid #e9ecef',
+                        borderLeft: `4px solid ${metric.color}`,
+                        borderRadius: '12px'
+                    }}>
+                        <div style={{ color: '#6c757d', fontSize: '12px', fontWeight: '700', letterSpacing: '.04em', textTransform: 'uppercase' }}>
+                            {metric.label}
+                        </div>
+                        <div style={{ marginTop: '4px', color: '#212529', fontSize: '24px', fontWeight: '800' }}>{metric.value}</div>
+                    </div>
+                ))}
+            </div>
 
-                <br></br>
-            </Form>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer List Transaction </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Contact Number</th>
-                        <th>Store Name</th>
-                        <th>Email</th>
-                        <th>Address</th>
-                        <th>FB Ads</th>
-                        <th>Sales</th>
-                        <th>Profit</th>
-                        <th>Active</th>
-                        <th>Date Created</th>
-                        <th></th>
-                        <th></th>
-
-                        {/* <th></th> */}
-                    </tr>
-                </thead>
-                {customerList.data.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
-                    :
-                    (
+            <div style={{ backgroundColor: '#fff', border: '1px solid #e9ecef', borderRadius: '14px', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 18px', borderBottom: '1px solid #e9ecef' }}>
+                    <div>
+                        <h5 style={{ margin: 0, color: '#212529', fontWeight: '800' }}>Customer results</h5>
+                        <div style={{ marginTop: '3px', color: '#6c757d', fontSize: '13px' }}>
+                            Showing {customerTypeLabel.toLowerCase()}. VIP customers are marked with their account color.
+                        </div>
+                    </div>
+                    <span style={{ padding: '4px 9px', color: '#495057', backgroundColor: '#f1f3f5', borderRadius: '999px', fontSize: '12px', fontWeight: '700' }}>
+                        {customerList.data.length} records
+                    </span>
+                </div>
+                <div className="table-responsive">
+                    <table className="table table-hover align-middle mb-0" style={{ minWidth: '880px', fontSize: '13px' }}>
+                        <thead style={{ backgroundColor: '#f8f9fa' }}>
+                            <tr>
+                                {['ID', 'Customer / Store', 'Contact details', 'Financials', 'Status / Created', 'Actions'].map(heading => (
+                                    <th key={heading} style={{ padding: '10px 12px', color: '#495057', fontSize: '11px', letterSpacing: '.04em', textTransform: 'uppercase', borderBottom: '1px solid #dee2e6', whiteSpace: 'nowrap' }}>
+                                        {heading}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
                         <tbody>
-
-                            {
-
-                                customerList.data.map((customer, index) => (
-                                    <tr key={customer.id} >
-                                        <td>{customer.id}</td>
-                                        <td>{customer.first_name}</td>
-                                        <td>{customer.last_name}</td>
-                                        <td>{customer.contact_number}</td>
-                                        <td>{customer.store_name}</td>
-                                        <td>{customer.email}</td>
-                                        <td>{customer.address}</td>
-                                        <td>{customer.ads === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                        <td>{numberFormat(customer.total_balance)}</td>
-                                        <td>{numberFormat(customer.total_profit)}</td>
-                                        <td>{customer.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                        <td>{formatStatementDate(customer.created_at)}</td>
-                                        <td>
-
-                                            <Link variant="primary" to={"/customers/customerTransactionList/" + customer.id}   >
-                                                <Button variant="primary" >
-                                                    View Transaction
-                                                </Button>
-                                            </Link>
+                            {customerList.data.length === 0 ?
+                                <tr>
+                                    <td colSpan="6" style={{ padding: '52px 20px', textAlign: 'center' }}>
+                                        <div style={{ color: '#495057', fontSize: '16px', fontWeight: '700' }}>No customer transactions yet</div>
+                                        <div style={{ marginTop: '5px', color: '#868e96', fontSize: '13px' }}>Choose a date range and select "View report".</div>
+                                    </td>
+                                </tr>
+                                :
+                                customerList.data.map((customer) => (
+                                    <tr key={customer.id}>
+                                        <td style={{
+                                            padding: '10px 12px',
+                                            color: '#212529',
+                                            fontWeight: '800',
+                                            borderLeft: `4px solid ${getVipCustomers(customer)[0]?.vip_color || 'transparent'}`
+                                        }}>
+                                            #{customer.id}
+                                            {renderVipCustomers(customer)}
                                         </td>
-                                        <td>
-
-                                            <Link variant="primary" to={"/customers/customerProductList/" + customer.id}   >
-                                                <Button variant="primary" >
-                                                    View Products
-                                                </Button>
-                                            </Link>
+                                        <td style={{ padding: '10px 12px', minWidth: '160px' }}>
+                                            <div style={{ fontWeight: '800', color: '#212529', lineHeight: 1.35 }}>
+                                                {[customer.first_name, customer.last_name].filter(Boolean).join(' ') || 'Unnamed customer'}
+                                            </div>
+                                            {customer.store_name &&
+                                                <div style={{
+                                                    marginTop: '4px',
+                                                    color: '#526b8a',
+                                                    fontSize: '11px',
+                                                    fontWeight: '500',
+                                                    lineHeight: 1.45,
+                                                    letterSpacing: '.02em',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {customer.store_name}
+                                                </div>
+                                            }
                                         </td>
-                                        {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteCustomermr(customer.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td> */}
+                                        <td style={{ padding: '10px 12px', minWidth: '235px', maxWidth: '300px' }}>
+                                            {customer.contact_number &&
+                                                <div style={{ color: '#212529', lineHeight: 1.4 }}>
+                                                    <span style={{ color: '#868e96', fontSize: '11px', fontWeight: '700' }}>TEL&nbsp;&nbsp;</span>
+                                                    {customer.contact_number}
+                                                </div>
+                                            }
+                                            {customer.email &&
+                                                <div style={{ color: '#495057', lineHeight: 1.4, overflowWrap: 'anywhere' }}>
+                                                    <span style={{ color: '#868e96', fontSize: '11px', fontWeight: '700' }}>EMAIL&nbsp;&nbsp;</span>
+                                                    {customer.email}
+                                                </div>
+                                            }
+                                            {customer.address &&
+                                                <div style={{ marginTop: '2px', color: '#6c757d', fontSize: '12px', lineHeight: 1.35 }}>
+                                                    {customer.address}
+                                                </div>
+                                            }
+                                            {!customer.contact_number && !customer.email && !customer.address &&
+                                                <span style={{ color: '#adb5bd' }}>-</span>
+                                            }
+                                        </td>
+                                        <td style={{ padding: '10px 12px', minWidth: '130px' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', color: '#198754', fontWeight: '800' }}>
+                                                <span style={{ color: '#868e96', fontSize: '11px', fontWeight: '700' }}>SALES</span>
+                                                {numberFormat(customer.total_balance)}
+                                            </div>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginTop: '4px', color: '#6f42c1', fontWeight: '800' }}>
+                                                <span style={{ color: '#868e96', fontSize: '11px', fontWeight: '700' }}>PROFIT</span>
+                                                {numberFormat(customer.total_profit)}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '10px 12px', minWidth: '130px' }}>
+                                            <span style={{
+                                                padding: '4px 8px',
+                                                color: customer.disabled === 0 ? '#0f5132' : '#842029',
+                                                backgroundColor: customer.disabled === 0 ? '#d1e7dd' : '#f8d7da',
+                                                borderRadius: '999px',
+                                                fontSize: '12px',
+                                                fontWeight: '700'
+                                            }}>
+                                                {customer.disabled === 0 ? 'Active' : 'Inactive'}
+                                            </span>
+                                            <div style={{ marginTop: '7px', color: '#868e96', fontSize: '11px', whiteSpace: 'nowrap' }}>
+                                                {formatStatementDate(customer.created_at)}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '10px 12px' }}>
+                                            <div style={{ display: 'flex', gap: '5px', whiteSpace: 'nowrap' }}>
+                                                <Link to={"/customers/customerTransactionList/" + customer.id}>
+                                                    <Button size="sm" variant="primary">
+                                                        Orders
+                                                    </Button>
+                                                </Link>
+                                                <Link to={"/customers/customerProductList/" + customer.id}>
+                                                    <Button size="sm" variant="outline-primary">
+                                                        Products
+                                                    </Button>
+                                                </Link>
+                                            </div>
+                                        </td>
                                     </tr>
-                                )
-                                )
+                                ))
                             }
-                        </tbody>)}
-            </table>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     )
 }
