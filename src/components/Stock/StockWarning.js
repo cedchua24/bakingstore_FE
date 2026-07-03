@@ -14,14 +14,18 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography'
 import UpdateIcon from '@mui/icons-material/Update';
 import Button from '@mui/material/Button';
+import SearchIcon from '@mui/icons-material/Search';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 
-import { Form } from 'react-bootstrap';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
 
+import './StockWarning.css';
 
 
 
@@ -146,142 +150,269 @@ const StockWarning = (props) => {
     }
 
 
-    const fetchProductList = () => {
-        ProductServiceService.fetchByStockWarning(0)
+    const fetchProductList = (selectedCategoryId = 0) => {
+        ProductServiceService.fetchByStockWarning(selectedCategoryId)
             .then(response => {
                 setProductList(response.data);
             })
             .catch(e => {
                 console.log("error", e)
+            })
+            .finally(() => {
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
             });
     }
 
     const fetchProductByCategoryId = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ProductServiceService.fetchByStockWarning(categoryId)
-            .then(response => {
-                setProductList(response.data);
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+        fetchProductList(categoryId);
     }
 
+    const products = Array.isArray(productList.data) ? productList.data : [];
+    const pendingOrderCount = products.reduce(
+        (total, currentProduct) => total + (
+            Array.isArray(currentProduct.pending_orders)
+                ? currentProduct.pending_orders.length
+                : 0
+        ),
+        0
+    );
+
+    const formatProductPackage = (currentProduct) => {
+        if (currentProduct.quantity == null || currentProduct.weight == null) {
+            return 'Package not specified';
+        }
+
+        if (currentProduct.quantity === 1) {
+            return `${currentProduct.weight}${currentProduct.variation || ''}`;
+        }
+
+        const unitWeight = currentProduct.weight / currentProduct.quantity;
+        const formattedUnitWeight = Number.isInteger(unitWeight)
+            ? unitWeight
+            : unitWeight.toPrecision(2);
+
+        return `${currentProduct.quantity} × ${formattedUnitWeight}${currentProduct.variation || ''}`;
+    };
+
+    const sumPendingOrderQuantities = (pendingOrders) => {
+        const totalsByUnit = pendingOrders.reduce((totals, pendingOrder) => {
+            const quantityText = String(pendingOrder.quantity || '').trim();
+            const quantityMatch = quantityText.match(/^(-?\d+(?:\.\d+)?)\s*(.*)$/);
+
+            if (!quantityMatch) {
+                return totals;
+            }
+
+            const amount = Number(quantityMatch[1]);
+            const unit = quantityMatch[2].trim().toUpperCase();
+            totals[unit] = (totals[unit] || 0) + amount;
+            return totals;
+        }, {});
+
+        const formattedTotals = Object.entries(totalsByUnit).map(([unit, amount]) =>
+            `${amount.toLocaleString()}${unit ? ` ${unit}` : ''}`
+        );
+
+        return formattedTotals.length > 0 ? formattedTotals.join(' + ') : 'Not specified';
+    };
+
     return (
-        <div>
-            <Form>
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Category</InputLabel>
+        <div className="stock-warning-page">
+            <section className="stock-warning-hero">
+                <div className="stock-warning-hero__icon">
+                    <WarningAmberRoundedIcon />
+                </div>
+                <div className="stock-warning-hero__copy">
+                    <span className="stock-warning-eyebrow">Inventory monitor</span>
+                    <h1>Stock Warning</h1>
+                    <p>Products at or below their warning level, with incoming supplier orders at a glance.</p>
+                </div>
+                <div className="stock-warning-summary">
+                    <div className="stock-warning-summary__item">
+                        <Inventory2OutlinedIcon />
+                        <div>
+                            <strong>{products.length}</strong>
+                            <span>Low-stock products</span>
+                        </div>
+                    </div>
+                    <div className="stock-warning-summary__item">
+                        <LocalShippingOutlinedIcon />
+                        <div>
+                            <strong>{pendingOrderCount}</strong>
+                            <span>Pending orders</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="stock-warning-filter">
+                <div>
+                    <span className="stock-warning-filter__label">Filter inventory</span>
+                    <p>Choose a category to narrow the warning list.</p>
+                </div>
+                <div className="stock-warning-filter__controls">
+                    <FormControl size="small" className="stock-warning-category">
+                        <InputLabel id="stock-warning-category-label">Category</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            // value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
+                            labelId="stock-warning-category-label"
+                            id="stock-warning-category"
+                            value={categoryId}
+                            label="Category"
                             name="categoryId"
                             onChange={onChangeInput}
                         >
+                            <MenuItem value={0}>All categories</MenuItem>
                             {
-                                categeryList.map((category, index) => (
-                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
+                                categeryList.map((category) => (
+                                    <MenuItem value={category.id} key={category.id}>{category.category_name}</MenuItem>
                                 ))
                             }
                         </Select>
                     </FormControl>
-                </Box>
+                    <Button
+                        variant="contained"
+                        disabled={isAddDisabled}
+                        onClick={fetchProductByCategoryId}
+                        startIcon={<SearchIcon />}
+                        className="stock-warning-search"
+                    >
+                        {submitLoadingAdd ? 'Loading...' : 'Apply filter'}
+                    </Button>
+                </div>
+                {submitLoadingAdd && <LinearProgress color="warning" className="stock-warning-progress" />}
+            </section>
 
-                <Button
-                    variant="contained"
-                    disabled={isAddDisabled}
-                    onClick={fetchProductByCategoryId}
-                >
-                    Search
-                </Button>
-                <br></br><br></br>
+            <section className="stock-warning-table-card">
+                <div className="stock-warning-table-card__header">
+                    <div>
+                        <h2>Products needing attention</h2>
+                        <p>{products.length} {products.length === 1 ? 'product' : 'products'} currently below the configured threshold.</p>
+                    </div>
+                    <span className="stock-warning-live-pill">
+                        <span />
+                        Live inventory
+                    </span>
+                </div>
 
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form>
-            <br></br>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Stock Warning </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Category</th>
-                        <th>Product</th>
-                        <th>Brand</th>
-                        <th>Stock Warning</th>
-                        <th>Stock Warning Type</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th>Stock/Pc</th>
-                        <th>Quantity / Weight</th>
-                        {/* <th>Update Stock</th> */}
-                        <th>Transaction</th>
-                    </tr>
-                </thead>
-                <tbody>
-
-
-                    {
-                        productList.data.map((product, index) => (
-                            <tr key={product.id} >
-                                <td>{product.id}</td>
-                                <td>{product.category_name}</td>
-                                <td>{product.product_name}</td>
-                                <td>{product.brand_name}</td>
-                                <td>{product.stock_warning}</td>
-                                <td>{product.stock_warning_type}</td>
-                                <td>₱ {product.price}.00</td>
-                                {product.stock_warning_type == 'WHOLESALE' ?
-                                    <>
-                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
-                                            : <p >{product.stock}</p>}
-                                        </td>
-                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
-                                            : <p >{product.stock_pc}</p>}
-                                        </td></>
-                                    :
-                                    <>
-                                        <td>{product.stock_pc < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
-                                            : <p >{product.stock}</p>}
-                                        </td>
-                                        <td>{product.stock_pc < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
-                                            : <p >{product.stock_pc}</p>}
-                                        </td>
-                                    </>
-                                }
-                                <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
-                                    : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                </td>
-                                {/* <td>
-                                    <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} disabled />
-                                    </IconButton>
-                                </td> */}
+                <div className="table-responsive">
+                    <table className="stock-warning-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Warning level</th>
+                                <th>Current stock</th>
+                                <th>Pending supplier orders</th>
+                                <th aria-label="Actions"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    {products.length > 0 ? (
+                        products.map((product) => (
+                            <tr key={product.id}>
                                 <td>
-                                    <Link variant="primary" to={"/viewTransaction/" + product.id}   >
-                                        <Button variant="contained" >
-                                            View
-                                        </Button>
+                                    <div className="stock-warning-product">
+                                        <span className="stock-warning-product__avatar">
+                                            {product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}
+                                        </span>
+                                        <div>
+                                            <strong>{product.product_name}</strong>
+                                            <span>#{product.id} · {product.brand_name || 'No brand'}</span>
+                                            <span className="stock-warning-package">
+                                                {formatProductPackage(product)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span className="stock-warning-category-pill">{product.category_name}</span>
+                                </td>
+                                <td>
+                                    <div className="stock-warning-threshold">
+                                        <strong>{product.stock_warning}</strong>
+                                        <span>{product.stock_warning_type === 'WHOLESALE' ? 'wholesale units' : 'pieces'}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div className="stock-warning-levels">
+                                        <div>
+                                            <span>Wholesale</span>
+                                            <strong>{product.stock ?? 0}</strong>
+                                        </div>
+                                        <div>
+                                            <span>Pieces</span>
+                                            <strong>{product.stock_pc ?? 0}</strong>
+                                        </div>
+                                        <span className="stock-warning-critical">
+                                            <WarningAmberRoundedIcon />
+                                            Low stock
+                                        </span>
+                                    </div>
+                                </td>
+                                <td className="stock-warning-orders-cell">
+                                    {Array.isArray(product.pending_orders) && product.pending_orders.length > 0 ? (
+                                        <div className="stock-warning-orders">
+                                            {product.pending_orders.length > 1 && (
+                                                <div className="stock-warning-orders__summary">
+                                                    <span>{product.pending_orders.length} pending orders</span>
+                                                    <div>
+                                                        <small>Total incoming</small>
+                                                        <strong>{sumPendingOrderQuantities(product.pending_orders)}</strong>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {product.pending_orders.map((pendingOrder) => (
+                                                <Link
+                                                    to={"/orderSupplierApproval/" + pendingOrder.order_supplier_transaction_id}
+                                                    className="stock-warning-order"
+                                                    key={pendingOrder.order_supplier_transaction_id}
+                                                >
+                                                    <div className="stock-warning-order__icon">
+                                                        <LocalShippingOutlinedIcon />
+                                                    </div>
+                                                    <div className="stock-warning-order__details">
+                                                        <strong>{pendingOrder.supplier}</strong>
+                                                        <span>PO #{pendingOrder.order_supplier_transaction_id} · {pendingOrder.date}</span>
+                                                    </div>
+                                                    <div className="stock-warning-order__quantity">
+                                                        <span>Incoming</span>
+                                                        <strong>{pendingOrder.quantity}</strong>
+                                                    </div>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="stock-warning-no-orders">
+                                            <LocalShippingOutlinedIcon />
+                                            <span>No pending supplier order</span>
+                                        </div>
+                                    )}
+                                </td>
+                                <td className="stock-warning-actions">
+                                    <Link to={"/viewTransaction/" + product.id} className="stock-warning-history-link">
+                                        View history
                                     </Link>
                                 </td>
-                                {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteProduct(product.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td> */}
                             </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="6">
+                                <div className="stock-warning-empty">
+                                    <Inventory2OutlinedIcon />
+                                    <h3>No stock warnings found</h3>
+                                    <p>There are no low-stock products in this category.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
             <Modal
                 keepMounted
                 open={open}

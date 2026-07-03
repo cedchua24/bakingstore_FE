@@ -225,6 +225,13 @@ import VipTransaction from "./components/VipCustomer/VipTransaction";
 import VIPTransactionDebt from "./components/VipCustomer/VIPTransactionDebt";
 import EditVipCustomer from "./components/VipCustomer/EditVipCustomer";
 import VipNote from "./components/VipCustomer/VipNote";
+import VipProductTemplate from "./components/VipProduct/VipProductTemplate";
+import VipProductTemplateListPage from "./components/VipProduct/VipProductTemplateListPage";
+import EditVipProductTemplate from "./components/VipProduct/EditVipProductTemplate";
+import VipProduct from "./components/VipProduct/VipProduct";
+import VipProductListPage from "./components/VipProduct/VipProductListPage";
+import VipProductTransactionTemplateList from "./components/VipProduct/VipProductTransactionTemplateList";
+import VipProductTransactionReport from "./components/VipProduct/VipProductTransactionReport";
 
 
 import CustomerProductList from "./components/Customer/CustomerProductList";
@@ -743,6 +750,13 @@ const App = () => {
           <Route exact path="/vipTransaction/:id" element={<VipTransaction />} />
           <Route exact path="/vipTransactionDebt/:id" element={<VIPTransactionDebt />} />
           <Route exact path="/vipNote/:id" element={<VipNote />} />
+          <Route exact path="/vipProduct" element={<VipProductTemplate />} />
+          <Route exact path="/vipProductListV2" element={<VipProductTemplateListPage />} />
+          <Route exact path="/vipProduct/:id" element={<EditVipProductTemplate />} />
+          <Route exact path="/vipProductTransaction" element={<VipProduct />} />
+          <Route exact path="/vipProductTransactionListV2" element={<VipProductListPage />} />
+          <Route exact path="/vipProductTransactionTemplateList" element={<VipProductTransactionTemplateList />} />
+          <Route exact path="/vipProductTransactionView/:id" element={<VipProductTransactionReport />} />
 
 
 
