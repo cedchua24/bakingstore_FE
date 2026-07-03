@@ -7,6 +7,9 @@ class ProductService {
     get(id) {
         return axios.get(`/api/products/${id}`);
     }
+    searchProductByName(data) {
+        return axios.post("/api/products/searchProductByName", data);
+    }
     fetchProductByCategoryId(id) {
         return axios.get(`/api/products/fetchProductByCategoryId/${id}`);
     }

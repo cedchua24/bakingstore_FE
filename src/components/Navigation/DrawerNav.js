@@ -57,7 +57,6 @@ import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import CategoryIcon from '@mui/icons-material/Category';
 import BrandingWatermarkIcon from '@mui/icons-material/BrandingWatermark';
 import StoreIcon from '@mui/icons-material/Store';
-import ProductionQuantityLimitsIcon from '@mui/icons-material/ProductionQuantityLimits';
 import WarehouseIcon from '@mui/icons-material/Warehouse';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import LocalCafeIcon from '@mui/icons-material/LocalCafe';
@@ -308,6 +307,16 @@ export default function PersistentDrawerLeft() {
         setOpen24(!open24);
     };
 
+    const [open25, setOpen25] = React.useState(false);
+    const handleClick25 = () => {
+        setOpen25(!open25);
+    };
+
+    const [open26, setOpen26] = React.useState(false);
+    const handleClick26 = () => {
+        setOpen26(!open26);
+    };
+
 
 
     const [categoryList, setCategoryList] = useState({
@@ -477,6 +486,37 @@ export default function PersistentDrawerLeft() {
         }
 
 
+    ]);
+
+    const [vipProductTemplateList] = useState([
+        {
+            "name": "Add VIP Product Template",
+            "url": "/vipProduct",
+            "icon": <AddIcon />
+        },
+        {
+            "name": "VIP Product Template List",
+            "url": "/vipProductListV2",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Add VIP Product",
+            "url": "/vipProductTransaction",
+            "icon": <AddIcon />
+        },
+        {
+            "name": "VIP Product List",
+            "url": "/vipProductTransactionListV2",
+            "icon": <ListIcon />
+        }
+    ]);
+
+    const [vipProductNavList] = useState([
+        {
+            "name": "VIP Product Transaction",
+            "url": "/vipProductTransactionTemplateList",
+            "icon": <ListIcon />
+        }
     ]);
 
     const [warehouseList, setWareHouseList] = useState([
@@ -1608,9 +1648,58 @@ export default function PersistentDrawerLeft() {
                                 </ListItem>
                             ))}
                         </List>
+                    </Collapse>
+                </List>
 
+                <List
+                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                >
+                    <ListItemButton onClick={handleClick25}>
+                        <ListItemIcon>
+                            <StarBorder color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary="VIP Product Template" />
+                        {open25 ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={open25} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {vipProductTemplateList.map((nav) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>{nav.icon}</ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
 
-
+                <List
+                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-labelledby="nested-list-subheader"
+                >
+                    <ListItemButton onClick={handleClick26}>
+                        <ListItemIcon>
+                            <ReceiptIcon color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary="VIP Product" />
+                        {open26 ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={open26} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {vipProductNavList.map((nav) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>{nav.icon}</ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
                     </Collapse>
                 </List>
 

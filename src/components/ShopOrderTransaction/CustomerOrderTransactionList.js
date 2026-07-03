@@ -778,6 +778,11 @@ const CustomerOrderTransactionList = () => {
             .values()
     );
 
+    const newCustomerTotalSales = newCustomers.reduce(
+        (total, customer) => total + customer.totalSales,
+        0
+    );
+
     const topSalesCustomers = Array.from(
         shopOrderTransaction.data
             .filter((transaction) => (
@@ -989,7 +994,7 @@ const CustomerOrderTransactionList = () => {
                         <p className="customer-report-eyebrow">Customer growth</p>
                         <h2>New Customers</h2>
                     </div>
-                    <span>{newCustomers.length} records</span>
+                    <span>{newCustomers.length} records · {money(newCustomerTotalSales)} total</span>
                 </div>
 
                 <div className="customer-report-table-wrap customer-report-new-customers-wrap">
@@ -997,6 +1002,7 @@ const CustomerOrderTransactionList = () => {
                         <thead>
                             <tr>
                                 <th>Customer</th>
+                                <th>Customer Type</th>
                                 <th>Customer Created</th>
                                 <th>Total Sales</th>
                             </tr>
@@ -1004,7 +1010,7 @@ const CustomerOrderTransactionList = () => {
                         <tbody>
                             {newCustomers.length === 0 ? (
                                 <tr>
-                                    <td className="customer-report-empty" colSpan="3">
+                                    <td className="customer-report-empty" colSpan="4">
                                         No new customers for this date
                                     </td>
                                 </tr>
@@ -1014,6 +1020,7 @@ const CustomerOrderTransactionList = () => {
                                         <strong>{customer.requestor_name || "-"}</strong>
                                         {customer.store_name && <span>{customer.store_name}</span>}
                                     </td>
+                                    <td>{customer.customer_type || "-"}</td>
                                     <td>{moment(customer.customer_created_date).format("MMMM D, YYYY")}</td>
                                     <td className="customer-report-amount">{money(customer.totalSales)}</td>
                                 </tr>

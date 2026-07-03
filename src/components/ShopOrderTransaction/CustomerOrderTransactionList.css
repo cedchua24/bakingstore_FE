@@ -329,15 +329,19 @@
 }
 
 .customer-report-new-customers th:nth-child(1) {
-    width: 46%;
+    width: 34%;
 }
 
 .customer-report-new-customers th:nth-child(2) {
-    width: 32%;
+    width: 20%;
 }
 
 .customer-report-new-customers th:nth-child(3) {
-    width: 22%;
+    width: 27%;
+}
+
+.customer-report-new-customers th:nth-child(4) {
+    width: 19%;
 }
 
 .customer-report-top-customers th:nth-child(1) {

@@ -1,388 +1,252 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
 import SupplierService from "../Supplier/SupplierService.service";
 
-import IconButton from '@mui/material/IconButton';
-import Modal from '@mui/material/Modal';
+import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography'
-import UpdateIcon from '@mui/icons-material/Update';
-import Button from '@mui/material/Button';
-
-import { Form } from 'react-bootstrap';
+import LinearProgress from '@mui/material/LinearProgress';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import SearchIcon from '@mui/icons-material/Search';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 
+import './StockWarning.css';
 
-import CircularProgress from '@mui/material/CircularProgress';
-import LinearProgress from '@mui/material/LinearProgress';
+const StockSupplierWarning = () => {
+    const [productList, setProductList] = useState({ data: [] });
+    const [supplierList, setSupplierList] = useState([]);
+    const [supplierId, setSupplierId] = useState(5);
+    const [loading, setLoading] = useState(false);
 
-
-
-
-const StockSupplierWarning = (props) => {
-
-    // const productList = props.productList;
     useEffect(() => {
-        fetchProductList(5);
-        fetchSupplier();
+        ProductServiceService.fetchStockWarningPerSupplier(5)
+            .then(response => setProductList(response.data))
+            .catch(error => console.log("error", error));
+
+        SupplierService.getAll()
+            .then(response => setSupplierList(response.data))
+            .catch(error => console.log("error", error));
     }, []);
 
-    const [productList, setProductList] = useState({
-        data: [],
-        id: 0
-    });
-
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-
-    const [supplierId, setCategoryId] = useState(0);
-    const [supplierList, setSupplierList] = useState([]);
-    const [submitLoading, setSubmitLoading] = useState(false);
-
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    const fetchProducts = () => {
+        setLoading(true);
+        ProductServiceService.fetchStockWarningPerSupplier(supplierId)
+            .then(response => setProductList(response.data))
+            .catch(error => console.log("error", error))
+            .finally(() => setLoading(false));
     };
 
-    const [open, setOpen] = React.useState(false);
+    const products = Array.isArray(productList.data) ? productList.data : [];
+    const pendingOrderCount = products.reduce(
+        (total, product) => total + (
+            Array.isArray(product.pending_orders) ? product.pending_orders.length : 0
+        ),
+        0
+    );
 
-    const handleOpen = (id, e) => {
-        console.log('e', id);
-        fetchByProductId(id);
-        setOpen(true);
-    }
-
-    const handleClose = () => setOpen(false);
-
-    const [product, setProduct] = useState({
-        id: 0,
-        product_name: '',
-        stock: 0,
-        newStocks: 0,
-        pack: ''
-    });
-
-    const [realStock, setRealStock] = useState(0);
-    const [errorStock, setErrorStock] = useState(false);
-
-    const onChangeInput = (e) => {
-        console.log(e.target.value)
-        setCategoryId(e.target.value)
-    }
-
-    const onChangePackaging = (e) => {
-        console.log(e.target.value)
-        setProduct({
-            ...product,
-            pack: e.target.value,
-        });
-    }
-
-    const onChangeStock = (e) => {
-        // const realStock = product.stock;
-        // const totalStock = Number(realStock) + Number(e.target.value);
-        setProduct({
-            ...product,
-            newStocks: e.target.value,
-        });
-
-        if (Number(e.target.value) < 1) {
-            setErrorStock(true);
-        } else {
-            setErrorStock(false);
+    const formatProductPackage = (product) => {
+        if (product.quantity == null || product.weight == null) {
+            return 'Package not specified';
         }
-    }
 
-    const fetchByProductId = async (id) => {
-        await ProductServiceService.get(id)
-            .then(response => {
-                setProduct(response.data);
-                setRealStock(response.data.stock);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+        if (product.quantity === 1) {
+            return `${product.weight}${product.variation || ''}`;
+        }
 
-    const fetchSupplier = () => {
-        SupplierService.getAll()
-            .then(response => {
-                setSupplierList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+        const unitWeight = product.weight / product.quantity;
+        return `${product.quantity} × ${Number.isInteger(unitWeight) ? unitWeight : unitWeight.toPrecision(2)}${product.variation || ''}`;
+    };
 
+    const sumPendingOrderQuantities = (pendingOrders) => {
+        const totalsByUnit = pendingOrders.reduce((totals, pendingOrder) => {
+            const quantityMatch = String(pendingOrder.quantity || '').trim().match(/^(-?\d+(?:\.\d+)?)\s*(.*)$/);
+            if (!quantityMatch) return totals;
 
+            const unit = quantityMatch[2].trim().toUpperCase();
+            totals[unit] = (totals[unit] || 0) + Number(quantityMatch[1]);
+            return totals;
+        }, {});
 
-    const updateProduct = () => {
-        setSubmitLoading(true);
-        ProductServiceService.update(product.id, product)
-            .then(response => {
-                fetchProductList();
-                setSubmitLoading(false);
-                setOpen(false);
-                // updateOrderTransaction();
-            })
-            .catch(e => {
-                console.log(e);
-                setSubmitLoading(false);
-                setOpen(false);
-            });
-
-    }
-
-
-    const fetchProductList = () => {
-        ProductServiceService.fetchStockWarningPerSupplier(5)
-            .then(response => {
-                setProductList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchProductBysupplierId = () => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        ProductServiceService.fetchStockWarningPerSupplier(supplierId)
-            .then(response => {
-                setProductList(response.data);
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+        const totals = Object.entries(totalsByUnit).map(([unit, amount]) =>
+            `${amount.toLocaleString()}${unit ? ` ${unit}` : ''}`
+        );
+        return totals.length > 0 ? totals.join(' + ') : 'Not specified';
+    };
 
     return (
-        <div>
-            <Form>
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Supplier</InputLabel>
+        <div className="stock-warning-page">
+            <section className="stock-warning-hero">
+                <div className="stock-warning-hero__icon">
+                    <WarningAmberRoundedIcon />
+                </div>
+                <div className="stock-warning-hero__copy">
+                    <span className="stock-warning-eyebrow">Supplier inventory monitor</span>
+                    <h1>Stock Warning by Supplier</h1>
+                    <p>Review low-stock products and incoming purchase orders for the selected supplier.</p>
+                </div>
+                <div className="stock-warning-summary">
+                    <div className="stock-warning-summary__item">
+                        <Inventory2OutlinedIcon />
+                        <div><strong>{products.length}</strong><span>Low-stock products</span></div>
+                    </div>
+                    <div className="stock-warning-summary__item">
+                        <LocalShippingOutlinedIcon />
+                        <div><strong>{pendingOrderCount}</strong><span>Pending orders</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section className="stock-warning-filter">
+                <div>
+                    <span className="stock-warning-filter__label">Filter inventory</span>
+                    <p>Choose a supplier to review its low-stock products.</p>
+                </div>
+                <div className="stock-warning-filter__controls">
+                    <FormControl size="small" className="stock-warning-category">
+                        <InputLabel id="stock-supplier-warning-label">Supplier</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            defaultValue={5}
+                            labelId="stock-supplier-warning-label"
+                            value={supplierId}
                             label="Supplier"
-                            name="supplierId"
-                            onChange={onChangeInput}
+                            onChange={event => setSupplierId(event.target.value)}
                         >
-                            {
-                                supplierList.map((supplier, index) => (
-                                    <MenuItem value={supplier.id}>{supplier.supplier_name}</MenuItem>
-                                ))
-                            }
+                            {supplierList.map(supplier => (
+                                <MenuItem value={supplier.id} key={supplier.id}>
+                                    {supplier.supplier_name}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
-                </Box>
-
-                <Button
-                    variant="contained"
-                    disabled={isAddDisabled}
-                    onClick={fetchProductBysupplierId}
-                >
-                    Search
-                </Button>
-                <br></br><br></br>
-
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-                <br></br>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Total Count:</Form.Label>
-                    <Form.Control type="text" value={productList.data.length} disabled />
-                </Form.Group>
-            </Form>
-            <br></br>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Stock Warning Per Supplier   </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Supplier</th>
-                        <th>Category</th>
-                        <th>Product</th>
-                        <th>Brand</th>
-                        <th>Stock Warning</th>
-                        <th>Stock Warning Type</th>
-                        <th>Price</th>
-                        <th>Stock</th>
-                        <th>Stock/Pc</th>
-                        <th>Quantity / Weight</th>
-                        {/* <th>Update Stock</th> */}
-                        <th>Transaction</th>
-                    </tr>
-                </thead>
-                <tbody>
-
-
-                    {
-                        productList.data.map((product, index) => (
-                            <tr key={product.id} >
-                                <td>{product.id}</td>
-                                <td>{product.supplier_name}</td>
-                                <td>{product.category_name}</td>
-                                <td>{product.product_name}</td>
-                                <td>{product.brand_name}</td>
-                                <td>{product.stock_warning_type}</td>
-                                <td>{product.stock_warning}</td>
-                                <td>₱ {product.price}.00</td>
-                                {product.stock_warning_type == 'WHOLESALE' ?
-                                    <>
-                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
-                                            : <p >{product.stock}</p>}
-                                        </td>
-                                        <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
-                                            : <p >{product.stock_pc}</p>}
-                                        </td></>
-                                    :
-                                    <>
-                                        <td>{product.stock_pc < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
-                                            : <p >{product.stock}</p>}
-                                        </td>
-                                        <td>{product.stock_pc < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
-                                            : <p >{product.stock_pc}</p>}
-                                        </td>
-                                    </>
-                                }
-                                {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
-                                    : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                </td>
-                                {/* <td>
-                                    <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} disabled />
-                                    </IconButton>
-                                </td> */}
-                                <td>
-                                    <Link variant="primary" to={"/viewTransaction/" + product.id}   >
-                                        <Button variant="contained" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
-                                {/* <td>
-                                    <Button variant="danger" onClick={(e) => deleteProduct(product.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td> */}
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Stock
-                    </Typography>
-
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-
-                    <TextField
-                        disabled
-                        id="filled-required"
-                        label="Product Name"
-                        variant="filled"
-                        name='product_name'
-                        value={product.product_name}
-                    />
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel id="demo-simple-select-label">Packaging</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={product.packaging}
-                            label="Packaging"
-                            name="pack"
-                            onChange={onChangePackaging}
-                        >
-                            <MenuItem value={product.packaging}>{product.packaging}</MenuItem>
-                            <MenuItem value="Pc">Pc</MenuItem>
-                        </Select>
-                    </FormControl>
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Add Stocks</InputLabel>
-                        <Input
-                            type='number'
-                            id="filled-required"
-                            label="Stock"
-                            variant="filled"
-                            name='newStocks'
-                            errorText='{this.state.password_error_text}'
-                            min='1'
-                            // value={product.stock}
-                            onChange={onChangeStock}
-                            // helperText="Incorrect entry."
-                            error={errorStock}
-                        />
-                    </FormControl>
-
-                    {/* <FormControl fullWidth sx={{ m: 0 }} variant="standard">
-                        <TextField
-                            disabled
-                            id="filled-required"
-                            label="Stock"
-                            variant="filled"
-                            name='product_name'
-                            value={product.stock}
-                        />
-                    </FormControl> */}
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
+                    <Button
+                        variant="contained"
+                        disabled={loading}
+                        onClick={fetchProducts}
+                        startIcon={<SearchIcon />}
+                        className="stock-warning-search"
                     >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateProduct}
-                            disabled={errorStock}
-                            size="large" >
-                            Submits
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
-        </div>
-    )
-}
+                        {loading ? 'Loading...' : 'Apply filter'}
+                    </Button>
+                </div>
+                {loading && <LinearProgress color="warning" className="stock-warning-progress" />}
+            </section>
 
-export default StockSupplierWarning
+            <section className="stock-warning-table-card">
+                <div className="stock-warning-table-card__header">
+                    <div>
+                        <h2>Products needing attention</h2>
+                        <p>{products.length} {products.length === 1 ? 'product' : 'products'} currently below the configured threshold.</p>
+                    </div>
+                    <span className="stock-warning-live-pill"><span />Live inventory</span>
+                </div>
+
+                <div className="table-responsive">
+                    <table className="stock-warning-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Supplier</th>
+                                <th>Category</th>
+                                <th>Warning level</th>
+                                <th>Current stock</th>
+                                <th>Pending supplier orders</th>
+                                <th aria-label="Actions"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {products.length > 0 ? products.map(product => (
+                                <tr key={product.id}>
+                                    <td>
+                                        <div className="stock-warning-product">
+                                            <span className="stock-warning-product__avatar">
+                                                {product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}
+                                            </span>
+                                            <div>
+                                                <strong>{product.product_name}</strong>
+                                                <span>#{product.id} · {product.brand_name || 'No brand'}</span>
+                                                <span className="stock-warning-package">{formatProductPackage(product)}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span className="stock-warning-supplier-pill">{product.supplier_name || 'Not specified'}</span></td>
+                                    <td><span className="stock-warning-category-pill">{product.category_name}</span></td>
+                                    <td>
+                                        <div className="stock-warning-threshold">
+                                            <strong>{product.stock_warning}</strong>
+                                            <span>{product.stock_warning_type === 'WHOLESALE' ? 'wholesale units' : 'pieces'}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div className="stock-warning-levels">
+                                            <div><span>Wholesale</span><strong>{product.stock ?? 0}</strong></div>
+                                            <div><span>Pieces</span><strong>{product.stock_pc ?? 0}</strong></div>
+                                            <span className="stock-warning-critical">
+                                                <WarningAmberRoundedIcon />Low stock
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="stock-warning-orders-cell">
+                                        {Array.isArray(product.pending_orders) && product.pending_orders.length > 0 ? (
+                                            <div className="stock-warning-orders">
+                                                {product.pending_orders.length > 1 && (
+                                                    <div className="stock-warning-orders__summary">
+                                                        <span>{product.pending_orders.length} pending orders</span>
+                                                        <div>
+                                                            <small>Total incoming</small>
+                                                            <strong>{sumPendingOrderQuantities(product.pending_orders)}</strong>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {product.pending_orders.map(order => (
+                                                    <Link
+                                                        to={"/orderSupplierApproval/" + order.order_supplier_transaction_id}
+                                                        className="stock-warning-order"
+                                                        key={order.order_supplier_transaction_id}
+                                                    >
+                                                        <div className="stock-warning-order__icon"><LocalShippingOutlinedIcon /></div>
+                                                        <div className="stock-warning-order__details">
+                                                            <strong>{order.supplier}</strong>
+                                                            <span>PO #{order.order_supplier_transaction_id} · {order.date}</span>
+                                                        </div>
+                                                        <div className="stock-warning-order__quantity">
+                                                            <span>Incoming</span><strong>{order.quantity}</strong>
+                                                        </div>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="stock-warning-no-orders">
+                                                <LocalShippingOutlinedIcon /><span>No pending supplier order</span>
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="stock-warning-actions">
+                                        <Link to={"/viewTransaction/" + product.id} className="stock-warning-history-link">
+                                            View history
+                                        </Link>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan="7">
+                                        <div className="stock-warning-empty">
+                                            <Inventory2OutlinedIcon />
+                                            <h3>No stock warnings found</h3>
+                                            <p>There are no low-stock products for this supplier.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    );
+};
+
+export default StockSupplierWarning;
