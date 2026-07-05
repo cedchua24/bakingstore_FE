@@ -1,410 +1,211 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Button } from 'react-bootstrap';
+import React, { useEffect, useMemo, useState } from "react";
+
 import ProductServiceService from "../Product/ProductService.service";
-import CategoryServiceService from "../Category/CategoryService.service";
 
-import IconButton from '@mui/material/IconButton';
-import Modal from '@mui/material/Modal';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography'
-import UpdateIcon from '@mui/icons-material/Update';
-
-
-import { Form } from 'react-bootstrap';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-
-import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
 import LinearProgress from '@mui/material/LinearProgress';
+import TextField from '@mui/material/TextField';
+import SearchIcon from '@mui/icons-material/Search';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
+import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutlineRounded';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 
+import './ModifiedStock.css';
 
+const ModifiedStock = () => {
+    const [report, setReport] = useState({ data: [] });
+    const [date, setDate] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-
-const ModifiedStock = (props) => {
-
-    // const productList = props.productList;
     useEffect(() => {
-        fetchProductList();
-        fetchCategoryList();
+        ProductServiceService.fetchModifiedStockDaily()
+            .then(response => setReport(response.data))
+            .catch(fetchError => {
+                console.log("error", fetchError);
+                setError('Unable to load modified stock records.');
+            });
     }, []);
 
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-    const [formErrors, setFormErrors] = useState({});
+    const records = useMemo(
+        () => Array.isArray(report.data) ? report.data : [],
+        [report.data]
+    );
 
-    const [productList, setProductList] = useState({
-        data: [],
-        total_amount: [],
-        code: '',
-        message: '',
-    });
+    const totals = useMemo(() => records.reduce((summary, record) => {
+        const totalCost = Number(record.total_cost || 0);
+        if (Number(record.stock || 0) > 0) summary.added += totalCost;
+        if (Number(record.stock || 0) < 0) summary.reduced += totalCost;
+        summary.net += totalCost;
+        return summary;
+    }, { added: 0, reduced: 0, net: 0 }), [records]);
 
-    const [categoryId, setCategoryId] = useState(0);
-    const [categeryList, setCategoryList] = useState([]);
-    const [submitLoading, setSubmitLoading] = useState(false);
+    const fetchReport = () => {
+        if (!date) {
+            setError('Choose a date before searching.');
+            return;
+        }
 
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        setLoading(true);
+        setError('');
+        ProductServiceService.fetchModifiedStockDaily(date)
+            .then(response => setReport(response.data))
+            .catch(fetchError => {
+                console.log("error", fetchError);
+                setError('Unable to load modified stock records for this date.');
+            })
+            .finally(() => setLoading(false));
     };
 
-    const [open, setOpen] = React.useState(false);
+    const formatMoney = (value) => new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        maximumFractionDigits: 2
+    }).format(Number(value || 0));
 
-    const [customerOrderDate, setCustomerOrderDate] = useState({
-        date: ""
-    });
-
-    const handleOpen = (id, e) => {
-        console.log('e', id);
-        fetchByProductId(id);
-        setOpen(true);
-    }
-
-    const handleClose = () => setOpen(false);
-
-    const [product, setProduct] = useState({
-        id: 0,
-        product_name: '',
-        stock: 0,
-        newStocks: 0,
-        pack: ''
-    });
-
-    const [realStock, setRealStock] = useState(0);
-    const [errorStock, setErrorStock] = useState(false);
-
-    const onChangeInput = (e) => {
-        console.log(e.target.value)
-        setProduct({
-            ...product,
-            pack: e.target.value,
-        });
-        setCategoryId(e.target.value)
-        // setShopOrderTransaction({ ...shopOrderTransaction, [e.target.name]: e.target.value });
-    }
-
-    const onChangePackaging = (e) => {
-        console.log(e.target.value)
-        setProduct({
-            ...product,
-            pack: e.target.value,
-        });
-    }
-
-    const onChangeStock = (e) => {
-        // const realStock = product.stock;
-        // const totalStock = Number(realStock) + Number(e.target.value);
-        setProduct({
-            ...product,
-            newStocks: e.target.value,
-        });
-
-        if (Number(e.target.value) < 1) {
-            setErrorStock(true);
-        } else {
-            setErrorStock(false);
-        }
-    }
-
-    const fetchByProductId = async (id) => {
-        await ProductServiceService.get(id)
-            .then(response => {
-                setProduct(response.data);
-                setRealStock(response.data.stock);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchCategoryList = () => {
-        CategoryServiceService.getAll()
-            .then(response => {
-                setCategoryList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const updateProduct = () => {
-        setSubmitLoading(true);
-        ProductServiceService.update(product.id, product)
-            .then(response => {
-                fetchProductList();
-                setSubmitLoading(false);
-                setOpen(false);
-                // updateOrderTransaction();
-            })
-            .catch(e => {
-                console.log(e);
-                setSubmitLoading(false);
-                setOpen(false);
-            });
-
-    }
-
-
-    const fetchProductList = () => {
-        ProductServiceService.fetchModifiedStockDaily()
-            .then(response => {
-                setProductList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const onChangeInputDate = (e) => {
-        setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
-    }
-
-    const validate = (values) => {
-        const errors = {};
-        if (customerOrderDate.date.length == 0) {
-            errors.date = "Date is Required!";
-        }
-
-        return errors;
-    }
-
-    const saveOrderTransaction = () => {
-        console.log('orderTransaction: ', customerOrderDate.date);
-        console.log("count: ", Object.keys(validate(customerOrderDate)).length);
-        console.log("validate: ", validate(customerOrderDate));
-        setFormErrors(validate(customerOrderDate));
-        if (Object.keys(validate(customerOrderDate)).length > 0) {
-            console.log("Has Validation: ");
-
-        } else {
-            console.log("Ready for saving: ");
-            setSubmitLoadingAdd(true);
-            setIsAddDisabled(true);
-            ProductServiceService.fetchModifiedStockDaily(customerOrderDate.date)
-                .then(response => {
-                    setProductList(response.data);
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-                })
-                .catch(e => {
-                    console.log("error", e)
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-                });
-        }
-
-    }
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-    const totalSum = (numbers) => {
-        var result;
-        result = numbers.filter(d => d.stock > 0)
-        return (result.reduce((acc, { total_cost }) => acc + total_cost, 0));
-    }
-
-    const totalDiff = (numbers) => {
-        var result;
-        result = numbers.filter(d => d.stock < 0)
-        return (result.reduce((acc, { total_cost }) => acc + total_cost, 0));
-    }
-
+    const formatDate = (value) => {
+        if (!value) return 'Not recorded';
+        const parsedDate = new Date(value);
+        if (Number.isNaN(parsedDate.getTime())) return value;
+        return new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+            hour: 'numeric',
+            minute: '2-digit'
+        }).format(parsedDate);
+    };
 
     return (
-        <div>
-            <Form>
-                <div style={{ float: 'right', marginRight: 500 }}>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Added : </Form.Label>
-                        <Form.Control type="text" value={numberFormat(totalSum(productList.data))} />
-                    </Form.Group>
-                    <br></br>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Reduced : </Form.Label>
-                        <Form.Control type="text" value={numberFormat(totalDiff(productList.data))} />
-                    </Form.Group>
-                    <br></br>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total : </Form.Label>
-                        <Form.Control type="text" value={numberFormat(totalSum(productList.data) + totalDiff(productList.data))} />
-                    </Form.Group>
-                    <br></br>
-                    <br></br>
+        <div className="modified-stock-page">
+            <section className="modified-stock-hero">
+                <div className="modified-stock-hero__icon"><TuneRoundedIcon /></div>
+                <div>
+                    <span>Inventory audit</span>
+                    <h1>Modified Stock</h1>
+                    <p>Review manual stock additions and reductions for a selected day.</p>
                 </div>
+            </section>
 
-                {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date</Form.Label>
-                    <Form.Control type="date" name="date" onChange={onChangeInputDate} />
-                </Form.Group>
+            {error && <Alert severity="error" className="modified-stock-alert">{error}</Alert>}
 
-                <Button variant="primary"
-                    onClick={saveOrderTransaction}
-                    disabled={isAddDisabled}
-                >
-                    Find
-                </Button>
+            <section className="modified-stock-summary">
+                <div>
+                    <span className="modified-stock-summary__icon modified-stock-summary__icon--green">
+                        <AddCircleOutlineRoundedIcon />
+                    </span>
+                    <div><span>Total added</span><strong>{formatMoney(totals.added)}</strong></div>
+                </div>
+                <div>
+                    <span className="modified-stock-summary__icon modified-stock-summary__icon--red">
+                        <RemoveCircleOutlineRoundedIcon />
+                    </span>
+                    <div><span>Total reduced</span><strong>{formatMoney(totals.reduced)}</strong></div>
+                </div>
+                <div>
+                    <span className="modified-stock-summary__icon modified-stock-summary__icon--blue">
+                        <AccountBalanceWalletOutlinedIcon />
+                    </span>
+                    <div><span>Net adjustment</span><strong>{formatMoney(totals.net)}</strong></div>
+                </div>
+            </section>
 
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form >
-            <br></br>
-
-
-            <br></br>
-            <br></br>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Modified Stock Daily </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Brand</th>
-                        <th>Product</th>
-                        <th>Reason</th>
-                        <th>Price</th>
-                        <th>Quantity</th>
-                        <th>Total Cost</th>
-                        <th>Date</th>
-                        {/* <th>Transaction</th> */}
-                    </tr>
-                </thead>
-                <tbody>
-
-
-                    {
-                        productList.data.map((product, index) => (
-                            <tr key={product.id} >
-                                <td>{product.id}</td>
-                                <td>{product.brand_name}</td>
-                                <td>{product.product_name}</td>
-                                <td>{product.stock_reason}</td>
-                                <td>{numberFormat(product.price)}</td>
-                                <td>{product.stock + " " + product.pack}</td>
-                                <td>{numberFormat(product.total_cost)}</td>
-                                <td>{product.updated_at}</td>
-                                {/* <td>
-                                    <Link variant="primary" to={"/viewTransaction/" + product.id}   >
-                                        <Button variant="contained" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td> */}
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Stock
-                    </Typography>
-
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-
+            <section className="modified-stock-filter">
+                <div>
+                    <strong>Report date</strong>
+                    <span>Select a day to review its stock adjustments.</span>
+                </div>
+                <div className="modified-stock-filter__controls">
                     <TextField
-                        disabled
-                        id="filled-required"
-                        label="Product Name"
-                        variant="filled"
-                        name='product_name'
-                        value={product.product_name}
+                        type="date"
+                        size="small"
+                        value={date}
+                        onChange={event => setDate(event.target.value)}
+                        InputLabelProps={{ shrink: true }}
                     />
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel id="demo-simple-select-label">Packaging</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={product.packaging}
-                            label="Packaging"
-                            name="pack"
-                            onChange={onChangePackaging}
-                        >
-                            <MenuItem value={product.packaging}>{product.packaging}</MenuItem>
-                            <MenuItem value="Pc">Pc</MenuItem>
-                        </Select>
-                    </FormControl>
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Add Stocks</InputLabel>
-                        <Input
-                            type='number'
-                            id="filled-required"
-                            label="Stock"
-                            variant="filled"
-                            name='newStocks'
-                            errorText='{this.state.password_error_text}'
-                            min='1'
-                            // value={product.stock}
-                            onChange={onChangeStock}
-                            // helperText="Incorrect entry."
-                            error={errorStock}
-                        />
-                    </FormControl>
-
-                    {/* <FormControl fullWidth sx={{ m: 0 }} variant="standard">
-                        <TextField
-                            disabled
-                            id="filled-required"
-                            label="Stock"
-                            variant="filled"
-                            name='product_name'
-                            value={product.stock}
-                        />
-                    </FormControl> */}
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
+                    <Button
+                        variant="contained"
+                        disabled={loading}
+                        onClick={fetchReport}
+                        startIcon={<SearchIcon />}
+                        className="modified-stock-search"
                     >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateProduct}
-                            disabled={errorStock}
-                            size="large" >
-                            Submits
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
-        </div >
-    )
-}
+                        {loading ? 'Loading...' : 'Find records'}
+                    </Button>
+                </div>
+                {loading && <LinearProgress className="modified-stock-progress" />}
+            </section>
 
-export default ModifiedStock
+            <section className="modified-stock-card">
+                <div className="modified-stock-card__header">
+                    <div>
+                        <h2>Adjustment records</h2>
+                        <p>{records.length} {records.length === 1 ? 'change' : 'changes'} in this report.</p>
+                    </div>
+                    <span><CalendarMonthOutlinedIcon />{date || 'Latest report'}</span>
+                </div>
+                <div className="table-responsive">
+                    <table className="modified-stock-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Reason</th>
+                                <th>Adjustment</th>
+                                <th>Unit price</th>
+                                <th>Total impact</th>
+                                <th>Date modified</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {records.length > 0 ? records.map(record => {
+                                const isAddition = Number(record.stock || 0) > 0;
+                                return (
+                                    <tr key={record.id}>
+                                        <td>
+                                            <div className="modified-stock-product">
+                                                <span>{record.product_name ? record.product_name.charAt(0).toUpperCase() : '?'}</span>
+                                                <div>
+                                                    <strong>{record.product_name}</strong>
+                                                    <small>#{record.id} · {record.brand_name || 'No brand'}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span className="modified-stock-reason">{record.stock_reason || 'No reason provided'}</span></td>
+                                        <td>
+                                            <span className={isAddition ? 'modified-stock-quantity modified-stock-quantity--added' : 'modified-stock-quantity modified-stock-quantity--reduced'}>
+                                                {isAddition ? '+' : ''}{record.stock} {record.pack}
+                                            </span>
+                                        </td>
+                                        <td>{formatMoney(record.price)}</td>
+                                        <td>
+                                            <strong className={isAddition ? 'modified-stock-impact--added' : 'modified-stock-impact--reduced'}>
+                                                {formatMoney(record.total_cost)}
+                                            </strong>
+                                        </td>
+                                        <td><span className="modified-stock-date">{formatDate(record.updated_at)}</span></td>
+                                    </tr>
+                                );
+                            }) : (
+                                <tr>
+                                    <td colSpan="6">
+                                        <div className="modified-stock-empty">
+                                            <Inventory2OutlinedIcon />
+                                            <h3>No stock modifications</h3>
+                                            <p>No manual adjustments were recorded for this report.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    );
+};
+
+export default ModifiedStock;

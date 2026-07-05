@@ -1,0 +1,146 @@
+.stock-list-hero {
+    background: linear-gradient(120deg, #192638 0%, #243d59 60%, #28526f 100%);
+}
+
+.stock-list-page .stock-warning-summary__item {
+    min-width: 135px;
+}
+
+.stock-list-table {
+    min-width: 1180px;
+}
+
+.stock-list-price {
+    color: #285fc7;
+    white-space: nowrap;
+}
+
+.stock-list-threshold--healthy {
+    color: #28724b !important;
+}
+
+.stock-list-actions {
+    position: sticky;
+    right: 0;
+    min-width: 220px;
+    background: #fff;
+    box-shadow: -8px 0 12px -12px rgba(23, 32, 51, 0.6);
+    z-index: 1;
+}
+
+.stock-list-table th:last-child {
+    position: sticky;
+    right: 0;
+    min-width: 220px;
+    background: #fafbfc;
+    box-shadow: -8px 0 12px -12px rgba(23, 32, 51, 0.6);
+    z-index: 2;
+}
+
+.stock-list-table tbody tr:hover .stock-list-actions {
+    background: #fcfcfd;
+}
+
+.stock-list-actions > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.stock-list-actions button,
+.stock-list-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 29px;
+    padding: 5px 7px;
+    color: #4e607a;
+    background: #fff;
+    border: 1px solid #dce2ea;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.stock-list-actions button:hover,
+.stock-list-actions a:hover {
+    color: #285fc7;
+    background: #f5f8fd;
+    border-color: #bdccec;
+}
+
+.stock-list-actions button svg {
+    font-size: 13px;
+}
+
+.stock-list-modal__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 14px;
+    margin-bottom: 17px;
+    border-bottom: 1px solid #e7eaf0;
+}
+
+.stock-list-modal__header > span {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    color: #285fc7;
+    background: #edf3ff;
+    border-radius: 9px;
+}
+
+.stock-list-modal__header > span svg {
+    font-size: 19px;
+}
+
+.stock-list-modal__header h2 {
+    margin: 0;
+    color: #172033;
+    font-size: 1rem;
+}
+
+.stock-list-modal__header p {
+    margin: 3px 0 0;
+    color: #6b7587;
+    font-size: 0.7rem;
+}
+
+.stock-list-modal__spinner {
+    display: block !important;
+    margin: 0 auto 14px;
+}
+
+.stock-list-modal__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.stock-list-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 18px;
+}
+
+.stock-list-modal__actions .MuiButton-root {
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: none;
+}
+
+@media (max-width: 1100px) {
+    .stock-list-page .stock-warning-summary {
+        width: 100%;
+    }
+}

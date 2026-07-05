@@ -1,432 +1,278 @@
-import React, { useState, useEffect } from "react";
-import ProductServiceService from "../Product/ProductService.service";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import BrandServiceService from "../Brand/BrandService.service";
+
+import ProductServiceService from "../Product/ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
 import CustomerService from "../Customer/CustomerService";
 import OutOfStockUpdateService from "../OtherService/OutOfStockUpdateService";
 
-import { Form } from 'react-bootstrap';
+import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
-
-import IconButton from '@mui/material/IconButton';
-import UpdateIcon from '@mui/icons-material/Update';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import Modal from '@mui/material/Modal';
-
-
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
-
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography'
-import CircularProgress from '@mui/material/CircularProgress';
-
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import LinearProgress from '@mui/material/LinearProgress';
-
 import MenuItem from '@mui/material/MenuItem';
-
+import Modal from '@mui/material/Modal';
 import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import SearchIcon from '@mui/icons-material/Search';
+import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
+import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 
-
+import './OutOfStockReturn.css';
 
 const OutOfStockReturn = () => {
-
-    useEffect(() => {
-        fetchProductList();
-        fetchBrandList();
-        fetchCategoryList();
-        fetchUserList();
-    }, []);
-
-    const [categoryId, setCategoryId] = useState(0);
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [productList, setProductList] = useState({ data: [] });
+    const [categoryList, setCategoryList] = useState([]);
     const [customerList, setCustomerList] = useState([]);
-
-    const [submitLoading, setSubmitLoading] = useState(false);
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
+    const [categoryId, setCategoryId] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [alert, setAlert] = useState({ visible: false, severity: '', message: '' });
+    const [followUp, setFollowUp] = useState({
+        product_id: 0,
+        product_name: '',
+        customer_id: ''
     });
 
-    const style = {
+    useEffect(() => {
+        ProductServiceService.fetchProductToNotify(0)
+            .then(response => setProductList(response.data))
+            .catch(error => console.log("error", error));
+
+        CategoryServiceService.getAll()
+            .then(response => setCategoryList(response.data))
+            .catch(error => console.log("error", error));
+
+        CustomerService.fetchCustomerEnabled()
+            .then(response => setCustomerList(response.data))
+            .catch(error => console.log("error", error));
+    }, []);
+
+    const products = Array.isArray(productList?.data)
+        ? productList.data
+        : (Array.isArray(productList) ? productList : []);
+
+    const outOfStockCount = products.filter(
+        product => Number(product.stock || 0) === 0 && Number(product.stock_pc || 0) === 0
+    ).length;
+
+    const fetchProducts = () => {
+        setLoading(true);
+        ProductServiceService.fetchProductToNotify(categoryId)
+            .then(response => setProductList(response.data))
+            .catch(error => console.log("error", error))
+            .finally(() => setLoading(false));
+    };
+
+    const openFollowUp = (product) => {
+        setFollowUp({
+            product_id: product.id,
+            product_name: product.product_name,
+            customer_id: ''
+        });
+        setModalOpen(true);
+    };
+
+    const saveFollowUp = () => {
+        setSubmitting(true);
+        OutOfStockUpdateService.create(followUp)
+            .then(response => {
+                if (response.data.code === 200) {
+                    setAlert({ visible: true, severity: 'success', message: 'Customer follow-up added successfully.' });
+                    setModalOpen(false);
+                } else {
+                    setAlert({
+                        visible: true,
+                        severity: 'error',
+                        message: response.data.message || 'Unable to add the customer follow-up.'
+                    });
+                }
+                window.scrollTo(0, 0);
+            })
+            .catch(error => {
+                console.log(error);
+                setAlert({ visible: true, severity: 'error', message: 'Unable to add the customer follow-up.' });
+            })
+            .finally(() => setSubmitting(false));
+    };
+
+    const formatMoney = (value) => new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        maximumFractionDigits: 2
+    }).format(Number(value || 0));
+
+    const formatPackage = (product) => {
+        if (product.quantity == null || product.weight == null) return product.packaging || 'Package not specified';
+        if (Number(product.quantity) === 1) return `${product.weight}${product.variation || ''}`;
+        const unitWeight = Number(product.weight) / Number(product.quantity);
+        return `${product.quantity} × ${Number.isInteger(unitWeight) ? unitWeight : unitWeight.toPrecision(2)}${product.variation || ''} / ${product.packaging || 'package'}`;
+    };
+
+    const modalStyle = {
         position: 'absolute',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 400,
+        width: 'min(440px, calc(100vw - 28px))',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        borderRadius: '14px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: 3
     };
 
-    const [open, setOpen] = React.useState(false);
-
-    const handleOpenNotify = (id, e) => {
-        console.log('e', id);
-        fetchShopOrder(id);
-        setOpen(true);
-    }
-
-    const [orderSupplierModal, setOrderSupplierModal] = useState({
-        id: 0,
-        customer_id: '',
-        status: 0
-    });
-
-    const fetchUserList = () => {
-        CustomerService.fetchCustomerEnabled()
-            .then(response => {
-                setCustomerList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchShopOrder = async (id) => {
-        await ProductServiceService.get(id)
-            .then(response => {
-                setOrderSupplierModal({
-                    product_id: response.data.id,
-                    product_name: response.data.product_name
-                });
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-
-
-    const updateOrderSupplier = () => {
-        setSubmitLoading(true);
-        OutOfStockUpdateService.create(orderSupplierModal)
-            .then(response => {
-                if (response.data.code == 200) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'success',
-                        message: 'Successfuly Added!',
-                        isShow: true,
-                    });
-                    fetchProductList();
-                } else if (response.data.code == 400) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'error',
-                        message: response.data.message,
-                        isShow: true,
-                    });
-                } else {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    setValidator({
-                        severity: 'error',
-                        message: "Unknown Error",
-                        isShow: true,
-                    });
-                }
-            })
-            .catch(e => {
-                console.log(e);
-            });
-    }
-
-    const handleClose = () => setOpen(false);
-
-    const [product, setProduct] = useState({
-        id: 0,
-        category_id: 0,
-        category_name: '',
-        brand_id: 0,
-        brand_name: '',
-        product_name: "",
-        price: 0,
-        stock: 0,
-        weight: 0,
-        quantity: 0,
-        packaging: ''
-    })
-
-    const [brandList, setBrandList] = useState([]);
-    const [categeryList, setCategoryList] = useState([]);
-
-    const [message, setMessage] = useState(false);
-
-    const [productList, setProductList] = useState({
-        total_value: '',
-        data: []
-    });
-
-    const onChangeInput = (e) => {
-        console.log(e.target.value)
-        setCategoryId(e.target.value)
-    }
-
-
-    const fetchProductList = () => {
-        ProductServiceService.fetchProductToNotify(0)
-            .then(response => {
-                setProductList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchBrandList = () => {
-        BrandServiceService.getAll()
-            .then(response => {
-                setBrandList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchCategoryList = () => {
-        CategoryServiceService.getAll()
-            .then(response => {
-                setCategoryList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const deleteProduct = (id, e) => {
-
-        const index = productList.findIndex(brand => brand.id === id);
-        const newProduct = [...productList];
-        newProduct.splice(index, 1);
-
-        ProductServiceService.delete(id)
-            .then(response => {
-                setProductList(newProduct);
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
-    }
-
-    const handleInputChange = (e, value) => {
-        e.persist();
-        setOrderSupplierModal({
-            ...orderSupplierModal,
-            customer_id: value.id,
-        });
-    }
-
-    const fetchProductByCategoryId = () => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        ProductServiceService.fetchProductToNotify(categoryId)
-            .then(response => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                setProductList(response.data);
-            })
-            .catch(e => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                console.log("error", e)
-            });
-    }
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-
     return (
-        <div>
-            <Form>
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Category</InputLabel>
+        <div className="oos-return-page">
+            <section className="oos-return-hero">
+                <div className="oos-return-hero__icon"><NotificationsActiveOutlinedIcon /></div>
+                <div className="oos-return-hero__copy">
+                    <span>Customer restock queue</span>
+                    <h1>Customers to Notify</h1>
+                    <p>Track products customers are waiting for and manage restock follow-ups.</p>
+                </div>
+                <div className="oos-return-summary">
+                    <div><Inventory2OutlinedIcon /><span><strong>{products.length}</strong>Products</span></div>
+                    <div><WarningAmberRoundedIcon /><span><strong>{outOfStockCount}</strong>Out of stock</span></div>
+                </div>
+            </section>
+
+            {alert.visible && <Alert severity={alert.severity} className="oos-return-alert">{alert.message}</Alert>}
+
+            <section className="oos-return-filter">
+                <div><strong>Filter products</strong><span>Choose a category to narrow the follow-up queue.</span></div>
+                <div className="oos-return-filter__controls">
+                    <FormControl size="small" className="oos-return-category">
+                        <InputLabel id="oos-return-category-label">Category</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            // value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
-                            name="category_id"
-                            onChange={onChangeInput}
+                            labelId="oos-return-category-label"
+                            value={categoryId}
+                            label="Category"
+                            onChange={event => setCategoryId(event.target.value)}
                         >
-                            {
-                                categeryList.map((category, index) => (
-                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
-                                ))
-                            }
+                            <MenuItem value={0}>All categories</MenuItem>
+                            {categoryList.map(category => (
+                                <MenuItem value={category.id} key={category.id}>{category.category_name}</MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
-                    <br></br>
-                    {/* <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Total Value</InputLabel>
-                        <Input
-                            type='text'
-                            id="filled-"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            value={numberFormat(productList.total_value.total_price)}
-                            disabled
-                        />
-                    </FormControl> */}
-
-                </Box>
-
-                <Button
-                    variant="contained"
-                    disabled={isAddDisabled}
-                    onClick={fetchProductByCategoryId}
-                >
-                    Search
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form>
-
-            <br></br>
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Add Customer for Reference
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <br></br>
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>Product Name</Form.Label>
-                        <Form.Control type="text" value={orderSupplierModal.product_name} disabled />
-
-                    </Form.Group>
-
-                    <FormControl variant="standard" >
-                        <Autocomplete
-                            // {...defaultProps}
-                            options={customerList}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleInputChange}
-                            getOptionLabel={(customerList) => customerList.first_name + " " + customerList.last_name}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Choose Customer" variant="standard" />
-                            )}
-                        />
-                    </FormControl>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
+                    <Button
+                        variant="contained"
+                        disabled={loading}
+                        onClick={fetchProducts}
+                        startIcon={<SearchIcon />}
+                        className="oos-return-search"
                     >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
+                        {loading ? 'Loading...' : 'Apply filter'}
+                    </Button>
+                </div>
+                {loading && <LinearProgress className="oos-return-progress" />}
+            </section>
+
+            <section className="oos-return-card">
+                <div className="oos-return-card__header">
+                    <div><h2>Restock follow-up products</h2><p>{products.length} {products.length === 1 ? 'product' : 'products'} in this view.</p></div>
+                    <span><NotificationsActiveOutlinedIcon />Notification queue</span>
+                </div>
+                <div className="table-responsive">
+                    <table className="oos-return-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Inventory</th>
+                                <th>Warning level</th>
+                                <th>Note</th>
+                                <th>Status</th>
+                                <th aria-label="Actions"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {products.length > 0 ? products.map(product => (
+                                <tr key={product.id}>
+                                    <td>
+                                        <div className="oos-return-product">
+                                            <span>{product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}</span>
+                                            <div>
+                                                <strong>{product.product_name}</strong>
+                                                <small>#{product.id} · {product.brand_name || 'No brand'}</small>
+                                                <em>{formatPackage(product)}</em>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span className="oos-return-category-pill">{product.category_name}</span></td>
+                                    <td><strong className="oos-return-price">{formatMoney(product.price)}</strong></td>
+                                    <td>
+                                        <div className="oos-return-stock">
+                                            <span>Wholesale <strong>{product.stock ?? 0}</strong></span>
+                                            <span>Pieces <strong>{product.stock_pc ?? 0}</strong></span>
+                                        </div>
+                                    </td>
+                                    <td><strong className="oos-return-warning">{product.stock_warning ?? 0}</strong></td>
+                                    <td><span className="oos-return-note">{product.note || 'No note'}</span></td>
+                                    <td>
+                                        <span className={product.disabled === 0 ? 'oos-return-status oos-return-status--active' : 'oos-return-status oos-return-status--disabled'}>
+                                            {product.disabled === 0
+                                                ? <><CheckCircleRoundedIcon />Active</>
+                                                : <><CancelRoundedIcon />Disabled</>}
+                                        </span>
+                                    </td>
+                                    <td className="oos-return-actions">
+                                        <button type="button" onClick={() => openFollowUp(product)}>
+                                            <PersonAddAltOutlinedIcon />Add follow-up
+                                        </button>
+                                        <Link to={"/viewCustomerNotify/" + product.id}>View customers</Link>
+                                    </td>
+                                </tr>
+                            )) : (
+                                <tr>
+                                    <td colSpan="8">
+                                        <div className="oos-return-empty">
+                                            <NotificationsActiveOutlinedIcon />
+                                            <h3>No products to follow up</h3>
+                                            <p>There are no customer notification products in this category.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+                <Box sx={modalStyle}>
+                    <div className="oos-return-modal__header">
+                        <span><PersonAddAltOutlinedIcon /></span>
+                        <div><h2>Add customer follow-up</h2><p>Save a customer interested in this product.</p></div>
+                    </div>
+                    <div className="oos-return-modal__fields">
+                        <TextField fullWidth disabled label="Product" value={followUp.product_name || ''} />
+                        <Autocomplete
+                            options={customerList}
+                            onChange={(event, value) => setFollowUp({ ...followUp, customer_id: value?.id || '' })}
+                            getOptionLabel={customer => `${customer.first_name || ''} ${customer.last_name || ''}`.trim()}
+                            renderInput={params => <TextField {...params} label="Choose customer" />}
+                        />
+                    </div>
+                    <div className="oos-return-modal__actions">
+                        <Button onClick={() => setModalOpen(false)}>Cancel</Button>
+                        <Button variant="contained" disabled={!followUp.customer_id || submitting} onClick={saveFollowUp}>
+                            {submitting ? 'Saving...' : 'Add follow-up'}
                         </Button>
-                    </Box>
+                    </div>
                 </Box>
             </Modal>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer To Notify Stock </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Product</th>
-                        <th>Brand</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                        <th>Quantity / Weight</th>
-                        <th>Stock</th>
-                        <th>Stock / Per Piece</th>
-                        <th>Packaging</th>
-                        <th>Stock Warning</th>
-                        <th>Status</th>
-                        <th>Note</th>
-                        <th>Add Customer Follow Up</th>
-                        <th>Customer Follow Up List</th>
-                    </tr>
-                </thead>
-                {productList.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
-                    :
-                    (
-                        <tbody>
-
-                            {
-                                productList.data.map((product, index) => (
-                                    <tr key={product.id} >
-                                        <td>{product.id}</td>
-                                        <td>{product.product_name}</td>
-                                        <td>{product.brand_name}</td>
-                                        <td>{product.category_name}</td>
-                                        <td>{numberFormat(product.price)}</td>
-                                        {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                        <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
-                                            : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                        </td>
-                                        <td>{product.stock}</td>
-                                        <td>{product.stock_pc}</td>
-                                        <td>{product.packaging}</td>
-                                        <td>{product.stock_warning}</td>
-                                        <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                        <td><p>{product.note}</p></td>
-                                        <td>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpenNotify(product.id, e)} />
-                                            </IconButton>
-                                        </td>
-                                        <td>
-                                            <Link variant="primary" to={"/viewCustomerNotify/" + product.id}   >
-                                                <Button variant="contained" >
-                                                    View Customer to Notify
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                )
-                                )
-                            }
-                        </tbody>)}
-            </table>
-
-
-
         </div>
-    )
-}
+    );
+};
 
-export default OutOfStockReturn
+export default OutOfStockReturn;

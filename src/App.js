@@ -232,6 +232,7 @@ import VipProduct from "./components/VipProduct/VipProduct";
 import VipProductListPage from "./components/VipProduct/VipProductListPage";
 import VipProductTransactionTemplateList from "./components/VipProduct/VipProductTransactionTemplateList";
 import VipProductTransactionReport from "./components/VipProduct/VipProductTransactionReport";
+import VipProductNote from "./components/VipProduct/VipProductNote";
 
 
 import CustomerProductList from "./components/Customer/CustomerProductList";
@@ -757,6 +758,7 @@ const App = () => {
           <Route exact path="/vipProductTransactionListV2" element={<VipProductListPage />} />
           <Route exact path="/vipProductTransactionTemplateList" element={<VipProductTransactionTemplateList />} />
           <Route exact path="/vipProductTransactionView/:id" element={<VipProductTransactionReport />} />
+          <Route exact path="/vipProductNote/:id" element={<VipProductNote />} />
 
 
 

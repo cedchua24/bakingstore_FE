@@ -1,348 +1,224 @@
 import React, { useState } from "react";
-import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import MarkUpPriceService from "./MarkUpPriceService.service";
 
-import UpdateIcon from '@mui/icons-material/Update';
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Modal from '@mui/material/Modal';
-
-import InputAdornment from '@mui/material/InputAdornment';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
-
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography'
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-
+import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import Modal from '@mui/material/Modal';
+import TextField from '@mui/material/TextField';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import PriceChangeOutlinedIcon from '@mui/icons-material/PriceChangeOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 
-
-const MarkUpPriceList = (props) => {
-
-    const markupPriceList = props.markupPriceList;
-    const deleteMarkUpPrice = props.deleteMarkUpPrice;
-
-    const [submitLoading, setSubmitLoading] = useState(false);
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
-
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
-    };
-    const [open, setOpen] = React.useState(false);
-    const handleOpen = (id, e) => {
-        console.log('e', id);
-        fetchMarkUp(id);
-        setOpen(true);
-    }
-    const handleClose = () => setOpen(false);
-
-    const [markUpModal, setMarkUpModal] = useState({
+const MarkUpPriceList = ({ markupPriceList, onUpdated }) => {
+    const records = Array.isArray(markupPriceList) ? markupPriceList : [];
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState('');
+    const [markup, setMarkup] = useState({
         id: 0,
-        product_id: 0,
-        branch_stock_transaction_id: 0,
         price: 0,
         product_name: '',
         mark_up_option: '',
         mark_up_price: 0,
         new_price: 0,
-        profit: 0,
-        status: 0,
-        business_type: ''
+        profit: 0
     });
 
-    const onChangeInputQuantityModal = (e) => {
-        e.persist();
-        setMarkUpModal({
-            ...markUpModal,
-            user_id: localStorage.getItem('auth_user_id'),
-            shop_order_quantity: e.target.value,
-        });
-    }
-    const onChangeInput = (e) => {
-        console.log(e.target.value);
-        setMarkUpModal({ ...markUpModal, [e.target.name]: e.target.value });
-    }
+    const formatMoney = value => new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        maximumFractionDigits: 2
+    }).format(Number(value || 0));
 
-    const onChangeMarkUpPrice = (e) => {
-        setMarkUpModal({
-            ...markUpModal,
-            mark_up_price: Number(e.target.value),
-            new_price: Number(markUpModal.price) + Number(e.target.value),
-            profit: Number(e.target.value)
-        });
-    }
-
-    const onChangeMarkUpPercentage = (e) => {
-        const divisible = markUpModal.price * e.target.value;
-        setMarkUpModal({
-            ...markUpModal,
-            mark_up_price: Number(e.target.value),
-            new_price: markUpModal.price + divisible,
-            profit: divisible
-        });
-    }
-
-    const fetchMarkUp = async (id) => {
-        await MarkUpPriceService.get(id)
+    const openEditor = id => {
+        setLoading(true);
+        setMessage('');
+        MarkUpPriceService.get(id)
             .then(response => {
-                setMarkUpModal(response.data);
+                setMarkup(response.data);
+                setOpen(true);
             })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+            .catch(error => console.log("error", error))
+            .finally(() => setLoading(false));
+    };
 
-    const updateOrderSupplier = () => {
-        setSubmitLoading(true);
-        MarkUpPriceService.update(markUpModal.id, markUpModal)
+    const changeOption = value => {
+        setMarkup(current => ({
+            ...current,
+            mark_up_option: value,
+            mark_up_price: 0,
+            profit: 0,
+            new_price: current.price
+        }));
+    };
+
+    const changeAdjustment = value => {
+        const adjustment = Number(value || 0);
+        const profit = markup.mark_up_option === 'PERCENTAGE'
+            ? (Number(markup.price || 0) / 100) * adjustment
+            : adjustment;
+        setMarkup(current => ({
+            ...current,
+            mark_up_price: adjustment,
+            profit,
+            new_price: Number(current.price || 0) + profit
+        }));
+    };
+
+    const saveUpdate = () => {
+        setLoading(true);
+        MarkUpPriceService.update(markup.id, markup)
             .then(response => {
-                if (response.data.code == 200) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'success',
-                        message: 'Successfuly Added!',
-                        isShow: true,
-                    });
-                    // fetchProductList();
-                } else if (response.data.code == 400) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'error',
-                        message: response.data.message,
-                        isShow: true,
-                    });
-                } else {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    setValidator({
-                        severity: 'error',
-                        message: "Unknown Error",
-                        isShow: true,
-                    });
+                if (response.data.code === 400) {
+                    setMessage(response.data.message || 'Unable to update this price.');
+                    return;
                 }
+                setOpen(false);
+                onUpdated?.();
             })
-            .catch(e => {
-                console.log(e);
-            });
-    }
+            .catch(error => {
+                console.log(error);
+                setMessage('Unable to update this price.');
+            })
+            .finally(() => setLoading(false));
+    };
+
+    const modalStyle = {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 'min(450px, calc(100vw - 28px))',
+        bgcolor: 'background.paper',
+        borderRadius: '14px',
+        boxShadow: 24,
+        p: 3
+    };
 
     return (
-        <div>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Mark Up List </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Product Name </th>
-                        <th>Details </th>
-                        <th>Warehouse Name </th>
-                        <th>Supplier Price </th>
-                        {/* <th>Mark Up Type</th> */}
-                        <th>Mark Up Price</th>
-                        {/* <th>Descrepancy</th> */}
-                        <th>New Price</th>
-                        <th>Update</th>
-                        <th>Price History</th>
-
-
-                    </tr>
-                </thead>
-                <tbody>
-
-                    {
-                        markupPriceList.map((mark_up, index) => (
-                            <tr key={mark_up.id} >
-                                <td>{mark_up.id}</td>
-                                <td>{mark_up.product_name}</td>
-                                <td>{
-                                    mark_up.business_type === 'WHOLESALE' ? <> ({mark_up.weight / mark_up.quantity}{mark_up.variation} x {mark_up.quantity}) {mark_up.packaging}</>
-                                        : < >({Number.isInteger(mark_up.weight / mark_up.quantity) ? (mark_up.weight / mark_up.quantity) : (mark_up.weight / mark_up.quantity).toPrecision(2)}{mark_up.variation})</>
-                                }</td>
-                                <td>{mark_up.warehouse_name}</td>
-                                <td>{'₱ ' + mark_up.price + '.00'}</td>
-                                {/* <td>{mark_up.mark_up_option}</td> */}
-                                <td>{mark_up.mark_up_option === 'PERCENTAGE' ? mark_up.mark_up_price + '% / ' + '₱ ' + (Number(mark_up.new_price) - Number(mark_up.price)) + '.00' : '₱ ' + mark_up.mark_up_price + '.00'}</td>
-                                {/* <td>{'₱ ' + (Number(mark_up.new_price) - Number(mark_up.price)) + '.00'}</td> */}
-                                <td style={{ fontWeight: 'bold' }}>{'₱ ' + mark_up.new_price}{mark_up.new_price % 1 === 0 ? '.00' : ''}</td>
+        <section className="markup-list-card">
+            <div className="markup-list-card__header">
+                <div><h2>Price records</h2><p>{records.length} wholesale and retail markup configurations.</p></div>
+                <span><PriceChangeOutlinedIcon />Current pricing</span>
+            </div>
+            <div className="table-responsive">
+                <table className="markup-list-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Type</th>
+                            <th>Warehouse</th>
+                            <th>Supplier price</th>
+                            <th>Markup</th>
+                            <th>Profit</th>
+                            <th>Selling price</th>
+                            <th aria-label="Actions"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {records.length > 0 ? records.map(record => (
+                            <tr key={record.id}>
                                 <td>
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(mark_up.id, e)} />
-                                        </IconButton>
-                                    </Tooltip>
+                                    <div className="markup-list-product">
+                                        <span>{record.product_name ? record.product_name.charAt(0).toUpperCase() : '?'}</span>
+                                        <div>
+                                            <strong>{record.product_name}</strong>
+                                            <small>#{record.id} · {record.business_type === 'WHOLESALE'
+                                                ? `${record.weight / Math.max(record.quantity, 1)}${record.variation} × ${record.quantity} ${record.packaging || ''}`
+                                                : `${Number(record.weight / Math.max(record.quantity, 1)).toPrecision(2)}${record.variation}`}</small>
+                                        </div>
+                                    </div>
                                 </td>
-
                                 <td>
-                                    <Link variant="primary" to={"../viewMarkUpHistory/" + mark_up.product_id}   >
-                                        <Button variant="primary" >
-                                            View
-                                        </Button>
-                                    </Link>
+                                    <span className={`markup-type markup-type--${String(record.business_type || 'wholesale').toLowerCase()}`}>
+                                        {record.business_type || 'WHOLESALE'}
+                                    </span>
                                 </td>
-
+                                <td><span className="markup-warehouse"><StorefrontOutlinedIcon />{record.warehouse_name || 'Not specified'}</span></td>
+                                <td>{formatMoney(record.price)}</td>
+                                <td>
+                                    <strong>{record.mark_up_option === 'PERCENTAGE'
+                                        ? `${record.mark_up_price}%`
+                                        : formatMoney(record.mark_up_price)}</strong>
+                                </td>
+                                <td><span className="markup-profit">+ {formatMoney(Number(record.new_price) - Number(record.price))}</span></td>
+                                <td><strong className="markup-selling-price">{formatMoney(record.new_price)}</strong></td>
+                                <td className="markup-list-actions">
+                                    <button type="button" onClick={() => openEditor(record.id)}><EditOutlinedIcon />Edit</button>
+                                    <Link to={"../viewMarkUpHistory/" + record.product_id}><HistoryRoundedIcon />History</Link>
+                                </td>
                             </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
+                        )) : (
+                            <tr>
+                                <td colSpan="8">
+                                    <div className="markup-list-empty">
+                                        <PriceChangeOutlinedIcon />
+                                        <h3>No markup prices found</h3>
+                                        <p>Create a markup price to see it here.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
-            <br></br>
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Mark Up Price
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <TextField
-                        disabled
-                        id="filled-required"
-                        label="Product Name"
-                        variant="filled"
-                        name='product_name'
-                        value={markUpModal.product_name}
-                    />
-
-                    <TextField
-                        disabled
-                        id="filled-required"
-                        label="Supplier Price"
-                        variant="filled"
-                        name='price'
-                        value={markUpModal.price}
-                    />
-                    <br></br>
-                    <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">Mark Up Option</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            className="mb-3"
-                            id="demo-simple-select"
-                            value={markUpModal.mark_up_option}
-                            name='mark_up_option'
-                            label="Mark Up Option"
-                            onChange={onChangeInput}
+            <Modal open={open} onClose={() => setOpen(false)}>
+                <Box sx={modalStyle}>
+                    <div className="markup-modal__header">
+                        <span><EditOutlinedIcon /></span>
+                        <div><h2>Update markup price</h2><p>Adjust the selling price for this record.</p></div>
+                    </div>
+                    {message && <Alert severity="error" sx={{ mb: 2 }}>{message}</Alert>}
+                    {loading && <CircularProgress size={25} className="markup-modal__spinner" />}
+                    <div className="markup-modal__fields">
+                        <TextField fullWidth disabled label="Product" value={markup.product_name || ''} />
+                        <TextField fullWidth disabled label="Supplier price" value={formatMoney(markup.price)} />
+                        <TextField
+                            select
+                            fullWidth
+                            label="Markup method"
+                            value={markup.mark_up_option || ''}
+                            onChange={event => changeOption(event.target.value)}
                         >
-                            <MenuItem value='PERCENTAGE'>PERCENTAGE</MenuItem>
-                            <MenuItem value='AMOUNT'>AMOUNT</MenuItem>
-                        </Select>
-                    </FormControl>
-                    <br></br>
-                    {/* <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Mark Up Price</InputLabel>
-                        <Input
-                            type='number'
-                            id="filled-required"
-                            label="Quantity"
-                            variant="filled"
-                            name='mark_up_price'
-                            value={markUpModal.mark_up_price}
-                            onChange={onChangeInputQuantityModal}
+                            <MenuItem value="PERCENTAGE">Percentage</MenuItem>
+                            <MenuItem value="AMOUNT">Fixed amount</MenuItem>
+                        </TextField>
+                        <TextField
+                            fullWidth
+                            type="number"
+                            label={markup.mark_up_option === 'PERCENTAGE' ? 'Markup percentage' : 'Markup amount'}
+                            value={markup.mark_up_price || ''}
+                            onChange={event => changeAdjustment(event.target.value)}
+                            InputProps={{
+                                startAdornment: markup.mark_up_option === 'AMOUNT'
+                                    ? <InputAdornment position="start">₱</InputAdornment>
+                                    : undefined,
+                                endAdornment: markup.mark_up_option === 'PERCENTAGE'
+                                    ? <InputAdornment position="end">%</InputAdornment>
+                                    : undefined
+                            }}
                         />
-                    </FormControl> */}
-
-
-                    {markUpModal.mark_up_option === 'AMOUNT' ? (
-                        <FormControl variant="standard" >
-                            <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Price</InputLabel>
-                            <Input
-                                className="mb-3"
-                                id="filled-required"
-                                label="Mark Up Price"
-                                variant="filled"
-                                name='mark_up_price'
-                                // value={markUpPrice.mark_up_price}
-                                onChange={onChangeMarkUpPrice}
-                                startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                            />
-                        </FormControl>
-                    ) : markUpModal.mark_up_option === 'PERCENTAGE' ? (
-                        <FormControl variant="standard" >
-                            <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Percentage</InputLabel>
-                            <Input
-                                className="mb-3"
-                                id="filled-required"
-                                label="Mark Up Price"
-                                variant="filled"
-                                name='mark_up_percentage'
-                                // value={markUpPrice.mark_up_price}
-                                onChange={onChangeMarkUpPercentage}
-                                endAdornment={<InputAdornment position="end">%</InputAdornment>}
-                            />
-                        </FormControl>
-                    ) : (
-                        <div></div>
-                    )}
-                    <br></br>
-                    <FormControl variant="standard" >
-                        <InputLabel htmlFor="standard-adornment-amount">Mark Up Price</InputLabel>
-                        <Input
-                            className="mb-3"
-                            id="filled-required"
-                            label="Mark Up Price"
-                            variant="filled"
-                            name='new_price'
-                            value={markUpModal.new_price}
-                            onChange={onChangeInput}
-                            disabled
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
+                        <div className="markup-modal__result">
+                            <span>New selling price</span><strong>{formatMoney(markup.new_price)}</strong>
+                        </div>
+                    </div>
+                    <div className="markup-modal__actions">
+                        <Button onClick={() => setOpen(false)}>Cancel</Button>
+                        <Button variant="contained" disabled={loading || Number(markup.mark_up_price) <= 0} onClick={saveUpdate}>
+                            Save changes
                         </Button>
-                    </Box>
+                    </div>
                 </Box>
             </Modal>
-        </div>
-    )
-}
+        </section>
+    );
+};
 
-export default MarkUpPriceList
+export default MarkUpPriceList;

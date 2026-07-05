@@ -211,6 +211,9 @@ const StockSupplierWarning = () => {
                                                         <div className="stock-warning-order__details">
                                                             <strong>{order.supplier}</strong>
                                                             <span>PO #{order.order_supplier_transaction_id} · {order.date}</span>
+                                                            <span className={`stock-warning-order__status stock-warning-order__status--${String(order.status || 'PENDING').toLowerCase()}`}>
+                                                                {String(order.status || 'PENDING').replaceAll('_', ' ')}
+                                                            </span>
                                                         </div>
                                                         <div className="stock-warning-order__quantity">
                                                             <span>Incoming</span><strong>{order.quantity}</strong>
