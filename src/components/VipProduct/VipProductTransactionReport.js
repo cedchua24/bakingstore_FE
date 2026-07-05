@@ -234,6 +234,16 @@ const styles = {
         fontSize: "10px",
         whiteSpace: "nowrap",
     },
+    pendingStatus: {
+        display: "inline-flex",
+        width: "fit-content",
+        marginTop: "3px",
+        padding: "2px 6px",
+        borderRadius: "999px",
+        fontSize: "9px",
+        fontWeight: 800,
+        letterSpacing: "0.04em",
+    },
     pendingQuantity: {
         textAlign: "right",
         whiteSpace: "nowrap",
@@ -309,8 +319,23 @@ const VipProductTransactionReport = () => {
     const fetchReport = useCallback((dateFrom, dateTo) => {
         setLoading(true);
         setError("");
-        return VipProductTransactionService.fetchVipProductLastOrder(id, dateFrom, dateTo)
-            .then((response) => setProducts(response.data))
+        return Promise.all([
+            VipProductTransactionService.fetchVipProductLastOrder(id, dateFrom, dateTo),
+            VipProductTransactionService.fetchVipTransactionByVipId(id),
+        ])
+            .then(([reportResponse, transactionResponse]) => {
+                const transactionByProduct = new Map(
+                    transactionResponse.data.map((transaction) => [
+                        Number(transaction.product_id),
+                        transaction.id,
+                    ])
+                );
+                setProducts(reportResponse.data.map((product) => ({
+                    ...product,
+                    vip_product_transaction_id: product.vip_product_transaction_id
+                        || transactionByProduct.get(Number(product.product_id)),
+                })));
+            })
             .catch(() => setError("Unable to fetch VIP Product transactions."))
             .finally(() => setLoading(false));
     }, [id]);
@@ -353,6 +378,7 @@ const VipProductTransactionReport = () => {
 
     const renderPendingOrders = (product) => {
         const ids = normalizeArray(product.pending_order_transaction_ids);
+        const statuses = normalizeArray(product.pending_order_status);
         const dates = normalizeArray(product.pending_order_dates);
         const suppliers = normalizeArray(product.pending_order_suppliers, "||");
         const quantities = normalizeArray(product.pending_order_quantity);
@@ -384,6 +410,15 @@ const VipProductTransactionReport = () => {
                 }
                 {ids.map((transactionId, index) => {
                     const orderType = orderTypes[index] || product.last_order_type;
+                    const status = String(statuses[index] || "PENDING").toUpperCase();
+                    const statusColors = {
+                        PENDING: { color: "#8a4b08", backgroundColor: "#fff1d6" },
+                        SENT_TO_SUPPLIER: { color: "#2457a6", backgroundColor: "#eaf1ff" },
+                        APPROVED: { color: "#2457a6", backgroundColor: "#eaf1ff" },
+                        COMPLETED: { color: "#216e46", backgroundColor: "#e9f8ef" },
+                        CANCELLED: { color: "#a63832", backgroundColor: "#ffedeb" },
+                        CANCELED: { color: "#a63832", backgroundColor: "#ffedeb" },
+                    };
                     return (
                         <Link
                             key={`${transactionId}-${index}`}
@@ -400,6 +435,9 @@ const VipProductTransactionReport = () => {
                                     </span>
                                     <span style={styles.pendingMeta}>
                                         PO #{transactionId} · {formatDate(dates[index])}
+                                    </span>
+                                    <span style={{ ...styles.pendingStatus, ...(statusColors[status] || {}) }}>
+                                        {status.replaceAll("_", " ")}
                                     </span>
                                 </span>
                                 <span style={styles.pendingQuantity}>
@@ -486,6 +524,7 @@ const VipProductTransactionReport = () => {
                             <th colSpan="2" style={{ ...styles.groupHeader, width: "170px" }}>Sold to Customers</th>
                             <th colSpan="3" style={{ ...styles.groupHeader, width: "300px" }}>Last Supplier Order</th>
                             <th rowSpan="2" style={{ ...styles.groupHeader, width: "250px" }}>Pending Supplier Orders</th>
+                            <th rowSpan="2" style={{ ...styles.groupHeader, width: "90px" }}>Note</th>
                             <th rowSpan="2" style={{ ...styles.groupHeader, width: "90px" }}>OOS History</th>
                         </tr>
                         <tr>
@@ -567,6 +606,13 @@ const VipProductTransactionReport = () => {
                                     </td>
                                     <td>{renderPendingOrders(product)}</td>
                                     <td>
+                                        {product.vip_product_transaction_id
+                                            ? <Link to={`/vipProductNote/${product.vip_product_transaction_id}`}>
+                                                <Button variant="info" size="sm">Add Note</Button>
+                                            </Link>
+                                            : <span style={styles.muted}>-</span>}
+                                    </td>
+                                    <td>
                                         <Link to={`/viewOutOfStockHistory/${product.id || product.product_id}`}>
                                             <Button variant="outline-danger" size="sm">
                                                 View
@@ -577,7 +623,7 @@ const VipProductTransactionReport = () => {
                             );
                         }) : (
                             <tr>
-                                <td colSpan="11" style={styles.empty}>No VIP Product transactions found.</td>
+                                <td colSpan="12" style={styles.empty}>No VIP Product transactions found.</td>
                             </tr>
                         )}
                     </tbody>

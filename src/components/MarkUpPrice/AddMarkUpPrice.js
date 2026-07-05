@@ -1,499 +1,240 @@
 import React, { useState } from "react";
-import { Alert } from 'react-bootstrap';
-import MarkUpPriceServiceService from "./MarkUpPriceService.service";
+import MarkUpPriceService from "./MarkUpPriceService.service";
 import BranchStockTransactionService from "../OtherService/BranchStockTransactionService";
 
-import InputAdornment from '@mui/material/InputAdornment';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
+import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Button from '@mui/material/Button';
-
+import InputAdornment from '@mui/material/InputAdornment';
 import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import TextField from '@mui/material/TextField';
+import AddBusinessOutlinedIcon from '@mui/icons-material/AddBusinessOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 
-const AddMarkUpPrice = (props) => {
+const emptyPrice = {
+    product_id: 0,
+    product_name: '',
+    quantity: 0,
+    price: 0,
+    mark_up_option: '',
+    mark_up_price: 0,
+    new_price: 0,
+    profit: 0,
+    branch_stock_transaction_id: 0,
+    business_type: ''
+};
 
-    const products = props.products;
-    const [branchStockTransactionList, setBranchStockTransactionList] = useState([]);
+const AddMarkUpPrice = ({ products, onSaved }) => {
+    const [warehouses, setWarehouses] = useState([]);
+    const [wholesale, setWholesale] = useState(emptyPrice);
+    const [retail, setRetail] = useState(emptyPrice);
+    const [errors, setErrors] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+    const [message, setMessage] = useState('');
 
-    const [markUpPrice, setMarkUpPrice] = useState({
-        id: 0,
-        product_id: 0,
-        product_name: '',
-        quantity: 0,
-        price: 0,
-        mark_up_option: '',
-        mark_up_price: 0,
-        new_price: 0,
-        status: 0,
-        branch_stock_transaction_id: 0
-    });
+    const formatMoney = value => new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        maximumFractionDigits: 2
+    }).format(Number(value || 0));
 
-    const [markUpPriceRetail, setMarkUpPriceRetail] = useState({
-        id: 0,
-        product_id: 0,
-        product_name: '',
-        quantity: 0,
-        price: 0,
-        mark_up_option: '',
-        mark_up_price: 0,
-        new_price: 0,
-        status: 0,
-        branch_stock_transaction_id: 0
-    });
+    const selectProduct = (event, value) => {
+        if (!value) {
+            setWholesale(emptyPrice);
+            setRetail(emptyPrice);
+            setWarehouses([]);
+            return;
+        }
 
-    const [message, setMessage] = useState(false);
+        BranchStockTransactionService.fetchBranchStockWarehouseList(value.id)
+            .then(response => setWarehouses(response.data))
+            .catch(error => console.log("error", error));
 
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-    const [formErrors, setFormErrors] = useState({});
-
-
-    const onChangeInput = (e) => {
-        console.log(e.target.value);
-        setMarkUpPrice({ ...markUpPrice, [e.target.name]: e.target.value });
-    }
-
-    const onChangeMarkUpPrice = (e) => {
-        setMarkUpPrice({
-            ...markUpPrice,
-            mark_up_price: Number(e.target.value),
-            new_price: Number(markUpPrice.price) + Number(e.target.value),
-            profit: Number(e.target.value)
-        });
-    }
-
-    const onChangeMarkUpPercentage = (e) => {
-        const divisible = (markUpPrice.price / 100) * e.target.value;
-        setMarkUpPrice({
-            ...markUpPrice,
-            mark_up_price: Number(e.target.value),
-            new_price: markUpPrice.price + divisible,
-            profit: divisible
-        });
-    }
-
-    const handleInputChange = (e, value) => {
-        e.persist();
-        fetchBranchStockWarehouseList(value.id);
-        console.log('ey', value);
-        setMarkUpPrice({
-            ...markUpPrice,
+        setWholesale({
+            ...emptyPrice,
             product_id: value.id,
             product_name: value.product_name,
-            quantity: value.quantity,
-            price: value.price,
-            business_type: "WHOLESALE"
+            quantity: Number(value.quantity || 0),
+            price: Number(value.price || 0),
+            business_type: 'WHOLESALE'
         });
-
-        setMarkUpPriceRetail({
-            ...markUpPriceRetail,
+        setRetail({
+            ...emptyPrice,
             product_id: value.id,
             product_name: value.product_name,
-            quantity: value.quantity,
-            price: Math.ceil(value.price / value.quantity)
-
+            quantity: Number(value.quantity || 0),
+            price: Math.ceil(Number(value.price || 0) / Math.max(Number(value.quantity || 1), 1)),
+            business_type: 'RETAIL'
         });
-    }
+        setErrors(current => ({ ...current, product_id: undefined }));
+    };
 
-    const handleWarehouseChange = (e, value) => {
-        e.persist();
-        console.log(value);
-        setMarkUpPrice({
-            ...markUpPrice,
-            branch_stock_transaction_id: value.id,
-        });
+    const selectWarehouse = (event, value) => {
+        const warehouseId = value?.id || 0;
+        setWholesale(current => ({ ...current, branch_stock_transaction_id: warehouseId }));
+        setRetail(current => ({ ...current, branch_stock_transaction_id: warehouseId }));
+        setErrors(current => ({ ...current, branch_stock_transaction_id: undefined }));
+    };
 
-        setMarkUpPriceRetail({
-            ...markUpPriceRetail,
-            branch_stock_transaction_id: value.id,
-            business_type: "RETAIL"
-        });
-    }
-
-    const onChangeInputRetail = (e) => {
-        console.log(e.target.value);
-        setMarkUpPriceRetail({ ...markUpPriceRetail, [e.target.name]: e.target.value });
-    }
-
-    const onChangeMarkUpPriceRetail = (e) => {
-        setMarkUpPriceRetail({
-            ...markUpPriceRetail,
-            mark_up_price: Number(e.target.value),
-            new_price: Number(markUpPriceRetail.price) + Number(e.target.value),
-            profit: Number(e.target.value)
-        });
-    }
-
-    const onChangeMarkUpPercentageRetail = (e) => {
-        const divisible = (markUpPriceRetail.price / 100) * e.target.value;
-        setMarkUpPriceRetail({
-            ...markUpPriceRetail,
-            mark_up_price: Number(e.target.value),
-            new_price: Math.ceil(markUpPriceRetail.price + divisible),
-            profit: divisible
-        });
-    }
-
-
-
-
-    const fetchBranchStockWarehouseList = ($id) => {
-        BranchStockTransactionService.fetchBranchStockWarehouseList($id)
-            .then(response => {
-                console.log(response.data);
-                setBranchStockTransactionList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const validate = (values) => {
-        const errors = {};
-        if (markUpPrice.product_id == 0) {
-            errors.product_id = "Product is Required!";
-        }
-        if (markUpPrice.branch_stock_transaction_id == 0) {
-            errors.branch_stock_transaction_id = "Warehouse is Required!";
-        }
-        if (markUpPrice.mark_up_option.length == 0) {
-            errors.mark_up_option = "Mark Up Wholesale is Required!";
-        }
-        if (markUpPrice.mark_up_price == 0) {
-            errors.mark_up_price = "Mark Up Price is Required!";
+    const updatePricing = (setter, current, field, value, round = false) => {
+        if (field === 'mark_up_option') {
+            setter({ ...current, mark_up_option: value, mark_up_price: 0, new_price: 0, profit: 0 });
+            return;
         }
 
-        if (markUpPrice.quantity > 1) {
-            if (markUpPriceRetail.mark_up_option.length == 0) {
-                errors.mark_up_option_retail = "Mark Up Option is Required!";
-            }
-            if (markUpPriceRetail.mark_up_price == 0) {
-                errors.mark_up_price_retail = "Mark Up Price is Required!";
-            }
+        const adjustment = Number(value || 0);
+        const profit = current.mark_up_option === 'PERCENTAGE'
+            ? (Number(current.price || 0) / 100) * adjustment
+            : adjustment;
+        const calculatedPrice = Number(current.price || 0) + profit;
+        setter({
+            ...current,
+            mark_up_price: adjustment,
+            profit,
+            new_price: round ? Math.ceil(calculatedPrice) : calculatedPrice
+        });
+    };
 
+    const validate = () => {
+        const nextErrors = {};
+        if (!wholesale.product_id) nextErrors.product_id = 'Choose a product.';
+        if (!wholesale.branch_stock_transaction_id) nextErrors.branch_stock_transaction_id = 'Choose a warehouse.';
+        if (!wholesale.mark_up_option) nextErrors.wholesale_option = 'Choose a wholesale markup method.';
+        if (Number(wholesale.mark_up_price) <= 0) nextErrors.wholesale_value = 'Enter a wholesale markup.';
+        if (wholesale.quantity > 1) {
+            if (!retail.mark_up_option) nextErrors.retail_option = 'Choose a retail markup method.';
+            if (Number(retail.mark_up_price) <= 0) nextErrors.retail_value = 'Enter a retail markup.';
         }
+        return nextErrors;
+    };
 
-        return errors;
-    }
-
-
-    const saveMarkUpPrice = (event) => {
+    const saveMarkUpPrice = event => {
         event.preventDefault();
+        const nextErrors = validate();
+        setErrors(nextErrors);
+        if (Object.keys(nextErrors).length) return;
 
-        console.log("count: ", Object.keys(validate(markUpPrice)).length);
-        console.log("validate: ", validate(markUpPrice));
-        setFormErrors(validate(markUpPrice));
-        if (Object.keys(validate(markUpPrice)).length > 0) {
-            console.log("Has Validation: ");
+        setSubmitting(true);
+        setMessage('');
+        MarkUpPriceService.sanctum()
+            .then(() => MarkUpPriceService.create(wholesale))
+            .then(() => wholesale.quantity > 1 ? MarkUpPriceService.saveMarkUp(retail) : null)
+            .then(() => {
+                setMessage('Markup prices saved successfully.');
+                onSaved?.();
+            })
+            .catch(error => {
+                console.log(error);
+                setMessage('Unable to save markup prices.');
+            })
+            .finally(() => setSubmitting(false));
+    };
 
-        } else {
-            console.log("Ready for saving: ");
-            setSubmitLoadingAdd(true);
-            setIsAddDisabled(true);
-
-            MarkUpPriceServiceService.sanctum().then(response => {
-                MarkUpPriceServiceService.create(markUpPrice)
-                    .then(response => {
-                        props.onSaveMarkUpPriceData(markUpPrice);
-                        console.log('markUpPrice', markUpPrice);
-
-                        // setMarkUpPrice({
-                        //     product_name: ''
-                        // });
-                        if (markUpPrice.quantity > 1) {
-                            MarkUpPriceServiceService.saveMarkUp(markUpPriceRetail)
-                                .then(response => {
-
-                                    props.onSaveMarkUpPriceData(markUpPriceRetail);
-                                    console.log('markUpPriceRetail', markUpPriceRetail);
-                                    setMessage(true);
-                                    // setMarkUpPrice({
-                                    //     product_name: ''
-                                    // });
-                                    setSubmitLoadingAdd(false);
-                                    setIsAddDisabled(false);
-                                    window.scrollTo(0, 0);
-                                })
-                                .catch(e => {
-                                    console.log(e);
-                                    setSubmitLoadingAdd(false);
-                                    setIsAddDisabled(false);
-                                    window.scrollTo(0, 0);
-                                });
-                        } else {
-                            setMessage(true);
-                            setSubmitLoadingAdd(false);
-                            setIsAddDisabled(false);
-                            window.scrollTo(0, 0);
-                        }
-                    })
-                    .catch(e => {
-                        console.log(e);
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        window.scrollTo(0, 0);
-                    });
-
-            });
-        }
-
-    }
+    const renderPricingPanel = (title, icon, pricing, setter, isRetail = false) => (
+        <div className="markup-pricing-panel">
+            <div className="markup-pricing-panel__header">
+                <span>{icon}</span>
+                <div><h3>{title}</h3><p>{isRetail ? 'Price per individual unit' : 'Price per complete package'}</p></div>
+            </div>
+            <div className="markup-pricing-panel__base">
+                <span>Supplier price</span><strong>{formatMoney(pricing.price)}</strong>
+            </div>
+            <TextField
+                select
+                fullWidth
+                size="small"
+                label="Markup method"
+                value={pricing.mark_up_option}
+                onChange={event => updatePricing(setter, pricing, 'mark_up_option', event.target.value, isRetail)}
+                error={Boolean(errors[isRetail ? 'retail_option' : 'wholesale_option'])}
+                helperText={errors[isRetail ? 'retail_option' : 'wholesale_option']}
+            >
+                <MenuItem value="PERCENTAGE">Percentage</MenuItem>
+                <MenuItem value="AMOUNT">Fixed amount</MenuItem>
+            </TextField>
+            <TextField
+                fullWidth
+                size="small"
+                type="number"
+                label={pricing.mark_up_option === 'PERCENTAGE' ? 'Markup percentage' : 'Markup amount'}
+                value={pricing.mark_up_price || ''}
+                disabled={!pricing.mark_up_option}
+                onChange={event => updatePricing(setter, pricing, 'mark_up_price', event.target.value, isRetail)}
+                error={Boolean(errors[isRetail ? 'retail_value' : 'wholesale_value'])}
+                helperText={errors[isRetail ? 'retail_value' : 'wholesale_value']}
+                InputProps={{
+                    startAdornment: pricing.mark_up_option === 'AMOUNT'
+                        ? <InputAdornment position="start">₱</InputAdornment>
+                        : undefined,
+                    endAdornment: pricing.mark_up_option === 'PERCENTAGE'
+                        ? <InputAdornment position="end">%</InputAdornment>
+                        : undefined
+                }}
+            />
+            <div className="markup-pricing-panel__result">
+                <div><span>Profit</span><strong>+ {formatMoney(pricing.profit)}</strong></div>
+                <ArrowForwardRoundedIcon />
+                <div><span>New price</span><strong>{formatMoney(pricing.new_price)}</strong></div>
+            </div>
+        </div>
+    );
 
     return (
-        <div>
-            {message &&
-                <Alert variant="success" dismissible>
-                    <Alert.Heading>Successfully Added!</Alert.Heading>
-                    <p>
-                        Change this and that and try again. Duis mollis, est non commodo
-                        luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-                        Cras mattis consectetur purus sit amet fermentum.
-                    </p>
-                </Alert>
-            }
-            <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '55ch' },
-                }}
-                noValidate
-                autoComplete="off"
-            // onSubmit={saveOrderSupplier}
-            >
-                <br></br>
-                <h1>Wholesale</h1>
-                <form onSubmit={saveMarkUpPrice} >
-                    {formErrors.product_id && <p style={{ color: "red" }}>{formErrors.product_id}</p>}
-                    <FormControl variant="standard" >
-                        <Autocomplete
-                            // {...defaultProps}
-                            options={products}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleInputChange}
-                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.price) + ')'}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Choose Product" variant="standard" />
-                            )}
-                        />
-                    </FormControl>
-                    <br></br>
-
-                    {formErrors.branch_stock_transaction_id && <p style={{ color: "red" }}>{formErrors.branch_stock_transaction_id}</p>}
-                    <FormControl variant="standard" >
-                        <Autocomplete
-                            // {...defaultProps}
-                            options={branchStockTransactionList}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleWarehouseChange}
-                            // getOptionLabel={(branchStockTransactionList) => branchStockTransactionList.warehouse_name + ' - ' + ' (Stock : ' + (branchStockTransactionList.branch_stock_transaction) + ')'}
-                            getOptionLabel={(branchStockTransactionList) => branchStockTransactionList.warehouse_name}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Choose Warehouse" variant="standard" />
-                            )}
-                        />
-                    </FormControl>
-                    <br></br>
-                    <FormControl variant="standard" >
-                        <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
-                        <Input
-                            className="mb-3"
-                            id="filled-required"
-                            label="Price"
-                            variant="filled"
-                            name='price'
-                            disabled
-                            value={markUpPrice.price}
-                            onChange={onChangeInput}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-                    <br></br>
-                    {formErrors.mark_up_option && <p style={{ color: "red" }}>{formErrors.mark_up_option}</p>}
-                    <FormControl fullWidth>
-                        <InputLabel id="demo-simple-select-label">Mark Up Option</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            className="mb-3"
-                            id="demo-simple-select"
-                            value={markUpPrice.mark_up_option}
-                            name='mark_up_option'
-                            label="Mark Up Option"
-                            onChange={onChangeInput}
-                        >
-                            <MenuItem value='PERCENTAGE'>PERCENTAGE</MenuItem>
-                            <MenuItem value='AMOUNT'>AMOUNT</MenuItem>
-                        </Select>
-                    </FormControl>
-                    <br></br>
-                    {formErrors.mark_up_price && <p style={{ color: "red" }}>{formErrors.mark_up_price}</p>}
-                    {markUpPrice.mark_up_option === 'AMOUNT' ? (
-                        <FormControl variant="standard" >
-                            <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Price</InputLabel>
-                            <Input
-                                className="mb-3"
-                                id="filled-required"
-                                label="Mark Up Price"
-                                variant="filled"
-                                name='mark_up_price'
-                                // value={markUpPrice.mark_up_price}
-                                onChange={onChangeMarkUpPrice}
-                                startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                            />
-                        </FormControl>
-                    ) : markUpPrice.mark_up_option === 'PERCENTAGE' ? (
-                        <FormControl variant="standard" >
-                            <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Percentage</InputLabel>
-                            <Input
-                                className="mb-3"
-                                id="filled-required"
-                                label="Mark Up Price"
-                                variant="filled"
-                                name='mark_up_percentage'
-                                // value={markUpPrice.mark_up_price}
-                                onChange={onChangeMarkUpPercentage}
-                                endAdornment={<InputAdornment position="end">%</InputAdornment>}
-                            />
-                        </FormControl>
-                    ) : (
-                        <div></div>
-                    )}
-
-                    <br></br>
-                    <FormControl variant="standard" >
-                        <InputLabel htmlFor="standard-adornment-amount">Mark Up Price</InputLabel>
-                        <Input
-                            className="mb-3"
-                            id="filled-required"
-                            label="Mark Up Price"
-                            variant="filled"
-                            name='new_price'
-                            value={markUpPrice.new_price}
-                            onChange={onChangeInput}
-                            disabled
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-                    <br></br>
-
-                    {markUpPrice.quantity > 1 ? (
-                        <div>
-                            <h1>Retail</h1>
-                            <FormControl variant="standard" >
-                                <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
-                                <Input
-                                    className="mb-3"
-                                    id="filled-required"
-                                    label="Price"
-                                    variant="filled"
-                                    name='price'
-                                    disabled
-                                    value={markUpPriceRetail.price}
-                                    onChange={onChangeInputRetail}
-                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                                />
-                            </FormControl>
-                            <br></br>
-                            {formErrors.mark_up_option_retail && <p style={{ color: "red" }}>{formErrors.mark_up_option_retail}</p>}
-                            <FormControl fullWidth>
-                                <InputLabel id="demo-simple-select-label">Mark Up Option</InputLabel>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    className="mb-3"
-                                    id="demo-simple-select"
-                                    value={markUpPriceRetail.mark_up_option}
-                                    name='mark_up_option'
-                                    label="Mark Up Option"
-                                    onChange={onChangeInputRetail}
-                                >
-                                    <MenuItem value='PERCENTAGE'>PERCENTAGE</MenuItem>
-                                    <MenuItem value='AMOUNT'>AMOUNT</MenuItem>
-                                </Select>
-                            </FormControl>
-                            <br></br>
-                            {formErrors.mark_up_price_retail && <p style={{ color: "red" }}>{formErrors.mark_up_price_retail}</p>}
-                            {markUpPriceRetail.mark_up_option === 'AMOUNT' ? (
-                                <FormControl variant="standard" >
-                                    <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Price</InputLabel>
-                                    <Input
-                                        className="mb-3"
-                                        id="filled-required"
-                                        label="Mark Up Price"
-                                        variant="filled"
-                                        name='mark_up_price'
-                                        // value={markUpPriceRetail.mark_up_price}
-                                        onChange={onChangeMarkUpPriceRetail}
-                                        startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                                    />
-                                </FormControl>
-                            ) : markUpPriceRetail.mark_up_option === 'PERCENTAGE' ? (
-                                <FormControl variant="standard" >
-                                    <InputLabel htmlFor="standard-adornment-amount">Mark Up Adjustment Percentage</InputLabel>
-                                    <Input
-                                        className="mb-3"
-                                        id="filled-required"
-                                        label="Mark Up Price"
-                                        variant="filled"
-                                        name='mark_up_percentage'
-                                        // value={markUpPriceRetail.mark_up_price}
-                                        onChange={onChangeMarkUpPercentageRetail}
-                                        endAdornment={<InputAdornment position="end">%</InputAdornment>}
-                                    />
-                                </FormControl>
-                            ) : (
-                                <div></div>
-                            )}
-
-                            <br></br>
-                            <FormControl variant="standard" >
-                                <InputLabel htmlFor="standard-adornment-amount">Mark Up Price</InputLabel>
-                                <Input
-                                    className="mb-3"
-                                    id="filled-required"
-                                    label="Mark Up Price"
-                                    variant="filled"
-                                    name='new_price'
-                                    value={markUpPriceRetail.new_price}
-                                    onChange={onChangeInputRetail}
-                                    disabled
-                                    startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                                />
-                            </FormControl>
-
-                            <br></br>
-                        </div>
-
-                    ) : (
-                        <div></div>
-                    )}
-
-                    <br></br>
-                    <div>
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            disabled={isAddDisabled}
-                        >
-                            Submit
-                        </Button>
+        <section className="markup-create-card">
+            <div className="markup-create-card__header">
+                <div><h2>Create markup price</h2><p>Select a product and calculate its wholesale and retail selling prices.</p></div>
+                <span><AddBusinessOutlinedIcon />New price</span>
+            </div>
+            {message && <Alert severity={message.startsWith('Unable') ? 'error' : 'success'}>{message}</Alert>}
+            <form onSubmit={saveMarkUpPrice}>
+                <div className="markup-selection">
+                    <Autocomplete
+                        options={products}
+                        onChange={selectProduct}
+                        getOptionLabel={product => `${product.product_name} · ${formatMoney(product.price)}`}
+                        renderInput={params => (
+                            <TextField {...params} label="Choose product" error={Boolean(errors.product_id)} helperText={errors.product_id} />
+                        )}
+                    />
+                    <Autocomplete
+                        options={warehouses}
+                        onChange={selectWarehouse}
+                        disabled={!wholesale.product_id}
+                        getOptionLabel={warehouse => warehouse.warehouse_name || ''}
+                        renderInput={params => (
+                            <TextField {...params} label="Choose warehouse" error={Boolean(errors.branch_stock_transaction_id)} helperText={errors.branch_stock_transaction_id} />
+                        )}
+                    />
+                </div>
+                {wholesale.product_id ? (
+                    <div className="markup-pricing-grid">
+                        {renderPricingPanel('Wholesale', <StorefrontOutlinedIcon />, wholesale, setWholesale)}
+                        {wholesale.quantity > 1
+                            ? renderPricingPanel('Retail', <ShoppingBagOutlinedIcon />, retail, setRetail, true)
+                            : <div className="markup-retail-unavailable">
+                                <ShoppingBagOutlinedIcon />
+                                <h3>Retail price not required</h3>
+                                <p>This product contains one unit per package.</p>
+                            </div>}
                     </div>
-                    <br></br>
-                    {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
-                    }
-                    <br></br>
-                </form>
-            </Box>
-            <br></br>
+                ) : (
+                    <div className="markup-product-placeholder">
+                        <AddBusinessOutlinedIcon />
+                        <p>Choose a product to configure its pricing.</p>
+                    </div>
+                )}
+                <div className="markup-create-actions">
+                    <Button type="submit" variant="contained" disabled={submitting}>
+                        {submitting ? 'Saving prices...' : 'Save markup prices'}
+                    </Button>
+                </div>
+                {submitting && <LinearProgress className="markup-create-progress" />}
+            </form>
+        </section>
+    );
+};
 
-        </div >
-    )
-}
-
-export default AddMarkUpPrice
+export default AddMarkUpPrice;

@@ -1,167 +1,213 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import HistoryRoundedIcon from "@mui/icons-material/HistoryRounded";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
+import WarehouseOutlinedIcon from "@mui/icons-material/WarehouseOutlined";
+import CircularProgress from "@mui/material/CircularProgress";
 import MarkUpPriceServiceService from "./MarkUpPriceService.service";
+import "./MarkUpPrice.css";
 
-import UpdateIcon from '@mui/icons-material/Update';
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Modal from '@mui/material/Modal';
+const money = new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    minimumFractionDigits: 2,
+});
 
-import InputAdornment from '@mui/material/InputAdornment';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
+const formatDate = (date) => {
+    if (!date) return "Date unavailable";
 
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import { useParams, useNavigate } from 'react-router-dom';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography'
-import CircularProgress from '@mui/material/CircularProgress';
+    return new Intl.DateTimeFormat("en-PH", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+    }).format(new Date(date));
+};
 
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+const formatPackage = (record, isRetail = false) => {
+    if (!record) return "No price recorded";
 
+    const quantity = Math.max(Number(record.quantity) || 1, 1);
+    const unitWeight = (Number(record.weight) || 0) / quantity;
+    const formattedWeight = Number.isInteger(unitWeight)
+        ? unitWeight
+        : Number(unitWeight.toFixed(2));
 
-const ViewMarkUpHistory = () => {
+    if (isRetail) return `${formattedWeight}${record.variation || ""} per piece`;
 
-    const { id } = useParams();
+    return `${formattedWeight}${record.variation || ""} × ${quantity} ${record.packaging || ""}`.trim();
+};
 
-    useEffect(() => {
-        fetchMarkUpPriceList(id);
-    }, []);
+const PriceHistoryCard = ({ record, type }) => {
+    const isRetail = type === "RETAIL";
 
-    const [markupPriceList, setMarkupPriceList] = useState([]);
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
-    };
-
-
-    const fetchMarkUpPriceList = (id) => {
-        MarkUpPriceServiceService.fetchMarkupByProductId(id)
-            .then(response => {
-                setMarkupPriceList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+    if (!record) {
+        return (
+            <div className="markup-history-price markup-history-price--empty">
+                <span>{isRetail ? <StorefrontOutlinedIcon /> : <WarehouseOutlinedIcon />}</span>
+                <div>
+                    <strong>{isRetail ? "Retail" : "Wholesale"}</strong>
+                    <small>No price recorded for this date</small>
+                </div>
+            </div>
+        );
     }
 
-
-
-    //formatdate
-    const formatStatementDate = (date) => {
-        var d = new Date(date);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
-    const groupedByDate = markupPriceList.reduce((acc, item) => {
-        const date = formatStatementDate(item.created_at);
-
-        if (!acc[date]) {
-            acc[date] = {
-                date,
-                retail: null,
-                wholesale: null,
-            };
-        }
-
-        if (item.business_type === 'RETAIL') {
-            acc[date].retail = item;
-        }
-
-        if (item.business_type === 'WHOLESALE') {
-            acc[date].wholesale = item;
-        }
-
-        return acc;
-    }, {});
-
-    const pairedMarkupList = Object.values(groupedByDate);
+    const supplierPrice = Number(record.price) || 0;
+    const sellingPrice = Number(record.new_price) || 0;
+    const profit = sellingPrice - supplierPrice;
+    const markup = record.mark_up_option === "PERCENTAGE"
+        ? `${record.mark_up_price}%`
+        : money.format(Number(record.mark_up_price) || 0);
 
     return (
-        <div>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Mark Up History </legend>
-            <h6 align="center"> {markupPriceList?.[0]?.product_name || ''}  </h6>
-            <table className="table table-bordered">
-                <thead className="table-dark">
-                    <tr className="table-secondary">
-                        <th>Date</th>
+        <div className={`markup-history-price markup-history-price--${isRetail ? "retail" : "wholesale"}`}>
+            <div className="markup-history-price__heading">
+                <span>{isRetail ? <StorefrontOutlinedIcon /> : <WarehouseOutlinedIcon />}</span>
+                <div>
+                    <strong>{isRetail ? "Retail" : "Wholesale"}</strong>
+                    <small>{formatPackage(record, isRetail)}</small>
+                </div>
+                <span className={`markup-type markup-type--${isRetail ? "retail" : "wholesale"}`}>
+                    {record.mark_up_option === "PERCENTAGE" ? "Percentage" : "Fixed"}
+                </span>
+            </div>
 
-
-                        <th>Retail Details</th>
-                        <th>Retail Supplier Price</th>
-                        <th>Retail Mark Up Price</th>
-                        <th>Retail New Price</th>
-
-
-                        <th>Wholesale Details</th>
-                        <th>Wholesale Supplier Price</th>
-                        <th>Wholesale Mark Up Price</th>
-                        <th>Wholesale New Price</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {pairedMarkupList.map((row, index) => (
-                        <tr key={index}>
-                            <td>{row.date}</td>
-
-
-                            <td>
-                                {row.retail
-                                    ? `(${Number.isInteger(row.retail.weight / row.retail.quantity)
-                                        ? row.retail.weight / row.retail.quantity
-                                        : (row.retail.weight / row.retail.quantity).toPrecision(2)
-                                    }${row.retail.variation})`
-                                    : ''}
-                            </td>
-                            <td>{row.retail ? `₱ ${row.retail.price}.00` : ''}</td>
-                            <td>
-                                {row.retail
-                                    ? row.retail.mark_up_option === 'PERCENTAGE'
-                                        ? `${row.retail.mark_up_price}% / ₱ ${Number(row.retail.new_price) - Number(row.retail.price)}.00`
-                                        : `₱ ${row.retail.mark_up_price}.00`
-                                    : ''}
-                            </td>
-                            <td style={{ fontWeight: 'bold' }}>
-                                {row.retail ? `₱ ${row.retail.new_price}${row.retail.new_price % 1 === 0 ? '.00' : ''}` : ''}
-                            </td>
-
-
-                            <td>
-                                {row.wholesale
-                                    ? `(${row.wholesale.weight / row.wholesale.quantity}${row.wholesale.variation} x ${row.wholesale.quantity}) ${row.wholesale.packaging}`
-                                    : ''}
-                            </td>
-                            <td>{row.wholesale ? `₱ ${row.wholesale.price}.00` : ''}</td>
-                            <td>
-                                {row.wholesale
-                                    ? row.wholesale.mark_up_option === 'PERCENTAGE'
-                                        ? `${row.wholesale.mark_up_price}% / ₱ ${Number(row.wholesale.new_price) - Number(row.wholesale.price)}.00`
-                                        : `₱ ${row.wholesale.mark_up_price}.00`
-                                    : ''}
-                            </td>
-                            <td style={{ fontWeight: 'bold' }}>
-                                {row.wholesale ? `₱ ${row.wholesale.new_price}${row.wholesale.new_price % 1 === 0 ? '.00' : ''}` : ''}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-
+            <div className="markup-history-price__values">
+                <div>
+                    <span>Supplier price</span>
+                    <strong>{money.format(supplierPrice)}</strong>
+                </div>
+                <div>
+                    <span>Markup</span>
+                    <strong>{markup}</strong>
+                </div>
+                <div>
+                    <span>Profit</span>
+                    <strong className="markup-profit">+{money.format(profit)}</strong>
+                </div>
+                <div className="markup-history-price__selling">
+                    <span>Selling price</span>
+                    <strong>{money.format(sellingPrice)}</strong>
+                </div>
+            </div>
         </div>
-    )
-}
+    );
+};
 
-export default ViewMarkUpHistory
+const ViewMarkUpHistory = () => {
+    const { id } = useParams();
+    const [markupPriceList, setMarkupPriceList] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        setLoading(true);
+        MarkUpPriceServiceService.fetchMarkupByProductId(id)
+            .then((response) => setMarkupPriceList(Array.isArray(response.data) ? response.data : []))
+            .catch((error) => {
+                console.log("error", error);
+                setMarkupPriceList([]);
+            })
+            .finally(() => setLoading(false));
+    }, [id]);
+
+    const pairedMarkupList = useMemo(() => {
+        const groupedByDate = markupPriceList.reduce((groups, item) => {
+            const key = formatDate(item.created_at);
+
+            if (!groups[key]) {
+                groups[key] = {
+                    date: key,
+                    timestamp: new Date(item.created_at).getTime() || 0,
+                    retail: null,
+                    wholesale: null,
+                };
+            }
+
+            if (item.business_type === "RETAIL") groups[key].retail = item;
+            if (item.business_type === "WHOLESALE") groups[key].wholesale = item;
+            return groups;
+        }, {});
+
+        return Object.values(groupedByDate).sort((a, b) => b.timestamp - a.timestamp);
+    }, [markupPriceList]);
+
+    const productName = markupPriceList[0]?.product_name || "Product markup";
+    const latestEntry = pairedMarkupList[0];
+
+    return (
+        <main className="markup-page">
+            <section className="markup-hero markup-hero--history">
+                <div className="markup-hero__icon"><HistoryRoundedIcon /></div>
+                <div className="markup-hero__copy">
+                    <span>Pricing audit trail</span>
+                    <h1>Markup History</h1>
+                    <p>Review every retail and wholesale price change for {productName}.</p>
+                </div>
+                <Link className="markup-history-back" to="/markUpPriceListV2/">
+                    <ArrowBackRoundedIcon /> Back to price list
+                </Link>
+            </section>
+
+            <section className="markup-history-summary">
+                <div>
+                    <span><Inventory2OutlinedIcon /></span>
+                    <p>Product<strong>{productName}</strong></p>
+                </div>
+                <div>
+                    <span><HistoryRoundedIcon /></span>
+                    <p>History entries<strong>{pairedMarkupList.length}</strong></p>
+                </div>
+                <div>
+                    <span><LocalOfferOutlinedIcon /></span>
+                    <p>Latest update<strong>{latestEntry?.date || "No updates yet"}</strong></p>
+                </div>
+            </section>
+
+            <section className="markup-list-card">
+                <header className="markup-list-card__header">
+                    <div>
+                        <h2>Price change timeline</h2>
+                        <p>Retail and wholesale prices are paired by update date.</p>
+                    </div>
+                    <span><HistoryRoundedIcon /> Newest first</span>
+                </header>
+
+                {loading ? (
+                    <div className="markup-history-state">
+                        <CircularProgress size={28} />
+                        <p>Loading price history…</p>
+                    </div>
+                ) : pairedMarkupList.length === 0 ? (
+                    <div className="markup-list-empty">
+                        <HistoryRoundedIcon />
+                        <h3>No markup history yet</h3>
+                        <p>Price changes for this product will appear here.</p>
+                    </div>
+                ) : (
+                    <div className="markup-history-timeline">
+                        {pairedMarkupList.map((row, index) => (
+                            <article className="markup-history-entry" key={`${row.date}-${index}`}>
+                                <div className="markup-history-entry__date">
+                                    <span>{index + 1}</span>
+                                    <div>
+                                        <small>{index === 0 ? "Latest update" : "Previous update"}</small>
+                                        <strong>{row.date}</strong>
+                                    </div>
+                                </div>
+                                <div className="markup-history-entry__prices">
+                                    <PriceHistoryCard record={row.retail} type="RETAIL" />
+                                    <PriceHistoryCard record={row.wholesale} type="WHOLESALE" />
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                )}
+            </section>
+        </main>
+    );
+};
+
+export default ViewMarkUpHistory;

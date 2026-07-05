@@ -1,77 +1,47 @@
-import React, { useState, useEffect } from "react";
-import MarkUpPriceServiceService from "./MarkUpPriceService.service";
-import ProductServiceService from "../Product/ProductService.service";
+import React, { useEffect, useState } from "react";
+import MarkUpPriceService from "./MarkUpPriceService.service";
+import ProductService from "../Product/ProductService.service";
 import MarkUpPriceList from "./MarkUpPriceList";
 import AddMarkUpPrice from "./AddMarkUpPrice";
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import './MarkUpPrice.css';
 
 const MarkUpPrice = () => {
+    const [markupPriceList, setMarkupPriceList] = useState([]);
+    const [products, setProducts] = useState([]);
+
+    const fetchMarkUpPriceList = () => {
+        MarkUpPriceService.indexLimit100()
+            .then(response => setMarkupPriceList(response.data))
+            .catch(error => console.log("error", error));
+    };
 
     useEffect(() => {
         fetchMarkUpPriceList();
-        fetchProductList();
+        ProductService.getAll()
+            .then(response => setProducts(response.data))
+            .catch(error => console.log("error", error));
     }, []);
 
-    const [markupPriceList, setMarkupPriceList] = useState([]);
-
-    const [products, setProducts] = useState([]);
-
-    const saveMarkUpPriceDataHandler = (markupPrice) => {
-        // this.fetchMarkUpPriceList();
-        setMarkupPriceList([...markupPriceList, markupPrice]);
-    }
-
-
-    const fetchMarkUpPriceList = () => {
-        MarkUpPriceServiceService.indexLimit100()
-            .then(response => {
-                setMarkupPriceList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchProductList = () => {
-        ProductServiceService.getAll()
-            .then(response => {
-                setProducts(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-
-
-    const deleteMarkUpPrice = (id, e) => {
-
-        const index = setMarkupPriceList.findIndex(markUpPrice => markUpPrice.id === id);
-        const newMarkUpPrice = [...markupPriceList];
-        newMarkUpPrice.splice(index, 1);
-
-        MarkUpPriceServiceService.delete(id)
-            .then(response => {
-                setMarkupPriceList(newMarkUpPrice);
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
-    }
-
-
-
     return (
-        <div>
-            <AddMarkUpPrice
-                onSaveMarkUpPriceData={saveMarkUpPriceDataHandler}
-                products={products}
-            />
-            <MarkUpPriceList
-                markupPriceList={markupPriceList}
-                deleteMarkUpPrice={deleteMarkUpPrice}
-            />
+        <div className="markup-page">
+            <section className="markup-hero">
+                <div className="markup-hero__icon"><TrendingUpRoundedIcon /></div>
+                <div className="markup-hero__copy">
+                    <span>Pricing management</span>
+                    <h1>Mark Up Price</h1>
+                    <p>Create wholesale and retail selling prices from supplier costs.</p>
+                </div>
+                <div className="markup-hero__summary">
+                    <Inventory2OutlinedIcon />
+                    <div><strong>{markupPriceList.length}</strong><span>Recent price records</span></div>
+                </div>
+            </section>
+            <AddMarkUpPrice products={products} onSaved={fetchMarkUpPriceList} />
+            <MarkUpPriceList markupPriceList={markupPriceList} onUpdated={fetchMarkUpPriceList} />
         </div>
-    )
-}
+    );
+};
 
-export default MarkUpPrice
+export default MarkUpPrice;

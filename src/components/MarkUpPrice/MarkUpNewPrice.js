@@ -1,343 +1,201 @@
-import React, { useState, useEffect } from "react";
-import ProductServiceService from "../Product/ProductService.service";
-import ProductTransactionService from "../OtherService/ProductTransactionService";
-import BrandServiceService from "../Brand/BrandService.service";
-import CategoryServiceService from "../Category/CategoryService.service";
-import { Form } from 'react-bootstrap';
-import { Link } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
 
+import ProductService from "../Product/ProductService.service";
+import CategoryService from "../Category/CategoryService.service";
 
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import Modal from '@mui/material/Modal';
-
-
+import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
-
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography'
-import CircularProgress from '@mui/material/CircularProgress';
-
 import LinearProgress from '@mui/material/LinearProgress';
-
 import MenuItem from '@mui/material/MenuItem';
-
 import Select from '@mui/material/Select';
+import SearchIcon from '@mui/icons-material/Search';
+import PriceChangeOutlinedIcon from '@mui/icons-material/PriceChangeOutlined';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 
-
+import './MarkUpPrice.css';
+import './MarkUpNewPrice.css';
 
 const MarkUpNewPrice = () => {
+    const [productList, setProductList] = useState({ data: [] });
+    const [categoryList, setCategoryList] = useState([]);
+    const [categoryId, setCategoryId] = useState(0);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        fetchProductList();
-        fetchBrandList();
-        fetchCategoryList();
+        ProductService.fetchProductValue(0)
+            .then(response => setProductList(response.data))
+            .catch(error => console.log("error", error));
+
+        CategoryService.getAll()
+            .then(response => setCategoryList(response.data))
+            .catch(error => console.log("error", error));
     }, []);
 
-    const [categoryId, setCategoryId] = useState(0);
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const allProducts = Array.isArray(productList?.data) ? productList.data : [];
+    const changedProducts = useMemo(
+        () => allProducts.filter(product => Number(product.price) !== Number(product.mup_price)),
+        [allProducts]
+    );
 
-    const [submitLoading, setSubmitLoading] = useState(false);
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
+    const totals = useMemo(() => changedProducts.reduce((summary, product) => {
+        summary.previous += Number(product.mup_price || 0);
+        summary.current += Number(product.price || 0);
+        return summary;
+    }, { previous: 0, current: 0 }), [changedProducts]);
 
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    const fetchProducts = () => {
+        setLoading(true);
+        ProductService.fetchProductValue(categoryId)
+            .then(response => setProductList(response.data))
+            .catch(error => console.log("error", error))
+            .finally(() => setLoading(false));
     };
 
-    const [open, setOpen] = React.useState(false);
+    const formatMoney = value => new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        maximumFractionDigits: 2
+    }).format(Number(value || 0));
 
-    const handleOpen = (id, e) => {
-        console.log('e', id);
-        fetchShopOrder(id);
-        setOpen(true);
-    }
-
-    const [orderSupplierModal, setOrderSupplierModal] = useState({
-        id: 0,
-        user_id: localStorage.getItem('auth_user_id'),
-        product_name: '',
-        shop_order_quantity: 0,
-        stock: 0
-    });
-
-    const fetchShopOrder = async (id) => {
-        await ProductServiceService.get(id)
-            .then(response => {
-                setOrderSupplierModal(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const onChangeInputQuantityModal = (e) => {
-        e.persist();
-        setOrderSupplierModal({
-            ...orderSupplierModal,
-            user_id: localStorage.getItem('auth_user_id'),
-            shop_order_quantity: e.target.value,
-        });
-    }
-
-    const updateOrderSupplier = () => {
-        setSubmitLoading(true);
-        ProductTransactionService.create(orderSupplierModal)
-            .then(response => {
-                if (response.data.code == 200) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'success',
-                        message: 'Successfuly Added!',
-                        isShow: true,
-                    });
-                    fetchProductList();
-                } else if (response.data.code == 400) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'error',
-                        message: response.data.message,
-                        isShow: true,
-                    });
-                } else {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    setValidator({
-                        severity: 'error',
-                        message: "Unknown Error",
-                        isShow: true,
-                    });
-                }
-            })
-            .catch(e => {
-                console.log(e);
-            });
-    }
-
-    const handleClose = () => setOpen(false);
-
-    const [product, setProduct] = useState({
-        id: 0,
-        category_id: 0,
-        category_name: '',
-        brand_id: 0,
-        brand_name: '',
-        product_name: "",
-        price: 0,
-        stock: 0,
-        weight: 0,
-        quantity: 0,
-        packaging: ''
-    })
-
-    const [brandList, setBrandList] = useState([]);
-    const [categeryList, setCategoryList] = useState([]);
-
-    const [message, setMessage] = useState(false);
-
-    const [productList, setProductList] = useState({
-        total_value: 0,
-        total_profit: 0,
-        total_new_price: 0,
-        data: []
-    });
-
-    const onChangeInput = (e) => {
-        console.log(e.target.value)
-        setCategoryId(e.target.value)
-    }
-
-
-    const fetchProductList = () => {
-        ProductServiceService.fetchProductValue(0)
-            .then(response => {
-                setProductList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchBrandList = () => {
-        BrandServiceService.getAll()
-            .then(response => {
-                setBrandList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchCategoryList = () => {
-        CategoryServiceService.getAll()
-            .then(response => {
-                setCategoryList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const deleteProduct = (id, e) => {
-
-        const index = productList.findIndex(brand => brand.id === id);
-        const newProduct = [...productList];
-        newProduct.splice(index, 1);
-
-        ProductServiceService.delete(id)
-            .then(response => {
-                setProductList(newProduct);
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
-    }
-
-    const fetchProductByCategoryId = () => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        ProductServiceService.fetchProductValue(categoryId)
-            .then(response => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                setProductList(response.data);
-            })
-            .catch(e => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                console.log("error", e)
-            });
-    }
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
+    const formatPackage = product => {
+        if (product.quantity == null || product.weight == null) return product.packaging || 'Package not specified';
+        if (Number(product.quantity) === 1) return `${product.weight}${product.variation || ''}`;
+        const unitWeight = Number(product.weight) / Number(product.quantity);
+        return `${product.quantity} × ${Number.isInteger(unitWeight) ? unitWeight : unitWeight.toPrecision(2)}${product.variation || ''} / ${product.packaging || 'package'}`;
+    };
 
     return (
-        <div>
-            <Form>
+        <div className="markup-page">
+            <section className="markup-hero markup-new-hero">
+                <div className="markup-hero__icon"><PriceChangeOutlinedIcon /></div>
+                <div className="markup-hero__copy">
+                    <span>Price discrepancy review</span>
+                    <h1>Mark Up New Price</h1>
+                    <p>Compare saved markup prices against each product's current selling price.</p>
+                </div>
+                <div className="markup-hero__summary">
+                    <TrendingUpRoundedIcon />
+                    <div><strong>{changedProducts.length}</strong><span>Price changes</span></div>
+                </div>
+            </section>
 
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Category</InputLabel>
+            <section className="markup-new-summary">
+                <div><span>Previous price total</span><strong>{formatMoney(totals.previous)}</strong></div>
+                <div><span>Current price total</span><strong>{formatMoney(totals.current)}</strong></div>
+                <div><span>Net price movement</span><strong className={totals.current - totals.previous >= 0 ? 'markup-new-positive' : 'markup-new-negative'}>{formatMoney(totals.current - totals.previous)}</strong></div>
+            </section>
+
+            <section className="markup-new-filter">
+                <div><strong>Filter price changes</strong><span>Choose a category to narrow the discrepancy list.</span></div>
+                <div className="markup-new-filter__controls">
+                    <FormControl size="small" className="markup-new-category">
+                        <InputLabel id="markup-new-category-label">Category</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            // value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
-                            name="category_id"
-                            onChange={onChangeInput}
+                            labelId="markup-new-category-label"
+                            value={categoryId}
+                            label="Category"
+                            onChange={event => setCategoryId(event.target.value)}
                         >
-                            {
-                                categeryList.map((category, index) => (
-                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
-                                ))
-                            }
+                            <MenuItem value={0}>All categories</MenuItem>
+                            {categoryList.map(category => (
+                                <MenuItem value={category.id} key={category.id}>{category.category_name}</MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                        <Form.Label>Total Count:</Form.Label>
-                        <Form.Control type="text" value={productList.data.filter(d => d.price != d.mup_price).length} disabled />
-                    </Form.Group>
+                    <Button
+                        variant="contained"
+                        disabled={loading}
+                        onClick={fetchProducts}
+                        startIcon={<SearchIcon />}
+                        className="markup-new-search"
+                    >
+                        {loading ? 'Loading...' : 'Apply filter'}
+                    </Button>
+                </div>
+                {loading && <LinearProgress className="markup-new-progress" />}
+            </section>
 
-
-                </Box>
-
-                <Button
-                    variant="contained"
-                    disabled={isAddDisabled}
-                    onClick={fetchProductByCategoryId}
-                >
-                    Search
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form>
-
-            <br></br>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Mark Up New Price </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Product</th>
-                        <th>Brand</th>
-                        <th>Category</th>
-                        <th>Old Price</th>
-                        <th>New Price</th>
-                        <th>Match</th>
-                        <th>Quantity / Weight</th>
-                        <th>Stock</th>
-                        <th>Packaging</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-
-
-
-                {productList.data.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
-                    :
-                    (
+            <section className="markup-list-card">
+                <div className="markup-list-card__header">
+                    <div><h2>Products with new prices</h2><p>{changedProducts.length} products differ from their saved markup price.</p></div>
+                    <span><PriceChangeOutlinedIcon />Changes only</span>
+                </div>
+                <div className="table-responsive">
+                    <table className="markup-new-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Previous price</th>
+                                <th>Current price</th>
+                                <th>Change</th>
+                                <th>Inventory</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
                         <tbody>
-                            {
-                                productList.data
-                                    .filter(d => d.price != d.mup_price)
-                                    .map(product => (
-                                        <tr key={product.id} >
-                                            <td>{product.id}</td>
-                                            <td>{product.product_name}</td>
-                                            <td>{product.brand_name}</td>
-                                            <td>{product.category_name}</td>
-                                            <td>{numberFormat(product.mup_price)}</td>
-                                            <td>{numberFormat(product.price)}</td>
-                                            <td>{product.price == product.mup_price ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                            {changedProducts.length > 0 ? changedProducts.map(product => {
+                                const difference = Number(product.price || 0) - Number(product.mup_price || 0);
+                                const percentage = Number(product.mup_price || 0) > 0
+                                    ? (difference / Number(product.mup_price)) * 100
+                                    : 0;
+                                return (
+                                    <tr key={product.id}>
+                                        <td>
+                                            <div className="markup-list-product">
+                                                <span>{product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}</span>
+                                                <div>
+                                                    <strong>{product.product_name}</strong>
+                                                    <small>#{product.id} · {product.brand_name || 'No brand'}</small>
+                                                    <em className="markup-new-package">{formatPackage(product)}</em>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span className="markup-new-category-pill">{product.category_name}</span></td>
+                                        <td>{formatMoney(product.mup_price)}</td>
+                                        <td><strong className="markup-selling-price">{formatMoney(product.price)}</strong></td>
+                                        <td>
+                                            <span className={difference >= 0 ? 'markup-new-change markup-new-change--up' : 'markup-new-change markup-new-change--down'}>
+                                                {difference >= 0 ? '+' : ''}{formatMoney(difference)}
+                                                <small>{percentage >= 0 ? '+' : ''}{percentage.toFixed(1)}%</small>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div className="markup-new-stock">
+                                                <span>Wholesale <strong>{product.stock ?? 0}</strong></span>
+                                                <span>Pieces <strong>{product.stock_pc ?? 0}</strong></span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={product.disabled === 0 ? 'markup-new-status markup-new-status--active' : 'markup-new-status markup-new-status--disabled'}>
+                                                {product.disabled === 0
+                                                    ? <><CheckCircleRoundedIcon />Active</>
+                                                    : <><CancelRoundedIcon />Disabled</>}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            }) : (
+                                <tr>
+                                    <td colSpan="7">
+                                        <div className="markup-list-empty">
+                                            <Inventory2OutlinedIcon />
+                                            <h3>No price changes found</h3>
+                                            <p>Current prices match the saved markup prices.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    );
+};
 
-                                            {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                            <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
-                                                : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                            </td>
-                                            <td>{product.stock}</td>
-                                            <td>{product.packaging}</td>
-                                            <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                        </tr>
-                                    ))
-                            }
-                        </tbody>)
-                }
-            </table >
-
-
-
-        </div >
-    )
-}
-
-export default MarkUpNewPrice
+export default MarkUpNewPrice;

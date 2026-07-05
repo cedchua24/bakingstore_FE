@@ -1,0 +1,27 @@
+.stock-supplier-hero {
+    background: linear-gradient(120deg, #1d2a34 0%, #244452 62%, #286277 100%);
+}
+
+.stock-supplier-page .stock-warning-summary__item {
+    min-width: 135px;
+}
+
+.stock-supplier-table {
+    min-width: 1080px;
+}
+
+.stock-supplier-price {
+    color: #285fc7;
+    white-space: nowrap;
+}
+
+.stock-supplier-row--disabled {
+    opacity: 0.56;
+    background: #f4f5f6;
+}
+
+@media (max-width: 1100px) {
+    .stock-supplier-page .stock-warning-summary {
+        width: 100%;
+    }
+}

@@ -431,6 +431,13 @@ const VipTransaction = () => {
         return Number(price).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    const formatNonZeroPrice = (price) => {
+        if (Number(price || 0) === 0) {
+            return '';
+        }
+        return formatTotalOrderPrice(price);
+    }
+
     const getGrandTotal = () => {
         return vipTransactionList.reduce((total, vipTransaction) => {
             var totalOrderPrice = Number(vipTransaction.total_order_price || 0);
@@ -467,6 +474,10 @@ const VipTransaction = () => {
     }
 
     const renderPaymentSummary = (paidAmount, balance) => {
+        if (Number(paidAmount || 0) === 0 && Number(balance || 0) === 0) {
+            return '';
+        }
+
         return (
             <div style={styles.paymentSummary}>
                 <div style={styles.paymentSummaryRow}>
@@ -578,7 +589,7 @@ const VipTransaction = () => {
                                     </td>
                                     <td>{renderDraftOrderDates(vipTransaction)}</td>
                                     <td style={styles.draftTotalCell}>
-                                        {formatTotalOrderPrice(vipTransaction.draft_order_total_price)}
+                                        {formatNonZeroPrice(vipTransaction.draft_order_total_price)}
                                     </td>
                                     <td>
                                         {renderPaymentSummary(
@@ -588,8 +599,8 @@ const VipTransaction = () => {
                                     </td>
                                     <td>{formatStatementDate(vipTransaction.last_order_date)}</td>
                                     <td>{renderDaysAgo(vipTransaction.last_order_date)}</td>
-                                    <td>{formatTotalOrderPrice(vipTransaction.total_order_price)}</td>
-                                    <td>{formatTotalOrderPrice(vipTransaction.total_completed_payment)}</td>
+                                    <td>{formatNonZeroPrice(vipTransaction.total_order_price)}</td>
+                                    <td>{formatNonZeroPrice(vipTransaction.total_completed_payment)}</td>
                                     <td>
                                         <Link to={"/vipNote/" + vipTransaction.vip_customer_transaction_id}>
                                             <Button variant="info" size="sm" style={styles.noteButton}>

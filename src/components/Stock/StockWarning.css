@@ -527,6 +527,37 @@
     font-size: 0.65rem;
 }
 
+.stock-warning-order__details .stock-warning-order__status {
+    display: inline-flex;
+    align-self: flex-start;
+    width: fit-content;
+    margin-top: 4px;
+    padding: 2px 6px;
+    color: #8a4b08;
+    background: #fff1d6;
+    border-radius: 999px;
+    font-size: 0.56rem;
+    font-weight: 800;
+    letter-spacing: 0.035em;
+}
+
+.stock-warning-order__details .stock-warning-order__status--sent_to_supplier,
+.stock-warning-order__details .stock-warning-order__status--approved {
+    color: #2457a6;
+    background: #eaf1ff;
+}
+
+.stock-warning-order__details .stock-warning-order__status--completed {
+    color: #216e46;
+    background: #e9f8ef;
+}
+
+.stock-warning-order__details .stock-warning-order__status--cancelled,
+.stock-warning-order__details .stock-warning-order__status--canceled {
+    color: #a63832;
+    background: #ffedeb;
+}
+
 .stock-warning-order__quantity {
     align-items: flex-end;
 }
