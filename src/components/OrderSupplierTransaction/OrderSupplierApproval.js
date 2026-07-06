@@ -2,14 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import ModeOfPaymentPoService from "../OtherService/ModeOfPaymentPoService";
 import PaymentTermService from "../OtherService/PaymentTermService";
 import TextField from '@mui/material/TextField';
-import TextareaAutosize from '@mui/material/TextareaAutosize';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -45,6 +43,12 @@ import Modal from '@mui/material/Modal';
 import UpdateIcon from '@mui/icons-material/Update';
 import InputAdornment from '@mui/material/InputAdornment';
 import Typography from '@mui/material/Typography'
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import FactCheckOutlinedIcon from '@mui/icons-material/FactCheckOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import "./OrderSupplierTransaction.css";
 
 
 
@@ -63,11 +67,11 @@ const OrderSupplierApproval = () => {
     }, []);
 
     const steps = [
-        'Created Transaction Details',
-        'Add Product Orders',
-        'Review Orders',
-        'Send to Supplier',
-        'Receive Orders',
+        'Order details',
+        'Add products',
+        'Review',
+        'Send',
+        'Receive',
     ];
 
     const style = {
@@ -75,12 +79,13 @@ const OrderSupplierApproval = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: 'min(92vw, 460px)',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        border: '1px solid #e5e8ec',
+        borderRadius: '18px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: { xs: 3, sm: 4 },
+        '& .MuiTextField-root': { width: '100%' },
     };
 
     const TAX_RATE = 0.12;
@@ -528,59 +533,80 @@ const OrderSupplierApproval = () => {
     };
 
     return (
-        <div>
-            {message &&
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
+        <main className="purchase-order-page po-approval-page">
+            <section className="purchase-order-shell po-approval-shell">
+            <div className="purchase-order-heading">
+                <div className="purchase-order-icon" aria-hidden="true">
+                    <FactCheckOutlinedIcon />
+                </div>
+                <div>
+                    <span className="purchase-order-eyebrow">Purchase order #{id}</span>
+                    <h1>Review purchase order</h1>
+                    <p>Check quantities, stock levels, sales history, and totals before recording your decision.</p>
+                </div>
+            </div>
 
+            {message &&
+                <Alert className="po-products-alert" variant="filled" severity="success">
+                    Successfully added.
+                </Alert>
             }
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
+            {validator.isShow &&
+                <Alert className="po-products-alert" variant="filled" severity={validator.severity}>
+                    {validator.message}
+                </Alert>
+            }
 
             <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
+                className="po-approval-workspace"
                 noValidate
                 autoComplete="off"
             >
+                <div className="purchase-order-progress">
                 <Stepper activeStep={2} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
                             <StepLabel>{label}</StepLabel>
-
-
                         </Step>
                     ))}
                 </Stepper>
-                <br></br>
+                </div>
 
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                <TableContainer component={Paper} className="po-order-summary">
+                    <Table aria-label="Purchase order summary">
                         <TableBody>
                             <TableRow >
-                                <TableCell style={{ fontWeight: 'bold' }}>Supplier Name:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.supplier_name}</TableCell>
-
-                                <TableCell style={{ fontWeight: 'bold' }}>Created Date:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.created_at}</TableCell>
-
-
+                                <TableCell>
+                                    <div className="po-summary-label"><LocalShippingOutlinedIcon /> Supplier</div>
+                                    <strong>{orderSupplierTransaction.supplier_name || 'Loading…'}</strong>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="po-summary-label"><CalendarMonthOutlinedIcon /> Created</div>
+                                    <strong>{orderSupplierTransaction.created_at || '—'}</strong>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="po-summary-label"><Inventory2OutlinedIcon /> Products</div>
+                                    <strong>{orderList.data.length}</strong>
+                                </TableCell>
+                                <TableCell align="right">
+                                    <div className="po-summary-label po-summary-label-right">Order total</div>
+                                    <strong className="po-summary-total">{numberFormat(invoiceTotal)}</strong>
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
             </Box>
-            <br></br>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+
+            <div className="po-list-heading po-approval-list-heading">
+                <div>
+                    <span>Review details</span>
+                    <h2>Products, stock, and sales history</h2>
+                </div>
+                <strong>{orderList.data.length} {orderList.data.length === 1 ? 'product' : 'products'}</strong>
+            </div>
+            <TableContainer component={Paper} className="po-items-table po-approval-table">
+                <Table sx={{ minWidth: 1500 }} aria-label="Purchase order review details">
                     <TableHead>
                         <TableRow>
                             <TableCell align="center" colSpan={6} ><h5 style={{ fontWeight: 'bold' }}>Order Details</h5></TableCell>
@@ -607,15 +633,26 @@ const OrderSupplierApproval = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
+                        {orderList.data.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={14}>
+                                    <div className="po-empty-state">
+                                        <Inventory2OutlinedIcon />
+                                        <strong>No products found</strong>
+                                        <span>Add products before reviewing this purchase order.</span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {orderList.data.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{row.product_name}</TableCell>
+                            <TableRow key={row.id} hover>
+                                <TableCell sx={{ whiteSpace: 'nowrap' }}><strong>{row.product_name}</strong></TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
-                                <TableCell align="right">{row.price}</TableCell>
+                                <TableCell align="right">{numberFormat(row.price)}</TableCell>
                                 <TableCell align="right">{row.unit}</TableCell>
 
 
-                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.expiration != null ? formatStatementDate(row.expiration) : "—"}</TableCell>
                                 <TableCell align="right">{numberFormat(row.total_price)}</TableCell>
                                 <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
                                 {row.enable == 1 ?
@@ -634,19 +671,7 @@ const OrderSupplierApproval = () => {
                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_year_same_month_30_days / row.pQuantity)) + " " + row.packaging + " / " + row.last_year_same_month_30_days + " pc" : row.last_year_same_month_30_days + " " + row.packaging}</TableCell>
                             </TableRow>
                         ))}
-                        {/* 
-                        <TableRow>
-
-                            <TableCell rowSpan={4} />
-                            <TableCell colSpan={4}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
-                        </TableRow> */}
-                        {/* <TableRow>
-                            <TableCell>Tax</TableCell>
-                            <TableCell align="right" colSpan={3}>{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow> */}
-                        <TableRow>
+                        <TableRow className="po-grand-total-row">
                             <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }} colSpan={3}>{numberFormat(invoiceTotal)}</TableCell>
                         </TableRow>
@@ -654,134 +679,100 @@ const OrderSupplierApproval = () => {
                 </Table>
             </TableContainer>
 
-            <br></br>
-            {
-                submitLoadingAdd &&
-                <LinearProgress color="warning" />
-            }
-            <br></br>
-            <br></br>
-            <InputLabel id="demo-simple-select-label">Approver</InputLabel>
-            <TextField
-                id="outlined-disabled"
-                variant="filled"
-                value={orderSupplierTransaction.approval ? orderSupplierTransaction.approval : localStorage.getItem('name')}
-                disabled
-            />
-            <br></br>
-            <br></br>
+            <section className="po-approval-card">
+                <div className="po-card-heading">
+                    <div>
+                        <span>Approval decision</span>
+                        <h2>{orderSupplierTransaction.status == 'COMPLETED' ? 'Review completed' : 'Record your decision'}</h2>
+                        <p>{orderSupplierTransaction.status == 'COMPLETED'
+                            ? 'This purchase order has already been approved.'
+                            : 'Choose an approval status and leave a note for the purchasing team.'}</p>
+                    </div>
+                    {orderSupplierTransaction.status == 'COMPLETED' && (
+                        <div className="po-approved-badge"><CheckCircleIcon /> Approved</div>
+                    )}
+                </div>
 
-            {orderSupplierTransaction.status == 'COMPLETED' ?
-                <>
+                {submitLoadingAdd && <LinearProgress color="warning" className="po-approval-progress" />}
+
+                <div className="po-approval-form">
                     <TextField
-                        label="Status"
-                        value="Approved"
-
-                        InputProps={{
-                            readOnly: true,
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <CheckCircleIcon color="success" />
-                                </InputAdornment>
-                            ),
-                        }}
+                        fullWidth
+                        label="Approver"
+                        value={orderSupplierTransaction.approval || localStorage.getItem('name') || ''}
                         disabled
                     />
-                    <br></br>
-                    <br></br>
-                    <InputLabel id="demo-simple-select-label">Note</InputLabel>
-                    <TextareaAutosize
-                        maxRows={4}
-                        aria-label="Note"
-                        placeholder="Note"
+
+                    {orderSupplierTransaction.status == 'COMPLETED' ? (
+                        <TextField
+                            fullWidth
+                            label="Status"
+                            value="Approved"
+                            InputProps={{
+                                readOnly: true,
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <CheckCircleIcon color="success" />
+                                    </InputAdornment>
+                                ),
+                            }}
+                            disabled
+                        />
+                    ) : (
+                        <FormControl fullWidth>
+                            <InputLabel id="approval-status-label">Approval status</InputLabel>
+                            <Select
+                                labelId="approval-status-label"
+                                id="approval-status"
+                                name="approval_status"
+                                label="Approval status"
+                                value={orderSupplierTransaction.approval_status}
+                                sx={{
+                                    color: statusColor[orderSupplierTransaction.approval_status],
+                                    '& .MuiSelect-icon': {
+                                        color: statusColor[orderSupplierTransaction.approval_status],
+                                    },
+                                }}
+                                onChange={onChange}
+                                displayEmpty
+                            >
+                                <MenuItem value="PENDING" sx={{ color: "warning.main" }}>Pending</MenuItem>
+                                <MenuItem value="APPROVED" sx={{ color: "success.main" }}>Approved</MenuItem>
+                                <MenuItem value="REJECTED" sx={{ color: "error.main" }}>Rejected</MenuItem>
+                            </Select>
+                        </FormControl>
+                    )}
+
+                    <TextField
+                        fullWidth
+                        multiline
+                        minRows={4}
+                        label="Approval note"
+                        placeholder="Add context for this decision…"
                         name="note"
                         value={orderSupplierTransaction.note}
                         onChange={onChange}
-                        style={{ width: 500, height: 150 }}
-                        disabled
-                    />
-                </> :
-                <>
-
-                    <InputLabel id="demo-simple-select-label">Select Status</InputLabel>
-                    <Select
-                        labelId="demo-simple-select-label"
-
-                        id="demo-simple-select"
-                        name="approval_status"
-                        label="Stock Warning Type"
-                        value={orderSupplierTransaction.approval_status}
-                        sx={{
-                            color: statusColor[orderSupplierTransaction.approval_status],
-                            '& .MuiSelect-icon': {
-                                color: statusColor[orderSupplierTransaction.approval_status],
-                            },
-                        }}
-                        onChange={onChange}
-                        displayEmpty
                         disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                    >
-                        <MenuItem value="PENDING" sx={{ color: "orange" }}>PENDING</MenuItem>
-                        <MenuItem value="APPROVED" sx={{ color: "green" }}>APPROVED</MenuItem>
-                        <MenuItem value="REJECTED" sx={{ color: "red" }}>REJECTED</MenuItem>
-                    </Select>
-                    <br></br>
-                    <br></br>
-                    <InputLabel id="demo-simple-select-label">Note</InputLabel>
-                    <TextareaAutosize
-                        maxRows={4}
-                        aria-label="Note"
-                        placeholder="Note"
-                        name="note"
-                        value={orderSupplierTransaction.note}
-                        onChange={onChange}
-                        style={{ width: 500, height: 150 }}
+                        className="po-approval-note"
                     />
-                </>
-            }
+                </div>
 
-
-
-            <br></br>
-
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-
-
-                }}
-            >
-                {orderSupplierTransaction.status == 'COMPLETED' ?
-                    <>
-                        <Button
-                            variant="contained"
-                            size="large"
-                            onClick={nextSubmit}
-                        >
-                            Next
-                        </Button>
-                    </> :
-                    <>
-                        <Button
-                            disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                            variant="contained"
-                            type="submit"
-                            onClick={submitApproval}
-                            color="success"
-                            size="large" >
-                            Submit and Next
-                        </Button>
-                    </>
-                }
-
-
-            </Box>
-
-
-            <br></br>
-            <br></br>
-            <br></br>
+                <div className="po-approval-actions">
+                    <p>{orderSupplierTransaction.status == 'COMPLETED'
+                        ? 'Continue to the supplier sending step.'
+                        : 'Your decision will be saved to this purchase order.'}</p>
+                    <Button
+                        disabled={isAddDisabled}
+                        variant="contained"
+                        onClick={orderSupplierTransaction.status == 'COMPLETED' ? nextSubmit : submitApproval}
+                        size="large"
+                        endIcon={<ArrowForwardRoundedIcon />}
+                        className="purchase-order-next"
+                    >
+                        {orderSupplierTransaction.status == 'COMPLETED' ? 'Continue' : 'Save decision and continue'}
+                    </Button>
+                </div>
+            </section>
 
 
 
@@ -836,13 +827,12 @@ const OrderSupplierApproval = () => {
                     </Box>
                 </Box>
             </Modal>
-            <br></br>
-            <br></br>
-        </div >
-    )
+            </section>
+        </main>
+    );
 }
 
-export default OrderSupplierApproval
+export default OrderSupplierApproval;
 
 
 

@@ -119,7 +119,7 @@ const PendingDelivery = () => {
     }
 
     const fetchRequestor = () => {
-        UserService.getAll()
+        UserService.fetchUserList()
             .then(response => {
                 setRequestorList(response.data);
             })

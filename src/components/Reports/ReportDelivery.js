@@ -158,7 +158,7 @@ const ReportDelivery = () => {
     }
 
     const fetchRequestor = () => {
-        UserService.getAll()
+        UserService.fetchUserList()
             .then(response => {
                 setRequestorList(response.data);
             })

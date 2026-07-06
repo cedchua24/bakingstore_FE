@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import ModeOfPaymentPoService from "../OtherService/ModeOfPaymentPoService";
 import PaymentTermService from "../OtherService/PaymentTermService";
 import TextField from '@mui/material/TextField';
-import TextareaAutosize from '@mui/material/TextareaAutosize';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -43,6 +40,12 @@ import Modal from '@mui/material/Modal';
 import UpdateIcon from '@mui/icons-material/Update';
 import InputAdornment from '@mui/material/InputAdornment';
 import Typography from '@mui/material/Typography'
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
+import "./OrderSupplierTransaction.css";
 
 
 
@@ -61,11 +64,11 @@ const SendToSupplier = () => {
     }, []);
 
     const steps = [
-        'Created Transaction Details',
-        'Add Product Orders',
-        'Review Orders',
-        'Send to Supplier',
-        'Receive Orders',
+        'Order details',
+        'Add products',
+        'Review',
+        'Send',
+        'Receive',
     ];
 
     const style = {
@@ -73,12 +76,13 @@ const SendToSupplier = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: 'min(92vw, 460px)',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        border: '1px solid #e5e8ec',
+        borderRadius: '18px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: { xs: 3, sm: 4 },
+        '& .MuiTextField-root': { width: '100%' },
     };
 
     const TAX_RATE = 0.12;
@@ -513,29 +517,36 @@ const SendToSupplier = () => {
     }
 
     return (
-        <div>
-            {message &&
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
+        <main className="purchase-order-page po-send-page">
+            <section className="purchase-order-shell">
+            <div className="purchase-order-heading">
+                <div className="purchase-order-icon" aria-hidden="true">
+                    <SendOutlinedIcon />
+                </div>
+                <div>
+                    <span className="purchase-order-eyebrow">Purchase order #{id}</span>
+                    <h1>Send to supplier</h1>
+                    <p>Confirm the approved order and record when it was sent to the supplier.</p>
+                </div>
+            </div>
 
+            {message &&
+                <Alert className="po-products-alert" variant="filled" severity="success">
+                    Successfully added.
+                </Alert>
             }
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
+            {validator.isShow &&
+                <Alert className="po-products-alert" variant="filled" severity={validator.severity}>
+                    {validator.message}
+                </Alert>
+            }
 
             <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
+                className="po-send-workspace"
                 noValidate
                 autoComplete="off"
             >
+                <div className="purchase-order-progress">
                 <Stepper activeStep={3} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
@@ -543,32 +554,48 @@ const SendToSupplier = () => {
                         </Step>
                     ))}
                 </Stepper>
-                <br></br>
+                </div>
 
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                <TableContainer component={Paper} className="po-order-summary">
+                    <Table aria-label="Purchase order summary">
                         <TableBody>
                             <TableRow >
-                                <TableCell style={{ fontWeight: 'bold' }}>Supplier Name:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.supplier_name}</TableCell>
-
-                                <TableCell style={{ fontWeight: 'bold' }}>Created Date:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.created_at}</TableCell>
-
-
+                                <TableCell>
+                                    <div className="po-summary-label"><LocalShippingOutlinedIcon /> Supplier</div>
+                                    <strong>{orderSupplierTransaction.supplier_name || 'Loading…'}</strong>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="po-summary-label"><CalendarMonthOutlinedIcon /> Created</div>
+                                    <strong>{orderSupplierTransaction.created_at || '—'}</strong>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="po-summary-label"><Inventory2OutlinedIcon /> Products</div>
+                                    <strong>{orderList.length}</strong>
+                                </TableCell>
+                                <TableCell align="right">
+                                    <div className="po-summary-label po-summary-label-right">Order total</div>
+                                    <strong className="po-summary-total">{numberFormat(invoiceTotal)}</strong>
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
             </Box>
-            <br></br>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+
+            <div className="po-list-heading po-send-list-heading">
+                <div>
+                    <span>Approved order</span>
+                    <h2>Products being sent</h2>
+                </div>
+                <strong>{orderList.length} {orderList.length === 1 ? 'item' : 'items'}</strong>
+            </div>
+            <TableContainer component={Paper} className="po-items-table">
+                <Table sx={{ minWidth: 760 }} aria-label="Products being sent to supplier">
                     <TableHead>
 
                         <TableRow>
                             <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
+                            <TableCell align="right">Quantity</TableCell>
                             <TableCell align="right">Price</TableCell>
                             <TableCell align="right">Unit</TableCell>
                             <TableCell align="center" >Expiration</TableCell>
@@ -576,20 +603,31 @@ const SendToSupplier = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
+                        {orderList.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6}>
+                                    <div className="po-empty-state">
+                                        <Inventory2OutlinedIcon />
+                                        <strong>No products found</strong>
+                                        <span>This purchase order has no products to send.</span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {orderList.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.product_name}</TableCell>
+                            <TableRow key={row.id} hover>
+                                <TableCell><strong>{row.product_name}</strong></TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
-                                <TableCell align="right">{row.price}</TableCell>
+                                <TableCell align="right">{numberFormat(row.price)}</TableCell>
                                 <TableCell align="right">{row.unit}</TableCell>
 
 
-                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
-                                <TableCell align="right">{row.total_price}</TableCell>
+                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : "—"}</TableCell>
+                                <TableCell align="right"><strong>{numberFormat(row.total_price)}</strong></TableCell>
                             </TableRow>
                         ))}
 
-                        <TableRow>
+                        <TableRow className="po-grand-total-row">
                             <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold', }} colSpan={3}>{numberFormat(invoiceTotal)}</TableCell>
                         </TableRow>
@@ -597,102 +635,103 @@ const SendToSupplier = () => {
                 </Table>
             </TableContainer>
 
-            <br></br>
-            {
-                submitLoadingAdd &&
-                <LinearProgress color="warning" />
-            }
-            <br></br>
-            <br></br>
+            <section className="po-send-card">
+                <div className="po-card-heading">
+                    <div>
+                        <span>Supplier dispatch</span>
+                        <h2>{orderSupplierTransaction.status == 'COMPLETED' ? 'Order sent' : 'Mark order as sent'}</h2>
+                        <p>{orderSupplierTransaction.approval_status == 'APPROVED'
+                            ? 'Record the dispatch status and the date this order was sent.'
+                            : 'This order must be approved before it can be sent to the supplier.'}</p>
+                    </div>
+                    {orderSupplierTransaction.status == 'COMPLETED' && (
+                        <div className="po-approved-badge"><CheckCircleIcon /> Sent</div>
+                    )}
+                </div>
 
-            {
-                orderSupplierTransaction.approval_status == 'APPROVED' &&
-                <>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                        }}
-                    >
+                {submitLoadingAdd && <LinearProgress color="warning" />}
 
-                        {
-                            orderSupplierTransaction.status == 'COMPLETED' ?
+                {orderSupplierTransaction.approval_status == 'APPROVED' ? (
+                    <>
+                        <div className="po-send-form">
+                            {orderSupplierTransaction.status == 'COMPLETED' ? (
+                                <TextField
+                                    fullWidth
+                                    label="Status"
+                                    value="Sent to supplier"
+                                    InputProps={{
+                                        readOnly: true,
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <CheckCircleIcon color="success" />
+                                            </InputAdornment>
+                                        ),
+                                    }}
+                                    disabled
+                                />
+                            ) : (
                                 <>
-                                    <TextField
-                                        label="Status"
-                                        value="Sent to Supplier"
-
-                                        InputProps={{
-                                            readOnly: true,
-                                            endAdornment: (
-                                                <InputAdornment position="end">
-                                                    <CheckCircleIcon color="success" />
-                                                </InputAdornment>
-                                            ),
-                                        }}
-                                        disabled
-                                    />
-                                    <Box sx={{ width: '100%', textAlign: 'center', mt: 2 }}>
-                                        <Button
-                                            variant="contained"
-                                            size="large"
-                                            onClick={nextSubmit}
-                                        >
-                                            Next
-                                        </Button>
-                                    </Box>
-                                </> : <>
-
-                                    <InputLabel id="demo-simple-select-label" >Select Order Status <span style={{ color: 'red' }}>*</span></InputLabel>
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        name="status"
-                                        value={orderSupplierTransaction.status}
-                                        onChange={onChange}
-                                        displayEmpty
-                                    >
-                                        <MenuItem value="PENDING" >PENDING</MenuItem>
-                                        <MenuItem value="SEND_TO_SUPPLIER" >SEND TO SUPPLIER</MenuItem>
-                                    </Select>
-                                    <br></br>
-                                    <Form.Group controlId="dateFrom">
-                                        <Form.Label>Date Sent<span style={{ color: 'red' }}> *</span></Form.Label>
-                                        <Form.Control
-                                            type="date"
-                                            value={orderSupplierTransaction.send_date}
-                                            name="send_date"
+                                    <FormControl fullWidth>
+                                        <InputLabel id="send-status-label">Order status</InputLabel>
+                                        <Select
+                                            labelId="send-status-label"
+                                            id="send-status"
+                                            name="status"
+                                            label="Order status"
+                                            value={orderSupplierTransaction.status}
                                             onChange={onChange}
-                                        />
-                                    </Form.Group>
-
-                                    <Box sx={{ width: '100%', textAlign: 'center', mt: 2 }}>
-                                        <Button
-                                            disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                                            variant="contained"
-                                            size="large"
-                                            color="success"
-                                            onClick={updateOrderTransaction}
                                         >
-                                            Submit and Next
-                                        </Button>
-                                    </Box>
+                                            <MenuItem value="PENDING">Pending</MenuItem>
+                                            <MenuItem value="SEND_TO_SUPPLIER">Send to supplier</MenuItem>
+                                        </Select>
+                                    </FormControl>
+
+                                    <TextField
+                                        fullWidth
+                                        type="date"
+                                        label="Date sent"
+                                        value={orderSupplierTransaction.send_date}
+                                        name="send_date"
+                                        onChange={onChange}
+                                        InputLabelProps={{ shrink: true }}
+                                        required
+                                    />
                                 </>
-                        }
-                    </Box>
-                </>
+                            )}
+                        </div>
 
-            }
-
-
-            <br></br>
-            <br></br>
-        </div >
-    )
+                        <div className="po-approval-actions">
+                            <p>{orderSupplierTransaction.status == 'COMPLETED'
+                                ? 'Continue to receive and finalize this order.'
+                                : 'The supplier dispatch date will be saved with the order.'}</p>
+                            <Button
+                                disabled={isAddDisabled}
+                                variant="contained"
+                                size="large"
+                                onClick={orderSupplierTransaction.status == 'COMPLETED' ? nextSubmit : updateOrderTransaction}
+                                endIcon={<ArrowForwardRoundedIcon />}
+                                className="purchase-order-next"
+                            >
+                                {submitLoadingAdd
+                                    ? 'Saving…'
+                                    : orderSupplierTransaction.status == 'COMPLETED'
+                                        ? 'Continue'
+                                        : 'Save and continue'}
+                            </Button>
+                        </div>
+                    </>
+                ) : (
+                    <Alert severity="warning" className="po-send-warning">
+                        Approval is still {orderSupplierTransaction.approval_status || 'pending'}. Return to the review step to approve this order.
+                    </Alert>
+                )}
+            </section>
+            </section>
+        </main>
+    );
 }
 
-export default SendToSupplier
+export default SendToSupplier;
 
 
 

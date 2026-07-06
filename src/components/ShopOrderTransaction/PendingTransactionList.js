@@ -150,7 +150,7 @@ const PendingTransactionList = () => {
     }
 
     const fetchRequestor = () => {
-        UserService.getAll()
+        UserService.fetchUserList()
             .then(response => {
                 setRequestorList(response.data);
             })
@@ -610,139 +610,151 @@ const PendingTransactionList = () => {
                                 <tbody>
 
                                     {
-                                        shopOrderTransaction.data.map((shopOrderTransaction, index) => (
-                                            <tr key={shopOrderTransaction.id} >
-                                                <td className="customer-report-id customer-report-id-cell">
-                                                    {shopOrderTransaction.vip_name &&
-                                                        <span
-                                                            className="customer-report-vip-stripe"
-                                                            style={{ backgroundColor: shopOrderTransaction.vip_color || '#6c757d' }}
-                                                        ></span>
-                                                    }
-                                                    <span className="customer-report-id-stack">
-                                                        <span className="customer-report-order-id">#{shopOrderTransaction.id}</span>
-                                                        {shopOrderTransaction.vip_name &&
-                                                            <Tooltip title={"VIP Customer: " + shopOrderTransaction.vip_name}>
-                                                                <span
-                                                                    className="customer-report-vip-badge"
-                                                                    style={{ backgroundColor: shopOrderTransaction.vip_color || '#6c757d' }}
-                                                                >
-                                                                    {shopOrderTransaction.vip_name}
-                                                                </span>
-                                                            </Tooltip>
+                                        shopOrderTransaction.data.map((shopOrderTransaction, index) => {
+                                            const primaryVipCustomer = getPrimaryTransactionVipCustomer(shopOrderTransaction);
+                                            const vipCustomers = getTransactionVipCustomers(shopOrderTransaction);
+
+                                            return (
+                                                <tr key={shopOrderTransaction.id} >
+                                                    <td className="customer-report-id customer-report-id-cell">
+                                                        {primaryVipCustomer &&
+                                                            <span
+                                                                className="customer-report-vip-stripe"
+                                                                style={{ backgroundColor: primaryVipCustomer.vip_color || '#6c757d' }}
+                                                            ></span>
                                                         }
-                                                    </span>
-                                                </td>
-                                                <td>{shopOrderTransaction.shop_name}</td>
-                                                <td className="customer-report-optional-col">{shopOrderTransaction.customer_type}</td>
-                                                <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
-                                                <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                                <td className="customer-report-optional-col">{shopOrderTransaction.total_cash}</td>
-                                                <td className="customer-report-optional-col">{shopOrderTransaction.total_online}</td>
-                                                <td>
-                                                    <div className="customer-report-bank-list">
-                                                        {shopOrderTransaction.mode_of_payment.map((sot, index) => (
-                                                            <span key={`${shopOrderTransaction.id}-${sot.payment_type}-${index}`}>
-                                                                {numberFormat(sot.amount)} <small>{sot.payment_type}</small>
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </td>
-                                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                                {
-                                                    role == 2 && (
-                                                        <td className="customer-report-optional-col" style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
-                                                        </td>
-                                                    )
-                                                }
-                                                <td>{shopOrderTransaction.date != shopOrderTransaction.created_at ? <p style={{ fontWeight: 'bold', color: 'orange', }}>{shopOrderTransaction.date}</p>
-                                                    : shopOrderTransaction.date}
-                                                    {shopOrderTransaction.status == 2 && shopOrderTransaction.is_pickup == 0 ?
-                                                        <IconButton>
-                                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
-                                                        </IconButton> : ""
+                                                        <span className="customer-report-id-stack">
+                                                            <span className="customer-report-order-id">#{shopOrderTransaction.id}</span>
+                                                            {vipCustomers.length > 0 &&
+                                                                <span className="customer-report-vip-badge-list">
+                                                                    {vipCustomers.map((vipCustomer, vipIndex) => (
+                                                                        <Tooltip
+                                                                            key={vipCustomer.vip_customer_transaction_id || vipCustomer.vip_customer_id || `${shopOrderTransaction.id}-${vipIndex}`}
+                                                                            title={"VIP Customer: " + getTransactionVipCustomerNames(shopOrderTransaction)}
+                                                                        >
+                                                                            <span
+                                                                                className="customer-report-vip-badge"
+                                                                                style={{ backgroundColor: vipCustomer.vip_color || '#6c757d' }}
+                                                                            >
+                                                                                {vipCustomer.vip_name}
+                                                                            </span>
+                                                                        </Tooltip>
+                                                                    ))}
+                                                                </span>
+                                                            }
+                                                        </span>
+                                                    </td>
+                                                    <td>{shopOrderTransaction.shop_name}</td>
+                                                    <td className="customer-report-optional-col">{shopOrderTransaction.customer_type}</td>
+                                                    <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
+                                                    <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
+                                                    <td className="customer-report-optional-col">{shopOrderTransaction.total_cash}</td>
+                                                    <td className="customer-report-optional-col">{shopOrderTransaction.total_online}</td>
+                                                    <td>
+                                                        <div className="customer-report-bank-list">
+                                                            {shopOrderTransaction.mode_of_payment.map((sot, index) => (
+                                                                <span key={`${shopOrderTransaction.id}-${sot.payment_type}-${index}`}>
+                                                                    {numberFormat(sot.amount)} <small>{sot.payment_type}</small>
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </td>
+                                                    <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
+                                                    {
+                                                        role == 2 && (
+                                                            <td className="customer-report-optional-col" style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit != 0 ? numberFormat(shopOrderTransaction.profit) : ""}
+                                                            </td>
+                                                        )
                                                     }
-                                                </td>
-                                                <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                                    : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                                        <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
-                                                </td>
-                                                <td>
-                                                    <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
-                                                        shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 ? <>                                    <Tooltip title="Delete">
-                                                            <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING DELIVERY</p>
+                                                    <td>{shopOrderTransaction.date != shopOrderTransaction.created_at ? <p style={{ fontWeight: 'bold', color: 'orange', }}>{shopOrderTransaction.date}</p>
+                                                        : shopOrderTransaction.date}
+                                                        {shopOrderTransaction.status == 2 && shopOrderTransaction.is_pickup == 0 ?
                                                             <IconButton>
-                                                                <DeleteIcon color="error" onClick={(e) => openDelete(shopOrderTransaction.id, e)} />
-                                                            </IconButton>
-                                                        </Tooltip></> : ''}</p>
-                                                    <IconButton>
-                                                        <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(shopOrderTransaction.id, e)} />
-                                                    </IconButton>
-                                                </td>
-                                                <td>
-                                                    <p>{shopOrderTransaction.rider_name}</p>
-                                                    <IconButton>
-                                                        <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
-                                                    </IconButton>
-                                                </td>
+                                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
+                                                            </IconButton> : ""
+                                                        }
+                                                    </td>
+                                                    <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
+                                                        : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
+                                                            <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
+                                                    </td>
+                                                    <td>
+                                                        <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
+                                                            shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 ? <>                                    <Tooltip title="Delete">
+                                                                <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING DELIVERY</p>
+                                                                <IconButton>
+                                                                    <DeleteIcon color="error" onClick={(e) => openDelete(shopOrderTransaction.id, e)} />
+                                                                </IconButton>
+                                                            </Tooltip></> : ''}</p>
+                                                        <IconButton>
+                                                            <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(shopOrderTransaction.id, e)} />
+                                                        </IconButton>
+                                                    </td>
+                                                    <td>
+                                                        <p>{shopOrderTransaction.rider_name}</p>
+                                                        <IconButton>
+                                                            <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
+                                                        </IconButton>
+                                                    </td>
 
 
-                                                <td>
-                                                    <p>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DONE</p> :
-                                                        <p style={{ fontWeight: 'bold', color: 'orange', }}>WAITING</p>}</p>
-                                                    <IconButton>
-                                                        <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
-                                                    </IconButton>
-                                                </td>
+                                                    <td>
+                                                        <p>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DONE</p> :
+                                                            <p style={{ fontWeight: 'bold', color: 'orange', }}>WAITING</p>}</p>
+                                                        <IconButton>
+                                                            <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
+                                                        </IconButton>
+                                                    </td>
 
-                                                <td>
-                                                    <div className="customer-report-actions">
-                                                        <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}>
-                                                            <Button className="customer-report-update-btn" size="sm" variant="success">
-                                                                Update
-                                                            </Button>
-                                                        </Link>
-                                                        <Link to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id + "+" + date}>
-                                                            <Button size="sm" variant="outline-primary">
-                                                                View
-                                                            </Button>
-                                                        </Link>
-                                                        {shopOrderTransaction.shop_order_transaction_total_quantity != 0 && (
-                                                            <Link to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}>
-                                                                <Button size="sm" variant="outline-secondary">
-                                                                    Receipt
+                                                    <td>
+                                                        <div className="customer-report-actions">
+                                                            <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}>
+                                                                <Button className="customer-report-update-btn" size="sm" variant="success">
+                                                                    Update
                                                                 </Button>
                                                             </Link>
-                                                        )}
-                                                        {shopOrderTransaction.status != 3 &&
-                                                            <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
-                                                                <span>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline-danger"
-                                                                        onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
-                                                                        disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
-                                                                    >
-                                                                        Delete
+                                                            <Link to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.id + "+" + date}>
+                                                                <Button size="sm" variant="outline-primary">
+                                                                    View
+                                                                </Button>
+                                                            </Link>
+                                                            {shopOrderTransaction.shop_order_transaction_total_quantity != 0 && (
+                                                                <Link to={"../shopOrderTransaction/receiptOrder/" + shopOrderTransaction.id}>
+                                                                    <Button size="sm" variant="outline-secondary">
+                                                                        Receipt
                                                                     </Button>
-                                                                </span>
-                                                            </Tooltip>
-                                                        }
-                                                    </div>
-                                                </td>
-                                                {/* <td>
+                                                                </Link>
+                                                            )}
+                                                            {shopOrderTransaction.status != 3 &&
+                                                                <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
+                                                                    <span>
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline-danger"
+                                                                            onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)}
+                                                                            disabled={shopOrderTransaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                                        >
+                                                                            Delete
+                                                                        </Button>
+                                                                    </span>
+                                                                </Tooltip>
+                                                            }
+                                                        </div>
+                                                    </td>
+                                                    {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteShopOrderTransaction(shopOrderTransaction)} >
                                         deleteShopOrderTransaction
                                     </Button>
                                 </td> */}
 
-                                                {/* <td>
+                                                    {/* <td>
                                     <Button variant="danger" onClick={(e) => deleteOrderTransaction(shopOrderTransaction.id, e)} >
                                         Delete
                                     </Button>
                                 </td> */}
-                                            </tr>
-                                        )
+                                                </tr>
+                                            );
+                                        }
                                         )
                                     }
                                 </tbody>

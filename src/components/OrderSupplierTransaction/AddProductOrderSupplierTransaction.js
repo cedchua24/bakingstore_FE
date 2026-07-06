@@ -2,11 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
-import ProductServiceService from "../Product/ProductService.service";
-import MarkUpPriceService from "../MarkUpPrice/MarkUpPriceService.service";
 import ProductSupplierService from "../ProductSupplier/ProductSupplierService";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -19,8 +16,6 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
@@ -46,8 +41,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
-
-import { styled } from '@mui/material/styles';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
+import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import "./OrderSupplierTransaction.css";
 
 
 const AddProductOrderSupplierTransaction = () => {
@@ -63,7 +64,7 @@ const AddProductOrderSupplierTransaction = () => {
 
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
-    const [value, setValue] = useState(products[0])
+    const [value, setValue] = useState(null);
 
 
     const [submitLoading, setSubmitLoading] = useState(false);
@@ -92,27 +93,18 @@ const AddProductOrderSupplierTransaction = () => {
         supplier_id: 0
     });
 
-    const [autoPoResponse, setAutoResponse] = useState({
-        data: [],
-        code: 0,
-        added_product: ''
-    });
-
-
-
-
-
     const style = {
         position: 'absolute',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: 'min(92vw, 480px)',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        border: '1px solid #e5e8ec',
+        borderRadius: '18px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: { xs: 3, sm: 4 },
+        '& .MuiTextField-root': { width: '100%' },
     };
 
     const [open, setOpen] = React.useState(false);
@@ -127,11 +119,11 @@ const AddProductOrderSupplierTransaction = () => {
 
 
     const steps = [
-        'Created Transaction Details',
-        'Add Product Orders',
-        'Review Orders',
-        'Send to Supplier',
-        'Receive Orders',
+        'Order details',
+        'Add products',
+        'Review',
+        'Send',
+        'Receive',
     ];
 
     const TAX_RATE = 0.12;
@@ -186,16 +178,7 @@ const AddProductOrderSupplierTransaction = () => {
     });
 
 
-    const [isChecked, setChecked] = useState(false);
-
-    const [message, setMessage] = useState(false);
-
-
-
     const onChangeInput = (e) => {
-        // e.persist();
-        console.log(e.target.name)
-        console.log(e.target.name)
         setOrderSupplier({ ...orderSupplier, [e.target.name]: e.target.value });
     }
 
@@ -247,13 +230,19 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
     const handleInputChange = (e, value) => {
-        console.log(value);
-        e.persist();
-        // setOrderSupplier({
-        //     ...orderSupplier,
-        //     product_id: value.product_id,
-        //     quantity: value.quantity
-        // });
+        setValue(value);
+
+        if (!value) {
+            setOrderSupplier({
+                ...orderSupplier,
+                product_id: 0,
+                price: 0,
+                quantity: 0,
+                variation: '',
+                real_price: 0
+            });
+            return;
+        }
 
         if (value.quantity == 1) {
             setOrderSupplier({
@@ -344,6 +333,7 @@ const AddProductOrderSupplierTransaction = () => {
                             quantity_order: 0,
                             total_price: 0,
                         });
+                        setValue(null);
                         updateOrderTransaction();
                         setValidator({
                             severity: 'success',
@@ -373,7 +363,6 @@ const AddProductOrderSupplierTransaction = () => {
         OrderSupplierService.sanctum().then(response => {
             OrderSupplierService.saveAutoPo(autoPo)
                 .then(response => {
-                    setAutoResponse(response.data);
                     fetchByOrderSupplierId(id);
                     setOrderSupplier({
                         order_supplier_transaction_id: id,
@@ -427,7 +416,6 @@ const AddProductOrderSupplierTransaction = () => {
                     setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                     setinvoiceTotal(TAX_RATE * response.data.total_transaction_price + response.data.total_transaction_price);
                 } else {
-                    setChecked(true);
                     setinvoiceSubtotal(response.data.total_transaction_price / (1 + TAX_RATE));
                     setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                     setinvoiceTotal(response.data.total_transaction_price);
@@ -549,99 +537,107 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
 
-    const Div = styled('div')(({ theme }) => ({
-        ...theme.typography.button,
-        backgroundColor: theme.palette.background.paper,
-        fontSize: "2rem",
-        padding: theme.spacing(1),
-        textAlign: "center",
-    }));
-
-
     return (
-        <div>
+        <main className="purchase-order-page po-products-page">
+            <section className="purchase-order-shell">
+            <div className="purchase-order-heading">
+                <div className="purchase-order-icon" aria-hidden="true">
+                    <Inventory2OutlinedIcon />
+                </div>
+                <div>
+                    <span className="purchase-order-eyebrow">Purchase order #{id}</span>
+                    <h1>Add products</h1>
+                    <p>Build the supplier order with products, quantities, prices, and expiry dates.</p>
+                </div>
+            </div>
 
-            <Div>{"Purchase Order"}</Div>
+            {validator.isShow &&
+                <Alert className="po-products-alert" variant="filled" severity={validator.severity}>
+                    {validator.message}
+                </Alert>
+            }
 
-
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-
-            <br></br>
             <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
+                className="po-products-workspace"
                 noValidate
                 autoComplete="off"
-            // onSubmit={saveOrderSupplier}
             >
+                <div className="purchase-order-progress">
                 <Stepper activeStep={1} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
                             <StepLabel>{label}</StepLabel>
-
-
                         </Step>
                     ))}
                 </Stepper>
-                <br></br>
-                <TableContainer component={Paper}>
+                </div>
+                <TableContainer component={Paper} className="po-order-summary">
 
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                    <Table aria-label="Purchase order summary">
                         <TableBody>
                             <TableRow >
-                                <TableCell style={{ fontWeight: 'bold' }}>Supplier:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.supplier_name}</TableCell>
-
-                                <TableCell style={{ fontWeight: 'bold' }}>Created Date :</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.order_date}</TableCell>
-
+                                <TableCell>
+                                    <div className="po-summary-label"><LocalShippingOutlinedIcon /> Supplier</div>
+                                    <strong>{orderSupplierTransaction.supplier_name || 'Loading…'}</strong>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="po-summary-label"><CalendarMonthOutlinedIcon /> Order date</div>
+                                    <strong>{orderSupplierTransaction.order_date || '—'}</strong>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="po-summary-label"><ReceiptLongOutlinedIcon /> Items</div>
+                                    <strong>{orderList.length}</strong>
+                                </TableCell>
+                                <TableCell align="right">
+                                    <div className="po-summary-label po-summary-label-right">Order total</div>
+                                    <strong className="po-summary-total">₱{ccyFormat(invoiceTotal)}</strong>
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <form onSubmit={saveOrderSupplier} >
-
-
-
-                    <br></br>
-                    {formErrors.product_id && <p style={{ color: "red" }}>{formErrors.product_id}</p>}
-                    <FormControl variant="standard" >
+                <section className="po-entry-card">
+                    <div className="po-card-heading">
+                        <div>
+                            <span>Step 2 of 5</span>
+                            <h2>Add an item</h2>
+                            <p>Choose a supplier product and enter the order quantity.</p>
+                        </div>
+                    </div>
+                <form onSubmit={saveOrderSupplier} className="po-products-form">
+                    <div className="po-form-field po-form-field-full">
                         <Autocomplete
-                            sx={{
-                                '& .MuiTextField-root': { m: 1, width: '65ch' },
-                            }}
-                            // options={products}
-                            options={products.sort((a, b) =>
+                            options={[...products].sort((a, b) =>
                                 b.category_name.toString().localeCompare(a.category_name.toString())
                             )}
                             value={value}
-                            className="mb-3"
-                            id="disable-close-on-select"
+                            className="po-product-search"
+                            id="supplier-product-select"
                             onChange={handleInputChange}
-                            groupBy={(products) => products.category_name}
-                            getOptionLabel={(products) => products.product_name + ' - ' + (products.weight) + 'kg' + ' (₱' + (products.price) + ')' + ' | Stocks - ' + (products.stock)}
+                            groupBy={(product) => product.category_name}
+                            isOptionEqualToValue={(option, selected) => option.product_id === selected.product_id}
+                            getOptionLabel={(product) => `${product.product_name} - ${product.weight}kg (₱${product.price}) | Stock: ${product.stock}`}
                             renderInput={(params) => (
-                                <TextField  {...params} label='Choose Product' variant="standard" />
+                                <TextField
+                                    {...params}
+                                    label="Choose product"
+                                    placeholder="Search supplier products"
+                                    error={Boolean(formErrors.product_id)}
+                                    helperText={formErrors.product_id}
+                                />
                             )}
                         />
-                    </FormControl>
+                    </div>
 
-                    <br></br>
-
-                    {orderSupplier.quantity > 1 ? (
+                    {orderSupplier.quantity > 1 && (
+                        <div className="po-form-field po-form-field-full">
                         <FormControl fullWidth>
-                            <InputLabel id="demo-simple-select-label">Variation</InputLabel>
+                            <InputLabel id="product-variation-label">Pricing variation</InputLabel>
                             <Select
-                                labelId="demo-simple-select-label"
-                                className="mb-3"
-                                id="demo-simple-select"
+                                labelId="product-variation-label"
+                                id="product-variation"
                                 name='variation'
-                                label="Variation"
+                                label="Pricing variation"
                                 value={orderSupplier.variation}
                                 onChange={onChangeVariation}
                             >
@@ -649,158 +645,169 @@ const AddProductOrderSupplierTransaction = () => {
                                 <MenuItem value='RETAIL'>Retail</MenuItem>
                             </Select>
                         </FormControl>
-                    ) : (
-                        <div>
-                            <br></br>
                         </div>
                     )}
-                    {formErrors.price && <p style={{ color: "red" }}>{formErrors.price}</p>}
-                    <FormControl variant="standard" >
-                        <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
-                        <Input
-                            className="mb-3"
-                            id="filled-required"
-                            label="Price"
-                            variant="filled"
+
+                    <div className="po-form-field">
+                        <TextField
+                            fullWidth
+                            id="product-price"
+                            label="Unit price"
+                            type="number"
                             name='price'
                             value={orderSupplier.price}
                             onChange={onChangeInput}
-                            disabled={orderSupplier.price == 0 ? true : false}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                            disabled={orderSupplier.price == 0}
+                            error={Boolean(formErrors.price)}
+                            helperText={formErrors.price}
+                            InputProps={{
+                                startAdornment: <InputAdornment position="start">₱</InputAdornment>
+                            }}
                         />
-                    </FormControl>
+                    </div>
 
-                    <br></br>
-                    {formErrors.quantity_order && <p style={{ color: "red" }}>{formErrors.quantity_order}</p>}
-                    <FormControl variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
-                        <Input
+                    <div className="po-form-field">
+                        <TextField
+                            fullWidth
+                            id="product-quantity"
+                            label="Quantity"
                             type='number'
-                            className="mb-3"
-                            id="filled-required"
-                            label="=Price"
-                            variant="filled"
                             name='quantity_order'
                             value={orderSupplier.quantity_order}
-                            disabled={orderSupplier.price == 0 ? true : false}
+                            disabled={orderSupplier.price == 0}
                             onChange={onChangeInput}
+                            error={Boolean(formErrors.quantity_order)}
+                            helperText={formErrors.quantity_order}
+                            inputProps={{ min: 1 }}
                         />
-                    </FormControl>
-                    <br></br>
+                    </div>
 
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                        <Form.Label>Expiration</Form.Label>
-                        <Form.Control type="date" name="expiration" onChange={onChangeInput} />
-                    </Form.Group>
-                    <br></br>
+                    <div className="po-form-field po-form-field-full">
+                        <TextField
+                            fullWidth
+                            id="product-expiration"
+                            label="Expiration date"
+                            type="date"
+                            name="expiration"
+                            value={orderSupplier.expiration || ''}
+                            onChange={onChangeInput}
+                            InputLabelProps={{ shrink: true }}
+                            helperText="Optional"
+                        />
+                    </div>
+
                     {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
+                        <LinearProgress color="warning" className="po-form-field-full" />
                     }
-                    <br></br>
-                    <div>
+
+                    <div className="po-add-action">
                         <Button
                             variant="contained"
                             type="submit"
                             disabled={isAddDisabled}
+                            startIcon={submitLoadingAdd ? <CircularProgress size={18} color="inherit" /> : <AddRoundedIcon />}
+                            className="po-add-button"
                         >
-                            Add
+                            {submitLoadingAdd ? 'Adding item…' : 'Add to order'}
                         </Button>
                     </div>
-                    <br></br>
                 </form>
 
                 <br></br>
                 <form onSubmit={submitAutoPo} >
                     <Button
-                        variant="contained"
-                        color="secondary"
+                        variant="outlined"
                         type="submit"
                         disabled={isAddDisabled}
+                        startIcon={<AutoAwesomeRoundedIcon />}
+                        className="po-auto-button"
                     >
-                        Auto PO
+                        Auto-fill suggested products
                     </Button>
                 </form>
                 <br></br>
+                </section>
             </Box>
 
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+            <div className="po-list-heading">
+                <div>
+                    <span>Order items</span>
+                    <h2>Products in this purchase order</h2>
+                </div>
+                <strong>{orderList.length} {orderList.length === 1 ? 'item' : 'items'}</strong>
+            </div>
+            <TableContainer component={Paper} className="po-items-table">
+                <Table sx={{ minWidth: 760 }} aria-label="Purchase order products">
                     <TableHead>
 
                         <TableRow>
                             <TableCell>Product</TableCell>
                             <TableCell align="right">Unit</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
+                            <TableCell align="right">Quantity</TableCell>
                             <TableCell align="right">Price</TableCell>
-                            <TableCell align="right">Sum</TableCell>
+                            <TableCell align="right">Total</TableCell>
                             <TableCell align="right">Expiration</TableCell>
                             <TableCell align="right"></TableCell>
                             <TableCell align="right"></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
+                        {orderList.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={8}>
+                                    <div className="po-empty-state">
+                                        <Inventory2OutlinedIcon />
+                                        <strong>No products added yet</strong>
+                                        <span>Use the form above to add the first product.</span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {orderList.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.product_name} </TableCell>
+                            <TableRow key={row.id} hover>
+                                <TableCell><strong>{row.product_name}</strong></TableCell>
                                 <TableCell align="right">{row.unit}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
-                                <TableCell align="right">{row.price}</TableCell>
-                                <TableCell align="right">{row.total_price}</TableCell>
-                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
+                                <TableCell align="right">₱{ccyFormat(Number(row.price))}</TableCell>
+                                <TableCell align="right"><strong>₱{ccyFormat(Number(row.total_price))}</strong></TableCell>
+                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : "—"}</TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
+                                    <Tooltip title="Edit product">
+                                        <IconButton onClick={(e) => handleOpen(row.id, e)} aria-label={`Edit ${row.product_name}`}>
+                                            <UpdateIcon />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Delete">
-                                        <IconButton>
-                                            <DeleteIcon color="error" onClick={(e) => openDelete(row.id, e)} />
+                                    <Tooltip title="Remove product">
+                                        <IconButton color="error" onClick={(e) => openDelete(row.id, e)} aria-label={`Remove ${row.product_name}`}>
+                                            <DeleteIcon />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
                             </TableRow>
                         ))}
 
-                        {/* <TableRow>
-                            <TableCell rowSpan={4} />
-                            <TableCell colSpan={3}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Tax</TableCell>
-                            <TableCell align="right" colSpan={2}>{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow> */}
-                        <TableRow>
+                        <TableRow className="po-grand-total-row">
                             <TableCell colSpan={4} style={{ fontWeight: 'bold' }}>Grand Total</TableCell>
                             <TableCell align="right" style={{ fontWeight: 'bold' }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>
-            <br></br>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
+            <div className="po-review-footer">
+                <p>{orderList.length === 0 ? 'Add at least one product to continue.' : 'Ready to check quantities and totals?'}</p>
                 <Button
                     variant="contained"
-                    disabled={orderList.length === 0 ? true : false}
-                    type="submit"
+                    disabled={orderList.length === 0}
                     onClick={finalizeOrder}
-                    size="large" >
-                    Next
+                    size="large"
+                    endIcon={<ArrowForwardRoundedIcon />}
+                    className="purchase-order-next"
+                >
+                    Continue to review
                 </Button>
-                <br></br>
-            </Box>
-            <br></br>
+            </div>
             <Modal
                 keepMounted
                 open={open}
@@ -911,28 +918,12 @@ const AddProductOrderSupplierTransaction = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-            <div>
-                <br></br>
-                <br></br>
-                {orderList.map((row) => (
-                    <>
-                        <h6>{row.quantity} {row.unit} - {row.product_name}</h6>
-
-                    </>
-
-                ))
-                }
-
-            </div>
-            <br></br>
-            <br></br>
-            <br></br>
-            <br></br>
-        </div >
-    )
+            </section>
+        </main>
+    );
 }
 
-export default AddProductOrderSupplierTransaction
+export default AddProductOrderSupplierTransaction;
 
 
 
