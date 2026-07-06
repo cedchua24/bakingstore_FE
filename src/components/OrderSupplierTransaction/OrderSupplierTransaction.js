@@ -1,53 +1,45 @@
 import React, { useState, useEffect } from "react";
 
-import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import AddOrderSupplierTransaction from "./AddOrderSupplierTransaction";
 import SupplierServiceService from "../Supplier/SupplierService.service";
+import "./OrderSupplierTransaction.css";
 
 const OrderSupplierTransaction = () => {
-
     useEffect(() => {
-        fetchOrderTransactionList();
         fetchSupplierList();
     }, []);
 
-    const [orderTransactionList, setOrderTransactionList] = useState([]);
     const [supplierList, setSupplierList] = useState([]);
-
-    const saveOrderTransactionDataHandler = (orderTransaction) => {
-        setOrderTransactionList([...orderTransactionList, orderTransaction]);
-    }
-
-
-    const fetchOrderTransactionList = () => {
-        OrderSupplierTransactionService.getAll()
-            .then(response => {
-                setOrderTransactionList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+    const [isLoadingSuppliers, setIsLoadingSuppliers] = useState(true);
+    const [supplierError, setSupplierError] = useState("");
 
     const fetchSupplierList = () => {
+        setIsLoadingSuppliers(true);
+        setSupplierError("");
+
         SupplierServiceService.getAll()
             .then(response => {
                 setSupplierList(response.data);
             })
             .catch(e => {
-                console.log("error", e)
+                console.log("error", e);
+                setSupplierError("We couldn't load the supplier list. Please refresh and try again.");
+            })
+            .finally(() => {
+                setIsLoadingSuppliers(false);
             });
-    }
-
+    };
 
     return (
-        <div>
+        <main className="purchase-order-page">
             <AddOrderSupplierTransaction
-                onSaveOrderTransactionData={saveOrderTransactionDataHandler}
                 supplierList={supplierList}
+                isLoadingSuppliers={isLoadingSuppliers}
+                supplierError={supplierError}
+                onRetrySuppliers={fetchSupplierList}
             />
-        </div>
-    )
-}
+        </main>
+    );
+};
 
-export default OrderSupplierTransaction
+export default OrderSupplierTransaction;

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
@@ -19,9 +17,6 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
 import LinearProgress from '@mui/material/LinearProgress';
 
 import FormControl from '@mui/material/FormControl';
@@ -40,10 +35,18 @@ import Modal from '@mui/material/Modal';
 import UpdateIcon from '@mui/icons-material/Update';
 import InputAdornment from '@mui/material/InputAdornment';
 import Typography from '@mui/material/Typography'
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import "./OrderSupplierTransaction.css";
 
 
 
-const FinalizeOrder = () => {
+const PaymentOrder = () => {
 
 
     const { id } = useParams();
@@ -57,31 +60,21 @@ const FinalizeOrder = () => {
         fetchPaymentTypePoByShopTransactionId(id);
     }, []);
 
-    const steps = [
-        'Created Transaction Details',
-        'Add Product Orders',
-        'Finalize Orders',
-    ];
-
     const style = {
         position: 'absolute',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: 'min(92vw, 460px)',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        border: '1px solid #e5e8ec',
+        borderRadius: '18px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: { xs: 3, sm: 4 },
+        '& .MuiTextField-root': { width: '100%' },
     };
 
     const TAX_RATE = 0.12;
-
-    function ccyFormat(num) {
-        return `${num.toFixed(2)}`;
-    }
-
 
     const [invoiceSubtotal, setinvoiceSubtotal] = useState(0);
     const [invoiceTaxes, setinvoiceTaxes] = useState(0);
@@ -147,7 +140,8 @@ const FinalizeOrder = () => {
 
 
 
-    const openDelete = () => {
+    const openDelete = (paymentId) => {
+        setDeleteId(paymentId);
         setDeleteOpenModal(true);
     }
 
@@ -155,6 +149,7 @@ const FinalizeOrder = () => {
 
     const handleClose = () => setOpen(false);
     const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
+    const [deleteId, setDeleteId] = useState(0);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [amount, setAmount] = useState(0);
 
@@ -271,8 +266,11 @@ const FinalizeOrder = () => {
     }
 
     const handlePaymentTypeChange = (e, value) => {
-        e.persist();
-        console.log('handlePaymentTypeChange', value)
+        if (!value) {
+            setModeOfPaymentPo({ ...modeOfPaymentPo, payment_type_po_id: 0 });
+            return;
+        }
+
         setModeOfPaymentPo({
             ...modeOfPaymentPo,
             payment_type_po_id: value.id,
@@ -282,8 +280,15 @@ const FinalizeOrder = () => {
     }
 
     const handlePaymentTermChange = (e, value) => {
-        e.persist();
-        console.log(value)
+        if (!value) {
+            setModeOfPaymentPo({
+                ...modeOfPaymentPo,
+                payment_term_id: 0,
+                payment_type_po_id: 0,
+            });
+            return;
+        }
+
         if (value.id == 1) {
             setModeOfPaymentPo({
                 ...modeOfPaymentPo,
@@ -496,291 +501,312 @@ const FinalizeOrder = () => {
 
 
     return (
-        <div>
+        <main className="purchase-order-page po-payment-page">
+            <section className="purchase-order-shell">
+            <div className="purchase-order-heading">
+                <div className="purchase-order-icon" aria-hidden="true">
+                    <PaymentsOutlinedIcon />
+                </div>
+                <div>
+                    <span className="purchase-order-eyebrow">Purchase order #{id}</span>
+                    <h1>Manage payments</h1>
+                    <p>Record supplier payments, review the remaining balance, and complete the payment status.</p>
+                </div>
+            </div>
+
             {message &&
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
-
+                <Alert className="po-products-alert" variant="filled" severity="success">
+                    Payment added successfully.
+                </Alert>
             }
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
+            {validator.isShow &&
+                <Alert className="po-products-alert" variant="filled" severity={validator.severity}>
+                    {validator.message}
+                </Alert>
+            }
 
-            <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
-                noValidate
-                autoComplete="off"
-            >
-                <Stepper activeStep={2} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
-
-
-                        </Step>
-                    ))}
-                </Stepper>
-                <br></br>
-
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                <TableContainer component={Paper} className="po-order-summary po-payment-summary">
+                    <Table aria-label="Purchase order payment summary">
                         <TableBody>
                             <TableRow >
-                                <TableCell style={{ fontWeight: 'bold' }}>Supplier Name:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.supplier_name}</TableCell>
-
-                                <TableCell style={{ fontWeight: 'bold' }}>Date:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.order_date}</TableCell>
-
-
-                                <TableCell style={{ fontWeight: 'bold' }}>withTax:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.withTax === 1 ? true : false}</TableCell>
-
+                                <TableCell>
+                                    <div className="po-summary-label"><LocalShippingOutlinedIcon /> Supplier</div>
+                                    <strong>{orderSupplierTransaction.supplier_name || 'Loading…'}</strong>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="po-summary-label"><CalendarMonthOutlinedIcon /> Order date</div>
+                                    <strong>{orderSupplierTransaction.order_date || '—'}</strong>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="po-summary-label"><AccountBalanceWalletOutlinedIcon /> Paid</div>
+                                    <strong>{numberFormat(modeOfPaymentDTO.total_payment || 0)}</strong>
+                                </TableCell>
+                                <TableCell align="right">
+                                    <div className="po-summary-label po-summary-label-right">Balance due</div>
+                                    <strong className="po-summary-total">{numberFormat(modeOfPaymentDTO.balance || 0)}</strong>
+                                </TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
-            </Box>
-            <br></br>
-            {modeOfPaymentDTO.balance != 0 ? (
-                <Box
-                    sx={{
-                        '& .MuiTextField-root': { m: 1, width: '25ch' },
-                    }}
-                    noValidate
-                    autoComplete="off"
-                // onSubmit={saveOrderSupplier}
-                >
-                    {formErrors.payment_term_id && <p style={{ color: "red" }}>{formErrors.payment_term_id}</p>}
-                    <FormControl variant="standard" >
+
+            {Number(modeOfPaymentDTO.balance) !== 0 ? (
+                <section className="po-payment-entry-card">
+                    <div className="po-card-heading">
+                        <div>
+                            <span>New payment</span>
+                            <h2>Add a supplier payment</h2>
+                            <p>Choose the payment terms, account, amount, and transaction date.</p>
+                        </div>
+                    </div>
+                <div className="po-payment-form">
+                    <div className="po-form-field">
                         <Autocomplete
-                            // {...defaultProps}
                             options={paymentTermList}
-                            className="mb-3"
-                            id="disable-close-on-select"
+                            id="payment-term-select"
                             onChange={handlePaymentTermChange}
-                            getOptionLabel={(paymentTermList) => paymentTermList.payment_term}
+                            getOptionLabel={(option) => option.payment_term || ''}
                             renderInput={(params) => (
-                                <TextField {...params} label="Choose Payment Term" variant="standard" />
+                                <TextField
+                                    {...params}
+                                    label="Payment term"
+                                    error={Boolean(formErrors.payment_term_id)}
+                                    helperText={formErrors.payment_term_id}
+                                />
                             )}
                         />
-                    </FormControl>
-                    <br></br>
+                    </div>
 
-                    {modeOfPaymentPo.payment_term_id != 0 ? (<>
-
-                        {modeOfPaymentPo.payment_term_id == 2 || modeOfPaymentPo.payment_term_id == 3 || modeOfPaymentPo.payment_term_id == 4 ? (<>
-                            {formErrors.payment_type_po_id && <p style={{ color: "red" }}>{formErrors.payment_type_po_id}</p>}
-                            <Box
-                                sx={{
-                                    '& .MuiTextField-root': { m: 1, width: '65ch' },
-                                }}
-                                noValidate
-                                autoComplete="off"
-                            >
-                                <FormControl variant="standard" >
-                                    <Autocomplete
-                                        // {...defaultProps}
-                                        options={paymentTypePoList}
-                                        className="mb-3"
-                                        id="disable-close-on-select"
-                                        onChange={handlePaymentTypeChange}
-                                        getOptionLabel={(paymentTypePoList) => paymentTypePoList.bank_name + " " + paymentTypePoList.account_name + "  " + paymentTypePoList.account_description + " - " + paymentTypePoList.account_number}
-                                        renderInput={(params) => (
-                                            <TextField {...params} label="Choose Bank" variant="standard" />
-                                        )}
+                    {[2, 3, 4].includes(Number(modeOfPaymentPo.payment_term_id)) && (
+                        <div className="po-form-field po-form-field-full">
+                            <Autocomplete
+                                options={paymentTypePoList}
+                                id="payment-account-select"
+                                onChange={handlePaymentTypeChange}
+                                getOptionLabel={(option) =>
+                                    [option.bank_name, option.account_name, option.account_description, option.account_number]
+                                        .filter(Boolean)
+                                        .join(' · ')
+                                }
+                                renderInput={(params) => (
+                                    <TextField
+                                        {...params}
+                                        label="Bank or payment account"
+                                        error={Boolean(formErrors.payment_type_po_id)}
+                                        helperText={formErrors.payment_type_po_id}
                                     />
-                                </FormControl>
-                            </Box>
-                        </>) : ""}
-                        {modeOfPaymentPo.payment_term_id == 1 || modeOfPaymentPo.payment_term_id == 5 || modeOfPaymentPo.payment_term_id == 2 || modeOfPaymentPo.payment_term_id == 3 || modeOfPaymentPo.payment_term_id == 4 ? (<>
-                            {formErrors.amount && <p style={{ color: "red" }}>{formErrors.amount}</p>}
-                            <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                                <InputLabel htmlFor="standard-adornment-amount">Enter Amount</InputLabel>
-                                <Input
-                                    type='number'
-                                    id="filled-required"
-                                    label="amount"
-                                    variant="filled"
-                                    name='amount'
-                                    errorText='{this.state.password_error_text}'
-                                    max={modeOfPaymentPo.amount}
-                                    // value={product.stock}
-                                    onChange={onChangeInput}
+                                )}
+                            />
+                        </div>
+                    )}
+
+                    {Number(modeOfPaymentPo.payment_term_id) !== 0 && (
+                        <>
+                            <div className="po-form-field">
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    label="Amount"
+                                    name="amount"
                                     value={modeOfPaymentPo.amount}
-                                // helperText="Incorrect entry."
+                                    onChange={onChangeInput}
+                                    error={Boolean(formErrors.amount)}
+                                    helperText={formErrors.amount || `Maximum balance: ${numberFormat(modeOfPaymentDTO.balance || 0)}`}
+                                    InputProps={{
+                                        startAdornment: <InputAdornment position="start">₱</InputAdornment>
+                                    }}
+                                    inputProps={{ min: 0, max: modeOfPaymentDTO.balance }}
                                 />
-                            </FormControl>
-                        </>) : ""}
-                        <br></br>
-                        {formErrors.date && <p style={{ color: "red" }}>{formErrors.date}</p>}
-                        <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                            <Form.Label>{modeOfPaymentPo.payment_term_id == 3 ? "Due Date" : "Date"}</Form.Label>
-                            <Form.Control type="date" name="date" onChange={onChangeInput} />
-                        </Form.Group>
+                            </div>
+                            <div className="po-form-field">
+                                <TextField
+                                    fullWidth
+                                    type="date"
+                                    label={Number(modeOfPaymentPo.payment_term_id) === 3 ? 'Due date' : 'Payment date'}
+                                    name="date"
+                                    value={modeOfPaymentPo.date || ''}
+                                    onChange={onChangeInput}
+                                    error={Boolean(formErrors.date)}
+                                    helperText={formErrors.date}
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                            </div>
+                        </>
+                    )}
 
-                    </>) : ""}
-                    <br></br>
-                    <Button
-                        variant="contained"
-                        disabled={errorStock}
-                        onClick={savePaymentType}
-                        size="large" >
-                        Add
-                    </Button>
-                    <br></br>
-                    <br></br>
-                    {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
-                    }
-                </Box>
-            ) : ""
-            }
-            <br></br>
+                    {submitLoadingAdd && <LinearProgress color="warning" className="po-form-field-full" />}
 
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                    <div className="po-payment-add-action">
+                        <Button
+                            variant="contained"
+                            disabled={errorStock || isAddDisabled}
+                            onClick={savePaymentType}
+                            startIcon={submitLoadingAdd ? <CircularProgress size={18} color="inherit" /> : <AddRoundedIcon />}
+                            className="po-add-button"
+                        >
+                            {submitLoadingAdd ? 'Adding payment…' : 'Add payment'}
+                        </Button>
+                    </div>
+                </div>
+                </section>
+            ) : (
+                <Alert className="po-payment-complete-alert" icon={<CheckCircleOutlineRoundedIcon />} severity="success">
+                    This purchase order is fully paid.
+                </Alert>
+            )}
+
+            <div className="po-list-heading po-payment-section-heading">
+                <div>
+                    <span>Payment history</span>
+                    <h2>Recorded payments</h2>
+                </div>
+                <strong>{modeOfPaymentDTO.data.length} {modeOfPaymentDTO.data.length === 1 ? 'payment' : 'payments'}</strong>
+            </div>
+            <TableContainer component={Paper} className="po-items-table po-payment-history">
+                <Table sx={{ minWidth: 700 }} aria-label="Recorded supplier payments">
                     <TableHead>
                         <TableRow>
-                            <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
-                            <TableCell style={{ fontWeight: 'bold' }}>Term</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
+                            <TableCell>Payment account</TableCell>
+                            <TableCell>Term</TableCell>
+                            <TableCell align="right">Amount</TableCell>
+                            <TableCell align="right" colSpan={2}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-
+                        {modeOfPaymentDTO.data.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={5}>
+                                    <div className="po-empty-state">
+                                        <PaymentsOutlinedIcon />
+                                        <strong>No payments recorded</strong>
+                                        <span>Add the first payment using the form above.</span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {modeOfPaymentDTO.data.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.bank_name}{" - " + row.account_name} {"" + row.account_description}{" - " + row.account_number}</TableCell>
-                                <TableCell align="right">{row.payment_term}</TableCell>
-                                <TableCell align="right">{row.amount}</TableCell>
+                            <TableRow key={row.id} hover>
+                                <TableCell>
+                                    <strong>
+                                        {[row.bank_name, row.account_name, row.account_description, row.account_number]
+                                            .filter(Boolean)
+                                            .join(' · ') || 'Payment'}
+                                    </strong>
+                                </TableCell>
+                                <TableCell>{row.payment_term || '—'}</TableCell>
+                                <TableCell align="right"><strong>{numberFormat(row.amount || 0)}</strong></TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Update">
-                                        <IconButton>
-                                            <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
+                                    <Tooltip title="Edit payment">
+                                        <IconButton color="primary" onClick={(e) => handleOpen(row.id, e)}>
+                                            <UpdateIcon />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Delete">
-                                        <IconButton>
-                                            <DeleteIcon color="error" onClick={(e) => openDelete()} />
+                                    <Tooltip title="Delete payment">
+                                        <IconButton color="error" onClick={() => openDelete(row.id)}>
+                                            <DeleteIcon />
                                         </IconButton>
                                     </Tooltip>
                                 </TableCell>
 
-                                <Dialog
-                                    open={deleteOpenModal}
-                                    onClose={handleDeleteCloseModal}
-                                    aria-labelledby="alert-dialog-title"
-                                    aria-describedby="alert-dialog-description"
-                                >
-
-                                    <DialogTitle id="alert-dialog-title">
-                                        {"Are you sure you want to Delete?"}
-                                    </DialogTitle>
-                                    {submitLoading &&
-                                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                            <CircularProgress />
-                                        </div>
-                                    }
-                                    <DialogActions>
-                                        <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                                        <Button onClick={(e) => deleteOrderTransaction(row.id, e)} autoFocus>
-                                            Agree
-                                        </Button>
-                                    </DialogActions>
-                                </Dialog>
                             </TableRow>
 
                         ))}
-                        <TableRow>
-                            <TableCell colSpan={1} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
+                        <TableRow className="po-grand-total-row">
+                            <TableCell colSpan={2}>Total paid</TableCell>
+                            <TableCell align="right">{numberFormat(modeOfPaymentDTO.total_payment || 0)}</TableCell>
+                            <TableCell colSpan={2}></TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>
-            <br></br>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+            <div className="po-list-heading po-payment-section-heading">
+                <div>
+                    <span>Order reference</span>
+                    <h2>Purchase order products</h2>
+                </div>
+                <strong>{orderList.length} {orderList.length === 1 ? 'item' : 'items'}</strong>
+            </div>
+            <TableContainer component={Paper} className="po-items-table">
+                <Table sx={{ minWidth: 700 }} aria-label="Purchase order products">
                     <TableHead>
-                        <TableRow>
-                            <TableCell align="left" colSpan={3}>
-                                Details
-                            </TableCell>
-                            <TableCell align="center" >Price</TableCell>
-                        </TableRow>
                         <TableRow>
                             <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
-                            <TableCell align="right">Unit</TableCell>
-                            <TableCell align="right">Sum</TableCell>
+                            <TableCell align="right">Quantity</TableCell>
+                            <TableCell align="right">Unit price</TableCell>
+                            <TableCell align="right">Total</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
+                        {orderList.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={4}>
+                                    <div className="po-empty-state">
+                                        <Inventory2OutlinedIcon />
+                                        <strong>No products found</strong>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )}
                         {orderList.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.product_name}</TableCell>
+                            <TableRow key={row.id} hover>
+                                <TableCell><strong>{row.product_name}</strong></TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
-                                <TableCell align="right">{row.price}</TableCell>
-                                <TableCell align="right">{row.total_price}</TableCell>
+                                <TableCell align="right">{numberFormat(row.price || 0)}</TableCell>
+                                <TableCell align="right"><strong>{numberFormat(row.total_price || 0)}</strong></TableCell>
                             </TableRow>
                         ))}
 
-                        <TableRow>
+                        <TableRow className="po-payment-calculation-row">
                             <TableCell rowSpan={3} />
                             <TableCell colSpan={2}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
+                            <TableCell align="right">{numberFormat(invoiceSubtotal)}</TableCell>
                         </TableRow>
-                        <TableRow>
+                        <TableRow className="po-payment-calculation-row">
                             <TableCell>Tax</TableCell>
                             <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
+                            <TableCell align="right">{numberFormat(invoiceTaxes)}</TableCell>
                         </TableRow>
-                        <TableRow>
-                            <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>{numberFormat(invoiceTotal)}</TableCell>
+                        <TableRow className="po-grand-total-row">
+                            <TableCell colSpan={2}>Order total</TableCell>
+                            <TableCell align="right">{numberFormat(invoiceTotal)}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
             </TableContainer>
 
-            <br></br>
-            {submitLoadingAdd &&
-                <LinearProgress color="warning" />
-            }
-            <br></br>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
-            >
-                <br></br>
-
-
-                <br></br>
+            <section className="po-payment-completion">
                 <Button
-                    disabled={modeOfPaymentDTO.balance != 0}
+                    disabled={Number(modeOfPaymentDTO.balance) !== 0 || isAddDisabled}
                     variant="contained"
-                    type="submit"
                     onClick={updateOrderTransaction}
-                    size="large" >
-                    Submit
+                    size="large"
+                    startIcon={<CheckCircleOutlineRoundedIcon />}
+                    className="purchase-order-next"
+                >
+                    {submitLoadingAdd ? 'Completing…' : 'Mark as fully paid'}
                 </Button>
+            </section>
 
-            </Box>
+            <Dialog
+                open={deleteOpenModal}
+                onClose={handleDeleteCloseModal}
+                aria-labelledby="delete-payment-title"
+            >
+                <DialogTitle id="delete-payment-title">Delete this payment?</DialogTitle>
+                {submitLoading && (
+                    <div className="po-dialog-loading">
+                        <CircularProgress size={26} />
+                    </div>
+                )}
+                <DialogActions>
+                    <Button onClick={handleDeleteCloseModal}>Keep payment</Button>
+                    <Button color="error" onClick={(event) => deleteOrderTransaction(deleteId, event)} autoFocus>
+                        Delete payment
+                    </Button>
+                </DialogActions>
+            </Dialog>
 
             <Modal
                 keepMounted
@@ -791,7 +817,7 @@ const FinalizeOrder = () => {
             >
                 <Box sx={style}>
                     <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Product
+                        Edit payment amount
                     </Typography>
                     {submitLoading &&
                         <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -823,23 +849,21 @@ const FinalizeOrder = () => {
                         }}
                     >
                         <Button
-                            disabled={modeOfPaymentDTO.balance != 0}
+                            disabled={submitLoading}
                             variant="contained"
-                            type="submit"
                             onClick={updateOrderSupplier}
                             size="large" >
-                            Submit
+                            Save changes
                         </Button>
                     </Box>
                 </Box>
             </Modal>
-            <br></br>
-            <br></br>
-        </div >
-    )
+            </section>
+        </main>
+    );
 }
 
-export default FinalizeOrder
+export default PaymentOrder;
 
 
 

@@ -33,7 +33,7 @@ const StaffCheckList = () => {
 
 
     const fetchUserList = () => {
-        UserService.getAll()
+        UserService.fetchUserList()
             .then(response => {
                 setUserList(response.data);
             })

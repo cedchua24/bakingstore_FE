@@ -1,56 +1,6 @@
-import React, { useState, useEffect } from "react";
-import CustomerService from "./CustomerService";
+import React from "react";
 import CustomerList from "./CustomerList";
-import AddCustomer from "./AddCustomer";
 
-const CustomerListV2 = () => {
+const CustomerListV2 = () => <CustomerList />;
 
-    useEffect(() => {
-        fetchCustomerList();
-    }, []);
-
-    const [customerList, setCustomerList] = useState([]);
-
-    const saveCustomerDataHandler = (customer) => {
-        setCustomerList([...customerList, customer]);
-    }
-
-
-    const fetchCustomerList = () => {
-        CustomerService.fetchAllCustomer()
-            .then(response => {
-                setCustomerList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const deleteCustomer = (id, e) => {
-
-        const index = customerList.findIndex(customer => customer.id === id);
-        const newCustomer = [...customerList];
-        newCustomer.splice(index, 1);
-
-        CustomerService.delete(id)
-            .then(response => {
-                setCustomerList(newCustomer);
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
-    }
-
-
-
-    return (
-        <div>
-            <CustomerList
-                customerList={customerList}
-                deleteCustomer={deleteCustomer}
-            />
-        </div>
-    )
-}
-
-export default CustomerListV2
+export default CustomerListV2;

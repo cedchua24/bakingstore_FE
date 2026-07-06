@@ -1,338 +1,215 @@
-import React, { useState, useEffect } from "react";
-import { Button, Form, Alert } from 'react-bootstrap';
-import CustomerService from "../Customer/CustomerService";
+import React, { useEffect, useState } from "react";
+import { Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import LinearProgress from '@mui/material/LinearProgress';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography'
-import Modal from '@mui/material/Modal';
-import TextField from '@mui/material/TextField';
-import Autocomplete from '@mui/material/Autocomplete';
+import Alert from "@mui/material/Alert";
+import Autocomplete from "@mui/material/Autocomplete";
+import Button from "@mui/material/Button";
+import LinearProgress from "@mui/material/LinearProgress";
+import Modal from "@mui/material/Modal";
+import TextField from "@mui/material/TextField";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
+import CustomerService from "./CustomerService";
+import "./CustomerForm.css";
 
-import FormControl from '@mui/material/FormControl';
+const CustomerList = () => {
+  const [customers, setCustomers] = useState([]);
+  const [filters, setFilters] = useState({ dateFrom: "", dateTo: "" });
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState(null);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [sourceCustomer, setSourceCustomer] = useState(null);
+  const [replacementCustomer, setReplacementCustomer] = useState(null);
+  const [replacementOptions, setReplacementOptions] = useState([]);
+  const [transferError, setTransferError] = useState("");
 
+  const fetchCustomers = (dateFilters = filters) => {
+    setLoading(true);
+    CustomerService.fetchCustomerByDate(dateFilters)
+      .then((response) => setCustomers(response.data))
+      .catch(() => setAlert({ severity: "error", message: "Unable to fetch customers." }))
+      .finally(() => setLoading(false));
+  };
 
+  useEffect(() => {
+    setLoading(true);
+    CustomerService.fetchCustomerByDate({})
+      .then((response) => setCustomers(response.data))
+      .catch(() => setAlert({ severity: "error", message: "Unable to fetch customers." }))
+      .finally(() => setLoading(false));
+  }, []);
 
-const CustomerList = (props) => {
+  const openTransfer = (customer) => {
+    setSourceCustomer(customer);
+    setReplacementCustomer(null);
+    setTransferError("");
+    setTransferOpen(true);
+    CustomerService.fetchCustomerToDelete(customer.id)
+      .then((response) => setReplacementOptions(response.data))
+      .catch(() => setTransferError("Unable to fetch replacement customers."));
+  };
 
-    useEffect(() => {
-        fetchCustomerList();
-    }, []);
-
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
-    };
-
-    const handleClosePickUp = () => setOpenPickUp(false);
-    const [openPickUp, setOpenPickUp] = React.useState(false);
-
-    const [customerList, setCustomerList] = useState([]);
-
-    const [customerToDeleteList, setCustomerToDeleteList] = useState([]);
-    const [formErrorsPickUp, setFormErrorsPickup] = useState({});
-
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-
-    const [sortedCustomer, setSortedCustomer] = useState({
-        data: [],
-        code: '',
-        message: '',
-        id: 0
-    });
-
-    const [customerModal, setCustomerModal] = useState({
-        id: 0,
-        customer_id: 0,
-        first_name: '',
-        last_name: ''
-    });
-
-    const onChangeCustomerModal = (e) => {
-        setCustomerModal({ ...customerModal, [e.target.name]: e.target.value });
+  const transferAndDelete = () => {
+    if (!replacementCustomer) {
+      setTransferError("Choose a customer to receive the transferred records.");
+      return;
     }
 
-    const handleInputChange = (e, value) => {
-        e.persist();
-        setCustomerModal({
-            ...customerModal,
-            customer_id: value.id,
-        });
-    }
+    setLoading(true);
+    CustomerService.updateAndDeleteCustomer({
+      ...sourceCustomer,
+      customer_id: replacementCustomer.id,
+    })
+      .then(() => {
+        setTransferOpen(false);
+        setAlert({ severity: "success", message: "Customer records transferred and customer deleted." });
+        fetchCustomers();
+      })
+      .catch(() => setTransferError("Unable to transfer and delete this customer."))
+      .finally(() => setLoading(false));
+  };
 
-    const validateCustomer = (values) => {
-        const errors = {};
-        if (customerModal.customer_id == 0 || customerModal.customer_id == null) {
-            errors.customer_id = "Choose Customer Id!";
-        }
-        return errors;
-    }
+  const formatDate = (date) => date
+    ? new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "2-digit" }).format(new Date(date))
+    : "-";
+  const getName = (customer) => `${customer.first_name || ""} ${customer.last_name || ""}`.trim();
 
+  return (
+    <div className="customer-page">
+      <div className="customer-shell">
+        <header className="customer-header">
+          <div>
+            <span className="customer-eyebrow">Customer directory</span>
+            <h1>Customer List</h1>
+            <p>Review customer profiles, filter registrations, and manage account records.</p>
+          </div>
+          <div className="customer-header__icon"><PeopleAltOutlinedIcon /></div>
+        </header>
 
-    const deleteCustomer = () => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        console.log('status: ', customerModal);
-        console.log("count: ", Object.keys(validateCustomer(customerModal)).length);
-        console.log("validate: ", validateCustomer(customerModal));
-        setFormErrorsPickup(validateCustomer(customerModal));
-        if (Object.keys(validateCustomer(customerModal)).length > 0) {
-            console.log("Has Validation: ");
-        } else {
-            CustomerService.updateAndDeleteCustomer(customerModal)
-                .then(response => {
-                    setSubmitLoadingAdd(false);
-                    setOpenPickUp(false);
-                    setIsAddDisabled(false);
-                    fetchCustomerList();
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        }
+        {alert && <Alert severity={alert.severity} className="customer-alert">{alert.message}</Alert>}
 
-    }
+        <section className="customer-list-card">
+          <div className="customer-list-header">
+            <div>
+              <h2>All Customers</h2>
+              <p>Use the registration dates to narrow the customer list.</p>
+            </div>
+            <div className="customer-count">
+              <strong>{customers.length}</strong>
+              <span>Customers</span>
+            </div>
+          </div>
 
-    const handleOpenPickUp = (id, e) => {
-        console.log('e', id);
-        CustomerService.get(id)
-            .then(response => {
-                setCustomerModal(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+          <Form
+            className="customer-filter"
+            onSubmit={(event) => {
+              event.preventDefault();
+              fetchCustomers(filters);
+            }}
+          >
+            <Form.Group className="customer-field">
+              <Form.Label>Date from</Form.Label>
+              <Form.Control
+                type="date"
+                value={filters.dateFrom}
+                onChange={(event) => setFilters({ ...filters, dateFrom: event.target.value })}
+              />
+            </Form.Group>
+            <Form.Group className="customer-field">
+              <Form.Label>Date to</Form.Label>
+              <Form.Control
+                type="date"
+                value={filters.dateTo}
+                onChange={(event) => setFilters({ ...filters, dateTo: event.target.value })}
+              />
+            </Form.Group>
+            <Button type="submit" variant="contained" disabled={loading} className="customer-filter-button">
+              Find customers
+            </Button>
+          </Form>
 
-        CustomerService.fetchCustomerToDelete(id)
-            .then(response => {
-                setCustomerToDeleteList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+          {loading && <LinearProgress color="warning" style={{ marginBottom: "12px" }} />}
 
-        setOpenPickUp(true);
-    }
-
-
-
-
-    const fetchCustomerList = () => {
-        setSubmitLoadingAdd(true);
-        CustomerService.fetchCustomerByDate()
-            .then(response => {
-                setCustomerList(response.data);
-                setSubmitLoadingAdd(false);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const onChangeInput = (e) => {
-        console.log("status", e.target.value);
-        console.log("status", e.target.name);
-        setSortedCustomer({ ...sortedCustomer, [e.target.name]: e.target.value });
-
-    }
-
-
-    const submitCustomerDelete = () => {
-
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-
-
-        CustomerService.fetchCustomerByDate(customerModal)
-            .then(response => {
-                console.log("response.data", response.data)
-                setCustomerList(response.data);
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-            })
-            .catch(e => {
-                console.log("error", e)
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-
-            });
-
-
-    }
-
-
-    const formatStatementDate = (date) => {
-        var d = new Date(date);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
-
-    return (
-        <div>
-
-            <Form>
-
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date From:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
-                </Form.Group>
-
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date To:</Form.Label>
-                    <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Total Count:</Form.Label>
-                    <Form.Control type="text" value={customerList.length} disabled />
-                </Form.Group>
-                <Button variant="primary"
-                    onClick={submitCustomerDelete}
-                    disabled={isAddDisabled}
-                >
-                    Find
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-                <br></br>
-            </Form>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Customer List </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        {/* <th>#</th> */}
-                        <th>ID</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Store Name</th>
-                        <th>Contact Number</th>
-                        <th>Email</th>
-                        <th>Address</th>
-                        <th>Facebook Ads</th>
-                        <th>Active</th>
-                        <th>Date</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        {/* <th></th> */}
-                    </tr>
-                </thead>
-                <tbody>
-
-                    {
-                        customerList.map((customer, index) => (
-                            <tr key={customer.id} >
-                                {/* <td>{index}</td> */}
-                                <td>{customer.id}</td>
-                                <td>{customer.first_name}</td>
-                                <td>{customer.last_name}</td>
-                                <td>{customer.store_name}</td>
-                                <td>{customer.contact_number}</td>
-                                <td>{customer.email}</td>
-                                <td>{customer.address}</td>
-                                <td>{customer.ads === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                <td>{customer.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                <td>      {formatStatementDate(customer.created_at)}</td>
-                                <td>
-
-                                    <Link variant="primary" to={"/customers/" + customer.id}   >
-                                        <Button variant="primary" >
-                                            Update
-                                        </Button>
-                                    </Link>
-                                </td>
-
-                                <td>
-                                    <Button variant="danger" onClick={(e) => handleOpenPickUp(customer.id, e)} >
-                                        Delete
-                                    </Button>
-                                </td>
-
-                                {/* <td>
-                                    <IconButton>
-                                        <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(customer.id, e)} />
-                                    </IconButton>
-                                </td> */}
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-
-            <Modal
-                keepMounted
-                open={openPickUp}
-                onClose={handleClosePickUp}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Delete and Transfer Customer
-                    </Typography>
-
-
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>First Name</Form.Label>
-                        <Form.Control type="text" value={customerModal.first_name} name="first_name" placeholder="Enter First Name" disabled />
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>Last Name*</Form.Label>
-                        <Form.Control type="text" value={customerModal.last_name} name="last_name" placeholder="Enter Last Name" onChange={onChangeCustomerModal} disabled />
-                    </Form.Group>
-                    {formErrorsPickUp.customer_id && <p style={{ color: "red" }}>{formErrorsPickUp.customer_id}</p>}
-                    <FormControl variant="standard" >
-                        <Autocomplete
-                            // {...defaultProps}
-                            options={customerToDeleteList}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleInputChange}
-                            getOptionLabel={(customerToDeleteList) => customerToDeleteList.id}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Choose Customer Id" variant="standard" />
-                            )}
-                        />
-                    </FormControl>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button variant="primary" onClick={deleteCustomer} disabled={isAddDisabled}>
-                            Delete
+          <div className="table-responsive">
+            <table className="table table-sm table-bordered table-hover align-middle">
+              <thead>
+                <tr className="table-secondary">
+                  <th>ID</th><th>Customer</th><th>Contact</th><th>Email</th><th>Address</th>
+                  <th>Active</th><th>Registered</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customers.length ? customers.map((customer) => (
+                  <tr key={customer.id}>
+                    <td>{customer.id}</td>
+                    <td className="customer-name-cell">
+                      <strong>{getName(customer)}</strong>
+                      {customer.store_name && <span>{customer.store_name}</span>}
+                    </td>
+                    <td>{customer.contact_number || "-"}</td>
+                    <td>{customer.email || "-"}</td>
+                    <td>{customer.address || "-"}</td>
+                    <td>{Number(customer.disabled) === 0
+                      ? <CheckIcon style={{ color: "green" }} />
+                      : <CloseIcon style={{ color: "red" }} />}</td>
+                    <td>{formatDate(customer.created_at)}</td>
+                    <td>
+                      <div className="customer-table-actions">
+                        <Link to={`/customers/${customer.id}`}>
+                          <Button size="small" variant="outlined" startIcon={<EditOutlinedIcon />}>Update</Button>
+                        </Link>
+                        <Button
+                          size="small"
+                          color="error"
+                          variant="outlined"
+                          startIcon={<DeleteOutlineRoundedIcon />}
+                          onClick={() => openTransfer(customer)}
+                        >
+                          Delete
                         </Button>
+                      </div>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan="8" className="text-center text-muted py-4">No customers found.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
 
-                    </Box>
-                    <br></br>
-                    {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
-                    }
-                    <br></br>
-                </Box>
-            </Modal>
+      <Modal open={transferOpen} onClose={() => setTransferOpen(false)}>
+        <div className="customer-transfer-modal">
+          <h2>Delete and transfer customer</h2>
+          <p>
+            Transfer records from <strong>{sourceCustomer ? getName(sourceCustomer) : ""}</strong> before deleting.
+          </p>
+          {transferError && <Alert severity="error" style={{ marginBottom: "12px" }}>{transferError}</Alert>}
+          <Autocomplete
+            options={replacementOptions}
+            value={replacementCustomer}
+            onChange={(event, value) => {
+              setReplacementCustomer(value);
+              setTransferError("");
+            }}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            getOptionLabel={(option) => `${getName(option)}${option.store_name ? ` · ${option.store_name}` : ""}`}
+            renderInput={(params) => <TextField {...params} label="Transfer records to" />}
+          />
+          <div className="customer-transfer-actions">
+            <Button onClick={() => setTransferOpen(false)}>Cancel</Button>
+            <Button color="error" variant="contained" onClick={transferAndDelete} disabled={loading}>
+              Transfer and delete
+            </Button>
+          </div>
         </div>
-    )
-}
+      </Modal>
+    </div>
+  );
+};
 
-export default CustomerList
+export default CustomerList;

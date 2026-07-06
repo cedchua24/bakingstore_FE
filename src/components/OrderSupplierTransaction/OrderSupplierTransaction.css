@@ -1,0 +1,1802 @@
+.purchase-order-page {
+    min-height: calc(100vh - 64px);
+    padding: 40px 24px 64px;
+    background:
+        radial-gradient(circle at top right, rgba(224, 145, 63, 0.11), transparent 30%),
+        #f7f8fa;
+}
+
+.purchase-order-shell {
+    width: min(100%, 1040px);
+    margin: 0 auto;
+}
+
+.purchase-order-heading {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.purchase-order-icon {
+    display: grid;
+    flex: 0 0 50px;
+    width: 50px;
+    height: 50px;
+    place-items: center;
+    color: #9a4e15;
+    background: #fff0df;
+    border-radius: 14px;
+}
+
+.purchase-order-icon svg {
+    font-size: 27px;
+}
+
+.purchase-order-eyebrow {
+    display: block;
+    margin-bottom: 4px;
+    color: #a4551c;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.purchase-order-heading h1,
+.purchase-order-card h2 {
+    margin: 0;
+    color: #20242b;
+    font-weight: 750;
+    letter-spacing: -0.025em;
+}
+
+.purchase-order-heading h1 {
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+}
+
+.purchase-order-heading p,
+.purchase-order-card-header p {
+    margin: 7px 0 0;
+    color: #69717d;
+    line-height: 1.55;
+}
+
+.purchase-order-progress {
+    margin: 36px 0 28px;
+    padding: 0 12px;
+}
+
+.purchase-order-progress .MuiStepLabel-label {
+    color: #8a929e;
+    font-size: 0.8rem;
+}
+
+.purchase-order-progress .MuiStepLabel-label.Mui-active {
+    color: #20242b;
+    font-weight: 700;
+}
+
+.purchase-order-progress .MuiStepIcon-root.Mui-active,
+.purchase-order-progress .MuiStepIcon-root.Mui-completed {
+    color: #b85f1c;
+}
+
+.purchase-order-card {
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #e5e8ec;
+    border-radius: 20px;
+    box-shadow: 0 18px 45px rgba(39, 45, 55, 0.08);
+}
+
+.purchase-order-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 30px 32px 25px;
+    border-bottom: 1px solid #eceef1;
+}
+
+.purchase-order-card-header span {
+    color: #a4551c;
+    font-size: 0.78rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.purchase-order-card h2 {
+    margin-top: 4px;
+    font-size: 1.35rem;
+}
+
+.purchase-order-requestor {
+    min-width: 165px;
+    padding: 11px 14px;
+    background: #f6f7f8;
+    border-radius: 10px;
+}
+
+.purchase-order-requestor small,
+.purchase-order-requestor strong {
+    display: block;
+}
+
+.purchase-order-requestor small {
+    margin-bottom: 2px;
+    color: #777f8a;
+    font-size: 0.72rem;
+}
+
+.purchase-order-requestor strong {
+    overflow: hidden;
+    color: #30353c;
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.purchase-order-alert {
+    margin: 24px 32px 0;
+}
+
+.purchase-order-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(230px, 0.65fr);
+    gap: 28px;
+    padding: 32px;
+}
+
+.purchase-order-field-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 13px;
+}
+
+.purchase-order-field-label svg {
+    color: #b85f1c;
+    font-size: 21px;
+}
+
+.purchase-order-field-label label,
+.purchase-order-field-label span {
+    display: block;
+}
+
+.purchase-order-field-label label {
+    margin-bottom: 1px;
+    color: #30353c;
+    font-size: 0.91rem;
+    font-weight: 700;
+}
+
+.purchase-order-field-label span {
+    color: #818894;
+    font-size: 0.76rem;
+}
+
+.purchase-order-form .MuiOutlinedInput-root,
+.purchase-order-date {
+    height: 56px;
+    border-radius: 10px;
+}
+
+.purchase-order-form .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+    border-color: #b85f1c;
+}
+
+.purchase-order-form .MuiInputLabel-root.Mui-focused {
+    color: #9a4e15;
+}
+
+.purchase-order-date {
+    width: 100%;
+    padding: 0 14px;
+    color: #30353c;
+    font: inherit;
+    background: #fff;
+    border: 1px solid #b9bec6;
+    outline: none;
+}
+
+.purchase-order-date:focus {
+    border: 2px solid #b85f1c;
+}
+
+.purchase-order-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 32px;
+    background: #fafafa;
+    border-top: 1px solid #eceef1;
+}
+
+.purchase-order-card-footer p {
+    margin: 0;
+    color: #777f8a;
+    font-size: 0.84rem;
+}
+
+.purchase-order-next.MuiButton-root {
+    min-width: 210px;
+    min-height: 48px;
+    gap: 8px;
+    padding-inline: 22px;
+    background: #a95317;
+    border-radius: 10px;
+    box-shadow: none;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.purchase-order-next.MuiButton-root:hover {
+    background: #8f4310;
+    box-shadow: 0 7px 18px rgba(169, 83, 23, 0.22);
+}
+
+@media (max-width: 700px) {
+    .purchase-order-page {
+        padding: 26px 14px 40px;
+    }
+
+    .purchase-order-progress {
+        overflow-x: auto;
+        margin-block: 28px 22px;
+        padding-bottom: 8px;
+    }
+
+    .purchase-order-progress .MuiStepper-root {
+        min-width: 620px;
+    }
+
+    .purchase-order-card-header,
+    .purchase-order-card-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .purchase-order-card-header,
+    .purchase-order-form {
+        padding: 24px 20px;
+    }
+
+    .purchase-order-form {
+        grid-template-columns: 1fr;
+    }
+
+    .purchase-order-card-footer {
+        padding: 18px 20px 20px;
+    }
+
+    .purchase-order-next.MuiButton-root {
+        width: 100%;
+    }
+}
+
+@media (max-width: 430px) {
+    .purchase-order-heading {
+        gap: 12px;
+    }
+
+    .purchase-order-icon {
+        flex-basis: 44px;
+        width: 44px;
+        height: 44px;
+    }
+
+    .purchase-order-heading p {
+        font-size: 0.9rem;
+    }
+
+    .purchase-order-card {
+        border-radius: 15px;
+    }
+}
+
+/* Add products step */
+.po-products-alert {
+    margin-top: 24px;
+}
+
+.po-products-workspace .purchase-order-progress {
+    margin-top: 34px;
+}
+
+.po-order-summary.MuiPaper-root {
+    margin-bottom: 24px;
+    border: 1px solid #e5e8ec;
+    border-radius: 16px;
+    box-shadow: none;
+}
+
+.po-order-summary .MuiTableCell-root {
+    width: 25%;
+    padding: 20px 22px;
+    border-bottom: 0;
+    border-right: 1px solid #eceef1;
+}
+
+.po-order-summary .MuiTableCell-root:last-child {
+    border-right: 0;
+}
+
+.po-order-summary strong {
+    display: block;
+    overflow: hidden;
+    color: #2c3138;
+    font-size: 0.95rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-summary-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    color: #7b838e;
+    font-size: 0.73rem;
+    font-weight: 650;
+    text-transform: uppercase;
+}
+
+.po-summary-label svg {
+    color: #b85f1c;
+    font-size: 17px;
+}
+
+.po-summary-label-right {
+    justify-content: flex-end;
+}
+
+.po-order-summary .po-summary-total {
+    color: #9a4e15;
+    font-size: 1.08rem;
+}
+
+.po-entry-card {
+    margin-bottom: 30px;
+    padding: 28px 30px 30px;
+    background: #fff;
+    border: 1px solid #e5e8ec;
+    border-radius: 18px;
+    box-shadow: 0 14px 35px rgba(39, 45, 55, 0.06);
+}
+
+.po-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 22px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eceef1;
+}
+
+.po-card-heading span,
+.po-list-heading span {
+    color: #a4551c;
+    font-size: 0.73rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.po-card-heading h2,
+.po-list-heading h2 {
+    margin: 3px 0 0;
+    color: #252a31;
+    font-size: 1.25rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+.po-card-heading p {
+    margin: 5px 0 0;
+    color: #747c87;
+    font-size: 0.85rem;
+}
+
+.po-products-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px 24px;
+    max-width: 740px;
+}
+
+.po-form-field-full,
+.po-products-form > .po-add-action {
+    grid-column: 1 / -1;
+}
+
+.po-form-field {
+    min-width: 0;
+}
+
+.po-products-form .MuiInputBase-root {
+    min-height: 52px;
+}
+
+.po-products-form .MuiFormHelperText-root {
+    min-height: 20px;
+    margin-left: 2px;
+}
+
+.po-products-form .MuiInputBase-root.Mui-disabled {
+    background: #f5f6f7;
+}
+
+.po-add-button.MuiButton-root {
+    min-height: 46px;
+    padding-inline: 22px;
+    background: #a95317;
+    border-radius: 9px;
+    box-shadow: none;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.po-add-button.MuiButton-root:hover {
+    background: #8f4310;
+}
+
+.po-auto-button.MuiButton-root {
+    color: #9a4e15;
+    border-color: #d8a47d;
+    border-radius: 9px;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.po-list-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin: 4px 2px 14px;
+}
+
+.po-list-heading > strong {
+    padding: 7px 11px;
+    color: #6c737d;
+    font-size: 0.78rem;
+    background: #eaedf0;
+    border-radius: 999px;
+}
+
+.po-items-table.MuiPaper-root {
+    border: 1px solid #e2e5e9;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(39, 45, 55, 0.06);
+}
+
+.po-items-table .MuiTableHead-root {
+    background: #f4f5f6;
+}
+
+.po-items-table .MuiTableHead-root .MuiTableCell-root {
+    color: #626a75;
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.po-empty-state {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding: 34px 16px;
+    color: #8a929d;
+    text-align: center;
+}
+
+.po-empty-state svg {
+    margin-bottom: 9px;
+    color: #c1c6cc;
+    font-size: 34px;
+}
+
+.po-empty-state strong {
+    margin-bottom: 3px;
+    color: #555d67;
+}
+
+.po-empty-state span {
+    font-size: 0.83rem;
+}
+
+.po-grand-total-row .MuiTableCell-root {
+    color: #2b3037;
+    font-weight: 800;
+    background: #fff8f1;
+}
+
+.po-review-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.po-review-footer p {
+    margin: 0;
+    color: #777f8a;
+    font-size: 0.84rem;
+}
+
+@media (max-width: 760px) {
+    .po-order-summary .MuiTableRow-root {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .po-order-summary .MuiTableCell-root {
+        width: auto;
+        border-bottom: 1px solid #eceef1;
+    }
+
+    .po-order-summary .MuiTableCell-root:nth-child(2) {
+        border-right: 0;
+    }
+
+    .po-order-summary .MuiTableCell-root:nth-last-child(-n + 2) {
+        border-bottom: 0;
+    }
+
+    .po-entry-card {
+        padding: 22px 20px 24px;
+    }
+
+    .po-products-form {
+        grid-template-columns: 1fr;
+    }
+
+    .po-products-form > * {
+        grid-column: 1 !important;
+    }
+}
+
+@media (max-width: 560px) {
+    .po-order-summary .MuiTableRow-root {
+        grid-template-columns: 1fr;
+    }
+
+    .po-order-summary .MuiTableCell-root {
+        border-right: 0;
+        border-bottom: 1px solid #eceef1 !important;
+    }
+
+    .po-order-summary .MuiTableCell-root:last-child {
+        border-bottom: 0 !important;
+        text-align: left;
+    }
+
+    .po-summary-label-right {
+        justify-content: flex-start;
+    }
+
+    .po-card-heading,
+    .po-review-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .po-review-footer .purchase-order-next {
+        width: 100%;
+    }
+}
+
+/* Approval and review step */
+.po-approval-workspace .purchase-order-progress {
+    margin-top: 34px;
+}
+
+.po-approval-list-heading {
+    margin-top: 30px;
+}
+
+.po-approval-table {
+    max-height: min(68vh, 720px);
+}
+
+.po-approval-table .MuiTableHead-root {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.po-approval-table .MuiTableHead-root .MuiTableRow-root:first-child {
+    background: #eceff2;
+}
+
+.po-approval-table .MuiTableHead-root .MuiTableRow-root:nth-child(2) {
+    background: #f7f8f9;
+}
+
+.po-approval-table .MuiTableHead-root h5,
+.po-approval-table .MuiTableHead-root h6 {
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    font-weight: 800 !important;
+    letter-spacing: 0.035em;
+}
+
+.po-approval-table .MuiTableHead-root .MuiTableCell-root {
+    padding-block: 13px;
+    border-color: #dde1e5;
+}
+
+.po-approval-table .MuiTableBody-root .MuiTableCell-root {
+    padding-block: 14px;
+    border-color: #eceef1;
+}
+
+.po-approval-card {
+    overflow: hidden;
+    margin-top: 30px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 18px;
+    box-shadow: 0 14px 35px rgba(39, 45, 55, 0.06);
+}
+
+.po-approval-card .po-card-heading {
+    margin: 0;
+    padding: 26px 30px 22px;
+}
+
+.po-approved-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 12px;
+    color: #26743b;
+    font-size: 0.84rem;
+    font-weight: 750;
+    background: #e9f6ed;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.po-approved-badge svg {
+    font-size: 19px;
+}
+
+.po-approval-progress {
+    margin-inline: 30px;
+}
+
+.po-approval-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 22px;
+    padding: 28px 30px 30px;
+}
+
+.po-approval-form .MuiInputBase-root:not(.MuiInputBase-multiline) {
+    min-height: 54px;
+}
+
+.po-approval-note {
+    grid-column: 1 / -1;
+}
+
+.po-approval-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 30px;
+    background: #fafafa;
+    border-top: 1px solid #eceef1;
+}
+
+.po-approval-actions p {
+    margin: 0;
+    color: #747c87;
+    font-size: 0.84rem;
+}
+
+@media (max-width: 700px) {
+    .po-approval-card .po-card-heading,
+    .po-approval-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .po-approval-card .po-card-heading,
+    .po-approval-form {
+        padding-inline: 20px;
+    }
+
+    .po-approval-form {
+        grid-template-columns: 1fr;
+    }
+
+    .po-approval-note {
+        grid-column: 1;
+    }
+
+    .po-approval-actions {
+        padding: 18px 20px 20px;
+    }
+
+    .po-approval-actions .purchase-order-next {
+        width: 100%;
+    }
+}
+
+/* Send to supplier step */
+.po-send-workspace .purchase-order-progress {
+    margin-top: 34px;
+}
+
+.po-send-list-heading {
+    margin-top: 30px;
+}
+
+.po-send-card {
+    overflow: hidden;
+    margin-top: 30px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 18px;
+    box-shadow: 0 14px 35px rgba(39, 45, 55, 0.06);
+}
+
+.po-send-card .po-card-heading {
+    margin: 0;
+    padding: 26px 30px 22px;
+}
+
+.po-send-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 22px;
+    padding: 28px 30px 30px;
+}
+
+.po-send-form .MuiInputBase-root {
+    min-height: 54px;
+}
+
+.po-send-card > .MuiLinearProgress-root {
+    margin-inline: 30px;
+}
+
+.po-send-warning {
+    margin: 28px 30px 30px;
+}
+
+@media (max-width: 700px) {
+    .po-send-card .po-card-heading,
+    .po-send-form {
+        padding-inline: 20px;
+    }
+
+    .po-send-card .po-card-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .po-send-form {
+        grid-template-columns: 1fr;
+    }
+
+    .po-send-warning {
+        margin-inline: 20px;
+    }
+}
+
+/* Receive and finalize step */
+.po-finalize-workspace .purchase-order-progress {
+    margin-top: 34px;
+}
+
+.po-finalize-list-heading {
+    margin-top: 30px;
+}
+
+.po-finalize-card {
+    overflow: hidden;
+    margin-top: 30px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 18px;
+    box-shadow: 0 14px 35px rgba(39, 45, 55, 0.06);
+}
+
+.po-finalize-card .po-card-heading {
+    margin: 0;
+    padding: 26px 30px 22px;
+}
+
+.po-finalize-card > .MuiLinearProgress-root {
+    margin-inline: 30px;
+}
+
+.po-finalize-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 22px;
+    padding: 28px 30px 30px;
+}
+
+.po-finalize-form .MuiInputBase-root {
+    min-height: 54px;
+}
+
+.po-finalize-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 30px;
+    background: #fafafa;
+    border-top: 1px solid #eceef1;
+}
+
+.po-finalize-actions strong {
+    display: block;
+    margin-bottom: 3px;
+    color: #3d434b;
+    font-size: 0.88rem;
+}
+
+.po-finalize-actions p {
+    margin: 0;
+    color: #747c87;
+    font-size: 0.82rem;
+}
+
+@media (max-width: 700px) {
+    .po-finalize-card .po-card-heading,
+    .po-finalize-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .po-finalize-card .po-card-heading,
+    .po-finalize-form {
+        padding-inline: 20px;
+    }
+
+    .po-finalize-form {
+        grid-template-columns: 1fr;
+    }
+
+    .po-finalize-actions {
+        padding: 18px 20px 20px;
+    }
+
+    .po-finalize-actions .purchase-order-next {
+        width: 100%;
+    }
+}
+
+/* Purchase order list */
+.po-list-shell {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.po-list-page-heading {
+    max-width: 760px;
+}
+
+.po-list-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.po-list-metrics article {
+    padding: 20px 22px;
+    background: #fff;
+    border: 1px solid #e3e6ea;
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(39, 45, 55, 0.045);
+}
+
+.po-list-metrics span,
+.po-list-metrics strong,
+.po-list-metrics small {
+    display: block;
+}
+
+.po-list-metrics span {
+    margin-bottom: 6px;
+    color: #777f8a;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.po-list-metrics strong {
+    overflow: hidden;
+    color: #2a2f36;
+    font-size: clamp(1.35rem, 2vw, 1.75rem);
+    letter-spacing: -0.025em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-list-metrics article:first-child strong {
+    color: #a95317;
+}
+
+.po-list-metrics small {
+    margin-top: 5px;
+    color: #9399a2;
+    font-size: 0.72rem;
+}
+
+.po-list-toolbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 34px 2px 14px;
+}
+
+.po-list-toolbar span {
+    color: #a4551c;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.po-list-toolbar h2 {
+    margin: 3px 0 0;
+    color: #252a31;
+    font-size: 1.28rem;
+    font-weight: 750;
+}
+
+.po-list-toolbar .MuiTextField-root {
+    width: min(100%, 330px);
+}
+
+.po-list-toolbar .MuiOutlinedInput-root {
+    background: #fff;
+    border-radius: 10px;
+}
+
+.po-search-icon {
+    margin-right: 8px;
+    color: #9097a1;
+}
+
+.po-list-table-card {
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid #dfe3e7;
+    border-radius: 16px;
+    box-shadow: 0 14px 34px rgba(39, 45, 55, 0.065);
+}
+
+.po-list-table-scroll {
+    overflow: auto;
+    max-height: calc(100vh - 210px);
+}
+
+.po-list-table {
+    width: 100%;
+    min-width: 1040px;
+    color: #343a42;
+    font-size: 0.82rem;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.po-list-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+}
+
+.po-list-table th {
+    padding: 13px 12px;
+    color: #626a75;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.055em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: #f1f3f5;
+    border-bottom: 1px solid #dfe3e7;
+}
+
+.po-list-table td {
+    padding: 14px 12px;
+    vertical-align: top;
+    border-bottom: 1px solid #eceef1;
+}
+
+.po-list-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.po-list-table tbody tr:hover {
+    background: #fcfaf7;
+}
+
+.po-list-order {
+    display: grid;
+    gap: 3px;
+    min-width: 100px;
+}
+
+.po-list-order strong {
+    color: #a95317;
+    font-size: 0.75rem;
+}
+
+.po-list-order span {
+    color: #343a42;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.po-list-amount {
+    color: #29313a;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.po-list-supplier {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    min-width: 135px;
+    font-weight: 650;
+}
+
+.po-list-supplier svg {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    color: #b85f1c;
+    font-size: 18px;
+}
+
+.po-list-people {
+    display: grid;
+    gap: 9px;
+    min-width: 120px;
+}
+
+.po-list-people > span {
+    display: grid;
+    gap: 1px;
+}
+
+.po-list-people small {
+    color: #9298a1;
+    font-size: 0.62rem;
+    font-weight: 750;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.po-list-people strong {
+    overflow: hidden;
+    max-width: 135px;
+    color: #4b535d;
+    font-size: 0.76rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-list-statuses {
+    display: grid;
+    gap: 9px;
+    min-width: 100px;
+}
+
+.po-list-statuses > span {
+    display: grid;
+    justify-items: start;
+    gap: 3px;
+}
+
+.po-list-statuses small {
+    color: #9298a1;
+    font-size: 0.61rem;
+    font-weight: 750;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.po-status-pill,
+.po-payment-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 8px;
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: #fff;
+    border: 1px solid;
+    border-radius: 999px;
+}
+
+.po-payment-pill.is-paid {
+    color: #28733d;
+    background: #edf8f0;
+    border-color: #a9d8b5;
+}
+
+.po-payment-pill.is-pending {
+    color: #a55717;
+    background: #fff7eb;
+    border-color: #e8c69d;
+}
+
+.po-timeline {
+    display: grid;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.po-timeline > span {
+    display: grid;
+    grid-template-columns: 62px minmax(92px, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    min-height: 28px;
+    padding: 3px 7px;
+    color: #555d67;
+    white-space: nowrap;
+    border-radius: 7px;
+}
+
+.po-timeline small {
+    color: #9298a1;
+    font-size: 0.67rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.po-timeline strong {
+    font-size: 0.76rem;
+    font-weight: 600;
+}
+
+.po-timeline .is-received {
+    color: #226b36;
+    background: #e9f6ed;
+    border: 1px solid #b9ddc2;
+}
+
+.po-timeline .is-received small {
+    color: #2d7b43;
+    font-weight: 800;
+}
+
+.po-timeline .is-received strong {
+    font-weight: 800;
+}
+
+.po-payment-accounts {
+    display: grid;
+    gap: 9px;
+    min-width: 160px;
+}
+
+.po-payment-accounts > div {
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eceef1;
+}
+
+.po-payment-accounts > div:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.po-payment-accounts strong,
+.po-payment-accounts span {
+    display: block;
+}
+
+.po-payment-accounts strong {
+    margin-bottom: 2px;
+    color: #363c44;
+    font-size: 0.78rem;
+}
+
+.po-payment-accounts span {
+    color: #7c848e;
+    font-size: 0.7rem;
+    line-height: 1.4;
+}
+
+.po-list-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    width: 185px;
+}
+
+.po-list-actions .MuiButton-root {
+    justify-content: flex-start;
+    min-width: 0;
+    padding: 4px 7px;
+    color: #5e6671;
+    border-radius: 7px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: none;
+    white-space: nowrap;
+}
+
+.po-list-actions .MuiButton-startIcon {
+    margin-right: 4px;
+}
+
+.po-list-actions .MuiSvgIcon-root {
+    font-size: 16px;
+}
+
+.po-list-actions .MuiButton-root:hover {
+    color: #994b14;
+    background: #fff1e4;
+}
+
+.po-list-actions .po-action-view.MuiButton-root {
+    color: #1d5fae;
+    background: #edf5ff;
+}
+
+.po-list-actions .po-action-review.MuiButton-root {
+    color: #6d3bb2;
+    background: #f5efff;
+}
+
+.po-list-actions .po-action-products.MuiButton-root {
+    color: #28733d;
+    background: #edf8f0;
+}
+
+.po-list-actions .po-action-payment.MuiButton-root {
+    color: #08766e;
+    background: #eaf9f7;
+}
+
+.po-list-actions .po-action-invoice.MuiButton-root {
+    color: #a55717;
+    background: #fff6e9;
+}
+
+.po-list-actions .po-action-print.MuiButton-root {
+    color: #536071;
+    background: #eff2f5;
+}
+
+.po-list-actions .po-action-view.MuiButton-root:hover,
+.po-list-actions .po-action-review.MuiButton-root:hover,
+.po-list-actions .po-action-products.MuiButton-root:hover,
+.po-list-actions .po-action-payment.MuiButton-root:hover,
+.po-list-actions .po-action-invoice.MuiButton-root:hover,
+.po-list-actions .po-action-print.MuiButton-root:hover {
+    color: #fff;
+}
+
+.po-list-actions .po-action-view.MuiButton-root:hover {
+    background: #1d5fae;
+}
+
+.po-list-actions .po-action-review.MuiButton-root:hover {
+    background: #6d3bb2;
+}
+
+.po-list-actions .po-action-products.MuiButton-root:hover {
+    background: #28733d;
+}
+
+.po-list-actions .po-action-payment.MuiButton-root:hover {
+    background: #08766e;
+}
+
+.po-list-actions .po-action-invoice.MuiButton-root:hover {
+    background: #b56119;
+}
+
+.po-list-actions .po-action-print.MuiButton-root:hover {
+    background: #536071;
+}
+
+.po-list-actions .po-cancel-action.MuiButton-root {
+    color: #c62828;
+    background: #fff0f0;
+    border: 1px solid #efb2b2;
+}
+
+.po-list-actions .po-cancel-action.MuiButton-root:hover {
+    color: #fff;
+    background: #c62828;
+    border-color: #c62828;
+}
+
+/* Purchase order payments */
+.po-payment-summary {
+    margin-top: 34px;
+}
+
+.po-payment-entry-card {
+    overflow: hidden;
+    margin-top: 26px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 18px;
+    box-shadow: 0 14px 35px rgba(39, 45, 55, 0.06);
+}
+
+.po-payment-entry-card .po-card-heading {
+    margin: 0;
+    padding: 26px 30px 22px;
+}
+
+.po-payment-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px 24px;
+    padding: 28px 30px 30px;
+}
+
+.po-payment-form .MuiInputBase-root:not(.MuiInputBase-multiline) {
+    min-height: 54px;
+}
+
+.po-payment-form .MuiFormHelperText-root {
+    min-height: 20px;
+    margin-left: 2px;
+}
+
+.po-payment-add-action {
+    grid-column: 1 / -1;
+}
+
+.po-payment-complete-alert {
+    margin-top: 26px;
+}
+
+.po-payment-section-heading {
+    margin-top: 30px;
+}
+
+.po-payment-history .MuiTableCell-root {
+    vertical-align: middle;
+}
+
+.po-payment-calculation-row .MuiTableCell-root {
+    color: #69717c;
+    background: #fafafa;
+}
+
+.po-payment-completion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 28px;
+    padding: 24px 28px;
+    background: #fff;
+    border: 1px solid #e2e5e9;
+    border-radius: 16px;
+    box-shadow: 0 10px 28px rgba(39, 45, 55, 0.055);
+    text-align: center;
+}
+
+.po-payment-completion .purchase-order-next {
+    display: flex;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.po-payment-completion span {
+    color: #a4551c;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.po-payment-completion h2 {
+    margin: 3px 0 4px;
+    color: #292f36;
+    font-size: 1.15rem;
+}
+
+.po-payment-completion p {
+    margin: 0;
+    color: #747c87;
+    font-size: 0.82rem;
+}
+
+.po-dialog-loading {
+    display: flex;
+    justify-content: center;
+    padding: 8px 24px;
+}
+
+/* Read-only purchase order details */
+.po-view-shell {
+    width: min(100%, 1180px);
+}
+
+.po-view-back.MuiButton-root {
+    margin-bottom: 22px;
+    padding: 6px 2px;
+    color: #6d747e;
+    font-weight: 700;
+    text-transform: none;
+}
+
+.po-view-back.MuiButton-root:hover {
+    color: #984811;
+    background: transparent;
+}
+
+.po-view-heading {
+    align-items: center;
+}
+
+.po-view-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.po-view-status {
+    flex: 0 0 auto;
+    padding: 8px 13px;
+    color: #73531d;
+    font-size: 0.73rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    background: #fff2d8;
+    border: 1px solid #ebc98e;
+    border-radius: 999px;
+    text-transform: uppercase;
+}
+
+.po-view-status-completed,
+.po-view-status-received,
+.po-view-status-approved {
+    color: #176332;
+    background: #edf9f0;
+    border-color: #9fd1aa;
+}
+
+.po-view-status-cancelled,
+.po-view-status-rejected {
+    color: #a12c2c;
+    background: #fff0f0;
+    border-color: #edb4b4;
+}
+
+.po-view-alert {
+    margin-top: 22px;
+}
+
+.po-view-overview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 30px;
+    background: #fff;
+    border: 1px solid #e3e6ea;
+    border-radius: 17px;
+    box-shadow: 0 12px 32px rgba(39, 45, 55, 0.055);
+}
+
+.po-view-overview article {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+    padding: 21px 20px;
+    border-right: 1px solid #e9ebee;
+}
+
+.po-view-overview article:last-child {
+    border-right: 0;
+}
+
+.po-view-overview-icon {
+    display: grid;
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    color: #a95317;
+    background: #fff2e6;
+    border-radius: 10px;
+}
+
+.po-view-overview-icon svg {
+    font-size: 21px;
+}
+
+.po-view-overview article div {
+    min-width: 0;
+}
+
+.po-view-overview small,
+.po-view-overview strong {
+    display: block;
+}
+
+.po-view-overview small {
+    margin-bottom: 3px;
+    color: #818894;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.po-view-overview strong {
+    overflow: hidden;
+    color: #2c3138;
+    font-size: 0.93rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-view-section {
+    margin-top: 30px;
+}
+
+.po-view-section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 2px 14px;
+}
+
+.po-view-section-heading span {
+    color: #a4551c;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.po-view-section-heading h2 {
+    margin: 3px 0 0;
+    color: #252a31;
+    font-size: 1.3rem;
+}
+
+.po-view-payment-summary {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 2px 16px;
+    text-align: right;
+}
+
+.po-view-payment-summary small {
+    color: #858c96;
+    font-size: 0.7rem;
+}
+
+.po-view-payment-summary strong {
+    color: #2e343b;
+    font-size: 0.86rem;
+}
+
+.po-view-payment-summary .has-balance {
+    color: #b35b16;
+}
+
+.po-view-item-count {
+    padding: 7px 11px;
+    color: #6c737d;
+    font-size: 0.77rem;
+    background: #eaedf0;
+    border-radius: 999px;
+}
+
+.po-view-table.MuiPaper-root {
+    overflow: hidden;
+    border: 1px solid #e2e5e9;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(39, 45, 55, 0.055);
+}
+
+.po-view-table .MuiTableHead-root {
+    background: #f3f5f6;
+}
+
+.po-view-table .MuiTableHead-root .MuiTableCell-root {
+    color: #626a75;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.po-view-table .MuiTableBody-root .MuiTableCell-root {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    color: #565e69;
+}
+
+.po-view-primary-cell,
+.po-view-secondary-cell {
+    display: block;
+}
+
+.po-view-primary-cell {
+    color: #2d333a;
+    font-size: 0.88rem;
+}
+
+.po-view-secondary-cell {
+    margin-top: 3px;
+    color: #89909a;
+    font-size: 0.75rem;
+}
+
+.po-view-money {
+    color: #323840 !important;
+    font-weight: 750 !important;
+    white-space: nowrap;
+}
+
+.po-view-empty {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 7px;
+    padding: 25px;
+    color: #89909a;
+    font-size: 0.83rem;
+}
+
+.po-view-empty svg {
+    color: #bdc2c9;
+    font-size: 30px;
+}
+
+@media (max-width: 900px) {
+    .po-view-overview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .po-view-overview article:nth-child(2) {
+        border-right: 0;
+    }
+
+    .po-view-overview article:nth-child(-n + 2) {
+        border-bottom: 1px solid #e9ebee;
+    }
+}
+
+@media (max-width: 600px) {
+    .po-view-heading {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .po-view-status {
+        margin-left: 62px;
+    }
+
+    .po-view-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .po-view-overview article {
+        border-right: 0;
+        border-bottom: 1px solid #e9ebee;
+    }
+
+    .po-view-overview article:nth-child(3) {
+        border-bottom: 1px solid #e9ebee;
+    }
+
+    .po-view-overview article:last-child {
+        border-bottom: 0;
+    }
+
+    .po-view-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .po-view-payment-summary {
+        text-align: left;
+    }
+}
+
+@media (max-width: 700px) {
+    .po-payment-entry-card .po-card-heading,
+    .po-payment-form {
+        padding-inline: 20px;
+    }
+
+    .po-payment-form {
+        grid-template-columns: 1fr;
+    }
+
+    .po-payment-form > * {
+        grid-column: 1 !important;
+    }
+
+    .po-payment-completion {
+        padding: 22px 20px;
+    }
+
+    .po-payment-completion .purchase-order-next {
+        width: 100%;
+    }
+}
+
+.po-list-loading,
+.po-list-empty {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 230px;
+    padding: 30px;
+    color: #818994;
+    text-align: center;
+}
+
+.po-list-loading {
+    gap: 12px;
+}
+
+.po-list-empty svg {
+    margin-bottom: 10px;
+    color: #c0c5cc;
+    font-size: 38px;
+}
+
+.po-list-empty strong,
+.po-list-empty span {
+    display: block;
+}
+
+.po-list-empty strong {
+    margin-bottom: 4px;
+    color: #555d67;
+}
+
+.po-list-empty span {
+    font-size: 0.8rem;
+}
+
+@media (max-width: 900px) {
+    .po-list-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .po-list-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .po-list-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .po-list-toolbar .MuiTextField-root {
+        width: 100%;
+    }
+}

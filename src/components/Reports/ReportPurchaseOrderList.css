@@ -1,0 +1,680 @@
+.po-report-page {
+    min-height: calc(100vh - 64px);
+    padding: 38px 22px 64px;
+    background:
+        radial-gradient(circle at top right, rgba(224, 145, 63, 0.11), transparent 28%),
+        #f6f7f9;
+}
+
+.po-report-shell {
+    width: min(100%, 1500px);
+    margin: 0 auto;
+}
+
+.po-report-header {
+    display: flex;
+    align-items: center;
+    gap: 17px;
+}
+
+.po-report-header-icon {
+    display: grid;
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    place-items: center;
+    color: #9a4e15;
+    background: #fff0df;
+    border-radius: 14px;
+}
+
+.po-report-header-icon svg {
+    font-size: 28px;
+}
+
+.po-report-header span,
+.po-report-filter-heading span,
+.po-report-table-toolbar > div > span {
+    color: #a4551c;
+    font-size: 0.73rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.po-report-header h1 {
+    margin: 2px 0 0;
+    color: #20242b;
+    font-size: clamp(1.7rem, 4vw, 2.25rem);
+    letter-spacing: -0.025em;
+}
+
+.po-report-header p {
+    margin: 6px 0 0;
+    color: #707883;
+}
+
+.po-report-alert {
+    margin-top: 22px;
+}
+
+.po-report-filters,
+.po-report-table-card {
+    margin-top: 28px;
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 18px;
+    box-shadow: 0 14px 36px rgba(39, 45, 55, 0.065);
+}
+
+.po-report-filters {
+    overflow: hidden;
+    padding: 25px 28px 22px;
+}
+
+.po-report-filter-heading,
+.po-report-table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+}
+
+.po-report-filter-heading h2,
+.po-report-table-toolbar h2 {
+    margin: 3px 0 0;
+    color: #282e35;
+    font-size: 1.25rem;
+}
+
+.po-report-filter-heading > svg {
+    color: #b5682c;
+    font-size: 27px;
+}
+
+.po-report-filter-grid {
+    display: grid;
+    grid-template-columns: minmax(190px, 1fr) minmax(190px, 1fr) auto;
+    align-items: start;
+    gap: 18px;
+    margin-top: 22px;
+}
+
+.po-report-filter-grid .MuiOutlinedInput-root {
+    min-height: 53px;
+}
+
+.po-report-filter-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.po-report-filter-actions .MuiButton-root {
+    min-height: 50px;
+    padding-inline: 20px;
+    border-radius: 9px;
+    font-weight: 750;
+    text-transform: none;
+}
+
+.po-report-filter-actions .MuiButton-contained {
+    background: #a95317;
+    box-shadow: none;
+}
+
+.po-report-filter-actions .MuiButton-contained:hover {
+    background: #8f4310;
+}
+
+.po-report-progress {
+    margin: 5px -28px -22px;
+}
+
+.po-report-progress .MuiLinearProgress-bar {
+    background: #b85f1c;
+}
+
+.po-report-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.po-report-metrics article {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    min-width: 0;
+    padding: 19px 20px;
+    background: #fff;
+    border: 1px solid #e3e6ea;
+    border-radius: 14px;
+}
+
+.po-report-metric-icon {
+    display: grid;
+    flex: 0 0 39px;
+    width: 39px;
+    height: 39px;
+    place-items: center;
+    color: #9d5018;
+    background: #fff0df;
+    border-radius: 10px;
+}
+
+.po-report-metric-icon.paid {
+    color: #176332;
+    background: #eaf7ee;
+}
+
+.po-report-metric-icon.balance {
+    color: #9a5b12;
+    background: #fff5df;
+}
+
+.po-report-metrics article div {
+    min-width: 0;
+}
+
+.po-report-metrics small,
+.po-report-metrics strong {
+    display: block;
+}
+
+.po-report-metrics small {
+    margin-bottom: 3px;
+    color: #818894;
+    font-size: 0.69rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.po-report-metrics strong {
+    overflow: hidden;
+    color: #2c3138;
+    font-size: 0.98rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-report-table-card {
+    overflow: hidden;
+}
+
+.po-report-table-toolbar {
+    padding: 24px 26px 20px;
+    border-bottom: 1px solid #e9ebee;
+}
+
+.po-report-search {
+    width: min(100%, 340px);
+}
+
+.po-report-search .MuiOutlinedInput-root {
+    padding-left: 12px;
+    background: #f8f9fa;
+}
+
+.po-report-search .MuiSvgIcon-root {
+    margin-right: 8px;
+    color: #8a929d;
+}
+
+.po-report-table-scroll {
+    overflow-x: auto;
+}
+
+.po-report-table {
+    width: 100%;
+    min-width: 1180px;
+    border-collapse: collapse;
+}
+
+.po-report-table th {
+    padding: 13px 14px;
+    color: #626a75;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.045em;
+    background: #f3f5f6;
+    border-bottom: 1px solid #dfe3e7;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.po-report-table td {
+    max-width: 245px;
+    padding: 15px 14px;
+    color: #545c66;
+    font-size: 0.79rem;
+    border-bottom: 1px solid #eceef1;
+    vertical-align: top;
+}
+
+.po-report-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.po-report-table tbody tr:hover {
+    background: #fffdfb;
+}
+
+.po-report-table th:last-child,
+.po-report-table td:last-child {
+    position: sticky;
+    right: 0;
+    min-width: 220px;
+    background: #fff;
+    box-shadow: -8px 0 14px rgba(39, 45, 55, 0.08);
+}
+
+.po-report-table th:last-child {
+    z-index: 3;
+    background: #f3f5f6;
+}
+
+.po-report-table td:last-child {
+    z-index: 2;
+}
+
+.po-report-table tbody tr:hover td:last-child {
+    background: #fffdfb;
+}
+
+.po-report-order-id,
+.po-report-table td > strong {
+    display: block;
+    color: #2d333a;
+    font-size: 0.82rem;
+}
+
+.po-report-muted {
+    display: block;
+    margin-top: 3px;
+    color: #8a919a;
+    font-size: 0.72rem;
+}
+
+.po-report-supplier-name {
+    display: block;
+    max-width: 170px;
+    overflow: hidden;
+    margin-top: 9px;
+    color: #4b535d !important;
+    font-size: 0.76rem !important;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-report-amount {
+    color: #2d333a !important;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.po-report-table th:nth-child(2),
+.po-report-table td:nth-child(2) {
+    min-width: 180px;
+}
+
+.po-report-financials {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.po-report-financials > span {
+    display: block;
+    padding-bottom: 7px;
+    border-bottom: 1px dashed #dfe2e6;
+}
+
+.po-report-financials > span:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.po-report-financials small,
+.po-report-financials strong,
+.po-report-financials em {
+    display: block;
+}
+
+.po-report-financials small {
+    color: #89909a;
+    font-size: 0.62rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.po-report-financials strong {
+    margin-top: 2px;
+    color: #2d333a;
+    font-size: 0.76rem;
+    white-space: nowrap;
+}
+
+.po-report-financials > span:first-child strong {
+    color: #20252b;
+    font-size: 0.9rem;
+    font-weight: 850;
+}
+
+.po-report-financials em {
+    margin-top: 2px;
+    overflow: hidden;
+    color: #8a919a;
+    font-size: 0.64rem;
+    font-style: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-report-pair,
+.po-report-status-list,
+.po-report-timeline,
+.po-report-payment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.po-report-pair span,
+.po-report-status-list > span,
+.po-report-timeline > span {
+    display: grid;
+    grid-template-columns: 65px minmax(0, 1fr);
+    align-items: center;
+    gap: 5px;
+}
+
+.po-report-table th:nth-child(3),
+.po-report-table td:nth-child(3) {
+    min-width: 230px;
+}
+
+.po-report-pair span {
+    grid-template-columns: 70px minmax(135px, 1fr);
+}
+
+.po-report-pair strong {
+    overflow: hidden;
+    color: #454c55;
+    font-size: 0.76rem;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-report-table th:nth-child(4),
+.po-report-table td:nth-child(4) {
+    min-width: 220px;
+}
+
+.po-report-status-list > span {
+    grid-template-columns: 60px minmax(125px, 1fr);
+}
+
+.po-report-table th:nth-child(5),
+.po-report-table td:nth-child(5) {
+    min-width: 205px;
+}
+
+.po-report-timeline > span {
+    grid-template-columns: 60px minmax(80px, 1fr) 26px;
+}
+
+.po-report-pair small,
+.po-report-status-list small,
+.po-report-timeline small {
+    color: #89909a;
+    font-size: 0.62rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.po-report-status {
+    width: fit-content;
+    max-width: 112px;
+    overflow: hidden;
+    padding: 4px 7px;
+    color: #8f5d14;
+    font-size: 0.61rem;
+    background: #fff3df;
+    border: 1px solid #edc992;
+    border-radius: 999px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.po-report-status-approved,
+.po-report-status-completed,
+.po-report-status-received {
+    color: #176332;
+    background: #edf9f0;
+    border-color: #9ed0aa;
+}
+
+.po-report-status-rejected,
+.po-report-status-cancelled {
+    color: #a42e2e;
+    background: #fff0f0;
+    border-color: #edb4b4;
+}
+
+.po-report-status-send-to-supplier {
+    color: #315b9b;
+    background: #edf4ff;
+    border-color: #adc5e8;
+}
+
+.po-report-timeline > span {
+    min-height: 24px;
+    white-space: nowrap;
+}
+
+.po-report-timeline .received {
+    grid-template-columns: 60px minmax(80px, 1fr);
+    padding: 5px 7px;
+    color: #176332;
+    font-weight: 800;
+    background: #edf9f0;
+    border-radius: 7px;
+}
+
+.po-report-timeline .received small {
+    color: #37804d;
+}
+
+.po-report-timeline .MuiIconButton-root {
+    width: 25px;
+    height: 25px;
+    margin-left: 2px;
+    color: #9f5018;
+}
+
+.po-report-timeline .MuiIconButton-root svg {
+    font-size: 16px;
+}
+
+.po-report-payment-list > span {
+    display: block;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed #dfe2e6;
+}
+
+.po-report-payment-list > span:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.po-report-payment-list strong,
+.po-report-payment-list small {
+    display: block;
+}
+
+.po-report-payment-list strong {
+    color: #2e343b;
+    font-size: 0.75rem;
+}
+
+.po-report-payment-list small {
+    margin-top: 2px;
+    color: #858c96;
+    font-size: 0.66rem;
+    line-height: 1.35;
+}
+
+.po-report-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(82px, 1fr));
+    gap: 6px;
+    min-width: 190px;
+}
+
+.po-report-actions .MuiButton-root {
+    min-height: 30px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    font-size: 0.67rem;
+    font-weight: 750;
+    line-height: 1.2;
+    text-transform: none;
+}
+
+.po-report-actions .MuiButton-startIcon {
+    margin-right: 4px;
+}
+
+.po-report-actions .MuiButton-startIcon svg {
+    font-size: 15px;
+}
+
+.po-report-actions .view {
+    color: #225f9e;
+    background: #edf5ff;
+    border-color: #b7d1ed;
+}
+
+.po-report-actions .invoice {
+    color: #a45613;
+    background: #fff4e7;
+    border-color: #e8c399;
+}
+
+.po-report-actions .payment {
+    color: #16716a;
+    background: #eaf8f5;
+    border-color: #a7d7cf;
+}
+
+.po-report-actions .review {
+    color: #71409a;
+    background: #f5edfb;
+    border-color: #ceb3e1;
+}
+
+.po-report-actions .products {
+    color: #23703b;
+    background: #edf8f0;
+    border-color: #afd3b8;
+}
+
+.po-report-actions .print {
+    color: #53606e;
+    background: #f0f3f5;
+    border-color: #c8d0d7;
+}
+
+.po-report-actions .delete {
+    color: #b62e2e;
+    background: #fff0f0;
+    border-color: #edb0b0;
+}
+
+.po-report-empty {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 4px;
+    padding: 42px;
+    color: #858d97;
+    text-align: center;
+}
+
+.po-report-empty svg {
+    margin-bottom: 5px;
+    color: #bec3c9;
+    font-size: 36px;
+}
+
+.po-report-empty strong {
+    color: #505862;
+}
+
+.po-report-dialog-loading {
+    display: flex;
+    justify-content: center;
+    padding: 5px 24px;
+}
+
+.po-report-date-help {
+    margin-bottom: 20px !important;
+}
+
+@media (max-width: 900px) {
+    .po-report-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .po-report-page {
+        padding: 26px 14px 48px;
+    }
+
+    .po-report-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .po-report-filter-actions {
+        margin-top: -10px;
+    }
+
+    .po-report-table-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .po-report-search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .po-report-filters {
+        padding-inline: 19px;
+    }
+
+    .po-report-progress {
+        margin-right: -19px;
+        margin-left: -19px;
+    }
+
+    .po-report-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .po-report-filter-actions {
+        flex-direction: column;
+    }
+
+    .po-report-filter-actions .MuiButton-root {
+        width: 100%;
+    }
+}

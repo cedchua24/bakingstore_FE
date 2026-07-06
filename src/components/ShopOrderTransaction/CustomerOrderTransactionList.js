@@ -232,7 +232,7 @@ const CustomerOrderTransactionList = () => {
     }
 
     const fetchRequestor = () => {
-        UserService.getAll()
+        UserService.fetchUserList()
             .then(response => {
                 setRequestorList(response.data);
             })
@@ -989,45 +989,45 @@ const CustomerOrderTransactionList = () => {
 
             <div className="customer-report-customer-grid">
                 <section className="customer-report-table-card customer-report-new-customers">
-                <div className="customer-report-table-header">
-                    <div>
-                        <p className="customer-report-eyebrow">Customer growth</p>
-                        <h2>New Customers</h2>
+                    <div className="customer-report-table-header">
+                        <div>
+                            <p className="customer-report-eyebrow">Customer growth</p>
+                            <h2>New Customers</h2>
+                        </div>
+                        <span>{newCustomers.length} records · {money(newCustomerTotalSales)} total</span>
                     </div>
-                    <span>{newCustomers.length} records · {money(newCustomerTotalSales)} total</span>
-                </div>
 
-                <div className="customer-report-table-wrap customer-report-new-customers-wrap">
-                    <table className="customer-report-table customer-report-table-simple customer-report-table-compact">
-                        <thead>
-                            <tr>
-                                <th>Customer</th>
-                                <th>Customer Type</th>
-                                <th>Customer Created</th>
-                                <th>Total Sales</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {newCustomers.length === 0 ? (
+                    <div className="customer-report-table-wrap customer-report-new-customers-wrap">
+                        <table className="customer-report-table customer-report-table-simple customer-report-table-compact">
+                            <thead>
                                 <tr>
-                                    <td className="customer-report-empty" colSpan="4">
-                                        No new customers for this date
-                                    </td>
+                                    <th>Customer</th>
+                                    <th>Customer Type</th>
+                                    <th>Customer Created</th>
+                                    <th>Total Sales</th>
                                 </tr>
-                            ) : newCustomers.map((customer) => (
-                                <tr key={customer.customer_id || customer.requestor_id || `${customer.requestor_name}-${customer.store_name}`}>
-                                    <td>
-                                        <strong>{customer.requestor_name || "-"}</strong>
-                                        {customer.store_name && <span>{customer.store_name}</span>}
-                                    </td>
-                                    <td>{customer.customer_type || "-"}</td>
-                                    <td>{moment(customer.customer_created_date).format("MMMM D, YYYY")}</td>
-                                    <td className="customer-report-amount">{money(customer.totalSales)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {newCustomers.length === 0 ? (
+                                    <tr>
+                                        <td className="customer-report-empty" colSpan="4">
+                                            No new customers for this date
+                                        </td>
+                                    </tr>
+                                ) : newCustomers.map((customer) => (
+                                    <tr key={customer.customer_id || customer.requestor_id || `${customer.requestor_name}-${customer.store_name}`}>
+                                        <td>
+                                            <strong>{customer.requestor_name || "-"}</strong>
+                                            {customer.store_name && <span>{customer.store_name}</span>}
+                                        </td>
+                                        <td>{customer.customer_type || "-"}</td>
+                                        <td>{moment(customer.customer_created_date).format("MMMM D, YYYY")}</td>
+                                        <td className="customer-report-amount">{money(customer.totalSales)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </section>
 
                 <section className="customer-report-table-card customer-report-top-customers">
@@ -1112,143 +1112,143 @@ const CustomerOrderTransactionList = () => {
                                 const transactionIsNewCustomer = isNewCustomer(transaction);
 
                                 return (
-                                <tr
-                                    key={transaction.id}
-                                    className={transactionIsNewCustomer ? "customer-report-new-customer-row" : ""}
-                                >
-                                    <td className="customer-report-id customer-report-id-cell">
-                                        {primaryVipCustomer &&
-                                            <span
-                                                className="customer-report-vip-stripe"
-                                                style={{ backgroundColor: primaryVipCustomer.vip_color || '#6c757d' }}
-                                            ></span>
-                                        }
-                                        <span className="customer-report-id-stack">
-                                            <span className="customer-report-order-id">#{transaction.id}</span>
-                                            {vipCustomers.length > 0 &&
-                                                <span className="customer-report-vip-badge-list">
-                                                    {vipCustomers.map((vipCustomer, index) => (
-                                                        <Tooltip
-                                                            key={vipCustomer.vip_customer_transaction_id || vipCustomer.vip_customer_id || `${transaction.id}-${index}`}
-                                                            title={"VIP Customer: " + getTransactionVipCustomerNames(transaction)}
-                                                        >
-                                                            <span
-                                                                className="customer-report-vip-badge"
-                                                                style={{ backgroundColor: vipCustomer.vip_color || '#6c757d' }}
+                                    <tr
+                                        key={transaction.id}
+                                        className={transactionIsNewCustomer ? "customer-report-new-customer-row" : ""}
+                                    >
+                                        <td className="customer-report-id customer-report-id-cell">
+                                            {primaryVipCustomer &&
+                                                <span
+                                                    className="customer-report-vip-stripe"
+                                                    style={{ backgroundColor: primaryVipCustomer.vip_color || '#6c757d' }}
+                                                ></span>
+                                            }
+                                            <span className="customer-report-id-stack">
+                                                <span className="customer-report-order-id">#{transaction.id}</span>
+                                                {vipCustomers.length > 0 &&
+                                                    <span className="customer-report-vip-badge-list">
+                                                        {vipCustomers.map((vipCustomer, index) => (
+                                                            <Tooltip
+                                                                key={vipCustomer.vip_customer_transaction_id || vipCustomer.vip_customer_id || `${transaction.id}-${index}`}
+                                                                title={"VIP Customer: " + getTransactionVipCustomerNames(transaction)}
                                                             >
-                                                                {vipCustomer.vip_name}
-                                                            </span>
-                                                        </Tooltip>
-                                                    ))}
-                                                </span>
+                                                                <span
+                                                                    className="customer-report-vip-badge"
+                                                                    style={{ backgroundColor: vipCustomer.vip_color || '#6c757d' }}
+                                                                >
+                                                                    {vipCustomer.vip_name}
+                                                                </span>
+                                                            </Tooltip>
+                                                        ))}
+                                                    </span>
+                                                }
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <strong>{transaction.shop_name}</strong>
+                                            <span>{transaction.customer_type}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{transaction.requestor_name}</strong>
+                                            {transaction.store_name && <span>{transaction.store_name.toUpperCase()}</span>}
+                                            {transactionIsNewCustomer &&
+                                                <Tooltip title={`Customer created ${moment(transaction.customer_created_date).format("MMMM D, YYYY")}`}>
+                                                    <span className="customer-report-new-customer-badge">New Customer</span>
+                                                </Tooltip>
                                             }
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <strong>{transaction.shop_name}</strong>
-                                        <span>{transaction.customer_type}</span>
-                                    </td>
-                                    <td>
-                                        <strong>{transaction.requestor_name}</strong>
-                                        {transaction.store_name && <span>{transaction.store_name.toUpperCase()}</span>}
-                                        {transactionIsNewCustomer &&
-                                            <Tooltip title={`Customer created ${moment(transaction.customer_created_date).format("MMMM D, YYYY")}`}>
-                                                <span className="customer-report-new-customer-badge">New Customer</span>
-                                            </Tooltip>
-                                        }
-                                    </td>
-                                    <td>{transaction.shop_order_transaction_total_quantity != 0 ? transaction.shop_order_transaction_total_quantity : "-"}</td>
-                                    <td>{transaction.total_cash != 0 ? money(transaction.total_cash) : "-"}</td>
-                                    <td>{transaction.total_online != 0 ? money(transaction.total_online) : "-"}</td>
-                                    <td>
-                                        <div className="customer-report-bank-list">
-                                            {transaction.mode_of_payment.map((sot, index) => (
-                                                <span key={`${transaction.id}-${sot.payment_type}-${index}`}>
-                                                    {money(sot.amount)} <small>{sot.payment_type}</small>
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </td>
-                                    <td className="customer-report-amount">{transaction.shop_order_transaction_total_price != 0 ? money(transaction.shop_order_transaction_total_price) : "-"}</td>
-                                    {role == 2 && <td className="customer-report-amount">{transaction.profit != 0 ? money(transaction.profit) : "-"}</td>}
-                                    <td>
-                                        <div className="customer-report-date-cell">
-                                            <span className={transaction.date != transaction.created_at ? "customer-report-date-changed" : ""}>{transaction.date}</span>
-                                            {transaction.status == 2 && transaction.is_pickup == 0 &&
+                                        </td>
+                                        <td>{transaction.shop_order_transaction_total_quantity != 0 ? transaction.shop_order_transaction_total_quantity : "-"}</td>
+                                        <td>{transaction.total_cash != 0 ? money(transaction.total_cash) : "-"}</td>
+                                        <td>{transaction.total_online != 0 ? money(transaction.total_online) : "-"}</td>
+                                        <td>
+                                            <div className="customer-report-bank-list">
+                                                {transaction.mode_of_payment.map((sot, index) => (
+                                                    <span key={`${transaction.id}-${sot.payment_type}-${index}`}>
+                                                        {money(sot.amount)} <small>{sot.payment_type}</small>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </td>
+                                        <td className="customer-report-amount">{transaction.shop_order_transaction_total_price != 0 ? money(transaction.shop_order_transaction_total_price) : "-"}</td>
+                                        {role == 2 && <td className="customer-report-amount">{transaction.profit != 0 ? money(transaction.profit) : "-"}</td>}
+                                        <td>
+                                            <div className="customer-report-date-cell">
+                                                <span className={transaction.date != transaction.created_at ? "customer-report-date-changed" : ""}>{transaction.date}</span>
+                                                {transaction.status == 2 && transaction.is_pickup == 0 &&
+                                                    <IconButton size="small">
+                                                        <UpdateIcon color="primary" onClick={(e) => handleOpen(transaction.id, e)} />
+                                                    </IconButton>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td><span className={paymentStatusClass(transaction.status)}>{paymentStatusLabel(transaction.status)}</span></td>
+                                        <td>
+                                            <div className="customer-report-status-action">
+                                                {transaction.delivery_customer_id != 0 && transaction.delivery_status == 1 &&
+                                                    <span className="status-pill status-success">Delivered</span>
+                                                }
+                                                {transaction.delivery_customer_id != 0 && transaction.delivery_status == 0 &&
+                                                    <Tooltip title="Delete">
+                                                        <span className="customer-report-delivery-pending">
+                                                            <span className="status-pill status-warning">Pending Delivery</span>
+                                                            <IconButton size="small">
+                                                                <DeleteIcon color="error" onClick={(e) => openDelete(transaction.id, e)} />
+                                                            </IconButton>
+                                                        </span>
+                                                    </Tooltip>
+                                                }
+                                                {transaction.delivery_customer_id == 0 && <span className="customer-report-muted">None</span>}
                                                 <IconButton size="small">
-                                                    <UpdateIcon color="primary" onClick={(e) => handleOpen(transaction.id, e)} />
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(transaction.id, e)} />
                                                 </IconButton>
-                                            }
-                                        </div>
-                                    </td>
-                                    <td><span className={paymentStatusClass(transaction.status)}>{paymentStatusLabel(transaction.status)}</span></td>
-                                    <td>
-                                        <div className="customer-report-status-action">
-                                            {transaction.delivery_customer_id != 0 && transaction.delivery_status == 1 &&
-                                                <span className="status-pill status-success">Delivered</span>
-                                            }
-                                            {transaction.delivery_customer_id != 0 && transaction.delivery_status == 0 &&
-                                                <Tooltip title="Delete">
-                                                    <span className="customer-report-delivery-pending">
-                                                        <span className="status-pill status-warning">Pending Delivery</span>
-                                                        <IconButton size="small">
-                                                            <DeleteIcon color="error" onClick={(e) => openDelete(transaction.id, e)} />
-                                                        </IconButton>
-                                                    </span>
-                                                </Tooltip>
-                                            }
-                                            {transaction.delivery_customer_id == 0 && <span className="customer-report-muted">None</span>}
-                                            <IconButton size="small">
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(transaction.id, e)} />
-                                            </IconButton>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="customer-report-status-action customer-report-pickup-action">
-                                            <span className={pickupStatusClass(transaction.is_pickup)}>{transaction.is_pickup === 1 ? "Done" : "Waiting"}</span>
-                                            <IconButton size="small">
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(transaction.id, e)} />
-                                            </IconButton>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="customer-report-status-action customer-report-rider-action">
-                                            <span>{transaction.rider_name || "-"}</span>
-                                            <IconButton size="small">
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpenRider(transaction.id, e)} />
-                                            </IconButton>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div className="customer-report-actions">
-                                            <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + transaction.id}>
-                                                <Button className="customer-report-update-btn" size="sm" variant="success">Update</Button>
-                                            </Link>
-                                            <Link to={"../shopOrderTransaction/completedShopOrderTransaction/" + transaction.id}>
-                                                <Button size="sm" variant="outline-primary">View</Button>
-                                            </Link>
-                                            {transaction.shop_order_transaction_total_quantity != 0 && (
-                                                <Link to={"../shopOrderTransaction/receiptOrder/" + transaction.id}>
-                                                    <Button size="sm" variant="outline-secondary">Receipt</Button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="customer-report-status-action customer-report-pickup-action">
+                                                <span className={pickupStatusClass(transaction.is_pickup)}>{transaction.is_pickup === 1 ? "Done" : "Waiting"}</span>
+                                                <IconButton size="small">
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(transaction.id, e)} />
+                                                </IconButton>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="customer-report-status-action customer-report-rider-action">
+                                                <span>{transaction.rider_name || "-"}</span>
+                                                <IconButton size="small">
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpenRider(transaction.id, e)} />
+                                                </IconButton>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="customer-report-actions">
+                                                <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + transaction.id}>
+                                                    <Button className="customer-report-update-btn" size="sm" variant="success">Update</Button>
                                                 </Link>
-                                            )}
-                                            {transaction.status != 3 &&
-                                                <Tooltip title={transaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
-                                                    <span>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline-danger"
-                                                            onClick={(e) => deleteShopOrderTransaction(transaction)}
-                                                            disabled={transaction.shop_order_transaction_total_price != 0 ? true : false}
-                                                        >
-                                                            Delete
-                                                        </Button>
-                                                    </span>
-                                                </Tooltip>
-                                            }
-                                        </div>
-                                    </td>
-                                </tr>
+                                                <Link to={"../shopOrderTransaction/completedShopOrderTransaction/" + transaction.id}>
+                                                    <Button size="sm" variant="outline-primary">View</Button>
+                                                </Link>
+                                                {transaction.shop_order_transaction_total_quantity != 0 && (
+                                                    <Link to={"../shopOrderTransaction/receiptOrder/" + transaction.id}>
+                                                        <Button size="sm" variant="outline-secondary">Receipt</Button>
+                                                    </Link>
+                                                )}
+                                                {transaction.status != 3 &&
+                                                    <Tooltip title={transaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
+                                                        <span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline-danger"
+                                                                onClick={(e) => deleteShopOrderTransaction(transaction)}
+                                                                disabled={transaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                            >
+                                                                Delete
+                                                            </Button>
+                                                        </span>
+                                                    </Tooltip>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
                                 );
                             })}
                         </tbody>

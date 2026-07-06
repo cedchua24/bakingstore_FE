@@ -187,7 +187,11 @@ const PurchaseOrderList = () => {
                                 </td>
                                 <td>{orderTransaction.created_at}</td>
                                 <td>{orderTransaction.send_date}</td>
-                                <td>{orderTransaction.order_date}</td>
+                                <td>
+                                    {orderTransaction.status === 'COMPLETED'
+                                        ? orderTransaction.updated_at
+                                        : ''}
+                                </td>
                                 <td style={{ color: statusColor[orderTransaction.status], fontWeight: 'bold' }}>
                                     {orderTransaction.status}
                                 </td>

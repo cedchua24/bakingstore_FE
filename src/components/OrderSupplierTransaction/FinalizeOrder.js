@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
@@ -10,7 +8,6 @@ import ModeOfPaymentPoService from "../OtherService/ModeOfPaymentPoService";
 import UserService from '../User/UserService.service'
 import PaymentTermService from "../OtherService/PaymentTermService";
 import TextField from '@mui/material/TextField';
-import TextareaAutosize from '@mui/material/TextareaAutosize';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -45,6 +42,11 @@ import Modal from '@mui/material/Modal';
 import UpdateIcon from '@mui/icons-material/Update';
 import InputAdornment from '@mui/material/InputAdornment';
 import Typography from '@mui/material/Typography'
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import "./OrderSupplierTransaction.css";
 
 
 
@@ -64,11 +66,11 @@ const FinalizeOrder = () => {
     }, []);
 
     const steps = [
-        'Created Transaction Details',
-        'Add Product Orders',
-        'Review Orders',
-        'Send to Supplier',
-        'Receive Orders',
+        'Order details',
+        'Add products',
+        'Review',
+        'Send',
+        'Receive',
     ];
 
     const style = {
@@ -76,12 +78,13 @@ const FinalizeOrder = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: 'min(92vw, 460px)',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        border: '1px solid #e5e8ec',
+        borderRadius: '18px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: { xs: 3, sm: 4 },
+        '& .MuiTextField-root': { width: '100%' },
     };
 
     const TAX_RATE = 0.12;
@@ -248,7 +251,7 @@ const FinalizeOrder = () => {
     }
 
     const fetchRequestor = () => {
-        UserService.getAll()
+        UserService.fetchUserList()
             .then(response => {
                 setRequestorList(response.data);
             })
@@ -547,219 +550,272 @@ const FinalizeOrder = () => {
 
 
     return (
-        <div>
-            <Stack sx={{ width: '100%' }} spacing={2}>
+        <main className="purchase-order-page po-finalize-page">
+            <section className="purchase-order-shell">
+                <div className="purchase-order-heading">
+                    <div className="purchase-order-icon" aria-hidden="true">
+                        <DoneAllRoundedIcon />
+                    </div>
+                    <div>
+                        <span className="purchase-order-eyebrow">Purchase order #{id}</span>
+                        <h1>Receive order</h1>
+                        <p>Verify the delivered products and record who checked and received the supplier order.</p>
+                    </div>
+                </div>
+
                 {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                    <Alert className="po-products-alert" variant="filled" severity={validator.severity}>
+                        {validator.message}
+                    </Alert>
                 }
-            </Stack>
-            <br></br>
 
-            <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
-                noValidate
-                autoComplete="off"
-            >
-                <Stepper activeStep={4} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
-                        </Step>
-                    ))}
-                </Stepper>
-                <br></br>
+                <Box
+                    className="po-finalize-workspace"
+                    noValidate
+                    autoComplete="off"
+                >
+                    <div className="purchase-order-progress">
+                        <Stepper activeStep={4} alternativeLabel>
+                            {steps.map((label) => (
+                                <Step key={label}>
+                                    <StepLabel>{label}</StepLabel>
+                                </Step>
+                            ))}
+                        </Stepper>
+                    </div>
 
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                    <TableContainer component={Paper} className="po-order-summary">
+                        <Table aria-label="Purchase order summary">
+                            <TableBody>
+                                <TableRow >
+                                    <TableCell>
+                                        <div className="po-summary-label"><LocalShippingOutlinedIcon /> Supplier</div>
+                                        <strong>{orderSupplierTransaction.supplier_name || 'Loading…'}</strong>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="po-summary-label"><CalendarMonthOutlinedIcon /> Created</div>
+                                        <strong>{orderSupplierTransaction.created_at || '—'}</strong>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="po-summary-label"><Inventory2OutlinedIcon /> Products</div>
+                                        <strong>{orderList.length}</strong>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <div className="po-summary-label po-summary-label-right">Order total</div>
+                                        <strong className="po-summary-total">{numberFormat(invoiceTotal)}</strong>
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </Box>
+
+                <div className="po-list-heading po-finalize-list-heading">
+                    <div>
+                        <span>Delivery contents</span>
+                        <h2>Products to verify</h2>
+                    </div>
+                    <strong>{orderList.length} {orderList.length === 1 ? 'item' : 'items'}</strong>
+                </div>
+                <TableContainer component={Paper} className="po-items-table">
+                    <Table sx={{ minWidth: 760 }} aria-label="Products received from supplier">
+                        <TableHead>
+
+                            <TableRow>
+                                <TableCell>Product</TableCell>
+                                <TableCell align="right">Quantity</TableCell>
+                                <TableCell align="right">Price</TableCell>
+                                <TableCell align="right">Unit</TableCell>
+                                <TableCell align="center" >Expiration</TableCell>
+                                <TableCell align="right">Sum</TableCell>
+                            </TableRow>
+                        </TableHead>
                         <TableBody>
-                            <TableRow >
-                                <TableCell style={{ fontWeight: 'bold' }}>Supplier Name:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.supplier_name}</TableCell>
+                            {orderList.length === 0 && (
+                                <TableRow>
+                                    <TableCell colSpan={6}>
+                                        <div className="po-empty-state">
+                                            <Inventory2OutlinedIcon />
+                                            <strong>No products found</strong>
+                                            <span>This purchase order has no products to receive.</span>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                            {orderList.map((row) => (
+                                <TableRow key={row.id} hover>
+                                    <TableCell><strong>{row.product_name}</strong></TableCell>
+                                    <TableCell align="right">{row.quantity}</TableCell>
+                                    <TableCell align="right">{numberFormat(row.price)}</TableCell>
+                                    <TableCell align="right">{row.unit}</TableCell>
 
-                                <TableCell style={{ fontWeight: 'bold' }}>Created Date:</TableCell>
-                                <TableCell align="right">{orderSupplierTransaction.created_at}</TableCell>
 
-
+                                    <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : "—"}</TableCell>
+                                    <TableCell align="right"><strong>{numberFormat(row.total_price)}</strong></TableCell>
+                                </TableRow>
+                            ))}
+                            <TableRow className="po-grand-total-row">
+                                <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold', }} colSpan={3}>{numberFormat(invoiceTotal)}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
                 </TableContainer>
-            </Box>
-            <br></br>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                    <TableHead>
 
-                        <TableRow>
-                            <TableCell>Product</TableCell>
-                            <TableCell align="right">Qty.</TableCell>
-                            <TableCell align="right">Price</TableCell>
-                            <TableCell align="right">Unit</TableCell>
-                            <TableCell align="center" >Expiration</TableCell>
-                            <TableCell align="right">Sum</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {orderList.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.product_name}</TableCell>
-                                <TableCell align="right">{row.quantity}</TableCell>
-                                <TableCell align="right">{row.price}</TableCell>
-                                <TableCell align="right">{row.unit}</TableCell>
+                <section className="po-finalize-card">
+                    <div className="po-card-heading">
+                        <div>
+                            <span>Receiving confirmation</span>
+                            <h2>{orderSupplierTransaction.status == 'COMPLETED' ? 'Order received' : 'Confirm delivery handoff'}</h2>
+                            <p>{orderSupplierTransaction.status == 'COMPLETED'
+                                ? 'This supplier order has been checked and received.'
+                                : 'Assign the people who verified and accepted the delivered products.'}</p>
+                        </div>
+                        {orderSupplierTransaction.status == 'COMPLETED' && (
+                            <div className="po-approved-badge"><CheckCircleIcon /> Completed</div>
+                        )}
+                    </div>
 
+                    {submitLoadingAdd && <LinearProgress color="warning" />}
 
-                                <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : ""}</TableCell>
-                                <TableCell align="right">{row.total_price}</TableCell>
-                            </TableRow>
-                        ))}
-                        {/* 
-                        <TableRow>
+                    <div className="po-finalize-form">
+                        {orderSupplierTransaction.status == 'COMPLETED' ? (
+                            <>
+                                <TextField
+                                    fullWidth
+                                    label="Checked by"
+                                    value={orderSupplierTransaction.checker || '—'}
+                                    disabled
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Received by"
+                                    value={orderSupplierTransaction.receiver || '—'}
+                                    disabled
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <FormControl fullWidth required>
+                                    <InputLabel id="checker-label">Checked by</InputLabel>
+                                    <Select
+                                        labelId="checker-label"
+                                        label="Checked by"
+                                        name="checker"
+                                        value={orderSupplierTransaction.checker}
+                                        onChange={onChange}
+                                    >
+                                        {requestorList.map((requestor) => (
+                                            <MenuItem key={requestor.id} value={requestor.name}>
+                                                {requestor.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
 
-                            <TableCell rowSpan={4} />
-                            <TableCell colSpan={4}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
-                        </TableRow> */}
-                        {/* <TableRow>
-                            <TableCell>Tax</TableCell>
-                            <TableCell align="right" colSpan={3}>{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow> */}
-                        <TableRow>
-                            <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }} colSpan={3}>{numberFormat(invoiceTotal)}</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                                <FormControl fullWidth required>
+                                    <InputLabel id="receiver-label">Received by</InputLabel>
+                                    <Select
+                                        labelId="receiver-label"
+                                        label="Received by"
+                                        name="receiver"
+                                        value={orderSupplierTransaction.receiver}
+                                        onChange={onChange}
+                                    >
+                                        {requestorList.map((requestor) => (
+                                            <MenuItem key={requestor.id} value={requestor.name}>
+                                                {requestor.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            </>
+                        )}
+                    </div>
 
-            <br></br>
-            {
-                submitLoadingAdd &&
-                <LinearProgress color="warning" />
-            }
-            <br></br>
-            <br></br>
-            <Box
-                sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 2,
-                }}
-            >
-                {orderSupplierTransaction.status == 'COMPLETED' ? <>
-                    <FormControl sx={{ minWidth: 320 }}>
-                        <TextField
-                            label="Checker"
-                            value={orderSupplierTransaction.checker}
-                            disabled
-                        />
+                    <div className="po-finalize-actions">
+                        <div>
+                            <strong>{orderSupplierTransaction.status == 'COMPLETED' ? 'Receiving complete' : 'Final step'}</strong>
+                            <p>{orderSupplierTransaction.status == 'COMPLETED'
+                                ? 'No further receiving action is required.'
+                                : 'Completing this step will close the purchase-order workflow.'}</p>
+                        </div>
+                        {orderSupplierTransaction.status != 'COMPLETED' && (
+                            <Button
+                                disabled={
+                                    isAddDisabled ||
+                                    !orderSupplierTransaction.checker ||
+                                    !orderSupplierTransaction.receiver
+                                }
+                                variant="contained"
+                                onClick={updateOrderTransaction}
+                                startIcon={<DoneAllRoundedIcon />}
+                                className="purchase-order-next"
+                            >
+                                {submitLoadingAdd ? 'Completing…' : 'Confirm order received'}
+                            </Button>
+                        )}
+                    </div>
+                </section>
+
+                <Modal
+                    keepMounted
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="keep-mounted-modal-title"
+                    aria-describedby="keep-mounted-modal-description"
+                >
+                    <Box sx={style}>
+                        <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                            Update Product
+                        </Typography>
+                        {submitLoading &&
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                <CircularProgress />
+                            </div>
+                        }
                         <br></br>
-                        <TextField
-                            label="Receiver"
-                            value={orderSupplierTransaction.receiver}
-                            disabled
-                        />
-                    </FormControl>
-                </> :
-                    <>
-                        <FormControl sx={{ minWidth: 320 }}>
-                            <InputLabel>Checker <span style={{ color: 'red' }}>*</span></InputLabel>
-                            <Select name="checker" onChange={onChange}>
-                                {requestorList.map((requestor) => (
-                                    <MenuItem key={requestor.id} value={requestor.name}>
-                                        {requestor.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
+                        <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+                            <InputLabel htmlFor="standard-adornment-amount">Amount</InputLabel>
+                            <Input
+                                id="filled-required"
+                                label="Amount"
+                                variant="filled"
+                                name='amount'
+                                value={modeOfPaymentModal.amount}
+                                onChange={onChangeInputPriceModal}
+                                startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                            />
                         </FormControl>
 
-                        <FormControl sx={{ minWidth: 320 }}>
-                            <InputLabel>Receiver <span style={{ color: 'red' }}>*</span></InputLabel>
-                            <Select name="receiver" onChange={onChange}>
-                                {requestorList.map((requestor) => (
-                                    <MenuItem key={requestor.id} value={requestor.name}>
-                                        {requestor.name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl></>}
+                        <br></br>
+                        <br></br>
 
-
-
-
-                <Button
-                    disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                    variant="contained"
-                    onClick={updateOrderTransaction}
-                    color="success"
-                >
-                    Received Orders
-                </Button>
-            </Box>
-
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Product
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <br></br>
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Amount</InputLabel>
-                        <Input
-                            id="filled-required"
-                            label="Amount"
-                            variant="filled"
-                            name='amount'
-                            value={modeOfPaymentModal.amount}
-                            onChange={onChangeInputPriceModal}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-
-                    <br></br>
-                    <br></br>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            disabled={modeOfPaymentDTO.balance != 0}
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: { xs: 'column', md: 'row' },
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Button
+                                disabled={modeOfPaymentDTO.balance != 0}
+                                variant="contained"
+                                type="submit"
+                                onClick={updateOrderSupplier}
+                                size="large" >
+                                Submit
+                            </Button>
+                        </Box>
                     </Box>
-                </Box>
-            </Modal>
-            <br></br>
-            <br></br>
-        </div >
-    )
+                </Modal>
+            </section>
+        </main>
+    );
 }
 
-export default FinalizeOrder
+export default FinalizeOrder;
 
 
 

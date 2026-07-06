@@ -1,445 +1,552 @@
-import React, { useState, useEffect } from "react";
-import { Button } from 'react-bootstrap';
-import { Link } from "react-router-dom";
-
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
-import CircularProgress from '@mui/material/CircularProgress';
-
-import OrderSupplierTransactionService from "../OrderSupplierTransaction/OrderSupplierTransactionService";
-
-import LinearProgress from '@mui/material/LinearProgress';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography'
-import Modal from '@mui/material/Modal';
 import IconButton from '@mui/material/IconButton';
-import UpdateIcon from '@mui/icons-material/Update';
+import LinearProgress from '@mui/material/LinearProgress';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import EditCalendarRoundedIcon from '@mui/icons-material/EditCalendarRounded';
+import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import OrderSupplierTransactionService from '../OrderSupplierTransaction/OrderSupplierTransactionService';
+import './ReportPurchaseOrderList.css';
 
-import { Form } from 'react-bootstrap';
+const emptyReport = {
+    data: [],
+    payment: [],
+    total_balance: {},
+    total_paid: {},
+    code: '',
+    message: '',
+    total_sales: 0,
+};
 
-const ReportPurchaseOrderList = () => {
+const fetchAllPurchaseOrders = (filters) =>
+    OrderSupplierTransactionService.fetchAllOrderSupplier(filters);
+
+const deletePurchaseOrder = (id) =>
+    OrderSupplierTransactionService.delete(id);
+
+const canDeleteEmptyOrder = (order) =>
+    Number(order.total_transaction_price) === 0
+    && Number(order.payment_status) !== 1
+    && order.status === 'PENDING';
+
+const ReportPurchaseOrderList = ({
+    fetchReport = fetchAllPurchaseOrders,
+    title = 'Purchase order report',
+    description = 'Review supplier orders, payment progress, and delivery activity in one place.',
+    emptyMessage = 'No purchase orders found',
+    allowDateEdit = true,
+    allowDelete = true,
+    showFilters = true,
+    deleteOrderRequest = deletePurchaseOrder,
+    canDeleteOrder = canDeleteEmptyOrder,
+    deleteActionLabel = 'Delete',
+    deleteDialogTitle = 'Delete purchase order?',
+    deleteDialogText = 'This purchase order will be removed. This action cannot be undone.',
+}) => {
+    const [report, setReport] = useState(emptyReport);
+    const [filters, setFilters] = useState({ dateFrom: '', dateTo: '' });
+    const [filterErrors, setFilterErrors] = useState({});
+    const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+    const [dateDialog, setDateDialog] = useState({ open: false, id: 0, created_at: '' });
+    const [updatingDate, setUpdatingDate] = useState(false);
+    const [error, setError] = useState('');
+
+    const loadReport = useCallback((dateFilters) => {
+        setLoading(true);
+        setError('');
+        return fetchReport(dateFilters)
+            .then((response) => {
+                setReport(response.data || emptyReport);
+            })
+            .catch(() => {
+                setError('The purchase order report could not be loaded. Please try again.');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, [fetchReport]);
 
     useEffect(() => {
-        fetchOrderTransactionList();
-    }, []);
+        loadReport();
+    }, [loadReport]);
 
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    const currency = (value) =>
+        new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+        }).format(Number(value || 0));
+
+    const formatDate = (value) => {
+        if (!value) return '—';
+        const normalized = String(value).replace(' ', 'T');
+        const date = new Date(normalized);
+        if (Number.isNaN(date.getTime())) return value;
+        return new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit',
+        }).format(date);
     };
 
-    const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
-    const [deleteId, setDeleteId] = useState(0)
+    const rows = Array.isArray(report.data) ? report.data : [];
+    const visibleRows = useMemo(() => {
+        const term = search.trim().toLowerCase();
+        if (!term) return rows;
+        return rows.filter((row) =>
+            [
+                row.id,
+                row.invoice_number,
+                row.supplier_name,
+                row.requestor,
+                row.approval,
+                row.approval_status,
+                row.status,
+            ].some((value) => String(value || '').toLowerCase().includes(term))
+        );
+    }, [rows, search]);
 
+    const totalPaid = Number(report.total_paid?.total_paid || 0);
+    const totalBalance = Number(report.total_balance?.total_balance || 0);
+    const totalOrders = rows.length;
+    const reportTotal = Number(report.total_sales || 0)
+        || rows.reduce((sum, row) => sum + Number(row.total_transaction_price || 0), 0);
 
-    const handleDeleteCloseModal = () => {
-        setDeleteOpenModal(false);
+    const applyFilters = () => {
+        const errors = {};
+        if (!filters.dateFrom) errors.dateFrom = 'Start date is required.';
+        if (!filters.dateTo) errors.dateTo = 'End date is required.';
+        if (filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo) {
+            errors.dateTo = 'End date must be after the start date.';
+        }
+        setFilterErrors(errors);
+        if (Object.keys(errors).length === 0) {
+            loadReport(filters);
+        }
     };
 
-    const [submitLoading, setSubmitLoading] = useState(false);
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-    const [formErrors, setFormErrors] = useState({});
+    const clearFilters = () => {
+        setFilters({ dateFrom: '', dateTo: '' });
+        setFilterErrors({});
+        loadReport();
+    };
 
-
-    const [orderTransactionList, setOrderTransactionList] = useState({
-        data: [],
-        payment: [],
-        total_balance: {},
-        total_paid: {},
-        code: '',
-        message: '',
-        total_sales: 0
-    });
-
-    const [open, setOpen] = React.useState(false);
-    const handleClose = () => setOpen(false);
-
-    const [orderDate, setOrderDate] = useState({
-        id: 0,
-        created_at: ''
-    });
-
-    const handleOpen = (id, e) => {
-        console.log('e', id);
-        fetchTransaction(id);
-        setOpen(true);
-    }
-
-
-    const fetchTransaction = async (id) => {
-        await OrderSupplierTransactionService.get(id)
-            .then(response => {
-                setOrderDate({
-                    id: response.data.id,
-                    created_at: response.data.created_at.split(' ')[0]
-                });
+    const openDateEditor = (id) => {
+        setUpdatingDate(true);
+        OrderSupplierTransactionService.get(id)
+            .then((response) => {
+                const value = response.data?.created_at
+                    ? String(response.data.created_at).split(' ')[0]
+                    : '';
+                setDateDialog({ open: true, id, created_at: value });
             })
-            .catch(e => {
-                console.log("error", e)
+            .catch(() => {
+                setError('The draft date could not be loaded.');
+            })
+            .finally(() => {
+                setUpdatingDate(false);
             });
-    }
-
-    const onChangeDate = (e) => {
-        setOrderDate({ ...orderDate, [e.target.name]: e.target.value });
-    }
+    };
 
     const updateDate = () => {
-        OrderSupplierTransactionService.updateDateOrderSupplier(orderDate)
-            .then(response => {
-                setOpen(false);
-                fetchOrderTransactionList();
+        setUpdatingDate(true);
+        OrderSupplierTransactionService.updateDateOrderSupplier({
+            id: dateDialog.id,
+            created_at: dateDialog.created_at,
+        })
+            .then(() => {
+                setDateDialog({ open: false, id: 0, created_at: '' });
+                loadReport(filters.dateFrom && filters.dateTo ? filters : undefined);
             })
-            .catch(e => {
-                console.log(e);
-            });
-    }
-
-
-    const [customerOrderDate, setCustomerOrderDate] = useState({
-        dateFrom: "",
-        dateTo: ""
-    });
-
-
-    const fetchOrderTransactionList = () => {
-        OrderSupplierTransactionService.fetchAllOrderSupplier()
-            .then(response => {
-                setOrderTransactionList(response.data);
+            .catch(() => {
+                setError('The draft date could not be updated.');
             })
-            .catch(e => {
-                console.log("error", e)
-
+            .finally(() => {
+                setUpdatingDate(false);
             });
-    }
-
-
-    const validate = (values) => {
-        const errors = {};
-        if (customerOrderDate.dateFrom.length == 0) {
-            errors.dateFrom = "Date From Required!";
-        }
-        if (customerOrderDate.dateTo.length == 0) {
-            errors.dateTo = "Date To Required!";
-        }
-
-        return errors;
-    }
-
-
-    const onChangeInput = (e) => {
-        console.log(e.target.value);
-        setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
-    }
-
-    const saveOrderTransaction = () => {
-        console.log("count: ", Object.keys(validate(customerOrderDate)).length);
-        console.log("validate: ", validate(customerOrderDate));
-        setFormErrors(validate(customerOrderDate));
-        if (Object.keys(validate(customerOrderDate)).length > 0) {
-            console.log("Has Validation: ");
-        } else {
-            console.log("Ready for saving: ");
-            setSubmitLoadingAdd(true);
-            setIsAddDisabled(true);
-            OrderSupplierTransactionService.fetchAllOrderSupplier(customerOrderDate)
-                .then(response => {
-                    setOrderTransactionList(response.data);
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-                })
-                .catch(e => {
-                    console.log("error", e)
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-                });
-        }
-    }
-
-    const submitCancel = (id, e) => {
-        setSubmitLoading(true);
-        OrderSupplierTransactionService.delete(id)
-            .then(response => {
-                console.log('response', response.data);
-
-                window.scrollTo(0, 0);
-                setSubmitLoading(false);
-                setDeleteOpenModal(false);
-                fetchOrderTransactionList();
-
-            })
-            .catch(e => {
-                setSubmitLoading(false);
-                setDeleteOpenModal(false);
-                console.log('error', e);
-            });
-    }
-
-    const openDelete = (id) => {
-        console.log('delete', id);
-        setDeleteId(id)
-        setDeleteOpenModal(true);
-    }
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-    const statusColor = {
-        PENDING: '#ed6c02',
-        SEND_TO_SUPPLIER: '#0225ed',  // orange
-        APPROVED: '#2e7d32',  // green
-        COMPLETED: '#2e7d32',  // green
-        REJECTED: '#d32f2f',  // red
     };
 
+    const deleteOrder = () => {
+        setDeleting(true);
+        deleteOrderRequest(deleteId)
+            .then(() => {
+                setDeleteId(null);
+                loadReport(filters.dateFrom && filters.dateTo ? filters : undefined);
+            })
+            .catch(() => {
+                setError('The purchase order could not be deleted.');
+            })
+            .finally(() => {
+                setDeleting(false);
+            });
+    };
+
+    const statusClass = (value) => {
+        const normalized = String(value || 'pending').toLowerCase().replaceAll('_', '-');
+        return `po-report-status po-report-status-${normalized}`;
+    };
 
     return (
-        <div >
-            <Box sx={{ minWidth: 20 }}>
-                <Form >
-                    {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
-                    <Form.Group className="w-15 mb-3" controlId="formBasicEmail" sx={{ minWidth: 20 }}>
-                        <Form.Label>Date From:</Form.Label>
-                        <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
-                    </Form.Group>
-                    {formErrors.dateTo && <p style={{ color: "red" }}>{formErrors.dateTo}</p>}
-                    <Form.Group className="w-15 mb-3" controlId="formBasicEmail">
-                        <Form.Label>Date To:</Form.Label>
-                        <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
-                    </Form.Group>
+        <main className="po-report-page">
+            <div className="po-report-shell">
+                <header className="po-report-header">
+                    <div className="po-report-header-icon">
+                        <ReceiptLongRoundedIcon />
+                    </div>
+                    <div>
+                        <span>Reports</span>
+                        <h1>{title}</h1>
+                        <p>{description}</p>
+                    </div>
+                </header>
 
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Paid: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(orderTransactionList.total_paid.total_paid)} />
-                    </Form.Group>
+                {error && <Alert className="po-report-alert" severity="error">{error}</Alert>}
 
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Balance: </Form.Label>
-                        <Form.Control type="text" value={numberFormat(orderTransactionList.total_balance.total_balance)} />
-                    </Form.Group>
-                    <Button variant="primary" onClick={saveOrderTransaction} disabled={isAddDisabled}>
-                        Find
-                    </Button>
-                    <br></br>
-                    <br></br>
-                    {submitLoadingAdd &&
-                        <LinearProgress color="warning" />
-                    }
-                    <br></br>
-                </Form >
-            </Box>
+                {showFilters && <section className="po-report-filters">
+                    <div className="po-report-filter-heading">
+                        <div>
+                            <span>Report range</span>
+                            <h2>Filter purchase orders</h2>
+                        </div>
+                        <CalendarMonthRoundedIcon />
+                    </div>
+                    <div className="po-report-filter-grid">
+                        <TextField
+                            label="Date from"
+                            type="date"
+                            value={filters.dateFrom}
+                            onChange={(event) => setFilters({ ...filters, dateFrom: event.target.value })}
+                            error={Boolean(filterErrors.dateFrom)}
+                            helperText={filterErrors.dateFrom || ' '}
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                        />
+                        <TextField
+                            label="Date to"
+                            type="date"
+                            value={filters.dateTo}
+                            onChange={(event) => setFilters({ ...filters, dateTo: event.target.value })}
+                            error={Boolean(filterErrors.dateTo)}
+                            helperText={filterErrors.dateTo || ' '}
+                            InputLabelProps={{ shrink: true }}
+                            fullWidth
+                        />
+                        <div className="po-report-filter-actions">
+                            <Button variant="contained" onClick={applyFilters} disabled={loading}>
+                                Generate report
+                            </Button>
+                            <Button onClick={clearFilters} disabled={loading}>Clear</Button>
+                        </div>
+                    </div>
+                    {loading && <LinearProgress className="po-report-progress" />}
+                </section>}
 
-            <div >
-                <legend align="center" style={{ fontWeight: 'bold' }} > Purchase Order Report List </legend>
-                <table class="table table-bordered">
-                    <thead class="table-dark">
-                        <tr class="table-secondary">
-                            <th>ID</th>
-                            <th>Invoice Number</th>
-                            <th>Supplier Name</th>
-                            <th>Total Amount</th>
-                            <th>Requestor</th>
-                            <th>Approver</th>
-                            <th>Approval Status</th>
-                            <th>Date Draft</th>
-                            <th>Date Send to Supplier</th>
-                            <th>Date Received</th>
-                            <th>Delivery Status</th>
-                            <th>Payment Status</th>
-                            <th>Bank</th>
-                            {/* <th>Placed Stock Status</th>
-                            <th>Organize Stock</th> */}
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <section className="po-report-metrics">
+                    <article>
+                        <span className="po-report-metric-icon"><ReceiptLongRoundedIcon /></span>
+                        <div><small>Orders</small><strong>{totalOrders}</strong></div>
+                    </article>
+                    <article>
+                        <span className="po-report-metric-icon"><Inventory2OutlinedIcon /></span>
+                        <div><small>Order value</small><strong>{currency(reportTotal)}</strong></div>
+                    </article>
+                    <article>
+                        <span className="po-report-metric-icon paid"><PaymentsOutlinedIcon /></span>
+                        <div><small>Total paid</small><strong>{currency(totalPaid)}</strong></div>
+                    </article>
+                    <article>
+                        <span className="po-report-metric-icon balance"><AccountBalanceWalletOutlinedIcon /></span>
+                        <div><small>Balance</small><strong>{currency(totalBalance)}</strong></div>
+                    </article>
+                </section>
 
-                        {
-                            orderTransactionList.data.map((orderTransaction, index) => (
-                                <tr key={orderTransaction.id} >
-                                    <td>{orderTransaction.id}</td>
-                                    <td>{orderTransaction.invoice_number}</td>
-                                    <td>{orderTransaction.supplier_name}</td>
-                                    <td>{numberFormat(orderTransaction.total_transaction_price)}</td>
-                                    <td>{orderTransaction.requestor}</td>
-                                    <td>{orderTransaction.approval}</td>
-                                    <td style={{ color: statusColor[orderTransaction.approval_status], fontWeight: 'bold' }}>
-                                        {orderTransaction.approval_status}
-                                    </td>
+                <section className="po-report-table-card">
+                    <div className="po-report-table-toolbar">
+                        <div>
+                            <span>Purchase orders</span>
+                            <h2>Report details</h2>
+                        </div>
+                        <TextField
+                            className="po-report-search"
+                            size="small"
+                            placeholder="Search order, supplier, or person"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            InputProps={{ startAdornment: <SearchRoundedIcon /> }}
+                        />
+                    </div>
 
-                                    <td>{orderTransaction.created_at}
-                                        {orderTransaction.status === 'PENDING' &&
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(orderTransaction.id, e)} />
-                                            </IconButton>
-                                        }
-                                    </td>
-                                    <td>{orderTransaction.send_date}</td>
-                                    <td>{orderTransaction.order_date}</td>
-                                    <td style={{ color: statusColor[orderTransaction.status], fontWeight: 'bold' }}>
-                                        {orderTransaction.status}
-                                    </td>
-                                    <td>{orderTransaction.payment_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                        : <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p>}
-                                    </td>
-                                    <td>{
-
-                                        orderTransaction.mode_of_payment.map((sot, index) => (
-                                            <>
-                                                <tr>
-                                                    <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
-                                                    <td><p style={{ fontSize: 12 }}>{sot.bank_name + " " + sot.account_description + " - " + sot.account_number}</p></td>
-                                                </tr>
-                                            </>
-                                        )
-                                        )
-
-                                    }</td>
-                                    <td>
-                                        <Link variant="primary" to={"/editSupplierTransaction/" + orderTransaction.id}   >
-                                            <Button variant="warning" >
-                                                Update Invoice
-                                            </Button>
-                                        </Link>
-                                    </td>
-                                    <td>
-                                        <Link variant="primary" to={"/paymentOrder/" + orderTransaction.id}   >
-                                            <Button variant="success" >
-                                                Update Payment
-                                            </Button>
-                                        </Link>
-                                    </td>
-                                    {/* <td>
-                                                   <Link variant="primary" to={"/branchStock/" + orderTransaction.id}   >
-                                                       <Button variant="warning" >
-                                                           {orderTransaction.stock_status === 1 ? 'View Stock' : 'Place Stock'}
-                                                       </Button>
-                                                   </Link>
-                                               </td> */}
-                                    <td>
-                                        <Link variant="primary" to={"/viewOrder/" + orderTransaction.id}   >
-                                            <Button variant="primary" >
-                                                View
-                                            </Button>
-                                        </Link>
-                                    </td>
-                                    <td>
-                                        <Link variant="primary" to={"/orderSupplierApproval/" + orderTransaction.id}   >
-                                            <Button variant="primary" >
-                                                Review Order
-                                            </Button>
-                                        </Link>
-                                    </td>
-                                    <td>
-                                        <Link variant="primary" to={"/printOrderSupplier/" + orderTransaction.id}   >
-                                            <Button variant="secondary" >
-                                                Print
-                                            </Button>
-                                        </Link>
-                                    </td>
-
-                                    {orderTransaction.status != 'COMPLETED' ? <div>
-                                        <td>
-                                            <Link variant="primary" to={"/addProductOrderSupplierTransaction/" + orderTransaction.id}   >
-                                                <Button variant="success" >
-                                                    Update Order
-                                                </Button>
-                                            </Link>
-                                        </td>
-                                        {orderTransaction.total_transaction_price == 0 && orderTransaction.payment_status != 1 && orderTransaction.status === 'PENDING' &&
-                                            <td>
-                                                <Button variant="danger" onClick={(e) => openDelete(orderTransaction.id, e)} >
-                                                    Delete
-                                                </Button>
-                                            </td>
-                                        }
-                                    </div> :
-                                        <></>
-                                    }
-
-
+                    <div className="po-report-table-scroll">
+                        <table className="po-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Order / Supplier</th>
+                                    <th>Financials</th>
+                                    <th>People</th>
+                                    <th>Status</th>
+                                    <th>Timeline</th>
+                                    <th>Actions</th>
                                 </tr>
-                            )
-                            )
-                        }
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody>
+                                {!loading && visibleRows.length === 0 && (
+                                    <tr>
+                                        <td colSpan="6">
+                                            <div className="po-report-empty">
+                                                <ReceiptLongRoundedIcon />
+                                                <strong>{emptyMessage}</strong>
+                                                <span>Try another date range or search term.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                                {visibleRows.map((order) => {
+                                    const paymentRows = Array.isArray(order.mode_of_payment)
+                                        ? order.mode_of_payment
+                                        : [];
+                                    const canDelete = canDeleteOrder(order);
+                                    const deliveryCompleted = String(order.status).toUpperCase() === 'COMPLETED';
+
+                                    return (
+                                        <tr key={order.id}>
+                                            <td>
+                                                <strong className="po-report-order-id">PO-{order.id}</strong>
+                                                <span className="po-report-muted">
+                                                    {order.invoice_number || 'No invoice'}
+                                                </span>
+                                                <strong className="po-report-supplier-name">
+                                                    {order.supplier_name || '—'}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <div className="po-report-financials">
+                                                    <span>
+                                                        <small>Order total</small>
+                                                        <strong>{currency(order.total_transaction_price)}</strong>
+                                                    </span>
+                                                    {paymentRows.length === 0 ? (
+                                                        <span>
+                                                            <small>Payments</small>
+                                                            <em>No payment</em>
+                                                        </span>
+                                                    ) : paymentRows.map((payment) => (
+                                                        <span key={payment.id || `${payment.amount}-${payment.account_number}`}>
+                                                            <small>{payment.bank_name || 'Payment'}</small>
+                                                            <strong>{currency(payment.amount)}</strong>
+                                                            <em>
+                                                                {[payment.account_description, payment.account_number]
+                                                                    .filter(Boolean).join(' · ')}
+                                                            </em>
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="po-report-pair">
+                                                    <span>
+                                                        <small>Requestor</small>
+                                                        <strong>{order.requestor || '—'}</strong>
+                                                    </span>
+                                                    <span>
+                                                        <small>Approver</small>
+                                                        <strong>{order.approval || '—'}</strong>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="po-report-status-list">
+                                                    <span>
+                                                        <small>Approval</small>
+                                                        <b className={statusClass(order.approval_status)}>
+                                                            {order.approval_status || 'PENDING'}
+                                                        </b>
+                                                    </span>
+                                                    <span>
+                                                        <small>Delivery</small>
+                                                        <b className={statusClass(order.status)}>
+                                                            {order.status || 'PENDING'}
+                                                        </b>
+                                                    </span>
+                                                    <span>
+                                                        <small>Payment</small>
+                                                        <b className={statusClass(
+                                                            Number(order.payment_status) === 1 ? 'COMPLETED' : 'PENDING'
+                                                        )}>
+                                                            {Number(order.payment_status) === 1 ? 'COMPLETED' : 'PENDING'}
+                                                        </b>
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="po-report-timeline">
+                                                    <span>
+                                                        <small>Draft</small>
+                                                        {formatDate(order.created_at)}
+                                                        {allowDateEdit && order.status === 'PENDING' && (
+                                                            <Tooltip title="Update draft date">
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => openDateEditor(order.id)}
+                                                                    disabled={updatingDate}
+                                                                >
+                                                                    <EditCalendarRoundedIcon />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )}
+                                                    </span>
+                                                    <span><small>Sent</small>{formatDate(order.send_date)}</span>
+                                                    {deliveryCompleted && (
+                                                        <span className="received">
+                                                            <small>Received</small>
+                                                            {formatDate(order.updated_at)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="po-report-actions">
+                                                    <Button
+                                                        component={Link}
+                                                        to={`/viewOrder/${order.id}`}
+                                                        startIcon={<VisibilityOutlinedIcon />}
+                                                        className="view"
+                                                    >
+                                                        View
+                                                    </Button>
+                                                    <Button
+                                                        component={Link}
+                                                        to={`/editSupplierTransaction/${order.id}`}
+                                                        startIcon={<EditNoteRoundedIcon />}
+                                                        className="invoice"
+                                                    >
+                                                        Invoice
+                                                    </Button>
+                                                    <Button
+                                                        component={Link}
+                                                        to={`/paymentOrder/${order.id}`}
+                                                        startIcon={<PaymentsOutlinedIcon />}
+                                                        className="payment"
+                                                    >
+                                                        Payment
+                                                    </Button>
+                                                    <Button
+                                                        component={Link}
+                                                        to={`/orderSupplierApproval/${order.id}`}
+                                                        className="review"
+                                                    >
+                                                        Review
+                                                    </Button>
+                                                    {order.status !== 'COMPLETED' && (
+                                                        <Button
+                                                            component={Link}
+                                                            to={`/addProductOrderSupplierTransaction/${order.id}`}
+                                                            className="products"
+                                                        >
+                                                            Products
+                                                        </Button>
+                                                    )}
+                                                    <Button
+                                                        component={Link}
+                                                        to={`/printOrderSupplier/${order.id}`}
+                                                        startIcon={<PictureAsPdfOutlinedIcon />}
+                                                        className="print"
+                                                    >
+                                                        Print
+                                                    </Button>
+                                                    {allowDelete && canDelete && (
+                                                        <Button
+                                                            onClick={() => setDeleteId(order.id)}
+                                                            startIcon={<DeleteOutlineRoundedIcon />}
+                                                            className="delete"
+                                                        >
+                                                            {deleteActionLabel}
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
 
-            <Dialog
-                open={deleteOpenModal}
-                onClose={handleDeleteCloseModal}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-
-                <DialogTitle id="alert-dialog-title">
-                    {"Are you sure you want to Delete?"}
-                </DialogTitle>
-                {submitLoading &&
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <CircularProgress />
-                    </div>
-                }
+            <Dialog open={deleteId !== null} onClose={() => !deleting && setDeleteId(null)}>
+                <DialogTitle>{deleteDialogTitle}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        {deleteDialogText} PO-{deleteId}.
+                    </DialogContentText>
+                </DialogContent>
+                {deleting && <div className="po-report-dialog-loading"><CircularProgress size={25} /></div>}
                 <DialogActions>
-                    <Button onClick={handleDeleteCloseModal}>Delete</Button>
-                    <Button onClick={(e) => submitCancel(deleteId, e)} autoFocus>
-                        Agree
+                    <Button onClick={() => setDeleteId(null)} disabled={deleting}>Keep order</Button>
+                    <Button color="error" variant="contained" onClick={deleteOrder} disabled={deleting}>
+                        {deleteActionLabel}
                     </Button>
                 </DialogActions>
             </Dialog>
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
+
+            <Dialog
+                open={dateDialog.open}
+                onClose={() => !updatingDate && setDateDialog({ open: false, id: 0, created_at: '' })}
+                fullWidth
+                maxWidth="xs"
             >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Date
-                    </Typography>
-
-                    <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
-                        <Form.Label></Form.Label>
-                        <Form.Control type="date" value={orderDate.created_at} name="created_at" onChange={onChangeDate} />
-                    </Form.Group>
-
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
+                <DialogTitle>Update draft date</DialogTitle>
+                <DialogContent>
+                    <DialogContentText className="po-report-date-help">
+                        Change the recorded draft date for PO-{dateDialog.id}.
+                    </DialogContentText>
+                    <TextField
+                        type="date"
+                        label="Draft date"
+                        value={dateDialog.created_at}
+                        onChange={(event) => setDateDialog({ ...dateDialog, created_at: event.target.value })}
+                        InputLabelProps={{ shrink: true }}
+                        fullWidth
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        onClick={() => setDateDialog({ open: false, id: 0, created_at: '' })}
+                        disabled={updatingDate}
                     >
-                        <Button variant="primary" onClick={updateDate}>
-                            Submit
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
-        </div >
-    )
-}
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="contained"
+                        onClick={updateDate}
+                        disabled={updatingDate || !dateDialog.created_at}
+                    >
+                        Save date
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </main>
+    );
+};
 
-export default ReportPurchaseOrderList
+export default ReportPurchaseOrderList;

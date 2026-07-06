@@ -64,7 +64,7 @@ const ViewExpenseTransaction = () => {
     const [isAddDisabled, setIsAddDisabled] = useState(false);
 
     const fetchRequestor = () => {
-        UserService.getAll()
+        UserService.fetchUserList()
             .then(response => {
                 setRequestorList(response.data);
             })
