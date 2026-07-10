@@ -14,11 +14,18 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import PaymentIcon from '@mui/icons-material/Payment';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const CompletedShopOrderTransaction = () => {
 
@@ -70,7 +77,7 @@ const CompletedShopOrderTransaction = () => {
     const TAX_RATE = 0.12;
 
     function ccyFormat(num) {
-        return `${num.toFixed(2)}`;
+        return `${Number(num || 0).toFixed(2)}`;
     }
 
 
@@ -140,9 +147,12 @@ const CompletedShopOrderTransaction = () => {
         await ShopOrderService.fetchShopOrderDTO(id)
             .then(response => {
                 setOrderShopDTO(response.data);
-                setinvoiceSubtotal(response.data.shopOrderTransaction.shop_order_transaction_total_price / (1 + TAX_RATE));
-                setinvoiceTaxes(TAX_RATE * response.data.shopOrderTransaction.shop_order_transaction_total_price);
-                setinvoiceTotal(response.data.shopOrderTransaction.shop_order_transaction_total_price);
+                const totalPrice = response.data.shopOrderTransaction.shop_order_transaction_total_price;
+                const subtotal = totalPrice / (1 + TAX_RATE);
+
+                setinvoiceSubtotal(subtotal);
+                setinvoiceTaxes(totalPrice - subtotal);
+                setinvoiceTotal(totalPrice);
             })
             .catch(e => {
                 console.log("error", e)
@@ -169,129 +179,200 @@ const CompletedShopOrderTransaction = () => {
 
 
     return (
-        <div>
-            {message &&
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
+        <Box sx={{ bgcolor: '#f6f7f9', minHeight: '100vh', py: { xs: 2, md: 4 } }}>
+            <Box sx={{ width: 'min(1280px, calc(100% - 32px))', mx: 'auto' }}>
+                {message &&
+                    <Stack sx={{ mb: 2 }} spacing={2}>
+                        <Alert variant="filled" severity="success">
+                            Successfully updated.
+                        </Alert>
+                    </Stack>
 
-            }
-            <br></br>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                    <TableBody>
-                        <TableRow >
-                            <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
-                            <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
+                }
 
+                <Paper elevation={0} sx={{ borderRadius: 1, border: '1px solid #e5e7eb', overflow: 'hidden', mb: 2.5 }}>
+                    <Box sx={{ bgcolor: '#2f201b', color: '#fff', px: { xs: 2, md: 3 }, py: 2.5 }}>
+                        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
+                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                <Box sx={{ bgcolor: 'rgba(255,255,255,.14)', borderRadius: 1, p: 1, display: 'flex' }}>
+                                    <ReceiptLongIcon />
+                                </Box>
+                                <Box>
+                                    <Typography variant="overline" sx={{ color: '#f3c58b', letterSpacing: 0 }}>Completed Transaction</Typography>
+                                    <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.15 }}>
+                                        {shopOrderTransaction.shop_name || 'Shop Order'}
+                                    </Typography>
+                                </Box>
+                            </Stack>
+                            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                                <Chip
+                                    icon={<CheckCircleIcon />}
+                                    label="Completed"
+                                    size="small"
+                                    sx={{ bgcolor: '#dcfce7', color: '#166534', fontWeight: 700 }}
+                                />
+                                <Chip
+                                    label={shopOrderTransaction.created_at || '-'}
+                                    size="small"
+                                    sx={{ bgcolor: 'rgba(255,255,255,.14)', color: '#fff' }}
+                                />
+                            </Stack>
+                        </Stack>
+                    </Box>
+
+                    <Box sx={{ px: { xs: 2, md: 3 }, py: 2.5 }}>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(4, 1fr)' },
+                                gap: 2,
+                            }}
+                        >
+                            <Box>
+                                <Typography variant="caption" color="text.secondary">Shop</Typography>
+                                <Typography sx={{ fontWeight: 700 }}>{shopOrderTransaction.shop_name || '-'}</Typography>
+                            </Box>
                             {shopOrderTransaction.checker != 0 ?
                                 <>
-                                    <TableCell align="right" >Checker</TableCell>
-                                    <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
-                                    <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
-                                    <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Checker</Typography>
+                                        <Typography sx={{ fontWeight: 700 }}>{shopOrderTransaction.checker_name || '-'}</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Requestor</Typography>
+                                        <Typography sx={{ fontWeight: 700 }}>{shopOrderTransaction.requestor_name || '-'}</Typography>
+                                    </Box>
+                                </>
                                 :
-                                <>  <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
-                                    <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell>
-                                </>
-
-                            }
-
-                            <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
-                            <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
-                            {shopOrderTransaction.checker == 0 &&
                                 <>
-
-                                    <TableCell style={{ fontWeight: 'bold' }}>  Sales Representative:</TableCell>
-                                    <TableCell align="right">{shopOrderTransaction.sr_name}</TableCell>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Customer</Typography>
+                                        <Typography sx={{ fontWeight: 700 }}>{shopOrderTransaction.requestor_name || '-'}</Typography>
+                                    </Box>
+                                    <Box>
+                                        <Typography variant="caption" color="text.secondary">Sales Representative</Typography>
+                                        <Typography sx={{ fontWeight: 700 }}>{shopOrderTransaction.sr_name || '-'}</Typography>
+                                    </Box>
                                 </>
                             }
+                            <Box>
+                                <Typography variant="caption" color="text.secondary">Total Quantity</Typography>
+                                <Typography sx={{ fontWeight: 700 }}>{shopOrderTransaction.shop_order_transaction_total_quantity || 0}</Typography>
+                            </Box>
+                        </Box>
+                    </Box>
+                </Paper>
 
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) 360px' }, gap: 2.5, alignItems: 'start' }}>
+                    <Stack spacing={2.5}>
+                        {shopOrderTransaction.checker == 0 &&
+                            <Paper elevation={0} sx={{ borderRadius: 1, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+                                <Box sx={{ px: { xs: 2, md: 3 }, py: 2, borderBottom: '1px solid #e5e7eb' }}>
+                                    <Stack direction="row" spacing={1.25} alignItems="center">
+                                        <PaymentIcon color="primary" />
+                                        <Typography variant="h6" sx={{ fontWeight: 800 }}>Payments</Typography>
+                                    </Stack>
+                                </Box>
+                                <TableContainer>
+                                    <Table sx={{ minWidth: 640 }} aria-label="payment table">
+                                        <TableHead>
+                                            <TableRow sx={{ bgcolor: '#fafafa' }}>
+                                                <TableCell sx={{ fontWeight: 800 }}>Mode of Payment</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 800 }}>Date</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 800 }}>Amount</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {modeOfPaymentDTO.data.map((row) => (
+                                                <TableRow key={row.id} hover>
+                                                    <TableCell>{row.payment_type}</TableCell>
+                                                    <TableCell align="right">
+                                                        <Typography
+                                                            component="span"
+                                                            sx={{ color: shopOrderTransaction.date != row.created_at ? '#b45309' : 'text.primary' }}
+                                                        >
+                                                            {row.created_at}
+                                                        </Typography>
+                                                    </TableCell>
+                                                    <TableCell align="right">{ccyFormat(row.amount)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            <TableRow sx={{ bgcolor: '#fafafa' }}>
+                                                <TableCell colSpan={2} sx={{ fontWeight: 800 }}>Total Paid</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 800 }}>PHP {ccyFormat(modeOfPaymentDTO.total_payment)}</TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Paper>
+                        }
 
+                        <Paper elevation={0} sx={{ borderRadius: 1, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+                            <Box sx={{ px: { xs: 2, md: 3 }, py: 2, borderBottom: '1px solid #e5e7eb' }}>
+                                <Stack direction="row" spacing={1.25} alignItems="center">
+                                    <StorefrontIcon color="primary" />
+                                    <Typography variant="h6" sx={{ fontWeight: 800 }}>Ordered Products</Typography>
+                                </Stack>
+                            </Box>
+                            <TableContainer>
+                                <Table sx={{ minWidth: 760 }} aria-label="products table">
+                                    <TableHead>
+                                        <TableRow sx={{ bgcolor: '#fafafa' }}>
+                                            <TableCell sx={{ fontWeight: 800 }}>Product</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 800 }}>Qty.</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 800 }}>Unit</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 800 }}>Discount</TableCell>
+                                            <TableCell align="right" sx={{ fontWeight: 800 }}>Sum</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {orderShopDTO.shopOrderList.map((row) => (
+                                            <TableRow key={row.id} hover>
+                                                <TableCell sx={{ fontWeight: 600 }}>{row.product_name}</TableCell>
+                                                <TableCell align="right">{row.shop_order_quantity}</TableCell>
+                                                <TableCell align="right">{ccyFormat(row.shop_order_price)}</TableCell>
+                                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : '-'}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 700 }}>{ccyFormat(row.shop_order_total_price)}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                        {orderShopDTO.shopOrderList.length === 0 &&
+                                            <TableRow>
+                                                <TableCell colSpan={5} align="center" sx={{ py: 5, color: 'text.secondary' }}>
+                                                    No products found.
+                                                </TableCell>
+                                            </TableRow>
+                                        }
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </Paper>
+                    </Stack>
 
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <br></br>
-            {shopOrderTransaction.checker == 0 &&
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
-                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Date</TableCell>
-                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {modeOfPaymentDTO.data.map((row) => (
-                                <TableRow key={row.id}>
-                                    <TableCell>{row.payment_type}</TableCell>
-                                    <TableCell align="right">{shopOrderTransaction.date != row.created_at ? <p style={{ color: 'orange', }}>{row.created_at}</p> : row.created_at}</TableCell>
-                                    <TableCell align="right">{row.amount}</TableCell>
-                                </TableRow>
-                            ))}
-                            <TableRow>
-                                <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                                <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            }
-            <br></br>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell align="left" colSpan={3}>
-
-                            </TableCell>
-                            <TableCell align="center" ></TableCell>
-                        </TableRow>
-                        <TableRow >
-                            <TableCell style={{ fontWeight: 'bold', }}>Product</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Qty.</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Unit</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Discount</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Sum</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {orderShopDTO.shopOrderList.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.product_name}</TableCell>
-                                <TableCell align="right">{row.shop_order_quantity}</TableCell>
-                                <TableCell align="right">{row.shop_order_price}</TableCell>
-                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
-                                <TableCell align="right">{row.shop_order_total_price}</TableCell>
-                            </TableRow>
-                        ))}
-
-                        <TableRow>
-                            <TableCell rowSpan={3} />
-                            <TableCell colSpan={3}>Subtotal</TableCell>
-                            <TableCell align="right">{invoiceSubtotal}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell rowSpan={1} />
-                            <TableCell>Tax</TableCell>
-                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
-                            <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell colSpan={3} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <br></br>
-        </div >
+                    <Paper elevation={0} sx={{ borderRadius: 1, border: '1px solid #e5e7eb', overflow: 'hidden', position: { lg: 'sticky' }, top: { lg: 24 } }}>
+                        <Box sx={{ px: 2.5, py: 2, borderBottom: '1px solid #e5e7eb' }}>
+                            <Typography variant="h6" sx={{ fontWeight: 800 }}>Order Summary</Typography>
+                        </Box>
+                        <Stack spacing={1.75} sx={{ p: 2.5 }}>
+                            <Stack direction="row" justifyContent="space-between" spacing={2}>
+                                <Typography color="text.secondary">Subtotal</Typography>
+                                <Typography sx={{ fontWeight: 700 }}>PHP {ccyFormat(invoiceSubtotal)}</Typography>
+                            </Stack>
+                            <Stack direction="row" justifyContent="space-between" spacing={2}>
+                                <Typography color="text.secondary">Tax ({`${(TAX_RATE * 100).toFixed(0)}%`})</Typography>
+                                <Typography sx={{ fontWeight: 700 }}>PHP {ccyFormat(invoiceTaxes)}</Typography>
+                            </Stack>
+                            <Divider />
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                                <Typography sx={{ fontWeight: 800 }}>Grand Total</Typography>
+                                <Typography variant="h5" sx={{ fontWeight: 900 }}>PHP {ccyFormat(invoiceTotal)}</Typography>
+                            </Stack>
+                        </Stack>
+                    </Paper>
+                </Box>
+            </Box>
+        </Box >
     )
+
 }
 
 export default CompletedShopOrderTransaction

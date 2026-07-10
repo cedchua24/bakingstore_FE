@@ -14,6 +14,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
 
 import './StockWarning.css';
 
@@ -22,6 +23,7 @@ const StockSupplierWarning = () => {
     const [supplierList, setSupplierList] = useState([]);
     const [supplierId, setSupplierId] = useState(5);
     const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         ProductServiceService.fetchStockWarningPerSupplier(5)
@@ -42,6 +44,7 @@ const StockSupplierWarning = () => {
     };
 
     const products = Array.isArray(productList.data) ? productList.data : [];
+    const filteredProducts = products.filter(item => matchesStockSearch(item, searchQuery));
     const pendingOrderCount = products.reduce(
         (total, product) => total + (
             Array.isArray(product.pending_orders) ? product.pending_orders.length : 0
@@ -135,11 +138,12 @@ const StockSupplierWarning = () => {
                 {loading && <LinearProgress color="warning" className="stock-warning-progress" />}
             </section>
 
+            <StockSearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search products or suppliers..." />
             <section className="stock-warning-table-card">
                 <div className="stock-warning-table-card__header">
                     <div>
                         <h2>Products needing attention</h2>
-                        <p>{products.length} {products.length === 1 ? 'product' : 'products'} currently below the configured threshold.</p>
+                        <p>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found.</p>
                     </div>
                     <span className="stock-warning-live-pill"><span />Live inventory</span>
                 </div>
@@ -158,13 +162,10 @@ const StockSupplierWarning = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.length > 0 ? products.map(product => (
+                            {filteredProducts.length > 0 ? filteredProducts.map(product => (
                                 <tr key={product.id}>
                                     <td>
                                         <div className="stock-warning-product">
-                                            <span className="stock-warning-product__avatar">
-                                                {product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}
-                                            </span>
                                             <div>
                                                 <strong>{product.product_name}</strong>
                                                 <span>#{product.id} · {product.brand_name || 'No brand'}</span>

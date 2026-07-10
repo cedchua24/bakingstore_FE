@@ -98,6 +98,7 @@ const PaymentOrder = () => {
         supplier_id: 0,
         withTax: 0,
         status: '',
+        payment_status: 0,
         total_transaction_price: 0,
         order_date: '',
         created_at: '',
@@ -141,6 +142,7 @@ const PaymentOrder = () => {
 
 
     const openDelete = (paymentId) => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         setDeleteId(paymentId);
         setDeleteOpenModal(true);
     }
@@ -154,6 +156,7 @@ const PaymentOrder = () => {
     const [amount, setAmount] = useState(0);
 
     const handleOpen = (id, e) => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         console.log('e', id);
         fetchModeOfPayment(id);
         setOpen(true);
@@ -174,6 +177,7 @@ const PaymentOrder = () => {
     }
 
     const updateOrderSupplier = () => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         setSubmitLoading(true);
         if (modeOfPaymentModal.amount > (modeOfPaymentDTO.balance + amount)) {
             setSubmitLoading(false);
@@ -236,6 +240,7 @@ const PaymentOrder = () => {
             });
     }
     const deleteOrderTransaction = (deleteId, e) => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         setSubmitLoading(true);
         console.log("test", modeOfPaymentModal);
         ModeOfPaymentPoService.delete(deleteId, modeOfPaymentModal)
@@ -363,9 +368,12 @@ const PaymentOrder = () => {
                     setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                     setinvoiceTotal(TAX_RATE * response.data.total_transaction_price + response.data.total_transaction_price);
                 } else {
-                    setinvoiceSubtotal(response.data.total_transaction_price / (1 + TAX_RATE));
-                    setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
-                    setinvoiceTotal(response.data.total_transaction_price);
+                    const totalPrice = response.data.total_transaction_price;
+                    const subtotal = totalPrice / (1 + TAX_RATE);
+
+                    setinvoiceSubtotal(subtotal);
+                    setinvoiceTaxes(totalPrice - subtotal);
+                    setinvoiceTotal(totalPrice);
                 }
             })
             .catch(e => {
@@ -385,6 +393,7 @@ const PaymentOrder = () => {
 
 
     const updateOrderTransaction = () => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
         OrderSupplierTransactionService.setToCompletePaymentTransaction(id)
@@ -495,6 +504,8 @@ const PaymentOrder = () => {
             style: 'currency',
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
+
+    const isFullyPaid = Number(orderSupplierTransaction.payment_status) === 1;
 
 
 
@@ -696,17 +707,21 @@ const PaymentOrder = () => {
                                 <TableCell>{row.payment_term || '—'}</TableCell>
                                 <TableCell align="right"><strong>{numberFormat(row.amount || 0)}</strong></TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Edit payment">
-                                        <IconButton color="primary" onClick={(e) => handleOpen(row.id, e)}>
-                                            <UpdateIcon />
-                                        </IconButton>
+                                    <Tooltip title={isFullyPaid ? "Fully paid orders cannot be updated" : "Edit payment"}>
+                                        <span>
+                                            <IconButton color="primary" disabled={isFullyPaid} onClick={(e) => handleOpen(row.id, e)}>
+                                                <UpdateIcon />
+                                            </IconButton>
+                                        </span>
                                     </Tooltip>
                                 </TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Delete payment">
-                                        <IconButton color="error" onClick={() => openDelete(row.id)}>
-                                            <DeleteIcon />
-                                        </IconButton>
+                                    <Tooltip title={isFullyPaid ? "Fully paid orders cannot be deleted" : "Delete payment"}>
+                                        <span>
+                                            <IconButton color="error" disabled={isFullyPaid} onClick={() => openDelete(row.id)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </span>
                                     </Tooltip>
                                 </TableCell>
 
@@ -778,7 +793,7 @@ const PaymentOrder = () => {
 
             <section className="po-payment-completion">
                 <Button
-                    disabled={Number(modeOfPaymentDTO.balance) !== 0 || isAddDisabled}
+                    disabled={isFullyPaid || Number(modeOfPaymentDTO.balance) !== 0 || isAddDisabled}
                     variant="contained"
                     onClick={updateOrderTransaction}
                     size="large"

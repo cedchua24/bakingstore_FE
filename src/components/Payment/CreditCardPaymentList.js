@@ -1,174 +1,195 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Button } from 'react-bootstrap';
-import { useParams } from 'react-router-dom';
-import { Form, Alert } from 'react-bootstrap';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
+import CreditCardIcon from "@mui/icons-material/CreditCard";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import SearchIcon from "@mui/icons-material/Search";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import HistoryIcon from "@mui/icons-material/History";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import PaymentTermService from "../OtherService/PaymentTermService";
+import "./CreditCardPaymentList.css";
 
+const currencyFormatter = new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    maximumFractionDigits: 0,
+});
 
 const CreditCardPaymentList = () => {
-
+    const [paymentTermList, setPaymentTermList] = useState({ data: [], details: {} });
+    const [search, setSearch] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     useEffect(() => {
-        fetchCreditCardPaymentList(2);
+        PaymentTermService.fetchCreditCardPaymentListV2(2)
+            .then((response) => setPaymentTermList(response.data))
+            .catch(() => setError("We couldn't load your credit cards. Please try again."))
+            .finally(() => setLoading(false));
     }, []);
 
-    const [paymentTermList, setPaymentTermList] = useState({
-        data: [],
-        details: {}
-    });
+    const cards = Array.isArray(paymentTermList.data) ? paymentTermList.data : [];
 
-    const fetchCreditCardPaymentList = (id) => {
-        PaymentTermService.fetchCreditCardPaymentListV2(id)
-            .then(response => {
-                setPaymentTermList(response.data);
-                console.log('log', response.data)
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+    const totals = useMemo(() => cards.reduce((result, card) => ({
+        credit: result.credit + Number(card.credit_limit || 0),
+        available: result.available + Number(card.balance_due || 0),
+        due: result.due + Number(card.total_balance_due || 0),
+    }), { credit: 0, available: 0, due: 0 }), [cards]);
 
-    //formateDate
-    const formatStatementDate = (day) => {
-        var d = new Date();
-        var month = d.getMonth();
-        d.setDate(day);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
+    const filteredCards = useMemo(() => {
+        const query = search.trim().toLowerCase();
+        if (!query) return cards;
+        return cards.filter((card) => [
+            card.bank_name,
+            card.account_name,
+            card.account_description,
+            card.account_number,
+        ].some((value) => String(value || "").toLowerCase().includes(query)));
+    }, [cards, search]);
 
-    const formatDueDate = (day) => {
-        var d = new Date();
-        var month = d.getMonth();
-        d.setMonth(month + 1);
-        d.setDate(day);
+    const formatCurrency = (value) => currencyFormatter.format(Number(value || 0));
 
-        var dd = new Date('2025-03-10');
-        console.log('new_date', new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(dd));
+    const moneyClass = (value, baseClass = "credit-card-money") =>
+        `${baseClass}${Number(value || 0) < 0 ? " credit-card-money--negative" : ""}`;
 
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
+    const formatDate = (value) => {
+        if (!value || value === 0 || value === "0") return "—";
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+            ? value
+            : new Intl.DateTimeFormat("en-PH", { month: "short", day: "numeric", year: "numeric" }).format(date);
+    };
 
-    const covertDateString = (day) => {
-        var d = new Date(day);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-    //totalsum
-    const totalSum = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { total_balance_due }) => acc + total_balance_due, 0));
-    }
-
-    const totlLimit = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { balance_due }) => acc + balance_due, 0));
-    }
-    const totlCreditLimit = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { credit_limit }) => acc + credit_limit, 0));
-    }
-
-
-
+    const maskedNumber = (value) => {
+        const number = String(value || "").replace(/\s/g, "");
+        return number.length > 4 ? `•••• ${number.slice(-4)}` : number || "No number";
+    };
 
     return (
-        <div>
+        <main className="credit-card-page">
+            <header className="credit-card-header">
+                <div>
+                    <span className="credit-card-eyebrow">Payments</span>
+                    <h1>Credit cards</h1>
+                    <p>Track limits, upcoming dues, and payment activity in one place.</p>
+                </div>
+                <div className="credit-card-count">
+                    <CreditCardIcon />
+                    <span><strong>{cards.length}</strong> active {cards.length === 1 ? "card" : "cards"}</span>
+                </div>
+            </header>
 
-            <div style={{ minWidth: 800 }}>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Credit Limit: </Form.Label>
-                    <Form.Control type="text" value={totlCreditLimit(paymentTermList.data)} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Available Limit: </Form.Label>
-                    <Form.Control type="text" value={totlLimit(paymentTermList.data)} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Balance Due: </Form.Label>
-                    <Form.Control type="text" value={totalSum(paymentTermList.data)} />
-                </Form.Group>
+            <section className="credit-summary-grid" aria-label="Credit card summary">
+                <article className="credit-summary-card credit-summary-card--primary">
+                    <div className="credit-summary-icon"><CreditCardIcon /></div>
+                    <div><span>Total credit limit</span><strong>{formatCurrency(totals.credit)}</strong></div>
+                </article>
+                <article className="credit-summary-card">
+                    <div className="credit-summary-icon credit-summary-icon--green"><AccountBalanceWalletOutlinedIcon /></div>
+                    <div><span>Available limit</span><strong>{formatCurrency(totals.available)}</strong></div>
+                </article>
+                <article className="credit-summary-card">
+                    <div className="credit-summary-icon credit-summary-icon--orange"><PaymentsOutlinedIcon /></div>
+                    <div><span>Total balance due</span><strong>{formatCurrency(totals.due)}</strong></div>
+                </article>
+            </section>
 
-            </div>
-            <br></br>
+            <section className="credit-card-panel">
+                <div className="credit-card-toolbar">
+                    <div>
+                        <h2>Your cards</h2>
+                        <p>{filteredCards.length} {filteredCards.length === 1 ? "card" : "cards"} shown</p>
+                    </div>
+                    <label className="credit-card-search">
+                        <SearchIcon />
+                        <input
+                            type="search"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder="Search bank, name, or number"
+                            aria-label="Search credit cards"
+                        />
+                    </label>
+                </div>
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Credit Card List </legend>
-            <table class="table table-bordered">
+                {loading && <div className="credit-card-state">Loading credit cards…</div>}
+                {!loading && error && <div className="credit-card-state credit-card-state--error">{error}</div>}
+                {!loading && !error && filteredCards.length === 0 && (
+                    <div className="credit-card-state">No credit cards match your search.</div>
+                )}
 
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Bank</th>
-                        <th>Account Name</th>
-                        <th>Account Number</th>
-                        <th>Statement</th>
-                        <th>Due Date</th>
-                        <th>Credit Limit</th>
-                        <th>Available Balance</th>
-                        <th>Upcoming Due</th>
-                        <th>Due Amount</th>
-                        <th>Payment Status</th>
-                        <th>Transaction History</th>
-                        <th>Payment History</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
+                {!loading && !error && filteredCards.length > 0 && (
+                    <div className="credit-card-table-wrap">
+                        <table className="credit-card-table">
+                            <thead>
+                                <tr>
+                                    <th>Card</th>
+                                    <th>Statement / due</th>
+                                    <th>Credit limit</th>
+                                    <th>Available</th>
+                                    <th>Upcoming due</th>
+                                    <th>Status</th>
+                                    <th><span className="sr-only">Actions</span></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredCards.map((card, index) => {
+                                    const isPaid = Number(card.total_balance_due || 0) === 0;
+                                    return (
+                                        <tr key={card.id}>
+                                            <td>
+                                                <div className={`credit-card-identity credit-card-identity--${index % 4}`}>
+                                                    <div className="credit-card-logo"><CreditCardIcon /></div>
+                                                    <div>
+                                                        <strong>{card.bank_name || "Credit card"}</strong>
+                                                        <span>{card.account_description || card.account_name}</span>
+                                                        <small>{maskedNumber(card.account_number)}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td data-label="Statement / due">
+                                                <div className="credit-card-dates">
+                                                    <span>Statement <strong>Day {card.statement_date || "—"}</strong></span>
+                                                    <span>Due <strong>Day {card.due_date || "—"}</strong></span>
+                                                </div>
+                                            </td>
+                                            <td data-label="Credit limit" className={moneyClass(card.credit_limit)}>{formatCurrency(card.credit_limit)}</td>
+                                            <td data-label="Available" className={moneyClass(card.balance_due, "credit-card-money credit-card-money--positive")}>{formatCurrency(card.balance_due)}</td>
+                                            <td data-label="Upcoming due">
+                                                <div className="credit-card-due">
+                                                    <strong className={Number(card.amount_due || 0) < 0 ? "credit-card-money--negative" : ""}>{formatCurrency(card.amount_due)}</strong>
+                                                    <span>{formatDate(card.due)}</span>
+                                                </div>
+                                            </td>
+                                            <td data-label="Status">
+                                                <span className={`credit-card-status ${isPaid ? "credit-card-status--paid" : "credit-card-status--due"}`}>
+                                                    <i />{isPaid ? "Paid" : "Payment due"}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="credit-card-actions">
+                                                    <Link className="credit-action-icon" to={`/viewBankTransactionList/${card.id}`} title="Transaction history" aria-label="Transaction history">
+                                                        <ReceiptLongOutlinedIcon />
+                                                    </Link>
+                                                    <Link className="credit-action-icon" to={`/creditCardPayHistory/${card.id}`} title="Payment history" aria-label="Payment history">
+                                                        <HistoryIcon />
+                                                    </Link>
+                                                    <Link className="credit-pay-button" to={`/viewOrderSupplierTransaction/${card.id}`}>
+                                                        Pay <ArrowForwardIcon />
+                                                    </Link>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
+        </main>
+    );
+};
 
-                    {
-                        paymentTermList.data.map((paymentTerm, index) => (
-                            <tr key={paymentTerm.id}  >
-                                <td >{paymentTerm.id}</td>
-                                <td >{paymentTerm.bank_name}{" " + paymentTerm.account_description}</td>
-                                <td >{paymentTerm.account_name}</td>
-                                <td >{paymentTerm.account_number}</td>
-                                <td >{paymentTerm.statement_date}</td>
-                                <td >{paymentTerm.due_date}</td>
-                                <td >{numberFormat(paymentTerm.credit_limit)}</td>
-                                <td>{numberFormat(paymentTerm.balance_due)}</td>
-                                <td>{paymentTerm.due == 0 ? '' : covertDateString(paymentTerm.due)}</td>
-                                <td>{numberFormat(paymentTerm.amount_due)}</td>
-                                <td>{paymentTerm.total_balance_due == 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-
-                                <td>
-                                    <Link variant="primary" to={"/viewBankTransactionList/" + paymentTerm.id}   >
-                                        <Button variant="primary" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Link variant="primary" to={"/creditCardPayHistory/" + paymentTerm.id}   >
-                                        <Button variant="primary" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
-                                <td>
-                                    <Link variant="success" to={"/viewOrderSupplierTransaction/" + paymentTerm.id}   >
-                                        <Button variant="success" >
-                                            Pay
-                                        </Button>
-                                    </Link>
-                                </td>
-
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-        </div >
-    )
-}
-
-export default CreditCardPaymentList
+export default CreditCardPaymentList;

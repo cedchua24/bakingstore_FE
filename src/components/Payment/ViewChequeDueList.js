@@ -173,7 +173,7 @@ const ViewChequeDueList = () => {
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     {orderTransaction.status != 1 &&
-                                        <Link variant="primary" to={"/payCreditCard/" + orderTransaction.id}   >
+                                        <Link variant="primary" to={"/payCheque/" + orderTransaction.id}   >
                                             <Button variant="primary" >
                                                 Pay
                                             </Button>

@@ -155,6 +155,14 @@
     width: 260px;
 }
 
+.product-list-product-search {
+    width: 280px;
+}
+
+.product-list-product-search .MuiOutlinedInput-root {
+    border-radius: 9px;
+}
+
 .product-list-search.MuiButton-root {
     min-height: 40px;
     padding-inline: 16px;
@@ -478,6 +486,10 @@
     }
 
     .product-list-category {
+        width: 100%;
+    }
+
+    .product-list-product-search {
         width: 100%;
     }
 }

@@ -363,9 +363,12 @@ const AddProductCustomerOrderTransaction = () => {
         await ShopOrderService.fetchShopOrderDTO(id)
             .then(response => {
                 setOrderCustomerDTO(response.data);
-                setinvoiceSubtotal(response.data.customerOrderTransaction.shop_order_transaction_total_price / (1 + TAX_RATE));
-                setinvoiceTaxes(TAX_RATE * response.data.customerOrderTransaction.shop_order_transaction_total_price);
-                setinvoiceTotal(response.data.customerOrderTransaction.shop_order_transaction_total_price);
+                const totalPrice = response.data.customerOrderTransaction.shop_order_transaction_total_price;
+                const subtotal = totalPrice / (1 + TAX_RATE);
+
+                setinvoiceSubtotal(subtotal);
+                setinvoiceTaxes(totalPrice - subtotal);
+                setinvoiceTotal(totalPrice);
             })
             .catch(e => {
                 console.log("error", e)

@@ -27,7 +27,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 
-const PayCreditCard = () => {
+const PayCreditCard = ({ chequeMode = false }) => {
 
     const { id } = useParams();
 
@@ -40,6 +40,7 @@ const PayCreditCard = () => {
 
     const [paymentTermList, setPaymentTermList] = useState([]);
     const [paymentTypePoList, setPaymentTypePoList] = useState([]);
+    const [selectedPaymentType, setSelectedPaymentType] = useState(null);
     const [paymentHistoryList, setPaymentHistoryList] = useState([]);
     const [creditCardDueDetails, setCreditCardDueDetails] = useState({
         id: 0,
@@ -69,6 +70,7 @@ const PayCreditCard = () => {
         interest_amount: 0,
         is_installment: 0,
         due_date: '',
+        due_date_cheque: '',
         status: 0,
         action: 'pay',
         date: ''
@@ -78,39 +80,57 @@ const PayCreditCard = () => {
     const [deleteOpenModal, setDeleteOpenModal] = React.useState(false);
     const [deleteId, setDeleteId] = useState(0)
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [formErrors, setFormErrors] = useState({});
+    const [paymentCompleted, setPaymentCompleted] = useState(false);
 
 
     const onChangecreditCardDue = (e) => {
-
-        setCreditCardDue({ ...creditCardDue, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setCreditCardDue(prev => ({ ...prev, [name]: value }));
+        setFormErrors(prev => ({ ...prev, [name]: '' }));
     }
 
     const handlePaymentTermChange = (e, value) => {
-        e.persist();
-        console.log(value)
+        setSelectedPaymentType(null);
+        setFormErrors(prev => ({
+            ...prev,
+            payment_term_id: '',
+            payment_type_po_id: '',
+            due_date_cheque: '',
+        }));
 
-        setCreditCardDue({
-            ...creditCardDue,
-            payment_term_id: value.id,
-
-        });
-
-        if (value.id == 1) {
-            setCreditCardDue({
-                ...creditCardDue,
-                payment_type_po_id: 1,
-            });
+        if (!value) {
+            setPaymentTypePoList([]);
+            setCreditCardDue(prev => ({
+                ...prev,
+                payment_term_id: 0,
+                payment_type_po_id: 0,
+            }));
+            return;
         }
-        fetchPaymentTypePo(value.id);
+
+        const requiresBank = value.id == 2 || value.id == 3;
+
+        setCreditCardDue(prev => ({
+            ...prev,
+            payment_term_id: value.id,
+            payment_type_po_id: value.id == 1 ? 1 : 0,
+        }));
+
+        if (requiresBank) {
+            fetchPaymentTypePo(value.id);
+        } else {
+            setPaymentTypePoList([]);
+        }
     }
 
     const handlePaymentTypeChange = (e, value) => {
-        e.persist();
-        console.log('handlePaymentTypeChange', value)
-        setCreditCardDue({
-            ...creditCardDue,
-            payment_type_po_id: value.id,
-        });
+        setSelectedPaymentType(value);
+        setFormErrors(prev => ({ ...prev, payment_type_po_id: '' }));
+        setCreditCardDue(prev => ({
+            ...prev,
+            payment_type_po_id: value ? value.id : 0,
+        }));
     }
 
     const fetchPaymentTypePo = ($id) => {
@@ -135,16 +155,59 @@ const PayCreditCard = () => {
 
 
 
+    const validatePayment = () => {
+        const errors = {};
+        const paymentTermEnabled = creditCardDueDetails.payment_term_id != 3;
+        const bankEnabled = creditCardDue.payment_term_id == 2 || (!chequeMode && creditCardDue.payment_term_id == 3);
+        const amountEnabled = !chequeMode && creditCardDueDetails.payment_term_id != 3;
+
+        if (paymentTermEnabled && !creditCardDue.payment_term_id) {
+            errors.payment_term_id = 'Payment term is required.';
+        }
+        if (bankEnabled && !creditCardDue.payment_type_po_id) {
+            errors.payment_type_po_id = 'Bank is required.';
+        }
+        if (creditCardDue.payment_term_id == 3 && !creditCardDue.due_date_cheque) {
+            errors.due_date_cheque = 'Cheque due date is required.';
+        }
+        if (amountEnabled && (!creditCardDue.amount_paid || Number(creditCardDue.amount_paid) <= 0)) {
+            errors.amount_paid = 'Amount is required.';
+        }
+
+        return errors;
+    };
+
     const savecreditCardDue = () => {
-        CreditCardDueService.saveCreditCardPay(creditCardDue)
+        const errors = validatePayment();
+        setFormErrors(errors);
+
+        if (Object.keys(errors).length > 0) {
+            return;
+        }
+
+        const paymentData = {
+            ...creditCardDue,
+            amount_paid: chequeMode ? creditCardDue.constant_amount : creditCardDue.amount_paid,
+            due_date: creditCardDue.payment_term_id == 3
+                ? creditCardDue.due_date_cheque
+                : creditCardDue.due_date,
+        };
+
+        CreditCardDueService.saveCreditCardPay(paymentData)
             .then(response => {
+                const isChequeDue = chequeMode || creditCardDueDetails.payment_term_id == 3;
+                const isFullyPaid = Number(paymentData.amount_paid) >= Number(creditCardDue.constant_amount);
+
+                if (isChequeDue || isFullyPaid) {
+                    setPaymentCompleted(true);
+                }
                 fetchCreditCardDue(id);
                 fetchCreditCardDetail(id);
                 fetchPaymentHistory(id);
                 setMessage(true);
             })
             .catch(e => {
-                console.log(e);
+                console.log('saveCreditCardPay error', e.response?.data || e);
             });
     }
 
@@ -164,14 +227,15 @@ const PayCreditCard = () => {
                 console.log("fetchCreditCardDue", response.data)
                 setCreditCardDue({
                     id: response.data.id,
-                    payment_term_id: response.data.payment_term_id,
-                    payment_type_po_id: response.data.payment_type_po_id,
+                    payment_term_id: chequeMode ? 0 : response.data.payment_term_id,
+                    payment_type_po_id: chequeMode ? 0 : response.data.payment_type_po_id,
                     min_amount: response.data.min_amount,
                     amount: response.data.amount,
                     amount_paid: response.data.amount_paid,
                     interest_amount: response.data.interest_amount,
                     is_installment: response.data.is_installment,
                     due_date: response.data.due_date,
+                    due_date_cheque: response.data.due_date_cheque || '',
                     status: response.data.status,
                     constant_amount: response.data.amount - response.data.amount_paid,
                 });
@@ -313,7 +377,7 @@ const PayCreditCard = () => {
                 </TableContainer> */}
             </>}
             <br></br>
-            {creditCardDue.status == 0 &&
+            {creditCardDue.status == 0 && !paymentCompleted &&
                 <Box
                     sx={{
                         '& .MuiTextField-root': { m: 1, width: '25ch' },
@@ -345,7 +409,7 @@ const PayCreditCard = () => {
                         {/* {formErrors.payment_term_id && <p style={{ color: "red" }}>{formErrors.payment_term_id}</p>} */}
 
 
-                        {creditCardDueDetails.payment_term_id != 3 ? (<>
+                        {(chequeMode || creditCardDueDetails.payment_term_id != 3) ? (<>
                             <FormControl variant="standard" >
                                 <Autocomplete
                                     // {...defaultProps}
@@ -355,11 +419,17 @@ const PayCreditCard = () => {
                                     onChange={handlePaymentTermChange}
                                     getOptionLabel={(paymentTermList) => paymentTermList.payment_term}
                                     renderInput={(params) => (
-                                        <TextField {...params} label="Choose Payment Term" variant="standard" />
+                                        <TextField
+                                            {...params}
+                                            label="Choose Payment Term"
+                                            variant="standard"
+                                            required
+                                            error={Boolean(formErrors.payment_term_id)}
+                                            helperText={formErrors.payment_term_id}
+                                        />
                                     )}
                                 />
                             </FormControl>
-                            <Form.Control type="text" value={creditCardDue.due_date} name="details" onChange={onChangecreditCardDue} disabled />
                         </>) : <>
                             {/* <FormControl variant="standard" >
                                 <Autocomplete
@@ -376,7 +446,7 @@ const PayCreditCard = () => {
                             </FormControl> */}
                         </>}
                         <br></br>
-                        {creditCardDue.payment_term_id == 2 ? (<>
+                        {(creditCardDue.payment_term_id == 2 || (!chequeMode && creditCardDue.payment_term_id == 3)) ? (<>
                             {/* {formErrors.payment_type_po_id && <p style={{ color: "red" }}>{formErrors.payment_type_po_id}</p>} */}
                             <Box
                                 sx={{
@@ -389,22 +459,58 @@ const PayCreditCard = () => {
                                     <Autocomplete
                                         // {...defaultProps}
                                         options={paymentTypePoList}
+                                        value={selectedPaymentType}
                                         className="mb-3"
                                         id="disable-close-on-select"
                                         onChange={handlePaymentTypeChange}
                                         getOptionLabel={(paymentTypePoList) => paymentTypePoList.bank_name + " " + paymentTypePoList.account_name + "  " + paymentTypePoList.account_description + " - " + paymentTypePoList.account_number}
                                         renderInput={(params) => (
-                                            <TextField {...params} label="Choose Bank" variant="standard" />
+                                            <TextField
+                                                {...params}
+                                                label="Choose Bank"
+                                                variant="standard"
+                                                required
+                                                error={Boolean(formErrors.payment_type_po_id)}
+                                                helperText={formErrors.payment_type_po_id}
+                                            />
                                         )}
                                     />
                                 </FormControl>
                             </Box>
+                            {!chequeMode && creditCardDue.payment_term_id == 3 &&
+                                <Form.Group className="mb-3" controlId="chequeDueDate">
+                                    <Form.Label>Due Date For Cheque</Form.Label>
+                                    <Form.Control
+                                        type="date"
+                                        value={creditCardDue.due_date_cheque}
+                                        name="due_date_cheque"
+                                        onChange={onChangecreditCardDue}
+                                        required
+                                        isInvalid={Boolean(formErrors.due_date_cheque)}
+                                    />
+                                    <Form.Control.Feedback type="invalid">
+                                        {formErrors.due_date_cheque}
+                                    </Form.Control.Feedback>
+                                </Form.Group>
+                            }
                         </>) : ""}
 
-                        {creditCardDueDetails.payment_term_id != 3 ? (<>
+                        {!chequeMode && creditCardDueDetails.payment_term_id != 3 ? (<>
                             <Form.Group className="mb-3" controlId="formBasicEmail">
                                 <Form.Label>Amount</Form.Label>
-                                <Form.Control type="text" name="amount_paid" placeholder="Enter Amount" onChange={onChangecreditCardDue} />
+                                <Form.Control
+                                    type="number"
+                                    min="0.01"
+                                    step="0.01"
+                                    name="amount_paid"
+                                    placeholder="Enter Amount"
+                                    onChange={onChangecreditCardDue}
+                                    required
+                                    isInvalid={Boolean(formErrors.amount_paid)}
+                                />
+                                <Form.Control.Feedback type="invalid">
+                                    {formErrors.amount_paid}
+                                </Form.Control.Feedback>
                             </Form.Group>
                         </>) :
                             <>
@@ -469,10 +575,12 @@ const PayCreditCard = () => {
                                             </Link>
                                         </td>
                                         <td>
-                                            <Tooltip title="Payment">
-                                                <IconButton>
-                                                    <DeleteIcon color="error" onClick={(e) => openDelete(paymentHistory.id, e)} />
-
+                                            <Tooltip title={chequeMode ? "Delete payment" : "Delete disabled"}>
+                                                <IconButton
+                                                    disabled={!chequeMode}
+                                                    onClick={chequeMode ? (e) => openDelete(paymentHistory.id, e) : undefined}
+                                                >
+                                                    <DeleteIcon color={chequeMode ? "error" : "disabled"} />
                                                 </IconButton>
                                             </Tooltip>
                                         </td>

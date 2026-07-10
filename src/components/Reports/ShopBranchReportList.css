@@ -1,0 +1,56 @@
+.shop-report-page { min-height: 100vh; padding: 32px 24px 56px; background: #f5f6f8; }
+.shop-report-shell { width: min(1500px, 100%); margin: 0 auto; }
+.shop-report-header { display: flex; align-items: center; gap: 16px; padding: 26px 28px; color: #fff; border-radius: 18px; background: linear-gradient(135deg, #34251e, #9c501b); box-shadow: 0 16px 38px rgba(70, 42, 25, .16); }
+.shop-report-header-icon { display: grid; flex: 0 0 52px; width: 52px; height: 52px; place-items: center; border-radius: 15px; background: rgba(255,255,255,.14); }
+.shop-report-header-icon svg { font-size: 29px; }
+.shop-report-header > div > span, .shop-report-section-heading span, .shop-report-table-heading span { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.shop-report-header h1 { margin: 2px 0 4px; font-size: clamp(1.45rem, 3vw, 2rem); }
+.shop-report-header p { margin: 0; color: rgba(255,255,255,.74); font-size: .88rem; }
+.shop-report-alert { margin-top: 18px; }
+.shop-report-filter-card, .shop-report-table-card { margin-top: 20px; overflow: hidden; border: 1px solid #e1e4e8; border-radius: 16px; background: #fff; box-shadow: 0 10px 28px rgba(34,40,49,.05); }
+.shop-report-filter-card { padding: 22px 26px; }
+.shop-report-section-heading, .shop-report-table-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.shop-report-section-heading span, .shop-report-table-heading span { color: #a6571f; }
+.shop-report-section-heading h2, .shop-report-table-heading h2 { margin: 3px 0 0; color: #30363d; font-size: 1.08rem; }
+.shop-report-section-heading > svg { color: #b5682c; font-size: 28px; }
+.shop-report-filter-grid { display: grid; grid-template-columns: minmax(190px, 1fr) minmax(190px, 1fr) auto; align-items: start; gap: 16px; margin-top: 20px; }
+.shop-report-filter-actions { display: flex; gap: 8px; }
+.shop-report-filter-grid .MuiButton-root { min-height: 53px; padding-inline: 20px; border-radius: 9px; text-transform: none; }
+.shop-report-filter-grid .MuiButton-contained { background: #a95317; box-shadow: none; }
+.shop-report-filter-grid .MuiButton-contained:hover { background: #8f4310; }
+.shop-report-filter-grid .MuiButton-outlined { color: #98501c; border-color: #d2a17f; background: #fff; }
+.shop-report-progress { margin: 18px -26px -22px; }
+.shop-report-progress .MuiLinearProgress-bar { background: #b85f1c; }
+.shop-report-metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; margin-top: 20px; }
+.shop-report-metrics article { display: flex; align-items: center; gap: 14px; min-width: 0; padding: 20px; border: 1px solid #e1e4e8; border-radius: 14px; background: #fff; }
+.shop-report-metrics article > span { display: grid; flex: 0 0 42px; width: 42px; height: 42px; place-items: center; color: #9d5018; border-radius: 11px; background: #fff0df; }
+.shop-report-metrics article > span.profit { color: #176332; background: #eaf7ee; }
+.shop-report-metrics small, .shop-report-metrics strong { display: block; }
+.shop-report-metrics small { color: #7c848e; font-size: .75rem; }
+.shop-report-metrics strong { overflow: hidden; margin-top: 2px; color: #2f353d; font-size: 1.08rem; text-overflow: ellipsis; }
+.shop-report-table-heading { padding: 20px 22px; border-bottom: 1px solid #e8eaed; }
+.shop-report-table-tools { display: flex; align-items: center; gap: 10px; }
+.shop-report-table-tools .MuiTextField-root { width: min(260px, 48vw); }
+.shop-report-table-tools > strong { padding: 6px 10px; color: #6f7781; font-size: .75rem; white-space: nowrap; border-radius: 999px; background: #f0f2f4; }
+.shop-report-table-scroll { overflow-x: auto; }
+.shop-report-table-card table { width: 100%; min-width: 1180px; border-collapse: collapse; }
+.shop-report-table-card th { padding: 13px 15px; color: #68717c; font-size: .7rem; font-weight: 800; text-align: left; letter-spacing: .045em; text-transform: uppercase; background: #f5f6f7; }
+.shop-report-table-card td { padding: 14px 15px; color: #505862; font-size: .82rem; border-top: 1px solid #eceef1; vertical-align: middle; }
+.shop-report-table-card tbody tr:hover { background: #fffaf5; }
+.shop-report-id { color: #9a551d; font-weight: 800; }
+.shop-report-money { color: #30363d !important; font-weight: 700; white-space: nowrap; }
+.shop-report-profit { color: #176332 !important; font-weight: 750; white-space: nowrap; }
+.shop-report-status-cell, .shop-report-actions { display: flex; align-items: center; gap: 6px; }
+.shop-report-status { padding: 5px 8px; font-size: .65rem; font-weight: 850; letter-spacing: .035em; border-radius: 999px; }
+.status-completed { color: #176332; background: #e7f6ec; }
+.status-pending { color: #93600d; background: #fff4d9; }
+.status-cancelled { color: #a12626; background: #fde8e8; }
+.shop-report-actions { white-space: nowrap; }
+.shop-report-actions .MuiIconButton-root { color: #6a737e; border: 1px solid #e2e5e9; border-radius: 9px; }
+.shop-report-actions .MuiButton-root { color: #9a501a; border-color: #d7a47f; border-radius: 8px; text-transform: none; }
+.shop-report-empty { display: flex; align-items: center; flex-direction: column; gap: 4px; padding: 40px; color: #8a929d; text-align: center; }
+.shop-report-empty svg { margin-bottom: 6px; color: #c0c5cb; font-size: 34px; }
+.shop-report-empty strong { color: #565e68; }
+.shop-report-empty span { font-size: .78rem; }
+@media (max-width: 760px) { .shop-report-page { padding: 20px 14px 40px; } .shop-report-filter-grid, .shop-report-metrics { grid-template-columns: 1fr; } .shop-report-filter-actions .MuiButton-root { flex: 1; } }
+@media (max-width: 520px) { .shop-report-header { align-items: flex-start; padding: 22px 20px; } .shop-report-header-icon { flex-basis: 44px; width: 44px; height: 44px; } .shop-report-filter-card { padding: 20px; } .shop-report-table-heading { align-items: flex-start; flex-direction: column; } .shop-report-table-tools { width: 100%; } .shop-report-table-tools .MuiTextField-root { width: 100%; } }

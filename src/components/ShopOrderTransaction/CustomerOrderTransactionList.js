@@ -53,6 +53,7 @@ const CustomerOrderTransactionList = () => {
     }, []);
 
     const [requestorList, setRequestorList] = useState([]);
+    const [search, setSearch] = useState('');
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: id,
@@ -811,6 +812,24 @@ const CustomerOrderTransactionList = () => {
         .slice(0, 5);
 
 
+    const searchTerm = search.trim().toLowerCase();
+    const visibleTransactions = searchTerm
+        ? shopOrderTransaction.data.filter((transaction) => [
+            transaction.id,
+            transaction.shop_name,
+            transaction.requestor_name,
+            transaction.store_name,
+            transaction.customer_type,
+            transaction.date,
+            transaction.payment_status,
+            transaction.delivery_status,
+            transaction.pick_up_status,
+            transaction.rider_status,
+            transaction.shop_order_transaction_total_quantity,
+            transaction.shop_order_transaction_total_price,
+        ].some((value) => String(value ?? '').toLowerCase().includes(searchTerm)))
+        : shopOrderTransaction.data;
+
     return (
         <div className="customer-report-page" style={{ "--shop-color": activeShopColor }}>
             <section className="customer-report-hero">
@@ -1077,7 +1096,16 @@ const CustomerOrderTransactionList = () => {
                         <p className="customer-report-eyebrow">Details</p>
                         <h2>Online Orders</h2>
                     </div>
-                    <span>{shopOrderTransaction.data.length} records</span>
+                    <div className="customer-report-table-tools">
+                        <Form.Control
+                            type="search"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder="Search orders..."
+                            aria-label="Search online orders"
+                        />
+                        <span>{visibleTransactions.length} records</span>
+                    </div>
                 </div>
 
                 <div className="customer-report-table-wrap">
@@ -1102,11 +1130,11 @@ const CustomerOrderTransactionList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {shopOrderTransaction.data.length == 0 ? (
+                            {visibleTransactions.length === 0 ? (
                                 <tr>
                                     <td className="customer-report-empty" colSpan={role == 2 ? 15 : 14}>No Data Available</td>
                                 </tr>
-                            ) : shopOrderTransaction.data.map((transaction) => {
+                            ) : visibleTransactions.map((transaction) => {
                                 const primaryVipCustomer = getPrimaryTransactionVipCustomer(transaction);
                                 const vipCustomers = getTransactionVipCustomers(transaction);
                                 const transactionIsNewCustomer = isNewCustomer(transaction);

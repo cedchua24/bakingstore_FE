@@ -368,9 +368,12 @@ const SendToSupplier = () => {
                     setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                     setinvoiceTotal(TAX_RATE * response.data.total_transaction_price + response.data.total_transaction_price);
                 } else {
-                    setinvoiceSubtotal(response.data.total_transaction_price / (1 + TAX_RATE));
-                    setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
-                    setinvoiceTotal(response.data.total_transaction_price);
+                    const totalPrice = response.data.total_transaction_price;
+                    const subtotal = totalPrice / (1 + TAX_RATE);
+
+                    setinvoiceSubtotal(subtotal);
+                    setinvoiceTaxes(totalPrice - subtotal);
+                    setinvoiceTotal(totalPrice);
                 }
             })
             .catch(e => {
@@ -516,6 +519,10 @@ const SendToSupplier = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const orderStatusClass = `po-send-status-${String(orderSupplierTransaction.status || 'pending')
+        .toLowerCase()
+        .replace(/_/g, '-')}`;
+
     return (
         <main className="purchase-order-page po-send-page">
             <section className="purchase-order-shell">
@@ -657,6 +664,7 @@ const SendToSupplier = () => {
                             {orderSupplierTransaction.status == 'COMPLETED' ? (
                                 <TextField
                                     fullWidth
+                                    className="po-send-status po-send-status-completed"
                                     label="Status"
                                     value="Sent to supplier"
                                     InputProps={{
@@ -671,7 +679,7 @@ const SendToSupplier = () => {
                                 />
                             ) : (
                                 <>
-                                    <FormControl fullWidth>
+                                    <FormControl fullWidth className={`po-send-status ${orderStatusClass}`}>
                                         <InputLabel id="send-status-label">Order status</InputLabel>
                                         <Select
                                             labelId="send-status-label"

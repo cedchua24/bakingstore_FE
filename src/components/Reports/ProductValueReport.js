@@ -1,438 +1,100 @@
-import React, { useState, useEffect } from "react";
-import ProductServiceService from "../Product/ProductService.service";
-import ProductTransactionService from "../OtherService/ProductTransactionService";
-import BrandServiceService from "../Brand/BrandService.service";
-import CategoryServiceService from "../Category/CategoryService.service";
-import { Form } from 'react-bootstrap';
-import { Link } from "react-router-dom";
-
-
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import Modal from '@mui/material/Modal';
-
-
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
-
-import Box from '@mui/material/Box';
+import React, { useEffect, useMemo, useState } from 'react';
 import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography'
-import CircularProgress from '@mui/material/CircularProgress';
-
+import FormControl from '@mui/material/FormControl';
+import InputAdornment from '@mui/material/InputAdornment';
+import InputLabel from '@mui/material/InputLabel';
 import LinearProgress from '@mui/material/LinearProgress';
-
 import MenuItem from '@mui/material/MenuItem';
-
 import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import ProductService from '../Product/ProductService.service';
+import CategoryService from '../Category/CategoryService.service';
+import './ProductReport.css';
 
-
+const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
 
 const ProductValueReport = () => {
-
-    useEffect(() => {
-        fetchProductList();
-        fetchBrandList();
-        fetchCategoryList();
-    }, []);
-
     const [categoryId, setCategoryId] = useState(0);
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [report, setReport] = useState({ total_value: {}, data: [] });
+    const [loading, setLoading] = useState(false);
+    const [query, setQuery] = useState('');
 
-    const [submitLoading, setSubmitLoading] = useState(false);
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
-
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    const loadReport = selectedCategory => {
+        setLoading(true);
+        ProductService.fetchProductValue(selectedCategory)
+            .then(response => setReport(response.data || { total_value: {}, data: [] }))
+            .catch(error => console.log('error', error))
+            .finally(() => setLoading(false));
     };
 
-    const [open, setOpen] = React.useState(false);
+    useEffect(() => {
+        loadReport(0);
+        CategoryService.getAll().then(response => setCategories(response.data || [])).catch(error => console.log('error', error));
+    }, []);
 
-    const handleOpen = (id, e) => {
-        console.log('e', id);
-        fetchShopOrder(id);
-        setOpen(true);
-    }
+    const products = Array.isArray(report.data) ? report.data : [];
+    const totals = report.total_value || {};
+    const capital = Number(totals.total_price ?? products.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.stock || 0), 0));
+    const capitalWithProfit = Number(totals.total_new_value ?? products.reduce((sum, item) => sum + Number(item.new_price || 0) * Number(item.stock || 0), 0));
+    const expectedProfit = Number(totals.total_profit ?? products.reduce((sum, item) => sum + Number(item.profit || 0) * Number(item.stock || 0), 0));
+    const filtered = useMemo(() => {
+        const search = query.trim().toLowerCase();
+        if (!search) return products;
+        return products.filter(item => [item.id, item.product_name, item.brand_name, item.category_name, item.packaging]
+            .some(value => String(value ?? '').toLowerCase().includes(search)));
+    }, [products, query]);
+    const packageLabel = item => Number(item.quantity) === 1
+        ? `${item.weight}${item.variation || ''}`
+        : `${item.quantity} × ${(Number(item.weight || 0) / Number(item.quantity || 1)).toPrecision(2)}${item.variation || ''}`;
 
-    const [orderSupplierModal, setOrderSupplierModal] = useState({
-        id: 0,
-        user_id: localStorage.getItem('auth_user_id'),
-        product_name: '',
-        shop_order_quantity: 0,
-        stock: 0
-    });
+    return <main className="pr-page">
+        <section className="pr-hero">
+            <div className="pr-hero__icon"><AccountBalanceWalletOutlinedIcon /></div>
+            <div><span>Inventory valuation</span><h1>Product Capital Report</h1><p>Review invested capital, selling value, and expected profit across current inventory.</p></div>
+        </section>
 
-    const fetchShopOrder = async (id) => {
-        await ProductServiceService.get(id)
-            .then(response => {
-                setOrderSupplierModal(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+        <section className="pr-summary">
+            <div><PaymentsOutlinedIcon /><div><span>Current capital</span><strong>{money(capital)}</strong></div></div>
+            <div><AccountBalanceWalletOutlinedIcon /><div><span>Capital with profit</span><strong>{money(capitalWithProfit)}</strong></div></div>
+            <div><TrendingUpRoundedIcon /><div><span>Expected profit</span><strong>{money(expectedProfit)}</strong></div></div>
+        </section>
 
-    const onChangeInputQuantityModal = (e) => {
-        e.persist();
-        setOrderSupplierModal({
-            ...orderSupplierModal,
-            user_id: localStorage.getItem('auth_user_id'),
-            shop_order_quantity: e.target.value,
-        });
-    }
+        <section className="pr-filter">
+            <div className="pr-filter__header"><strong>Report filter</strong><span>Choose a category to recalculate inventory capital.</span></div>
+            <div className="pr-filter__grid" style={{ gridTemplateColumns: 'minmax(220px, 320px) 140px' }}>
+                <FormControl size="small"><InputLabel>Category</InputLabel><Select value={categoryId} label="Category" onChange={event => setCategoryId(event.target.value)}><MenuItem value={0}>All categories</MenuItem>{categories.map(item => <MenuItem key={item.id} value={item.id}>{item.category_name}</MenuItem>)}</Select></FormControl>
+                <Button variant="contained" onClick={() => loadReport(categoryId)} disabled={loading}>Apply filter</Button>
+            </div>
+            {loading && <LinearProgress className="pr-progress" />}
+        </section>
 
-    const updateOrderSupplier = () => {
-        setSubmitLoading(true);
-        ProductTransactionService.create(orderSupplierModal)
-            .then(response => {
-                if (response.data.code == 200) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'success',
-                        message: 'Successfuly Added!',
-                        isShow: true,
-                    });
-                    fetchProductList();
-                } else if (response.data.code == 400) {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    window.scrollTo(0, 0);
-                    setValidator({
-                        severity: 'error',
-                        message: response.data.message,
-                        isShow: true,
-                    });
-                } else {
-                    setSubmitLoading(false);
-                    setOpen(false);
-                    setValidator({
-                        severity: 'error',
-                        message: "Unknown Error",
-                        isShow: true,
-                    });
-                }
-            })
-            .catch(e => {
-                console.log(e);
-            });
-    }
+        <section className="pr-card">
+            <header><div><h2>Product values</h2><p>{filtered.length} {filtered.length === 1 ? 'product' : 'products'} found</p></div><TextField className="pr-search" size="small" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search products..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></header>
+            <div className="table-responsive"><table className="pr-table"><thead><tr><th>Product</th><th>Classification</th><th>Price comparison</th><th>Package</th><th>Inventory</th><th>Status</th><th>Capital</th><th>With profit</th><th>Expected profit</th></tr></thead><tbody>
+                {filtered.map(item => {
+                    const pricesMatch = Number(item.price) === Number(item.mup_price);
+                    return <tr key={item.id}>
+                        <td><div className="pr-product"><strong>{item.product_name}</strong><span>#{item.id}</span></div></td>
+                        <td><span className="pr-pill">{item.category_name || 'Uncategorized'}</span><div className="pr-subtle" style={{ marginTop: 4 }}>{item.brand_name || 'No brand'}</div></td>
+                        <td><div className="pr-product"><strong>{money(item.mup_price)} → {money(item.price)}</strong><span className={pricesMatch ? 'pr-money' : 'pr-negative'}>{pricesMatch ? 'Prices match' : 'Price changed'}</span></div></td>
+                        <td>{packageLabel(item)}<div className="pr-subtle">{item.packaging || 'No packaging'}</div></td>
+                        <td><div className="pr-stock"><span>{item.stock ?? 0} in stock</span></div></td>
+                        <td><span className={`pr-status ${item.disabled === 0 ? 'pr-status--active' : 'pr-status--disabled'}`}>{item.disabled === 0 ? 'Active' : 'Disabled'}</span></td>
+                        <td><strong>{money(Number(item.price || 0) * Number(item.stock || 0))}</strong></td>
+                        <td><strong>{money(Number(item.new_price || 0) * Number(item.stock || 0))}</strong></td>
+                        <td className="pr-money">{money(Number(item.profit || 0) * Number(item.stock || 0))}</td>
+                    </tr>;
+                })}
+                {!filtered.length && <tr><td colSpan="9"><div className="pr-empty"><Inventory2OutlinedIcon /><strong>No product values found</strong><span>Try another category or search term.</span></div></td></tr>}
+            </tbody></table></div>
+        </section>
+    </main>;
+};
 
-    const handleClose = () => setOpen(false);
-
-    const [product, setProduct] = useState({
-        id: 0,
-        category_id: 0,
-        category_name: '',
-        brand_id: 0,
-        brand_name: '',
-        product_name: "",
-        price: 0,
-        stock: 0,
-        weight: 0,
-        quantity: 0,
-        packaging: ''
-    })
-
-    const [brandList, setBrandList] = useState([]);
-    const [categeryList, setCategoryList] = useState([]);
-
-    const [message, setMessage] = useState(false);
-
-    const [productList, setProductList] = useState({
-        total_value: 0,
-        total_profit: 0,
-        total_new_price: 0,
-        data: []
-    });
-
-    const onChangeInput = (e) => {
-        console.log(e.target.value)
-        setCategoryId(e.target.value)
-    }
-
-
-    const fetchProductList = () => {
-        ProductServiceService.fetchProductValue(0)
-            .then(response => {
-                setProductList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchBrandList = () => {
-        BrandServiceService.getAll()
-            .then(response => {
-                setBrandList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchCategoryList = () => {
-        CategoryServiceService.getAll()
-            .then(response => {
-                setCategoryList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const deleteProduct = (id, e) => {
-
-        const index = productList.findIndex(brand => brand.id === id);
-        const newProduct = [...productList];
-        newProduct.splice(index, 1);
-
-        ProductServiceService.delete(id)
-            .then(response => {
-                setProductList(newProduct);
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
-    }
-
-    const fetchProductByCategoryId = () => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        ProductServiceService.fetchProductValue(categoryId)
-            .then(response => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                setProductList(response.data);
-            })
-            .catch(e => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                console.log("error", e)
-            });
-    }
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-
-    return (
-        <div>
-            <Form>
-                <legend>Product Capital Record</legend>
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Category</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            // value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
-                            name="category_id"
-                            onChange={onChangeInput}
-                        >
-                            {
-                                categeryList.map((category, index) => (
-                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                    <br></br>
-                    <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Capital</InputLabel>
-                        <Input
-                            type='text'
-                            id="filled-"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            value={numberFormat(productList.total_value.total_price)}
-                            disabled
-                        />
-                    </FormControl>
-                    <br></br>
-                    <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Capital with Profit</InputLabel>
-                        <Input
-                            type='text'
-                            id="filled-"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            value={numberFormat(productList.total_value.total_new_value)}
-                            disabled
-                        />
-                    </FormControl>
-
-                    <br></br>
-                    <FormControl sx={{ m: 1, minWidth: 220, minHeight: 70 }}>
-                        <InputLabel htmlFor="standard-adornment-amount">Expected Profit</InputLabel>
-                        <Input
-                            type='text'
-                            id="filled-"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            value={numberFormat(productList.total_value.total_profit)}
-                            disabled
-                        />
-                    </FormControl>
-
-                </Box>
-
-                <Button
-                    variant="contained"
-                    disabled={isAddDisabled}
-                    onClick={fetchProductByCategoryId}
-                >
-                    Search
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form>
-
-            <br></br>
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Add Stocks
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <TextField
-                        disabled
-                        id="filled-required"
-                        label="Product Name"
-                        variant="filled"
-                        name='product_name'
-                        value={orderSupplierModal.product_name}
-                    />
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Quantity</InputLabel>
-                        <Input
-                            type='number'
-                            id="filled-required"
-                            label="Quantity"
-                            variant="filled"
-                            name='shop_order_quantity'
-                            onChange={onChangeInputQuantityModal}
-                        />
-                    </FormControl>
-
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Product Value  </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Product</th>
-                        <th>Brand</th>
-                        <th>Category</th>
-                        <th>Old Price</th>
-                        <th>New Price</th>
-                        <th>Match</th>
-                        <th>Quantity / Weight</th>
-                        <th>Stock</th>
-                        <th>Packaging</th>
-                        <th>Status</th>
-                        <th>Capital</th>
-                        <th>Capital with Profit</th>
-                        <th>Expected Profit</th>
-                    </tr>
-                </thead>
-
-
-
-                {productList.data.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
-                    :
-                    (
-                        <tbody>
-                            {
-                                productList.data
-                                    .map(product => (
-                                        <tr key={product.id} >
-                                            <td>{product.id}</td>
-                                            <td>{product.product_name}</td>
-                                            <td>{product.brand_name}</td>
-                                            <td>{product.category_name}</td>
-                                            <td>{numberFormat(product.mup_price)}</td>
-                                            <td>{numberFormat(product.price)}</td>
-                                            <td>{product.price == product.mup_price ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-
-                                            {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                            <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
-                                                : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
-                                            </td>
-                                            <td>{product.stock}</td>
-                                            <td>{product.packaging}</td>
-                                            <td>{product.disabled === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                            <td>{numberFormat(product.price * product.stock)}</td>
-                                            <td>{numberFormat(product.new_price * product.stock)}</td>
-                                            <td>{numberFormat(product.profit * product.stock)}</td>
-                                        </tr>
-                                    ))
-                            }
-                        </tbody>)
-                }
-            </table >
-
-
-
-        </div >
-    )
-}
-
-export default ProductValueReport
+export default ProductValueReport;

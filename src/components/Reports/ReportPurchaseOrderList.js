@@ -36,6 +36,24 @@ const emptyReport = {
     total_sales: 0,
 };
 
+const formatDateInput = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const getCurrentMonthFilters = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    return {
+        dateFrom: formatDateInput(new Date(year, month, 1)),
+        dateTo: formatDateInput(new Date(year, month + 1, 0)),
+    };
+};
+
 const fetchAllPurchaseOrders = (filters) =>
     OrderSupplierTransactionService.fetchAllOrderSupplier(filters);
 
@@ -62,7 +80,7 @@ const ReportPurchaseOrderList = ({
     deleteDialogText = 'This purchase order will be removed. This action cannot be undone.',
 }) => {
     const [report, setReport] = useState(emptyReport);
-    const [filters, setFilters] = useState({ dateFrom: '', dateTo: '' });
+    const [filters, setFilters] = useState(getCurrentMonthFilters);
     const [filterErrors, setFilterErrors] = useState({});
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
@@ -88,7 +106,7 @@ const ReportPurchaseOrderList = ({
     }, [fetchReport]);
 
     useEffect(() => {
-        loadReport();
+        loadReport(getCurrentMonthFilters());
     }, [loadReport]);
 
     const currency = (value) =>
@@ -145,7 +163,7 @@ const ReportPurchaseOrderList = ({
         }
     };
 
-    const clearFilters = () => {
+    const showAllOrders = () => {
         setFilters({ dateFrom: '', dateTo: '' });
         setFilterErrors({});
         loadReport();
@@ -255,7 +273,9 @@ const ReportPurchaseOrderList = ({
                             <Button variant="contained" onClick={applyFilters} disabled={loading}>
                                 Generate report
                             </Button>
-                            <Button onClick={clearFilters} disabled={loading}>Clear</Button>
+                            <Button variant="outlined" onClick={showAllOrders} disabled={loading}>
+                                All
+                            </Button>
                         </div>
                     </div>
                     {loading && <LinearProgress className="po-report-progress" />}

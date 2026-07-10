@@ -24,6 +24,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
 
 import './OutOfStockReturn.css';
 
@@ -33,6 +34,7 @@ const OutOfStockReturn = () => {
     const [customerList, setCustomerList] = useState([]);
     const [categoryId, setCategoryId] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [alert, setAlert] = useState({ visible: false, severity: '', message: '' });
@@ -59,6 +61,7 @@ const OutOfStockReturn = () => {
     const products = Array.isArray(productList?.data)
         ? productList.data
         : (Array.isArray(productList) ? productList : []);
+    const filteredProducts = products.filter(item => matchesStockSearch(item, searchQuery));
 
     const outOfStockCount = products.filter(
         product => Number(product.stock || 0) === 0 && Number(product.stock_pc || 0) === 0
@@ -176,9 +179,10 @@ const OutOfStockReturn = () => {
                 {loading && <LinearProgress className="oos-return-progress" />}
             </section>
 
+            <StockSearchBar value={searchQuery} onChange={setSearchQuery} />
             <section className="oos-return-card">
                 <div className="oos-return-card__header">
-                    <div><h2>Restock follow-up products</h2><p>{products.length} {products.length === 1 ? 'product' : 'products'} in this view.</p></div>
+                    <div><h2>Restock follow-up products</h2><p>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found.</p></div>
                     <span><NotificationsActiveOutlinedIcon />Notification queue</span>
                 </div>
                 <div className="table-responsive">
@@ -196,11 +200,10 @@ const OutOfStockReturn = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.length > 0 ? products.map(product => (
+                            {filteredProducts.length > 0 ? filteredProducts.map(product => (
                                 <tr key={product.id}>
                                     <td>
                                         <div className="oos-return-product">
-                                            <span>{product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}</span>
                                             <div>
                                                 <strong>{product.product_name}</strong>
                                                 <small>#{product.id} · {product.brand_name || 'No brand'}</small>

@@ -13,6 +13,7 @@ import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutl
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
 
 import './ModifiedStock.css';
 
@@ -21,6 +22,7 @@ const ModifiedStock = () => {
     const [date, setDate] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         ProductServiceService.fetchModifiedStockDaily()
@@ -35,6 +37,7 @@ const ModifiedStock = () => {
         () => Array.isArray(report.data) ? report.data : [],
         [report.data]
     );
+    const filteredRecords = records.filter(item => matchesStockSearch(item, searchQuery));
 
     const totals = useMemo(() => records.reduce((summary, record) => {
         const totalCost = Number(record.total_cost || 0);
@@ -140,11 +143,13 @@ const ModifiedStock = () => {
                 {loading && <LinearProgress className="modified-stock-progress" />}
             </section>
 
+            <StockSearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search adjustment records..." />
+
             <section className="modified-stock-card">
                 <div className="modified-stock-card__header">
                     <div>
                         <h2>Adjustment records</h2>
-                        <p>{records.length} {records.length === 1 ? 'change' : 'changes'} in this report.</p>
+                        <p>{filteredRecords.length} {filteredRecords.length === 1 ? 'change' : 'changes'} found.</p>
                     </div>
                     <span><CalendarMonthOutlinedIcon />{date || 'Latest report'}</span>
                 </div>
@@ -161,13 +166,12 @@ const ModifiedStock = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {records.length > 0 ? records.map(record => {
+                            {filteredRecords.length > 0 ? filteredRecords.map(record => {
                                 const isAddition = Number(record.stock || 0) > 0;
                                 return (
                                     <tr key={record.id}>
                                         <td>
                                             <div className="modified-stock-product">
-                                                <span>{record.product_name ? record.product_name.charAt(0).toUpperCase() : '?'}</span>
                                                 <div>
                                                     <strong>{record.product_name}</strong>
                                                     <small>#{record.id} · {record.brand_name || 'No brand'}</small>
