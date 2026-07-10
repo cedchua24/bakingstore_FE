@@ -529,6 +529,46 @@
     font-size: 0.84rem;
 }
 
+.po-copy-list {
+    margin-top: 32px;
+    padding: 20px 22px;
+    border: 1px solid #e2e5e9;
+    border-left: 4px solid #b86b2b;
+    border-radius: 12px;
+    background: #fffdfb;
+    box-shadow: 0 8px 24px rgba(39, 45, 55, 0.06);
+    user-select: text;
+}
+
+.po-copy-list h5 {
+    margin: 0 0 12px;
+    padding-bottom: 12px;
+    color: #8b4d1b;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    border-bottom: 2px solid #ead7c6;
+}
+
+.po-copy-list h6 {
+    margin: 0;
+    padding: 9px 4px;
+    color: #343a42;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.45;
+    border-bottom: 1px solid #eceef1;
+}
+
+.po-copy-list h5 + h6 {
+    padding-top: 0;
+}
+
+.po-copy-list h6:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
 @media (max-width: 760px) {
     .po-order-summary .MuiTableRow-root {
         display: grid;
@@ -764,6 +804,45 @@
 
 .po-send-form .MuiInputBase-root {
     min-height: 54px;
+}
+
+.po-send-status .MuiOutlinedInput-root {
+    font-weight: 750;
+    transition: background-color 160ms ease, color 160ms ease;
+}
+
+.po-send-status-pending .MuiOutlinedInput-root {
+    color: #8a5a0a;
+    background: #fff8e7;
+}
+
+.po-send-status-pending .MuiOutlinedInput-notchedOutline {
+    border-color: #e6bd68;
+}
+
+.po-send-status-send-to-supplier .MuiOutlinedInput-root {
+    color: #155b8f;
+    background: #edf7ff;
+}
+
+.po-send-status-send-to-supplier .MuiOutlinedInput-notchedOutline {
+    border-color: #8ac1e8;
+}
+
+.po-send-status-completed .MuiOutlinedInput-root,
+.po-send-status-completed .MuiOutlinedInput-root.Mui-disabled {
+    color: #176332;
+    background: #edf9f0;
+}
+
+.po-send-status-completed .MuiOutlinedInput-notchedOutline,
+.po-send-status-completed .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline {
+    border-color: #9fd1aa;
+}
+
+.po-send-status-completed .MuiInputBase-input.Mui-disabled {
+    color: #176332;
+    -webkit-text-fill-color: #176332;
 }
 
 .po-send-card > .MuiLinearProgress-root {

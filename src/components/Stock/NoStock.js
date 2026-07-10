@@ -14,6 +14,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
 
 import './StockWarning.css';
 
@@ -22,6 +23,7 @@ const NoStock = () => {
     const [categoryList, setCategoryList] = useState([]);
     const [categoryId, setCategoryId] = useState(0);
     const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         ProductServiceService.fetchOutOfStock(0)
@@ -42,6 +44,7 @@ const NoStock = () => {
     };
 
     const products = Array.isArray(productList.data) ? productList.data : [];
+    const filteredProducts = products.filter(item => matchesStockSearch(item, searchQuery));
     const pendingOrderCount = products.reduce(
         (total, product) => total + (
             Array.isArray(product.pending_orders) ? product.pending_orders.length : 0
@@ -148,11 +151,12 @@ const NoStock = () => {
                 {loading && <LinearProgress color="warning" className="stock-warning-progress" />}
             </section>
 
+            <StockSearchBar value={searchQuery} onChange={setSearchQuery} />
             <section className="stock-warning-table-card">
                 <div className="stock-warning-table-card__header">
                     <div>
                         <h2>Products requiring restock</h2>
-                        <p>{products.length} {products.length === 1 ? 'product is' : 'products are'} currently unavailable.</p>
+                        <p>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found.</p>
                     </div>
                     <span className="stock-warning-critical stock-warning-critical--header">
                         <ErrorOutlineRoundedIcon />Immediate attention
@@ -173,13 +177,10 @@ const NoStock = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.length > 0 ? products.map(product => (
+                            {filteredProducts.length > 0 ? filteredProducts.map(product => (
                                 <tr key={product.id}>
                                     <td>
                                         <div className="stock-warning-product">
-                                            <span className="stock-warning-product__avatar stock-warning-product__avatar--out">
-                                                {product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}
-                                            </span>
                                             <div>
                                                 <strong>{product.product_name}</strong>
                                                 <span>#{product.id} · {product.brand_name || 'No brand'}</span>

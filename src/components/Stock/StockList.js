@@ -23,6 +23,7 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
+import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
 
 import './StockWarning.css';
 import './StockList.css';
@@ -46,6 +47,7 @@ const StockList = () => {
     const [customerList, setCustomerList] = useState([]);
     const [filterLoading, setFilterLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const [modifyOpen, setModifyOpen] = useState(false);
     const [notifyOpen, setNotifyOpen] = useState(false);
@@ -81,6 +83,7 @@ const StockList = () => {
     const products = Array.isArray(productList?.data)
         ? productList.data
         : (Array.isArray(productList) ? productList : []);
+    const filteredProducts = products.filter(item => matchesStockSearch(item, searchQuery));
 
     const pendingOrderCount = products.reduce(
         (total, currentProduct) => total + (
@@ -256,11 +259,13 @@ const StockList = () => {
                 {filterLoading && <LinearProgress color="warning" className="stock-warning-progress" />}
             </section>
 
+            <StockSearchBar value={searchQuery} onChange={setSearchQuery} />
+
             <section className="stock-warning-table-card">
                 <div className="stock-warning-table-card__header">
                     <div>
                         <h2>Current inventory</h2>
-                        <p>{products.length} {products.length === 1 ? 'product' : 'products'} in this category.</p>
+                        <p>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found.</p>
                     </div>
                     <span className="stock-warning-live-pill"><span />Live inventory</span>
                 </div>
@@ -279,7 +284,7 @@ const StockList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.length > 0 ? products.map(currentProduct => {
+                            {filteredProducts.length > 0 ? filteredProducts.map(currentProduct => {
                                 const warningStock = currentProduct.stock_warning_type === 'RETAIL'
                                     ? Number(currentProduct.stock_pc || 0)
                                     : Number(currentProduct.stock || 0);
@@ -289,9 +294,6 @@ const StockList = () => {
                                     <tr key={currentProduct.id}>
                                         <td>
                                             <div className="stock-warning-product">
-                                                <span className="stock-warning-product__avatar">
-                                                    {currentProduct.product_name ? currentProduct.product_name.charAt(0).toUpperCase() : '?'}
-                                                </span>
                                                 <div>
                                                     <strong>{currentProduct.product_name}</strong>
                                                     <span>#{currentProduct.id} · {currentProduct.brand_name || 'No brand'}</span>

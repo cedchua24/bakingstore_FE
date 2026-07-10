@@ -423,6 +423,45 @@
     font-weight: 800;
 }
 
+.customer-report-table-tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.customer-report-table-tools .form-control {
+    width: min(280px, 42vw);
+    min-height: 38px;
+    border-color: #d8e0e8;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.customer-report-table-tools > span {
+    padding: 6px 10px;
+    color: #46586d;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    border-radius: 999px;
+    background: #eef3f8;
+}
+
+@media (max-width: 720px) {
+    .customer-report-table-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .customer-report-table-tools {
+        width: 100%;
+    }
+
+    .customer-report-table-tools .form-control {
+        width: 100%;
+    }
+}
+
 .customer-report-table-wrap {
     overflow-x: auto;
 }

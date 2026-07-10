@@ -1,300 +1,66 @@
-import React, { useState, useEffect } from "react";
-import { Button } from 'react-bootstrap';
-import { Link } from "react-router-dom";
-import ProductService from "../Product/ProductService.service";
-import SupplierServiceService from "../Supplier/SupplierService.service";
-import CategoryServiceService from "../Category/CategoryService.service";
-import { styled } from '@mui/material/styles';
-import { Form } from 'react-bootstrap';
-import Checkbox from '@mui/material/Checkbox';
-
-import CircularProgress from '@mui/material/CircularProgress';
-
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import UpdateIcon from '@mui/icons-material/Update';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography'
-import Modal from '@mui/material/Modal';
-import PageviewIcon from '@mui/icons-material/Pageview';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
+import React, { useEffect, useMemo, useState } from 'react';
+import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
+import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-
 import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import HistoryToggleOffRoundedIcon from '@mui/icons-material/HistoryToggleOffRounded';
+import ProductService from '../Product/ProductService.service';
+import SupplierService from '../Supplier/SupplierService.service';
+import CategoryService from '../Category/CategoryService.service';
+import './ProductReport.css';
+
+const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
+const date = value => value ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(value)) : null;
 
 const ReportProductUnsold = () => {
-
+    const [filters, setFilters] = useState({ supplier_id: '', category_id: '', dateFrom: '', dateTo: '' });
+    const [suppliers, setSuppliers] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [records, setRecords] = useState([]);
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [query, setQuery] = useState('');
 
     useEffect(() => {
-        fetchsortedQuantityList();
-        fetchSupplierList();
-        fetchCategoryList();
+        ProductService.getUnsoldProducts(filters).then(response => setRecords(response.data?.data || [])).catch(error => console.log('error', error));
+        SupplierService.getAll().then(response => setSuppliers(response.data || [])).catch(error => console.log('error', error));
+        CategoryService.getAll().then(response => setCategories(response.data || [])).catch(error => console.log('error', error));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const [role] = useState(localStorage.getItem('role_as'));
-    const [productSortedDate, setProductSortedDate] = useState({
-        supplier_id: '',
-        category_id: '',
-        dateFrom: "",
-        dateTo: ""
-    });
+    const runReport = () => {
+        const nextErrors = { ...(!filters.dateFrom && { dateFrom: 'Required' }), ...(!filters.dateTo && { dateTo: 'Required' }) };
+        setErrors(nextErrors);
+        if (Object.keys(nextErrors).length) return;
+        setLoading(true);
+        ProductService.getUnsoldProducts(filters).then(response => setRecords(response.data?.data || [])).catch(error => console.log('error', error)).finally(() => setLoading(false));
+    };
+    const update = event => setFilters({ ...filters, [event.target.name]: event.target.value });
+    const filtered = useMemo(() => { const q = query.trim().toLowerCase(); return q ? records.filter(item => [item.id,item.product_name,item.category_name,item.brand_name].some(value => String(value ?? '').toLowerCase().includes(q))) : records; }, [records, query]);
+    const totalValue = records.reduce((sum, item) => sum + Number(item.total_value || 0), 0);
+    const neverSold = records.filter(item => !item.last_sold_at).length;
 
-    const [supplierList, setSupplierList] = useState([]);
-    const [categoryList, setCategoryList] = useState([]);
-
-    const [sortedQuantity, setSortedQuantity] = useState({
-        data: [],
-        code: '',
-        message: '',
-        id: 0
-    });
-
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-    const [formErrors, setFormErrors] = useState({});
-
-    const onChangeInput = (e) => {
-        console.log("status", e.target.value);
-        console.log("status", e.target.name);
-        setProductSortedDate({ ...productSortedDate, [e.target.name]: e.target.value });
-
-    }
-
-
-    const validate = (values) => {
-        const errors = {};
-        if (productSortedDate.dateFrom.length == 0) {
-            errors.dateFrom = "Date From Required!";
-        }
-        if (productSortedDate.dateTo.length == 0) {
-            errors.dateTo = "Date To Required!";
-        }
-
-        return errors;
-    }
-
-
-
-    const submitSortedQuantityList = () => {
-        console.log('status: ', productSortedDate);
-        console.log("count: ", Object.keys(validate(productSortedDate)).length);
-        console.log("validate: ", validate(productSortedDate));
-        setFormErrors(validate(productSortedDate));
-        if (Object.keys(validate(productSortedDate)).length > 0) {
-            console.log("Has Validation: ");
-
-        } else {
-            setSubmitLoadingAdd(true);
-            setIsAddDisabled(true);
-            ProductService.getUnsoldProducts(productSortedDate)
-                .then(response => {
-                    console.log("response.data", response.data)
-                    // setsortedQuantityList(response.data);
-                    setSortedQuantity(response.data);
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-                    console.log("sortedQuantity", sortedQuantity)
-                })
-                .catch(e => {
-                    console.log("error", e)
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-
-                });
-        }
-    }
-
-    const fetchSupplierList = () => {
-        SupplierServiceService.getAll()
-            .then(response => {
-                setSupplierList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchCategoryList = () => {
-        CategoryServiceService.getAll()
-            .then(response => {
-                setCategoryList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchsortedQuantityList = () => {
-        ProductService.getUnsoldProducts(productSortedDate)
-            .then(response => {
-                console.log("response.data", response.data)
-                // setsortedQuantityList(response.data);
-                setSortedQuantity(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-
-            });
-
-    }
-
-    const Div = styled('div')(({ theme }) => ({
-        ...theme.typography.button,
-        backgroundColor: theme.palette.background.paper,
-        fontSize: "2rem",
-        padding: theme.spacing(1),
-        textAlign: "center",
-    }));
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-    const totalSum = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { total_value }) => acc + total_value, 0));
-    }
-
-    // formatDate
-    const covertDateString = (day) => {
-        var d = new Date(day);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
-
-
-    return (
-        <div>
-            <div style={{ float: 'right', minWidth: 800 }}>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Count: </Form.Label>
-                    <Form.Control type="text" value={sortedQuantity.data.length} />
-                </Form.Group>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Value: </Form.Label>
-                    <Form.Control type="text" value={totalSum(sortedQuantity.data)} />
-                </Form.Group>
-            </div>
-            <Form>
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="supplier-select-label">Supplier</InputLabel>
-                        <Select
-                            labelId="supplier-select-label"
-                            id="supplier-select"
-                            label="Supplier"
-                            name="supplier_id"
-                            value={productSortedDate.supplier_id}
-                            onChange={onChangeInput}
-                        >
-                            <MenuItem value="">All Suppliers</MenuItem>
-                            {
-                                supplierList.map((supplier, index) => (
-                                    <MenuItem key={supplier.id} value={supplier.id}>{supplier.supplier_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="category-select-label">Category</InputLabel>
-                        <Select
-                            labelId="category-select-label"
-                            id="category-select"
-                            label="Category"
-                            name="category_id"
-                            value={productSortedDate.category_id}
-                            onChange={onChangeInput}
-                        >
-                            <MenuItem value="">All Categories</MenuItem>
-                            {
-                                categoryList.map((category, index) => (
-                                    <MenuItem key={category.id} value={category.id}>{category.category_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-                {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date From*:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
-                </Form.Group>
-                {formErrors.dateTo && <p style={{ color: "red" }}>{formErrors.dateTo}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date To*:</Form.Label>
-                    <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
-                </Form.Group>
-                <Button variant="primary"
-                    onClick={submitSortedQuantityList}
-                    disabled={isAddDisabled}
-                >
-                    Find
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-                <br></br>
-            </Form>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Product UnSold </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Product Name</th>
-                        <th>Price</th>
-                        <th>Quantity / Weight</th>
-                        <th>Stock WS</th>
-                        <th>Stock RTL</th>
-                        <th>Total Value</th>
-                        <th>Last Sold</th>
-                    </tr>
-                </thead>
-                {sortedQuantity.data.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
-                    :
-                    (
-                        <tbody>
-                            {
-                                sortedQuantity.data.map((data, index) => (
-                                    <tr key={data.id} >
-                                        <td>{data.id}</td>
-                                        <td>{data.product_name}</td>
-                                        <td>{numberFormat(data.price)}</td>
-                                        <td>{data.quantity === 1 ? <p >{data.weight}kg</p>
-                                            : <p >{data.quantity}x{Number.isInteger(data.weight / data.quantity) ? (data.weight / data.quantity) : (data.weight / data.quantity).toPrecision(2)}{data.variation}</p>}
-                                        </td>
-                                        <td>{data.stock}</td>
-                                        <td>{data.stock_pc}</td>
-                                        <td>{numberFormat(data.total_value)}</td>
-                                        <td>
-                                            {data.last_sold_at ? (
-                                                covertDateString(data.last_sold_at)
-                                            ) : (
-                                                <span style={{ color: 'red', fontWeight: 'bold' }}>
-                                                    No Sales Ever!
-                                                </span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                )
-                                )
-                            }
-                        </tbody>)}
-            </table>
-
-        </div >
-    )
-}
-
-export default ReportProductUnsold
+    return <main className="pr-page">
+        <section className="pr-hero"><div className="pr-hero__icon"><HistoryToggleOffRoundedIcon /></div><div><span>Inventory intelligence</span><h1>Unsold Products</h1><p>Find products without recent sales and identify inventory that needs attention.</p></div></section>
+        <section className="pr-summary"><div><Inventory2OutlinedIcon /><div><span>Unsold products</span><strong>{records.length}</strong></div></div><div><PaymentsOutlinedIcon /><div><span>Inventory value</span><strong>{money(totalValue)}</strong></div></div><div><HistoryToggleOffRoundedIcon /><div><span>Never sold</span><strong>{neverSold}</strong></div></div></section>
+        <section className="pr-filter"><div className="pr-filter__header"><strong>Report filters</strong><span>Choose a period and optionally narrow results by supplier or category.</span></div><div className="pr-filter__grid">
+            <FormControl size="small"><InputLabel>Supplier</InputLabel><Select name="supplier_id" value={filters.supplier_id} label="Supplier" onChange={update}><MenuItem value="">All suppliers</MenuItem>{suppliers.map(item => <MenuItem key={item.id} value={item.id}>{item.supplier_name}</MenuItem>)}</Select></FormControl>
+            <FormControl size="small"><InputLabel>Category</InputLabel><Select name="category_id" value={filters.category_id} label="Category" onChange={update}><MenuItem value="">All categories</MenuItem>{categories.map(item => <MenuItem key={item.id} value={item.id}>{item.category_name}</MenuItem>)}</Select></FormControl>
+            <div><TextField fullWidth size="small" type="date" name="dateFrom" value={filters.dateFrom} onChange={update} label="Date from" InputLabelProps={{ shrink:true }} />{errors.dateFrom && <p className="pr-filter__error">Date from is required</p>}</div>
+            <div><TextField fullWidth size="small" type="date" name="dateTo" value={filters.dateTo} onChange={update} label="Date to" InputLabelProps={{ shrink:true }} />{errors.dateTo && <p className="pr-filter__error">Date to is required</p>}</div>
+            <Button variant="contained" onClick={runReport} disabled={loading}>Run report</Button>
+        </div>{loading && <LinearProgress className="pr-progress" />}</section>
+        <section className="pr-card"><header><div><h2>Unsold inventory</h2><p>{filtered.length} products found</p></div><TextField className="pr-search" size="small" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search products..." InputProps={{startAdornment:<InputAdornment position="start"><SearchRoundedIcon /></InputAdornment>}} /></header><div className="table-responsive"><table className="pr-table"><thead><tr><th>Product</th><th>Package</th><th>Price</th><th>Stock</th><th>Total value</th><th>Last sold</th></tr></thead><tbody>
+            {filtered.map(item => <tr key={item.id}><td><div className="pr-product"><strong>{item.product_name}</strong><span>#{item.id} · {item.category_name || item.brand_name || 'Product'}</span></div></td><td>{item.quantity === 1 ? `${item.weight}${item.variation || ''}` : `${item.quantity} × ${(Number(item.weight || 0)/Number(item.quantity || 1)).toPrecision(2)}${item.variation || ''}`}</td><td><strong>{money(item.price)}</strong></td><td><div className="pr-stock"><span>{item.stock ?? 0} WS</span><span>{item.stock_pc ?? 0} RTL</span></div></td><td className="pr-money">{money(item.total_value)}</td><td>{date(item.last_sold_at) || <span className="pr-negative">No sales recorded</span>}</td></tr>)}
+            {!filtered.length && <tr><td colSpan="6"><div className="pr-empty"><Inventory2OutlinedIcon /><strong>No unsold products found</strong><span>Adjust the filters and run the report again.</span></div></td></tr>}
+        </tbody></table></div></section>
+    </main>;
+};
+export default ReportProductUnsold;

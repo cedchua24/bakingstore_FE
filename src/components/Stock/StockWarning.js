@@ -18,6 +18,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
 
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -38,6 +39,7 @@ const StockWarning = (props) => {
     }, []);
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [isAddDisabled, setIsAddDisabled] = useState(false);
 
     const [productList, setProductList] = useState({
@@ -171,6 +173,7 @@ const StockWarning = (props) => {
     }
 
     const products = Array.isArray(productList.data) ? productList.data : [];
+    const filteredProducts = products.filter(item => matchesStockSearch(item, searchQuery));
     const pendingOrderCount = products.reduce(
         (total, currentProduct) => total + (
             Array.isArray(currentProduct.pending_orders)
@@ -285,11 +288,12 @@ const StockWarning = (props) => {
                 {submitLoadingAdd && <LinearProgress color="warning" className="stock-warning-progress" />}
             </section>
 
+            <StockSearchBar value={searchQuery} onChange={setSearchQuery} />
             <section className="stock-warning-table-card">
                 <div className="stock-warning-table-card__header">
                     <div>
                         <h2>Products needing attention</h2>
-                        <p>{products.length} {products.length === 1 ? 'product' : 'products'} currently below the configured threshold.</p>
+                        <p>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found.</p>
                     </div>
                     <span className="stock-warning-live-pill">
                         <span />
@@ -310,14 +314,11 @@ const StockWarning = (props) => {
                             </tr>
                         </thead>
                         <tbody>
-                    {products.length > 0 ? (
-                        products.map((product) => (
+                    {filteredProducts.length > 0 ? (
+                        filteredProducts.map((product) => (
                             <tr key={product.id}>
                                 <td>
                                     <div className="stock-warning-product">
-                                        <span className="stock-warning-product__avatar">
-                                            {product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}
-                                        </span>
                                         <div>
                                             <strong>{product.product_name}</strong>
                                             <span>#{product.id} · {product.brand_name || 'No brand'}</span>

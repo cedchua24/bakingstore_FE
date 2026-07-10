@@ -252,6 +252,7 @@ import ViewPaidChequeDueList from "./components/Payment/ViewPaidChequeDueList";
 
 import EditCreditCardDue from "./components/Payment/EditCreditCardDue";
 import PayCreditCard from "./components/Payment/PayCreditCard";
+import PayCheque from "./components/Payment/PayCheque";
 import PromoInstallment from "./components/Payment/PromoInstallment";
 import PayCreditCardHistory from "./components/Payment/PayCreditCardHistory";
 import CreditCardPayHistory from "./components/Payment/CreditCardPayHistory";
@@ -537,6 +538,7 @@ const App = () => {
           <Route path="/installmentPaymentList" element={<InstallmentPaymentList />} />
           <Route path="/updateCreditCardDue/:id" element={<EditCreditCardDue />} />
           <Route path="/payCreditCard/:id" element={<PayCreditCard />} />
+          <Route path="/payCheque/:id" element={<PayCheque />} />
           <Route path="/promoInstallment/:id" element={<PromoInstallment />} />
 
           <Route path="/payCreditCardHistory/:id" element={<PayCreditCardHistory />} />

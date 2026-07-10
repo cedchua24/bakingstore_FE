@@ -110,6 +110,7 @@ const AddProductOrderSupplierTransaction = () => {
     const [open, setOpen] = React.useState(false);
 
     const handleOpen = (id, e) => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         console.log('e', id);
         fetchOrderBySupplierId(id);
         setOpen(true);
@@ -147,6 +148,7 @@ const AddProductOrderSupplierTransaction = () => {
         total_transaction_price: 0,
         order_date: '',
         status: '',
+        payment_status: 0,
         created_at: '',
         updated_at: ''
     });
@@ -310,6 +312,7 @@ const AddProductOrderSupplierTransaction = () => {
 
     const saveOrderSupplier = (event) => {
         event.preventDefault();
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         console.log('orderSupplier', orderSupplier);
 
         console.log("count: ", Object.keys(validate(orderSupplier)).length);
@@ -356,6 +359,7 @@ const AddProductOrderSupplierTransaction = () => {
 
     const submitAutoPo = (event) => {
         event.preventDefault();
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         console.log('autoPo', autoPo);
 
         setSubmitLoadingAdd(true);
@@ -416,9 +420,12 @@ const AddProductOrderSupplierTransaction = () => {
                     setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
                     setinvoiceTotal(TAX_RATE * response.data.total_transaction_price + response.data.total_transaction_price);
                 } else {
-                    setinvoiceSubtotal(response.data.total_transaction_price / (1 + TAX_RATE));
-                    setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
-                    setinvoiceTotal(response.data.total_transaction_price);
+                    const totalPrice = response.data.total_transaction_price;
+                    const subtotal = totalPrice / (1 + TAX_RATE);
+
+                    setinvoiceSubtotal(subtotal);
+                    setinvoiceTaxes(totalPrice - subtotal);
+                    setinvoiceTotal(totalPrice);
                 }
 
                 // MarkUpPriceService.fetchMarkUpBySupplierId(response.data.supplier_id)
@@ -476,6 +483,7 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
     const openDelete = (id) => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         console.log('delete', id);
         setDeleteId(id)
         setDeleteOpenModal(true);
@@ -483,6 +491,7 @@ const AddProductOrderSupplierTransaction = () => {
 
 
     const deleteOrderTransaction = (id, e) => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
 
         const index = orderList.findIndex(orderSupplier => orderSupplier.id === id);
         const neworderSupplier = [...orderList];
@@ -509,6 +518,7 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
     const updateOrderSupplier = () => {
+        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         setSubmitLoadingUpdate(true);
         OrderSupplierService.update(orderSupplierModal.id, orderSupplierModal)
             .then(response => {
@@ -536,6 +546,8 @@ const AddProductOrderSupplierTransaction = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+
+    const isFullyPaid = Number(orderSupplierTransaction.payment_status) === 1;
 
     return (
         <main className="purchase-order-page po-products-page">
@@ -704,7 +716,7 @@ const AddProductOrderSupplierTransaction = () => {
                         <Button
                             variant="contained"
                             type="submit"
-                            disabled={isAddDisabled}
+                            disabled={isFullyPaid || isAddDisabled}
                             startIcon={submitLoadingAdd ? <CircularProgress size={18} color="inherit" /> : <AddRoundedIcon />}
                             className="po-add-button"
                         >
@@ -718,7 +730,7 @@ const AddProductOrderSupplierTransaction = () => {
                     <Button
                         variant="outlined"
                         type="submit"
-                        disabled={isAddDisabled}
+                        disabled={isFullyPaid || isAddDisabled}
                         startIcon={<AutoAwesomeRoundedIcon />}
                         className="po-auto-button"
                     >
@@ -772,17 +784,21 @@ const AddProductOrderSupplierTransaction = () => {
                                 <TableCell align="right"><strong>₱{ccyFormat(Number(row.total_price))}</strong></TableCell>
                                 <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : "—"}</TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Edit product">
-                                        <IconButton onClick={(e) => handleOpen(row.id, e)} aria-label={`Edit ${row.product_name}`}>
-                                            <UpdateIcon />
-                                        </IconButton>
+                                    <Tooltip title={isFullyPaid ? "Fully paid orders cannot be updated" : "Edit product"}>
+                                        <span>
+                                            <IconButton disabled={isFullyPaid} onClick={(e) => handleOpen(row.id, e)} aria-label={`Edit ${row.product_name}`}>
+                                                <UpdateIcon />
+                                            </IconButton>
+                                        </span>
                                     </Tooltip>
                                 </TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title="Remove product">
-                                        <IconButton color="error" onClick={(e) => openDelete(row.id, e)} aria-label={`Remove ${row.product_name}`}>
-                                            <DeleteIcon />
-                                        </IconButton>
+                                    <Tooltip title={isFullyPaid ? "Fully paid orders cannot be deleted" : "Remove product"}>
+                                        <span>
+                                            <IconButton color="error" disabled={isFullyPaid} onClick={(e) => openDelete(row.id, e)} aria-label={`Remove ${row.product_name}`}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </span>
                                     </Tooltip>
                                 </TableCell>
                             </TableRow>
@@ -889,6 +905,7 @@ const AddProductOrderSupplierTransaction = () => {
                             variant="contained"
                             type="submit"
                             onClick={updateOrderSupplier}
+                            disabled={isFullyPaid || submitLoadingUpdate}
                             size="large" >
                             Submit
                         </Button>
@@ -913,11 +930,17 @@ const AddProductOrderSupplierTransaction = () => {
                 }
                 <DialogActions>
                     <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                    <Button onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
+                    <Button disabled={isFullyPaid || submitLoading} onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
                         Agree
                     </Button>
                 </DialogActions>
             </Dialog>
+            <div className="po-copy-list">
+                <h5>Supplier Order</h5>
+                {orderList.map((row) => (
+                    <h6 key={row.id}>{row.quantity} {row.unit} - {row.product_name}</h6>
+                ))}
+            </div>
             </section>
         </main>
     );

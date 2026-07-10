@@ -10,6 +10,8 @@ import InputLabel from '@mui/material/InputLabel';
 import LinearProgress from '@mui/material/LinearProgress';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
 import SearchIcon from '@mui/icons-material/Search';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
@@ -24,6 +26,7 @@ const ProductList = () => {
     const [categoryList, setCategoryList] = useState([]);
     const [productList, setProductList] = useState({ total_value: {}, data: [] });
     const [loading, setLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         ProductServiceService.fetchProductListV2()
@@ -46,6 +49,15 @@ const ProductList = () => {
     const products = Array.isArray(productList?.data)
         ? productList.data
         : (Array.isArray(productList) ? productList : []);
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+    const filteredProducts = products.filter(product => !normalizedSearch || [
+        product.id,
+        product.product_name,
+        product.category_name,
+        product.brand_name,
+        product.packaging,
+        product.note
+    ].some(value => String(value ?? '').toLowerCase().includes(normalizedSearch)));
 
     const totalInventoryValue = productList?.total_value?.total_price
         ?? products.reduce(
@@ -131,6 +143,17 @@ const ProductList = () => {
                     <span>Choose a category to narrow the inventory list.</span>
                 </div>
                 <div className="product-list-filter__controls">
+                    <TextField
+                        size="small"
+                        value={searchQuery}
+                        onChange={event => setSearchQuery(event.target.value)}
+                        placeholder="Search products..."
+                        className="product-list-product-search"
+                        inputProps={{ 'aria-label': 'Search products' }}
+                        InputProps={{
+                            startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>
+                        }}
+                    />
                     <FormControl size="small" className="product-list-category">
                         <InputLabel id="product-list-category-label">Category</InputLabel>
                         <Select
@@ -164,9 +187,9 @@ const ProductList = () => {
                 <div className="product-list-table-card__header">
                     <div>
                         <h2>Inventory products</h2>
-                        <p>{products.length} {products.length === 1 ? 'product' : 'products'} in this view</p>
+                        <p>{filteredProducts.length} {filteredProducts.length === 1 ? 'product' : 'products'} found</p>
                     </div>
-                    <span className="product-list-result-pill">{products.length} results</span>
+                    <span className="product-list-result-pill">{filteredProducts.length} results</span>
                 </div>
 
                 <div className="table-responsive">
@@ -185,7 +208,7 @@ const ProductList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {products.length > 0 ? products.map(product => {
+                            {filteredProducts.length > 0 ? filteredProducts.map(product => {
                                 const warningStock = product.stock_warning_type === 'RETAIL'
                                     ? Number(product.stock_pc || 0)
                                     : Number(product.stock || 0);
@@ -195,9 +218,6 @@ const ProductList = () => {
                                     <tr key={product.id} className={product.disabled === 1 ? 'product-list-row--disabled' : ''}>
                                         <td>
                                             <div className="product-list-product">
-                                                <span className="product-list-product__avatar">
-                                                    {product.product_name ? product.product_name.charAt(0).toUpperCase() : '?'}
-                                                </span>
                                                 <div>
                                                     <strong>{product.product_name}</strong>
                                                     <span>#{product.id} · {product.brand_name || 'No brand'}</span>
@@ -247,7 +267,7 @@ const ProductList = () => {
                                         <div className="product-list-empty">
                                             <Inventory2OutlinedIcon />
                                             <h3>No products found</h3>
-                                            <p>There are no products available in this category.</p>
+                                            <p>Try another category or search term.</p>
                                         </div>
                                     </td>
                                 </tr>

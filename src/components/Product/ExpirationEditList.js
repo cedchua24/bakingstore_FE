@@ -1,300 +1,102 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Form, Alert } from 'react-bootstrap';
-import OrderSupplierService from "../OrderSupplierTransaction/OrderSupplierServiceService";
-import ProductServiceService from "./ProductService.service";
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import Button from '@mui/material/Button';
-
-import InputAdornment from '@mui/material/InputAdornment';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
-import DeleteIcon from '@mui/icons-material/Delete';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-import Modal from '@mui/material/Modal';
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
-
-import FormControlLabel from '@mui/material/FormControlLabel';
+import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import Typography from '@mui/material/Typography'
-import UpdateIcon from '@mui/icons-material/Update';
-
-import LinearProgress from '@mui/material/LinearProgress';
 import CircularProgress from '@mui/material/CircularProgress';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Modal from '@mui/material/Modal';
+import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import OrderSupplierService from '../OrderSupplierTransaction/OrderSupplierServiceService';
+import ProductServiceService from './ProductService.service';
+import './ProductManagement.css';
 
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
+const formatDate = value => value ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(new Date(value)) : 'Not set';
+const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
 
 const ExpirationEditList = () => {
-
-
     const { id } = useParams();
+    const [product, setProduct] = useState({ product_name: '', price: 0 });
+    const [records, setRecords] = useState([]);
+    const [selected, setSelected] = useState({ id: 0, enable: 0, expiration: '', price: 0 });
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    const loadRecords = () => ProductServiceService.fetchOrderSupplierExpirationList(id)
+        .then(response => setRecords(Array.isArray(response.data) ? response.data : []))
+        .catch(error => console.log('error', error));
 
     useEffect(() => {
-        fetchProduct(id);
-        fetchSupplierProduct(id);
+        ProductServiceService.get(id).then(response => setProduct(response.data)).catch(error => console.log('error', error));
+        loadRecords();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
 
-    }, []);
-
-    const [product, setProduct] = useState({
-        id: 0,
-        product_name: '',
-        price: ''
-    });
-    const [productSupplier, setProductSupplier] = useState([]);
-    const [message, setMessage] = useState(false);
-    const [submitLoadingUpdate, setSubmitLoadingUpdate] = useState(false);
-    const [open, setOpen] = React.useState(false);
-    const handleClose = () => setOpen(false);
-
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
-
-    const [orderSupplierModal, setOrderSupplierModal] = useState({
-        id: 0,
-        enable: 0,
-        expiration: ''
-    });
-
-    const style = {
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 300,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+    const editRecord = recordId => {
+        OrderSupplierService.fetchOrderBySupplierId(recordId).then(response => {
+            setSelected(response.data);
+            setOpen(true);
+        }).catch(error => console.log('error', error));
     };
 
-    const onChangePaymentTypedisabled = (e) => {
+    const updateRecord = () => {
+        setLoading(true);
+        OrderSupplierService.setToActiveExpiration(selected).then(() => {
+            setOpen(false);
+            setSuccess(true);
+            loadRecords();
+        }).catch(error => console.log(error)).finally(() => setLoading(false));
+    };
 
-        console.log("error", e.target.checked)
-        if (e.target.type === 'checkbox') {
-            if (e.target.checked === true) {
-                setOrderSupplierModal({ ...orderSupplierModal, enable: 1 });
-            } else {
-                setOrderSupplierModal({ ...orderSupplierModal, enable: 0 });
-            }
-        } else {
-            setOrderSupplierModal({ ...orderSupplierModal, enable: e.target.value });
-        }
-    }
+    return <main className="pm-page">
+        <section className="pm-hero">
+            <div className="pm-hero__icon"><EventOutlinedIcon /></div>
+            <div><span>Shelf-life monitoring</span><h1>Expiration History</h1><p>Manage expiration batches and choose which record is currently active.</p></div>
+            <div className="pm-hero__stats"><strong>{records.length}</strong><span>Expiration records</span><strong>{records.filter(record => record.enable === 1).length}</strong><span>Active</span></div>
+        </section>
 
+        {success && <Alert severity="success" onClose={() => setSuccess(false)} sx={{ mt: 2 }}>Expiration record updated successfully.</Alert>}
 
-    const fetchProduct = (id) => {
-        ProductServiceService.get(id)
-            .then(response => {
-                setProduct(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+        <section className="pe-product-card">
+            <div><h2>{product.product_name || 'Product'}</h2><p>Product #{id} · Expiration and supplier pricing history</p></div>
+            <span className="pe-price">{money(product.price)}</span>
+        </section>
 
-    const handleOpen = (id, e) => {
-        console.log('e', id);
-        fetchOrderBySupplierId(id);
-        setOpen(true);
-    }
+        <section className="pm-card">
+            <header><div><h2>Expiration records</h2><p>{records.length} {records.length === 1 ? 'batch' : 'batches'} recorded</p></div></header>
+            <div className="table-responsive"><table className="pm-table">
+                <thead><tr><th>Record</th><th>Expiration date</th><th>Price</th><th>Status</th><th></th></tr></thead>
+                <tbody>
+                    {records.map(record => <tr key={record.id}>
+                        <td><strong>#{record.id}</strong></td>
+                        <td><span className="pm-expiration">{formatDate(record.expiration)}</span></td>
+                        <td><strong>{money(record.price)}</strong></td>
+                        <td><span className={`pm-status ${record.enable === 1 ? 'pm-status--active' : 'pm-status--disabled'}`}>{record.enable === 1 ? 'Active' : 'Inactive'}</span></td>
+                        <td><button className="pe-update" type="button" onClick={() => editRecord(record.id)} aria-label={`Edit expiration record ${record.id}`}><EditOutlinedIcon /></button></td>
+                    </tr>)}
+                    {!records.length && <tr><td colSpan="5"><div className="pm-empty"><Inventory2OutlinedIcon /><strong>No expiration records</strong><span>No supplier batches were found for this product.</span></div></td></tr>}
+                </tbody>
+            </table></div>
+        </section>
 
-    const fetchOrderBySupplierId = async (id) => {
-        await OrderSupplierService.fetchOrderBySupplierId(id)
-            .then(response => {
-                setOrderSupplierModal(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+        <Modal open={open} onClose={() => setOpen(false)}>
+            <Box className="pe-modal">
+                <span className="pm-category-pill">Expiration record #{selected.id}</span>
+                <h2 style={{ margin: '12px 0 4px' }}>Update active status</h2>
+                <p style={{ margin: '0 0 18px', color: '#6f7890', fontSize: '.82rem' }}>{selected.product_name || product.product_name}</p>
+                <div className="pe-product-card" style={{ margin: '0 0 14px', padding: 14 }}><div><p>Expiration date</p><strong>{formatDate(selected.expiration)}</strong></div><strong>{money(selected.price)}</strong></div>
+                <FormControlLabel control={<Checkbox checked={selected.enable === 1} onChange={event => setSelected({ ...selected, enable: event.target.checked ? 1 : 0 })} />} label="Set as active expiration record" />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
+                    <Button onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button variant="contained" onClick={updateRecord} disabled={loading}>{loading ? <CircularProgress size={20} color="inherit" /> : 'Save changes'}</Button>
+                </div>
+            </Box>
+        </Modal>
+    </main>;
+};
 
-    const updateOrderSupplier = () => {
-        setSubmitLoadingUpdate(true);
-        OrderSupplierService.setToActiveExpiration(orderSupplierModal)
-            .then(response => {
-                setSubmitLoadingUpdate(false);
-                setOpen(false);
-                fetchSupplierProduct(id);
-                setValidator({
-                    severity: 'success',
-                    message: 'Updated Successfully',
-                    isShow: true,
-                });
-            })
-            .catch(e => {
-                console.log(e);
-            });
-    }
-
-
-    const fetchSupplierProduct = (id) => {
-        ProductServiceService.fetchOrderSupplierExpirationList(id)
-            .then(response => {
-                setProductSupplier(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const formatStatementDate = (date) => {
-        var d = new Date(date);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
-    return (
-        <div>
-            {message &&
-                <Alert variant="success" dismissible>
-                    <Alert.Heading>Successfully Updated!</Alert.Heading>
-                    <p>
-                        Change this and that and try again. Duis mollis, est non commodo
-                        luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-                        Cras mattis consectetur purus sit amet fermentum.
-                    </p>
-                </Alert>
-            }
-            <Form>
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Product Name</Form.Label>
-                    <Form.Control type="text" value={product.product_name} name="product_name" />
-                </Form.Group>
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>SRP</Form.Label>
-                    <Form.Control type="text" value={product.price} name="srp" />
-                </Form.Group>
-
-            </Form>
-            <div>
-                <legend align="center" style={{ fontWeight: 'bold' }} > Product Expiration   </legend>
-                <table class="table table-bordered">
-                    <thead class="table-dark">
-                        <tr class="table-secondary">
-                            <th>ID</th>
-                            <th>Date</th>
-                            <th>Price</th>
-                            <th>Active</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-
-                        {
-                            productSupplier.map((supplier, index) => (
-                                <tr key={supplier.id} >
-                                    <td>{supplier.id}</td>
-                                    <td>{formatStatementDate(supplier.expiration)}</td>
-                                    <td>{supplier.price}</td>
-                                    <td>{supplier.enable === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                    <td> <UpdateIcon color="primary" onClick={(e) => handleOpen(supplier.id, e)} /></td>
-                                </tr>
-                            )
-                            )
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Product
-                    </Typography>
-                    {submitLoadingUpdate &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <TextField
-                        disabled
-                        id="filled-required"
-
-                        variant="filled"
-                        name='product_name'
-                        value={orderSupplierModal.product_name}
-                    />
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Price</InputLabel>
-                        <Input
-                            id="filled-required"
-                            label="=Price"
-                            variant="filled"
-                            name='price'
-                            value={orderSupplierModal.price}
-                            disabled
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <Form.Group controlId="formBasicEmail">
-                            <Form.Label>Expiration</Form.Label>
-                            <Form.Control type="date" name="expiration" value={orderSupplierModal.expiration} disabled />
-                        </Form.Group>
-                    </FormControl>
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Active ? </Form.Label>
-
-                            <Checkbox
-                                checked={orderSupplierModal.enable === 0 ? false : true}
-                                onChange={onChangePaymentTypedisabled}
-                                inputProps={{ 'aria-label': 'controlled' }}
-                            />
-                        </Form.Group>
-                    </FormControl>
-                    <br></br>
-                    <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
-                    </Box>
-                </Box>
-            </Modal>
-
-        </div>
-    )
-}
-
-export default ExpirationEditList
+export default ExpirationEditList;

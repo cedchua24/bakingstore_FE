@@ -1,23 +1,24 @@
 import React, { useState } from "react";
-import { Button, Form, Alert } from 'react-bootstrap';
 import { useNavigate } from "react-router-dom";
-import ShopOrderTransactionService from "./ShopOrderTransactionService";
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
+import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
-import Box from '@mui/material/Box';
-
-import { styled } from '@mui/material/styles';
-
-
+import Stack from '@mui/material/Stack';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Stepper from '@mui/material/Stepper';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import ShopOrderTransactionService from "./ShopOrderTransactionService";
 
 const AddShopOrderTransaction = (props) => {
-
     const navigate = useNavigate();
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         id: 0,
@@ -34,6 +35,7 @@ const AddShopOrderTransaction = (props) => {
         created_at: '',
         updated_at: ''
     });
+
     const shopList = props.shopList;
     const userList = props.userList;
 
@@ -61,108 +63,119 @@ const AddShopOrderTransaction = (props) => {
                 });
         });
     }
-    const Div = styled('div')(({ theme }) => ({
-        ...theme.typography.button,
-        backgroundColor: theme.palette.background.paper,
-        fontSize: "2rem",
-        padding: theme.spacing(1),
-        textAlign: "center",
-    }));
+
     return (
-        <div>
-            <Div>{"Shop Order"}</Div>
-            <Stepper activeStep={0} alternativeLabel>
-                {steps.map((label) => (
-                    <Step key={label}>
-                        <StepLabel>{label}</StepLabel>
+        <Box sx={{ bgcolor: '#f6f7f9', minHeight: '100vh', py: { xs: 2, md: 4 } }}>
+            <Box sx={{ width: 'min(960px, calc(100% - 32px))', mx: 'auto' }}>
+                <Paper elevation={0} sx={{ borderRadius: 1, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
+                    <Box sx={{ bgcolor: '#2f201b', color: '#fff', px: { xs: 2, md: 3 }, py: 2.5 }}>
+                        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
+                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                <Box sx={{ bgcolor: 'rgba(255,255,255,.14)', borderRadius: 1, p: 1, display: 'flex' }}>
+                                    <StorefrontIcon />
+                                </Box>
+                                <Box>
+                                    <Typography variant="overline" sx={{ color: '#f3c58b', letterSpacing: 0 }}>Shop Order</Typography>
+                                    <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.15 }}>
+                                        Create Transaction
+                                    </Typography>
+                                </Box>
+                            </Stack>
+                        </Stack>
+                    </Box>
 
+                    <Box sx={{ px: { xs: 2, md: 3 }, py: 3 }}>
+                        {message &&
+                            <Alert severity="success" sx={{ mb: 2 }}>
+                                Successfully added.
+                            </Alert>
+                        }
 
-                    </Step>
-                ))}
-            </Stepper>
-            <br></br>
-            {message &&
-                <Alert variant="success" dismissible>
-                    <Alert.Heading>Successfully Added!</Alert.Heading>
-                    <p>
-                        Change this and that and try again. Duis mollis, est non commodo
-                        luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.
-                        Cras mattis consectetur purus sit amet fermentum.
-                    </p>
-                </Alert>
-            }
+                        <Stepper activeStep={0} alternativeLabel sx={{ mb: 3 }}>
+                            {steps.map((label) => (
+                                <Step key={label}>
+                                    <StepLabel>{label}</StepLabel>
+                                </Step>
+                            ))}
+                        </Stepper>
 
-            <Form>
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Shop Name</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
-                            name="shop_id"
-                            onChange={onChangeInput}
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                                gap: 2,
+                            }}
                         >
-                            {
-                                shopList.map((shop, index) => (
-                                    <MenuItem value={shop.id}>{shop.shop_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
+                            <FormControl fullWidth>
+                                <InputLabel id="shop-order-shop-label">Shop Name</InputLabel>
+                                <Select
+                                    labelId="shop-order-shop-label"
+                                    value={shopOrderTransaction.shop_id}
+                                    label="Shop Name"
+                                    name="shop_id"
+                                    onChange={onChangeInput}
+                                >
+                                    {shopList.map((shop) => (
+                                        <MenuItem key={shop.id} value={shop.id}>{shop.shop_name}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
 
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Requestor</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Requestor"
-                            name="requestor"
-                            onChange={onChangeInput}
-                        >
-                            {
-                                userList.map((user, index) => (
-                                    <MenuItem value={user.id}>{user.name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
+                            <TextField
+                                type="date"
+                                name="date"
+                                label="Date"
+                                value={shopOrderTransaction.date}
+                                onChange={onChangeInput}
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                            />
 
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Checker</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Checker"
-                            name="checker"
-                            onChange={onChangeInput}
-                        >
-                            {
-                                userList.map((user, index) => (
-                                    <MenuItem value={user.id}>{user.name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
+                            <FormControl fullWidth>
+                                <InputLabel id="shop-order-requestor-label">Requestor</InputLabel>
+                                <Select
+                                    labelId="shop-order-requestor-label"
+                                    value={shopOrderTransaction.requestor}
+                                    label="Requestor"
+                                    name="requestor"
+                                    onChange={onChangeInput}
+                                >
+                                    {userList.map((user) => (
+                                        <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
 
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date</Form.Label>
-                    <Form.Control type="date" name="date" onChange={onChangeInput} />
-                </Form.Group>
+                            <FormControl fullWidth>
+                                <InputLabel id="shop-order-checker-label">Checker</InputLabel>
+                                <Select
+                                    labelId="shop-order-checker-label"
+                                    value={shopOrderTransaction.checker}
+                                    label="Checker"
+                                    name="checker"
+                                    onChange={onChangeInput}
+                                >
+                                    {userList.map((user) => (
+                                        <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Box>
 
-                <Button variant="primary" onClick={saveOrderTransaction}>
-                    Next
-                </Button>
-            </Form>
-            <br></br>
-
-        </div>
+                        <Stack direction="row" justifyContent="flex-end" sx={{ mt: 3 }}>
+                            <Button
+                                variant="contained"
+                                endIcon={<ArrowForwardIcon />}
+                                onClick={saveOrderTransaction}
+                                sx={{ fontWeight: 800, minWidth: 140 }}
+                            >
+                                Next
+                            </Button>
+                        </Stack>
+                    </Box>
+                </Paper>
+            </Box>
+        </Box>
     )
 }
 

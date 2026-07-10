@@ -53,9 +53,12 @@ const CompletedCustomerOrder = () => {
         await OrderCustomerListService.get(id)
             .then(response => {
                 // setOrderCustomerTransactionList(response.data);
-                setinvoiceSubtotal(response.data.total_transaction_price / (1 + TAX_RATE));
-                setinvoiceTaxes(TAX_RATE * response.data.total_transaction_price);
-                setinvoiceTotal(response.data.total_transaction_price);
+                const totalPrice = response.data.total_transaction_price;
+                const subtotal = totalPrice / (1 + TAX_RATE);
+
+                setinvoiceSubtotal(subtotal);
+                setinvoiceTaxes(totalPrice - subtotal);
+                setinvoiceTotal(totalPrice);
             })
             .catch(e => {
                 console.log("error", e)
