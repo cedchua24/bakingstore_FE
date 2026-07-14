@@ -1,235 +1,91 @@
-import React, { useState, useEffect } from "react";
-import { Button, Form } from 'react-bootstrap';
-import ExpensesTypeV2Service from "./ExpensesTypeV2Service";
-import ChartOfAccountService from "./ChartOfAccountService";
-import LinearProgress from '@mui/material/LinearProgress';
-import { Link } from "react-router-dom";
-import Stack from '@mui/material/Stack';
+import React, { useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import InputAdornment from '@mui/material/InputAdornment';
+import InputLabel from '@mui/material/InputLabel';
+import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
+import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import ChartOfAccountService from './ChartOfAccountService';
+import ExpensesTypeService from './ExpensesTypeV2Service';
+import './ExpenseType.css';
+
+const initialExpenseType = { chart_of_account_id: '', expense_type_code: '', expense_type: '' };
 
 const AddExpenseTypeV2 = () => {
+    const [expenseType, setExpenseType] = useState(initialExpenseType);
+    const [expenseTypes, setExpenseTypes] = useState([]);
+    const [accounts, setAccounts] = useState([]);
+    const [errors, setErrors] = useState({});
+    const [notice, setNotice] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [query, setQuery] = useState('');
 
-    useEffect(() => {
-        fetchExpenseType();
-        fetchChartOfAccount();
-    }, []);
+    const loadData = () => Promise.all([ExpensesTypeService.getAll(), ChartOfAccountService.getAll()])
+        .then(([typeResponse, accountResponse]) => {
+            setExpenseTypes(Array.isArray(typeResponse.data) ? typeResponse.data : []);
+            setAccounts(Array.isArray(accountResponse.data) ? accountResponse.data : []);
+        })
+        .catch(() => setNotice({ severity: 'error', message: 'Expense type data could not be loaded.' }))
+        .finally(() => setLoading(false));
 
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
+    useEffect(() => { loadData(); }, []);
 
-    const [chartOfAccountList, setChartOfAccountList] = useState([]);
+    const update = (event) => {
+        const { name, value } = event.target;
+        setExpenseType((current) => ({ ...current, [name]: value }));
+        if (value !== '') setErrors((current) => ({ ...current, [name]: undefined }));
+    };
 
-    const [customerList, setExpenseTypeList] = useState([]);
-    const [expenseType, setExpenseType] = useState({
-        id: 0,
-        chart_of_account_id: '',
-        expense_type_code: 0,
-        expense_type: '',
-        status: 0,
-        updated_at: ''
-    });
+    const save = () => {
+        const nextErrors = {};
+        if (!expenseType.chart_of_account_id) nextErrors.chart_of_account_id = 'Account is required.';
+        if (expenseType.expense_type_code === '') nextErrors.expense_type_code = 'Type code is required.';
+        if (!expenseType.expense_type.trim()) nextErrors.expense_type = 'Expense type is required.';
+        setErrors(nextErrors);
+        if (Object.keys(nextErrors).length) return;
 
-    const [formErrors, setFormErrors] = useState({});
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-
-    const onChangeExpenseType = (e) => {
-        setExpenseType({ ...expenseType, [e.target.name]: e.target.value });
-    }
-
-    const fetchExpenseType = () => {
-        ExpensesTypeV2Service.getAll()
-            .then(response => {
-                setExpenseTypeList(response.data);
+        setSaving(true);
+        setNotice(null);
+        ExpensesTypeService.sanctum()
+            .then(() => ExpensesTypeService.create(expenseType))
+            .then((response) => {
+                setNotice({ severity: 'success', message: response.data?.message || 'Expense type created successfully.' });
+                setExpenseType(initialExpenseType);
+                return ExpensesTypeService.getAll();
             })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+            .then((response) => setExpenseTypes(Array.isArray(response.data) ? response.data : []))
+            .catch(() => setNotice({ severity: 'error', message: 'This expense type already exists or could not be saved.' }))
+            .finally(() => setSaving(false));
+    };
 
-    const fetchChartOfAccount = () => {
-        ChartOfAccountService.getAll()
-            .then(response => {
-                setChartOfAccountList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+    const visibleTypes = useMemo(() => {
+        const term = query.trim().toLowerCase();
+        if (!term) return expenseTypes;
+        return expenseTypes.filter((item) => [item.id, item.expense_type, item.chart_of_account_name, item.chart_of_account_code, item.expense_type_code]
+            .some((value) => String(value || '').toLowerCase().includes(term)));
+    }, [expenseTypes, query]);
 
+    return <main className="et-page"><div className="et-shell">
+        <header className="et-hero"><div className="et-hero-icon"><AddCircleOutlineRoundedIcon /></div><div><span>Expense setup</span><h1>Add Expense Type</h1><p>Create an expense type and connect it to the chart of accounts.</p></div></header>
+        {notice && <Alert severity={notice.severity} className="et-alert" onClose={() => setNotice(null)}>{notice.message}</Alert>}
+        <section className="et-form-card"><header><div><strong>Expense type details</strong><span>Assign an account and a single-digit type code.</span></div></header><div className="et-form-grid">
+            <div><FormControl fullWidth size="small" error={Boolean(errors.chart_of_account_id)}><InputLabel>Chart of account *</InputLabel><Select name="chart_of_account_id" value={expenseType.chart_of_account_id} label="Chart of account *" onChange={update}>{accounts.map((item) => <MenuItem key={item.id} value={item.id} disabled={Number(item.status) === 1}>{item.chart_of_account_name} — {item.chart_of_account_code}</MenuItem>)}</Select></FormControl>{errors.chart_of_account_id && <p className="et-error">{errors.chart_of_account_id}</p>}</div>
+            <div><FormControl fullWidth size="small" error={Boolean(errors.expense_type_code)}><InputLabel>Type code *</InputLabel><Select name="expense_type_code" value={expenseType.expense_type_code} label="Type code *" onChange={update}>{Array.from({ length: 10 }, (_, code) => <MenuItem key={code} value={code}>{code}</MenuItem>)}</Select></FormControl>{errors.expense_type_code && <p className="et-error">{errors.expense_type_code}</p>}</div>
+            <div><TextField fullWidth size="small" name="expense_type" value={expenseType.expense_type} label="Expense type *" placeholder="e.g. Operating Expenses" onChange={update} error={Boolean(errors.expense_type)} />{errors.expense_type && <p className="et-error">{errors.expense_type}</p>}</div>
+            <Button variant="contained" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Add expense type'}</Button>
+        </div>{saving && <LinearProgress className="et-progress" />}</section>
+        <section className="et-table-card"><header><div><h2>Expense types</h2><p>{visibleTypes.length} configured types</p></div><TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search types..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></header><div className="et-table-scroll"><table className="et-table"><thead><tr><th>ID</th><th>Account code</th><th>Expense type</th><th>Account</th></tr></thead><tbody>
+            {visibleTypes.map((item) => <tr key={item.id}><td>#{item.id}</td><td><span className="et-code"><b>{item.chart_of_account_code}</b><i>{item.expense_type_code}</i></span></td><td><strong>{item.expense_type}</strong></td><td>{item.chart_of_account_name || '—'}</td></tr>)}
+            {!loading && !visibleTypes.length && <tr><td colSpan="4"><div className="et-empty"><AccountTreeOutlinedIcon /><strong>No expense types found</strong><span>Add your first type or change the search.</span></div></td></tr>}
+        </tbody></table></div>{loading && <LinearProgress className="et-progress" />}</section>
+    </div></main>;
+};
 
-    const validate = (values) => {
-        const errors = {};
-        if (expenseType.expense_type == 0) {
-            errors.expense_type = "Expense Type is Required!";
-        }
-        if (expenseType.chart_of_account_id == 0) {
-            errors.chart_of_account_id = "Account Type is Required!";
-        }
-
-
-        return errors;
-    }
-
-
-    const saveExpenseType = () => {
-
-        console.log('expenseType', expenseType);
-
-        console.log("count: ", Object.keys(validate(expenseType)).length);
-        console.log("validate: ", validate(expenseType));
-        setFormErrors(validate(expenseType));
-        if (Object.keys(validate(expenseType)).length > 0) {
-            console.log("Has Validation: ");
-
-        } else {
-            setSubmitLoadingAdd(true);
-            setIsAddDisabled(true);
-            console.log(expenseType);
-            ExpensesTypeV2Service.sanctum().then(response => {
-                ExpensesTypeV2Service.create(expenseType)
-                    .then(response => {
-                        fetchExpenseType();
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        setValidator({
-                            severity: 'success',
-                            message: response.data.message,
-                            isShow: true,
-                        });
-                    })
-                    .catch(e => {
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        console.log(e);
-                        setValidator({
-                            severity: 'error',
-                            message: "expenseType Already Exists",
-                            isShow: true,
-                        });
-                    });
-            });
-        }
-    }
-
-    const formatStatementDate = (date) => {
-        var d = new Date(date);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
-
-    return (
-        <div>
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
-            <Form>
-                {formErrors.chart_of_account_id && <p style={{ color: "red" }}>{formErrors.chart_of_account_id}</p>}
-                <Form.Select
-                    aria-label="Default select example"
-                    className="mb-3"
-                    name="chart_of_account_id"
-                    onChange={onChangeExpenseType}
-                >
-                    <option value="0">Select Type</option>
-                    {
-                        chartOfAccountList.map((data, index) => (
-                            <option
-                                key={data.id}
-                                value={data.id}
-                                disabled={data.status == 1}
-                            >
-                                {data.chart_of_account_name + "     - " + data.chart_of_account_code}
-                            </option>
-                        ))
-                    }
-                </Form.Select>
-                {/* Expense Type Code */}
-                {formErrors.expense_type_code && (
-                    <p style={{ color: "red" }}>{formErrors.expense_type_code}</p>
-                )}
-
-                <Form.Select
-                    className="mb-3"
-                    name="expense_type_code"
-                    onChange={onChangeExpenseType}
-                >
-                    <option value="">Select Expense Type Code</option>
-                    {
-                        Array.from({ length: 10 }, (_, i) => (
-                            <option key={i} value={i}>
-                                {i}
-                            </option>
-                        ))
-                    }
-                </Form.Select>
-                {formErrors.expense_type && <p style={{ color: "red" }}>{formErrors.expense_type}</p>}
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Expense Type *</Form.Label>
-                    <Form.Control type="text" value={expenseType.expense_type} name="expense_type" placeholder="Enter Expense Type" onChange={onChangeExpenseType} />
-
-                </Form.Group>
-                <Button variant="primary"
-                    disabled={isAddDisabled}
-                    onClick={saveExpenseType}>
-                    Submit
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form>
-            <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Expense Type List </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Code</th>
-                        <th>Expense Type</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-
-                    {
-                        customerList.map((expenseType, index) => (
-                            <tr key={expenseType.id} >
-                                <td>{expenseType.id}</td>
-                                <td>
-                                    <span style={{ color: 'black' }}>
-                                        {expenseType.chart_of_account_code}
-                                    </span>
-                                    <span style={{ color: 'red' }}>
-                                        {expenseType.expense_type_code}
-                                    </span>
-                                </td>
-                                <td>{expenseType.expense_type}</td>
-                                <td>
-
-                                    {/* <Link variant="primary" to={"/customers/" + expenseType.id}   >
-                                        <Button variant="primary" >
-                                            Update
-                                        </Button>
-                                    </Link> */}
-                                </td>
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-
-        </div>
-    )
-}
-
-export default AddExpenseTypeV2
+export default AddExpenseTypeV2;

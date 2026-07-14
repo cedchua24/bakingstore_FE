@@ -52,11 +52,15 @@
 .markup-list-table th { padding:10px 11px; color:#778195; background:#fafbfc; border-bottom:1px solid var(--mu-border); font-size:.64rem; letter-spacing:.07em; text-align:left; text-transform:uppercase; }
 .markup-list-table td { padding:12px 11px; border-bottom:1px solid #edf0f4; font-size:.74rem; vertical-align:middle; }
 .markup-list-table tr:last-child td { border-bottom:0; }
+.markup-list-table tr.markup-list-group-start:not(:first-child) td { border-top:2px solid #dfe4eb; }
+.markup-list-product-cell { width:230px; background:#fbfcfe; vertical-align:top !important; }
 .markup-list-product { display:flex; align-items:center; gap:9px; min-width:185px; }
 .markup-list-product > span { display:grid; place-items:center; flex:0 0 34px; height:34px; color:#285fc7; background:#edf3ff; border-radius:9px; font-weight:800; }
 .markup-list-product > div { display:flex; flex-direction:column; }
 .markup-list-product strong { font-size:.78rem; }
 .markup-list-product small { margin-top:2px; color:var(--mu-muted); font-size:.61rem; }
+.markup-list-type { display:flex; align-items:flex-start; flex-direction:column; gap:4px; }
+.markup-list-type small { color:var(--mu-muted); font-size:.58rem; white-space:nowrap; }
 .markup-type { display:inline-flex; padding:4px 7px; border-radius:999px; font-size:.61rem; font-weight:750; }
 .markup-type--wholesale { color:#285fc7; background:#edf3ff; }
 .markup-type--retail { color:#895019; background:#fff2e5; }

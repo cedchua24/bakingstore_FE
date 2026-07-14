@@ -118,6 +118,14 @@ const PurchaseOrderList = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    const isZeroOrderTotal = (value) => {
+        const numericValue = typeof value === 'string'
+            ? Number(value.replace(/[^0-9.-]/g, ''))
+            : Number(value);
+
+        return Number.isFinite(numericValue) && numericValue === 0;
+    };
+
     const statusColor = {
         PENDING: '#ed6c02',
         SEND_TO_SUPPLIER: '#0225ed',  // orange
@@ -262,15 +270,16 @@ const PurchaseOrderList = () => {
                                             </Button>
                                         </Link>
                                     </td>
-                                    {orderTransaction.total_transaction_price == 0 && orderTransaction.payment_status != 1 && orderTransaction.status === 'PENDING' &&
-                                        <td>
-                                            <Button variant="danger" onClick={(e) => openDelete(orderTransaction.id, e)} >
-                                                Delete
-                                            </Button>
-                                        </td>
-                                    }
                                 </div> :
                                     <></>
+                                }
+
+                                {isZeroOrderTotal(orderTransaction.total_transaction_price) &&
+                                    <td>
+                                        <Button variant="danger" onClick={(e) => openDelete(orderTransaction.id, e)} >
+                                            Delete
+                                        </Button>
+                                    </td>
                                 }
 
 

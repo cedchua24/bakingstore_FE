@@ -1,186 +1,94 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Form } from 'react-bootstrap';
-import ExpensesTypeV2Service from "./ExpensesTypeV2Service";
-import LinearProgress from '@mui/material/LinearProgress';
-import { Link } from "react-router-dom";
-import Stack from '@mui/material/Stack';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
+import Button from '@mui/material/Button';
+import InputAdornment from '@mui/material/InputAdornment';
+import LinearProgress from '@mui/material/LinearProgress';
+import TextField from '@mui/material/TextField';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import ExpensesTypeService from './ExpensesTypeV2Service';
+import './ExpenseType.css';
 
 const ViewExpenseTypeCategoryList = () => {
-
     const { id, id2 } = useParams();
-    const navigate = useNavigate();
+    const [result, setResult] = useState({ data: [], name: '', expense_category_name: '' });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [query, setQuery] = useState('');
 
     useEffect(() => {
-        fetchExpenseType(id);
-    }, []);
+        ExpensesTypeService.fetchExpenseTypeCategoryById(id, id2)
+            .then((response) => setResult(response.data || { data: [], name: '', expense_category_name: '' }))
+            .catch(() => setError('Expenses could not be loaded. Please try again.'))
+            .finally(() => setLoading(false));
+    }, [id, id2]);
 
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
+    const expenses = Array.isArray(result.data) ? result.data : [];
+    const visibleExpenses = useMemo(() => {
+        const term = query.trim().toLowerCase();
+        if (!term) return expenses;
+        return expenses.filter((item) => [
+            item.id,
+            item.expense_name,
+            item.expense_code,
+            item.expense_category_name,
+        ].some((value) => String(value || '').toLowerCase().includes(term)));
+    }, [expenses, query]);
 
-    const [expenseTypeList, setExpenseTypeList] = useState({
-        data: [],
-        code: "",
-        name: "",
-        message: ""
-    });
-
-    const [expenseType, setExpenseType] = useState({
-        id: 0,
-        expense_type: '',
-        status: 0,
-        updated_at: ''
-    });
-
-    const [formErrors, setFormErrors] = useState({});
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-
-    const onChangeExpenseType = (e) => {
-        setExpenseType({ ...expenseType, [e.target.name]: e.target.value });
-    }
-
-    const fetchExpenseType = () => {
-        ExpensesTypeV2Service.fetchExpenseTypeCategoryById(id, id2)
-            .then(response => {
-                setExpenseTypeList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-
-    const validate = (values) => {
-        const errors = {};
-        if (expenseType.expense_type == 0) {
-            errors.expense_type = "Expense Type is Required!";
-        }
-        return errors;
-    }
-
-
-    const saveExpenseType = () => {
-
-        console.log('expenseType', expenseType);
-
-        console.log("count: ", Object.keys(validate(expenseType)).length);
-        console.log("validate: ", validate(expenseType));
-        setFormErrors(validate(expenseType));
-        if (Object.keys(validate(expenseType)).length > 0) {
-            console.log("Has Validation: ");
-
-        } else {
-            setSubmitLoadingAdd(true);
-            setIsAddDisabled(true);
-            console.log(expenseType);
-            ExpensesTypeV2Service.sanctum().then(response => {
-                ExpensesTypeV2Service.create(expenseType)
-                    .then(response => {
-                        fetchExpenseType();
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        setValidator({
-                            severity: 'success',
-                            message: response.data.message,
-                            isShow: true,
-                        });
-                    })
-                    .catch(e => {
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        console.log(e);
-                        setValidator({
-                            severity: 'error',
-                            message: "expenseType Already Exists",
-                            isShow: true,
-                        });
-                    });
-            });
-        }
-    }
-
-    const formatStatementDate = (date) => {
-        var d = new Date(date);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
+    const hiddenCount = expenses.filter((item) => Number(item.is_hidden) === 1).length;
 
     return (
-        <div>
-            {/* <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
-            <Form>
-                {formErrors.expense_type && <p style={{ color: "red" }}>{formErrors.expense_type}</p>}
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Expense Type *</Form.Label>
-                    <Form.Control type="text" value={expenseType.expense_type} name="expense_type" placeholder="Enter Expense Type" onChange={onChangeExpenseType} />
+        <main className="et-page">
+            <div className="et-shell">
+                <header className="et-hero et-hero-actions">
+                    <div className="et-hero-main">
+                        <div className="et-hero-icon"><ReceiptLongRoundedIcon /></div>
+                        <div>
+                            <span>Expense setup</span>
+                            <h1>{result.expense_category_name || result.name || 'Category Expenses'}</h1>
+                            <p>{result.name ? `${result.name} · ` : ''}Browse the expenses configured beneath this category.</p>
+                        </div>
+                    </div>
+                    <Button component={Link} to={`/expensesV2/viewExpenseTypeList/${id}`} variant="outlined" startIcon={<ArrowBackRoundedIcon />}>Back to categories</Button>
+                </header>
 
-                </Form.Group>
-                <Button variant="primary"
-                    disabled={isAddDisabled}
-                    onClick={saveExpenseType}>
-                    Submit
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form> */}
-            <br></br>
+                {error && <Alert severity="error" className="et-alert">{error}</Alert>}
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > {expenseTypeList.name}</legend>
-            <p align="center" >{expenseTypeList.expense_category_name}</p>
-            {/* <p align="center" >{expenseTypeList.name}</p> */}
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        {/* <th>Type</th>
-                        <th>Category</th> */}
-                        <th>Expense Name</th>
-                        <th>Hidden</th>
-                        {/* <th></th> */}
-                    </tr>
-                </thead>
-                <tbody>
+                <div className="et-stats">
+                    <section className="et-stat"><ReceiptLongRoundedIcon /><div><span>Expenses</span><strong>{expenses.length}</strong></div></section>
+                    <section className="et-stat"><LockOutlinedIcon /><div><span>Hidden</span><strong>{hiddenCount}</strong></div></section>
+                </div>
 
-                    {
-                        expenseTypeList.data.map((expenseType, index) => (
-                            <tr key={expenseType.id} >
-                                <td>{expenseType.id}</td>
-                                {/* <td>{expenseType.expense_type}</td>
-                                <td>{expenseType.expense_category_name}</td> */}
-                                <td>{expenseType.expense_name}</td>
-                                <td>{expenseType.is_hidden === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                {/* <td>
+                <section className="et-table-card">
+                    <header>
+                        <div><h2>Configured expenses</h2><p>{visibleExpenses.length} results</p></div>
+                        <TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expenses..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} />
+                    </header>
+                    <div className="et-table-scroll">
+                        <table className="et-table">
+                            <thead><tr><th>ID</th><th>Expense code</th><th>Expense name</th><th>Visibility</th></tr></thead>
+                            <tbody>
+                                {visibleExpenses.map((item) => (
+                                    <tr key={item.id}>
+                                        <td>#{item.id}</td>
+                                        <td><span className="et-code"><b>{item.chart_of_account_code}</b><i>{item.expense_type_code}</i><em>{item.expense_category_code}</em><span>{item.expense_code}</span></span></td>
+                                        <td><strong>{item.expense_name}</strong></td>
+                                        <td><span className={`et-visibility ${Number(item.is_hidden) === 1 ? 'hidden' : 'visible'}`}>{Number(item.is_hidden) === 1 ? <LockOutlinedIcon /> : <VisibilityOutlinedIcon />}{Number(item.is_hidden) === 1 ? 'Hidden' : 'Visible'}</span></td>
+                                    </tr>
+                                ))}
+                                {!loading && !visibleExpenses.length && <tr><td colSpan="4"><div className="et-empty"><ReceiptLongRoundedIcon /><strong>No expenses found</strong><span>This category has no matching expenses.</span></div></td></tr>}
+                            </tbody>
+                        </table>
+                    </div>
+                    {loading && <LinearProgress className="et-progress" />}
+                </section>
+            </div>
+        </main>
+    );
+};
 
-                                    <Link variant="primary" to={"/customers/" + expenseType.id}   >
-                                        <Button variant="primary" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td> */}
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-
-        </div>
-    )
-}
-
-export default ViewExpenseTypeCategoryList
+export default ViewExpenseTypeCategoryList;

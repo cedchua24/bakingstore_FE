@@ -357,14 +357,12 @@
 }
 
 .customer-report-new-customers-wrap {
-    max-height: 234px;
-    overflow-y: auto;
+    max-height: none;
+    overflow-y: visible;
 }
 
 .customer-report-new-customers-wrap thead {
-    position: sticky;
-    top: 0;
-    z-index: 4;
+    position: static;
 }
 
 .customer-report-table-compact tbody tr {
