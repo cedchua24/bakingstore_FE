@@ -184,17 +184,18 @@ const EditCheckList = () => {
                         onChange={onChangeCheckList}
                         style={{
                             color:
-                                checkList.status == 0
+                                Number(checkList.status) === 0
                                     ? 'green'
-                                    : checkList.status == 1
+                                    : Number(checkList.status) === 1
                                         ? 'red'
-                                        : 'black',
+                                        : '#6c757d',
                             fontWeight: 'bold'
                         }}
                     >
                         <option value="">Select Status</option>
                         <option value={0}>✅ ENABLED</option>
                         <option value={1}>❌ DISABLED</option>
+                        <option value={2}>➖ NOT APPLICABLE</option>
                     </Form.Select>
                 </Form.Group>
 

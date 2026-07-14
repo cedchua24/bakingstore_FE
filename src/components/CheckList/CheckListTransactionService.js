@@ -16,6 +16,9 @@ class CheckListTransactionService {
     fetchCheckListByDate(data) {
         return axios.post("/api/checkListTransaction/fetchCheckListByDate", data);
     }
+    rejectPending() {
+        return axios.patch("/api/checkListTransaction/rejectPending");
+    }
     delete(category) {
         return axios.delete(`/api/checkListTransaction/${category}`);
     }

@@ -1,0 +1,142 @@
+.employee-checklist-page {
+    --checklist-ink: #3f332d;
+    --checklist-muted: #756b65;
+    --checklist-border: #e7dfd8;
+    --checklist-brown: #79513d;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 18px 14px 48px;
+    color: var(--checklist-ink);
+}
+
+.employee-checklist-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    overflow: hidden;
+    margin-bottom: 22px;
+    padding: 28px 30px;
+    border-radius: 22px;
+    color: #fff;
+    background: linear-gradient(135deg, #4b3027 0%, #81533d 58%, #c47c4d 100%);
+    box-shadow: 0 18px 42px rgba(75, 48, 39, .18);
+}
+
+.employee-checklist-hero::after {
+    content: '';
+    position: absolute;
+    right: -50px;
+    top: -80px;
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .08);
+}
+
+.employee-checklist-hero__icon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    flex: 0 0 62px;
+    width: 62px;
+    height: 62px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .24);
+    border-radius: 17px;
+    background: rgba(255, 255, 255, .14);
+}
+
+.employee-checklist-hero__icon svg { font-size: 32px; }
+.employee-checklist-hero__content { position: relative; z-index: 1; flex: 1; }
+.employee-checklist-hero__eyebrow,
+.employee-checklist-section-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+.employee-checklist-hero__eyebrow { color: #f7d5bd; }
+.employee-checklist-hero h1 { margin: 3px 0 4px; font-size: clamp(24px, 3vw, 34px); font-weight: 800; }
+.employee-checklist-hero p { max-width: 700px; margin: 0; color: rgba(255, 255, 255, .78); }
+
+.employee-checklist-status {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    color: #5b463b;
+    background: #f4eee9;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.employee-checklist-status > span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.employee-checklist-hero > .employee-checklist-status { color: #fff; background: rgba(255, 255, 255, .17); border: 1px solid rgba(255, 255, 255, .2); }
+.employee-checklist-status--pending { color: #9a6508; background: #fff4d8; }
+.employee-checklist-status--sent-to-supervisor { color: #2563a9; background: #e8f2fd; }
+.employee-checklist-status--approved { color: #357448; background: #e8f4eb; }
+.employee-checklist-status--rejected { color: #aa4039; background: #fcebea; }
+.employee-checklist-status--not-applicable { color: #646b73; background: #eef0f2; }
+.employee-checklist-status--small { padding: 6px 9px; font-size: 10px; }
+.employee-checklist-status--small > span { width: 6px; height: 6px; }
+
+.employee-checklist-alert { margin-bottom: 20px; border: 0; border-radius: 14px; }
+.employee-checklist-card { overflow: hidden; margin-bottom: 22px; border: 1px solid var(--checklist-border); border-radius: 20px; background: #fff; box-shadow: 0 10px 30px rgba(63, 51, 45, .06); }
+.employee-checklist-card__header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 26px; border-bottom: 1px solid #eee8e3; background: #fcfaf8; }
+.employee-checklist-section-label { color: #a16947; }
+.employee-checklist-card__header h2 { margin: 3px 0 0; font-size: 20px; font-weight: 800; }
+.employee-checklist-record-id,
+.employee-checklist-history__count { padding: 7px 11px; border-radius: 999px; color: #68574e; background: #f1ebe6; font-size: 12px; font-weight: 750; }
+.employee-checklist-card__header-icon { color: #9a684b; font-size: 30px !important; }
+
+.employee-checklist-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; padding: 26px; }
+.employee-checklist-form-grid--workflow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.employee-checklist-field--wide { grid-column: 1 / -1; }
+.employee-checklist-field .form-label { margin-bottom: 7px; color: #554941; font-size: 13px; font-weight: 750; }
+.employee-checklist-field .form-control,
+.employee-checklist-field .form-select { min-height: 46px; border-color: #ddd3ca; border-radius: 11px; color: #403833; background-color: #fff; box-shadow: none; }
+.employee-checklist-field textarea.form-control { min-height: 112px; resize: vertical; }
+.employee-checklist-field .form-control:focus,
+.employee-checklist-field .form-select:focus { border-color: #a67355; box-shadow: 0 0 0 3px rgba(166, 115, 85, .13); }
+.employee-checklist-field .form-control:disabled,
+.employee-checklist-field .form-select:disabled { color: #756b65; background-color: #f5f2ef; opacity: 1; }
+.employee-checklist-field .form-text { display: block; margin-top: 7px; color: #8a817b; font-size: 11px; }
+
+.employee-checklist-form-actions { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 26px; border-top: 1px solid #eee8e3; background: #fcfaf8; }
+.employee-checklist-form-actions > span { color: var(--checklist-muted); font-size: 12px; }
+.employee-checklist-save.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border: 0; border-radius: 11px; background: var(--checklist-brown); font-weight: 750; box-shadow: 0 7px 16px rgba(121, 81, 61, .2); }
+.employee-checklist-save.btn:hover,
+.employee-checklist-save.btn:focus { background: #61402f; }
+.employee-checklist-save svg { font-size: 19px; }
+
+.employee-checklist-history__count { display: inline-flex; align-items: center; gap: 6px; }
+.employee-checklist-history__count svg { font-size: 17px; }
+.employee-checklist-table-wrap { overflow-x: auto; }
+.employee-checklist-table { width: 100%; min-width: 760px; border-collapse: collapse; }
+.employee-checklist-table th { padding: 13px 20px; color: #75675e; background: #f6f2ee; font-size: 11px; font-weight: 800; letter-spacing: .65px; text-align: left; text-transform: uppercase; }
+.employee-checklist-table td { padding: 16px 20px; border-top: 1px solid #f0ebe7; color: #4d433d; font-size: 13px; vertical-align: middle; }
+.employee-checklist-table tbody tr:hover { background: #fdfbf9; }
+.employee-checklist-table__id { color: #896047 !important; font-weight: 800; }
+.employee-checklist-table__date { color: #786e68 !important; white-space: nowrap; }
+.employee-checklist-table__empty { height: 190px; text-align: center; color: #8a817b !important; }
+.employee-checklist-table__empty svg,
+.employee-checklist-table__empty strong,
+.employee-checklist-table__empty span { display: block; margin: 5px auto; }
+.employee-checklist-table__empty svg { font-size: 34px; color: #c6bab1; }
+.employee-checklist-table__empty strong { color: #534942; font-size: 15px; }
+
+@media (max-width: 850px) {
+    .employee-checklist-form-grid--workflow { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 650px) {
+    .employee-checklist-page { padding-inline: 8px; }
+    .employee-checklist-hero { align-items: flex-start; padding: 22px; flex-wrap: wrap; }
+    .employee-checklist-hero__icon { flex-basis: 52px; width: 52px; height: 52px; }
+    .employee-checklist-hero__content { min-width: calc(100% - 76px); }
+    .employee-checklist-hero > .employee-checklist-status { margin-left: 72px; }
+    .employee-checklist-form-grid { grid-template-columns: 1fr; padding: 20px; }
+    .employee-checklist-card__header { padding: 19px 20px; }
+    .employee-checklist-form-actions { align-items: stretch; flex-direction: column; padding: 18px 20px; }
+    .employee-checklist-save.btn { justify-content: center; width: 100%; }
+}

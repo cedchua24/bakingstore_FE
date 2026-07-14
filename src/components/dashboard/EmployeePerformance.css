@@ -1,0 +1,194 @@
+.employee-performance-page {
+    --performance-ink: #3f332d;
+    --performance-muted: #776d67;
+    --performance-border: #e7dfd8;
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 18px 14px 48px;
+    color: var(--performance-ink);
+}
+
+.employee-performance-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    overflow: hidden;
+    margin-bottom: 22px;
+    padding: 30px;
+    border-radius: 22px;
+    color: #fff;
+    background: linear-gradient(135deg, #493027 0%, #7e503b 56%, #c17a4c 100%);
+    box-shadow: 0 18px 42px rgba(75, 48, 39, .18);
+}
+
+.employee-performance-hero::after {
+    content: '';
+    position: absolute;
+    right: 170px;
+    bottom: -120px;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .07);
+}
+
+.employee-performance-hero__icon {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    flex: 0 0 64px;
+    width: 64px;
+    height: 64px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .24);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .14);
+}
+
+.employee-performance-hero__icon svg { font-size: 33px; }
+.employee-performance-hero__content { position: relative; z-index: 1; flex: 1; }
+.employee-performance-hero__content > span,
+.employee-performance-filter__header span,
+.employee-performance-card__title span { font-size: 11px; font-weight: 800; letter-spacing: 1.45px; text-transform: uppercase; }
+.employee-performance-hero__content > span { color: #f7d5bd; }
+.employee-performance-hero h1 { margin: 3px 0 4px; font-size: clamp(26px, 3vw, 36px); font-weight: 800; }
+.employee-performance-hero p { max-width: 720px; margin: 0; color: rgba(255, 255, 255, .78); }
+
+.employee-performance-hero__range {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    min-width: 180px;
+    padding: 13px 17px;
+    border: 1px solid rgba(255, 255, 255, .2);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, .13);
+}
+
+.employee-performance-hero__range small { color: rgba(255, 255, 255, .65); font-size: 9px; font-weight: 800; letter-spacing: .75px; text-transform: uppercase; }
+.employee-performance-hero__range strong { margin-top: 2px; font-size: 15px; }
+.employee-performance-hero__range span { color: rgba(255, 255, 255, .75); font-size: 12px; }
+.employee-performance-alert { margin-bottom: 20px; border: 0; border-radius: 14px; }
+
+.employee-performance-filter,
+.employee-performance-card {
+    overflow: hidden;
+    border: 1px solid var(--performance-border);
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(63, 51, 45, .06);
+}
+
+.employee-performance-filter { margin-bottom: 20px; }
+.employee-performance-filter__header,
+.employee-performance-card__header { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 19px 23px; border-bottom: 1px solid #eee8e3; background: #fcfaf8; }
+.employee-performance-filter__header span,
+.employee-performance-card__title span { color: #a16947; }
+.employee-performance-filter__header h2,
+.employee-performance-card__title h2 { margin: 2px 0 0; font-size: 19px; font-weight: 800; }
+.employee-performance-filter__header > svg { color: #a36d4e; font-size: 28px; }
+
+.employee-performance-filter__grid {
+    display: grid;
+    grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(190px, .7fr);
+    gap: 20px;
+    align-items: end;
+    padding: 23px;
+}
+
+.employee-performance-field .form-label { margin-bottom: 7px; color: #554941; font-size: 12px; font-weight: 750; }
+.employee-performance-field .form-control { min-height: 45px; border-color: #ddd3ca; border-radius: 10px; color: #403833; box-shadow: none; }
+.employee-performance-field .form-control:focus { border-color: #a67355; box-shadow: 0 0 0 3px rgba(166, 115, 85, .13); }
+.employee-performance-search.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 45px; border: 0; border-radius: 10px; background: #79513d; font-size: 13px; font-weight: 750; box-shadow: 0 7px 16px rgba(121, 81, 61, .18); }
+.employee-performance-search.btn:hover,
+.employee-performance-search.btn:focus { background: #61402f; }
+.employee-performance-search svg { font-size: 19px; }
+
+.employee-performance-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.employee-performance-summary__item {
+    display: grid;
+    grid-template-columns: 43px 1fr auto;
+    align-items: center;
+    gap: 11px;
+    padding: 15px;
+    border: 1px solid var(--performance-border);
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 7px 20px rgba(63, 51, 45, .05);
+}
+
+.employee-performance-summary__item > div { display: grid; width: 43px; height: 43px; place-items: center; border-radius: 12px; }
+.employee-performance-summary__item > div svg { font-size: 22px; }
+.employee-performance-summary__item > span { color: #766b65; font-size: 11px; font-weight: 700; line-height: 1.25; }
+.employee-performance-summary__item > strong { color: #493c35; font-size: 25px; }
+.employee-performance-summary__item--sales > div { color: #3b7650; background: #e8f4eb; }
+.employee-performance-summary__item--preparer > div { color: #9a6508; background: #fff4d8; }
+.employee-performance-summary__item--checker > div { color: #2969aa; background: #e8f2fd; }
+.employee-performance-summary__item--dispatcher > div { color: #744ca4; background: #f1eafd; }
+
+.employee-performance-grid { display: grid; grid-template-columns: 1fr; gap: 24px; align-items: start; }
+.employee-performance-card__title { display: flex; align-items: center; gap: 12px; }
+.employee-performance-card__icon { display: grid; width: 41px; height: 41px; place-items: center; border-radius: 11px; }
+.employee-performance-card__icon svg { font-size: 21px; }
+.employee-performance-card__count { padding: 6px 10px; border-radius: 999px; color: #6d5d54; background: #f0ebe7; font-size: 10px; font-weight: 800; }
+.employee-performance-card--sales .employee-performance-card__icon { color: #3b7650; background: #e8f4eb; }
+.employee-performance-card--preparer .employee-performance-card__icon { color: #9a6508; background: #fff4d8; }
+.employee-performance-card--checker .employee-performance-card__icon { color: #2969aa; background: #e8f2fd; }
+.employee-performance-card--dispatcher .employee-performance-card__icon { color: #744ca4; background: #f1eafd; }
+
+.employee-performance-table-wrap { overflow-x: auto; }
+.employee-performance-table { width: 100%; min-width: 610px; border-collapse: collapse; }
+.employee-performance-table th { padding: 12px 15px; color: #776a62; background: #f6f2ee; font-size: 9px; font-weight: 800; letter-spacing: .55px; text-align: left; text-transform: uppercase; white-space: nowrap; }
+.employee-performance-table td { padding: 14px 15px; border-top: 1px solid #f0ebe7; color: #4d433d; font-size: 12px; vertical-align: middle; }
+.employee-performance-table tbody tr:hover { background: #fdfbf9; }
+.employee-performance-table__name { min-width: 145px; font-weight: 750; }
+.employee-performance-table__amount { color: #397047 !important; font-weight: 800; white-space: nowrap; }
+
+.employee-performance-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 29px;
+    height: 29px;
+    padding: 0 7px;
+    border-radius: 9px;
+    color: #71665f;
+    background: #f0ece8;
+    font-size: 11px;
+    font-weight: 850;
+}
+
+.employee-performance-rank svg { font-size: 15px; }
+.employee-performance-rank--1 { color: #8f6807; background: #fff0bd; }
+.employee-performance-rank--2 { color: #66717a; background: #e9edf0; }
+.employee-performance-rank--3 { color: #8b5637; background: #f5dfd0; }
+.employee-performance-table__empty { height: 175px; color: #8a817b !important; text-align: center; }
+.employee-performance-table__empty svg,
+.employee-performance-table__empty strong,
+.employee-performance-table__empty span { display: block; margin: 5px auto; }
+.employee-performance-table__empty svg { font-size: 34px; color: #c6bab1; }
+.employee-performance-table__empty strong { color: #534942; font-size: 14px; }
+
+@media (max-width: 1100px) {
+    .employee-performance-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 680px) {
+    .employee-performance-page { padding-inline: 8px; }
+    .employee-performance-hero { align-items: flex-start; padding: 22px; flex-wrap: wrap; }
+    .employee-performance-hero__icon { flex-basis: 52px; width: 52px; height: 52px; }
+    .employee-performance-hero__content { min-width: calc(100% - 76px); }
+    .employee-performance-hero__range { width: 100%; margin-left: 72px; }
+    .employee-performance-filter__grid { grid-template-columns: 1fr; padding: 19px; }
+    .employee-performance-summary { grid-template-columns: 1fr; }
+    .employee-performance-filter__header,
+    .employee-performance-card__header { padding: 17px 18px; }
+}

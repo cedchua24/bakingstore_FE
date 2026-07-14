@@ -95,13 +95,17 @@ const CheckList = () => {
                                     </span>
                                 </td>
                                 <td>
-                                    {data.status == 0 ? (
+                                    {Number(data.status) === 0 ? (
                                         <span className="badge bg-success">
                                             ✅ ENABLED
                                         </span>
-                                    ) : (
+                                    ) : Number(data.status) === 1 ? (
                                         <span className="badge bg-danger">
                                             ❌ DISABLED
+                                        </span>
+                                    ) : (
+                                        <span className="badge bg-secondary">
+                                            ➖ NOT APPLICABLE
                                         </span>
                                     )}
                                 </td>
