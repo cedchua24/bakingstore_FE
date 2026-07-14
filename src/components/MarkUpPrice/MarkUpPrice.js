@@ -10,6 +10,9 @@ import './MarkUpPrice.css';
 const MarkUpPrice = () => {
     const [markupPriceList, setMarkupPriceList] = useState([]);
     const [products, setProducts] = useState([]);
+    const productCount = new Set(
+        markupPriceList.map(record => record.product_id ?? `record-${record.id}`)
+    ).size;
 
     const fetchMarkUpPriceList = () => {
         MarkUpPriceService.indexLimit100()
@@ -35,7 +38,7 @@ const MarkUpPrice = () => {
                 </div>
                 <div className="markup-hero__summary">
                     <Inventory2OutlinedIcon />
-                    <div><strong>{markupPriceList.length}</strong><span>Recent price records</span></div>
+                    <div><strong>{productCount}</strong><span>Grouped products · {markupPriceList.length} prices</span></div>
                 </div>
             </section>
             <AddMarkUpPrice products={products} onSaved={fetchMarkUpPriceList} />

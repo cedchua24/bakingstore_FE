@@ -1,466 +1,239 @@
-import React, { useState, useEffect } from "react";
-import Box from '@mui/material/Box';
-import { Button, Form } from 'react-bootstrap';
-import ExpensesTypeV2Service from "../ExpensesV2/ExpensesTypeV2Service";
-import ExpensesCategoryV2Service from "../ExpensesV2/ExpensesCategoryV2Service";
-import ExpensesV2Service from "../ExpensesV2/ExpensesV2Service";
-import ExpenseTransactionService from "../ExpensesV2/ExpenseTransactionService";
-import PaymentTypePoService from "../OtherService/PaymentTypePoService";
-import PaymentTermService from "../OtherService/PaymentTermService";
-import UserService from '../User/UserService.service'
-import LinearProgress from '@mui/material/LinearProgress';
-import { Link } from "react-router-dom";
-import Stack from '@mui/material/Stack';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
-import Autocomplete from '@mui/material/Autocomplete';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
-import Checkbox from '@mui/material/Checkbox';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
-import moment from "moment";
+import InputLabel from '@mui/material/InputLabel';
+import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
+import PendingActionsRoundedIcon from '@mui/icons-material/PendingActionsRounded';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import ExpensesTypeService from '../ExpensesV2/ExpensesTypeV2Service';
+import ExpensesCategoryService from '../ExpensesV2/ExpensesCategoryV2Service';
+import ExpensesService from '../ExpensesV2/ExpensesV2Service';
+import ExpenseTransactionService from '../ExpensesV2/ExpenseTransactionService';
+import './ReportExpenseTransaction.css';
 
+const money = (value) => new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+}).format(Number(value || 0));
+
+const today = () => new Date().toLocaleDateString('en-CA');
 
 const ReportExpenseTransaction = () => {
-
-    useEffect(() => {
-        fetchExpenseType();
-        fetchExpenseTransactionList();
-        fetchPaymentTerm();
-        fetchRequestor();
-    }, []);
-
-    const [paymentTermList, setPaymentTermList] = useState([]);
-    const [paymentTypePoList, setPaymentTypePoList] = useState([]);
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
-
-    const [expenseTypeList, setExpenseTypeList] = useState([]);
-    const [expenseCategoryList, setExpenseCategoryList] = useState([]);
-    const [expenseList, setExpenseList] = useState([]);
-    const [expenseTransactionList, setExpenseTransactionList] = useState([]);
-    const [requestorList, setRequestorList] = useState([]);
-
-    const [expenseTransaction, setExpenseTransaction] = useState({
+    const role = localStorage.getItem('role_as');
+    const [filters, setFilters] = useState({
         id: 0,
         expense_type_id: 0,
         expense_category_id: 0,
         expense_id: 0,
         approval_status: 'APPROVED',
-        dateTo: moment().format("YYYY-MM-DD"),
-        dateFrom: moment().format("YYYY-MM-DD")
+        dateFrom: today(),
+        dateTo: today(),
     });
+    const [expenseTypes, setExpenseTypes] = useState([]);
+    const [expenseCategories, setExpenseCategories] = useState([]);
+    const [expenses, setExpenses] = useState([]);
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [query, setQuery] = useState('');
 
-    const [formErrors, setFormErrors] = useState({});
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const loadTransactions = (requestFilters = filters) => {
+        setLoading(true);
+        setError('');
+        return ExpenseTransactionService.searchExpenseTransactionList(requestFilters)
+            .then((response) => setTransactions(Array.isArray(response.data) ? response.data : []))
+            .catch(() => setError('The expense transaction report could not be loaded. Please try again.'))
+            .finally(() => setLoading(false));
+    };
 
-    const fetchRequestor = () => {
-        UserService.fetchUserList()
-            .then(response => {
-                setRequestorList(response.data);
+    useEffect(() => {
+        Promise.all([
+            ExpensesTypeService.getAll(),
+            ExpenseTransactionService.searchExpenseTransactionList(filters),
+        ])
+            .then(([typeResponse, transactionResponse]) => {
+                setExpenseTypes(Array.isArray(typeResponse.data) ? typeResponse.data : []);
+                setTransactions(Array.isArray(transactionResponse.data) ? transactionResponse.data : []);
             })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+            .catch(() => setError('The expense transaction report could not be loaded. Please try again.'))
+            .finally(() => setLoading(false));
+        // Load initial data once; filters are submitted explicitly afterward.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    const fetchExpenseType = () => {
-        ExpensesTypeV2Service.getAll()
-            .then(response => {
-                setExpenseTypeList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+    const updateFilter = (event) => {
+        const { name, value } = event.target;
+        setFilters((current) => ({ ...current, [name]: value }));
+    };
 
-    const fetchPaymentTerm = () => {
-        PaymentTermService.getAll()
-            .then(response => {
-                setPaymentTermList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+    const changeType = (event) => {
+        const typeId = event.target.value;
+        setFilters((current) => ({ ...current, expense_type_id: typeId, expense_category_id: 0, expense_id: 0 }));
+        setExpenseCategories([]);
+        setExpenses([]);
+        if (!typeId) return;
+        ExpensesCategoryService.fetchExpenseCategoryById(typeId)
+            .then((response) => setExpenseCategories(Array.isArray(response.data) ? response.data : []))
+            .catch(() => setError('Expense categories could not be loaded.'));
+    };
 
-    const fetchExpenseTransactionList = () => {
-        ExpenseTransactionService.searchExpenseTransactionList(expenseTransaction)
-            .then(response => {
-                setExpenseTransactionList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+    const changeCategory = (event) => {
+        const categoryId = event.target.value;
+        setFilters((current) => ({ ...current, expense_category_id: categoryId, expense_id: 0 }));
+        setExpenses([]);
+        if (!categoryId) return;
+        ExpensesService.fetchExpenseV2ById(categoryId)
+            .then((response) => setExpenses(Array.isArray(response.data) ? response.data : []))
+            .catch(() => setError('Expenses could not be loaded.'));
+    };
 
-    const onChangeType = (e) => {
-        setExpenseTransaction({
-            ...expenseTransaction,
-            expense_type_id: e.target.value,
-            expense_id: 0,
-            expense_category_id: 0
-        });
-        fetchCategoryExpenseList(e.target.value);
-    }
+    const visibleTransactions = useMemo(() => {
+        const term = query.trim().toLowerCase();
+        if (!term) return transactions;
+        return transactions.filter((item) => [
+            item.id,
+            item.chart_of_account_code,
+            item.expense_type,
+            item.expense_category_name,
+            item.expense_name,
+            item.name,
+            item.approver_name,
+            item.approval_status,
+            item.details,
+        ].some((value) => String(value || '').toLowerCase().includes(term)));
+    }, [query, transactions]);
 
-    const onChangeExpenseCategory = (e) => {
+    const groupedTransactions = useMemo(() => visibleTransactions.reduce((groups, item) => {
+        const type = item.expense_type || 'Other expenses';
+        if (!groups[type]) groups[type] = { items: [], total: 0 };
+        groups[type].items.push(item);
+        groups[type].total += Number(item.amount || 0);
+        return groups;
+    }, {}), [visibleTransactions]);
 
-        setExpenseTransaction({
-            ...expenseTransaction,
-            expense_category_id: e.target.value,
-            expense_id: 0
-        });
-        console.log("error", expenseTransaction)
-        fetchExpenseList(e.target.value)
-    }
+    const totalExpenses = transactions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const receivedCount = transactions.filter((item) => Number(item.is_received) === 1).length;
+    const pendingCount = transactions.length - receivedCount;
 
+    const paymentDetails = (item) => {
+        if (!Number(item.payment_type_po_id)) return '—';
+        if (Number(item.payment_type_po_id) === 1) return item.bank_name || 'Bank payment';
 
-    const onChangeExpense = (e) => {
-        const selectedId = e.target.value;
+        const isOnlineTransfer = String(item.payment_term || '').trim().toLowerCase() === 'online transfer';
+        const details = [
+            isOnlineTransfer ? item.payment_term : null,
+            item.bank_name,
+            item.account_name,
+            item.account_number,
+        ].filter(Boolean);
+        const uniqueDetails = details.filter((value, index) => details.findIndex(
+            (candidate) => String(candidate).trim().toLowerCase() === String(value).trim().toLowerCase()
+        ) === index);
 
-        const selectedExpense = expenseList.find(
-            (item) => item.id === selectedId
+        return uniqueDetails.length ? uniqueDetails.join(' · ') : item.payment_term || '—';
+    };
+
+    const accountCode = (item) => {
+        const segments = [
+            ['chart', item.chart_of_account_code],
+            ['type', item.expense_type_code],
+            ['category', item.expense_category_code],
+            ['expense', item.expense_code],
+        ].filter(([, value]) => value !== undefined && value !== null && value !== '');
+
+        if (!segments.length) return '—';
+        return (
+            <span className="er-account-code">
+                {segments.map(([name, value]) => <b key={name} className={`er-code-${name}`}>{value}</b>)}
+            </span>
         );
-
-        setExpenseTransaction({
-            ...expenseTransaction,
-            expense_id: selectedId,
-            transaction: selectedExpense?.expense_name || ""
-        });
     };
 
-    const onChangeInput = (e) => {
-        setExpenseTransaction({ ...expenseTransaction, [e.target.name]: e.target.value });
-    }
-
-
-
-    const fetchCategoryExpenseList = (typeId) => {
-        ExpensesCategoryV2Service.fetchExpenseCategoryById(typeId)
-            .then(response => {
-                setExpenseCategoryList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchExpenseList = (typeId) => {
-        ExpensesV2Service.fetchExpenseV2ById(typeId)
-            .then(response => {
-                setExpenseList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-
-
-
-
-
-
-    const saveExpenseType = () => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        console.log(expenseTransaction);
-        ExpenseTransactionService.sanctum().then(response => {
-            ExpenseTransactionService.searchExpenseTransactionList(expenseTransaction)
-                .then(response => {
-                    fetchExpenseTransactionList();
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-                    setValidator({
-                        severity: 'success',
-                        message: response.data.message,
-                        isShow: true,
-                    });
-                })
-                .catch(e => {
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-                    console.log(e);
-                    setValidator({
-                        severity: 'error',
-                        message: "expenseTransaction Already Exists",
-                        isShow: true,
-                    });
-                });
-        });
-
-    }
-
-
-
-
-    const formatStatementDate = (date) => {
-        var d = new Date(date);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-    const statusColor = {
-        PENDING: 'warning.main',
-        APPROVED: 'success.main',
-        REJECTED: 'error.main',
+    const formatDate = (value) => {
+        if (!value) return '—';
+        const date = new Date(String(value).replace(' ', 'T'));
+        return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', {
+            year: 'numeric', month: 'short', day: '2-digit',
+        }).format(date);
     };
-    const statusColorTd = {
-        PENDING: 'orange',
-        APPROVED: 'green',
-        REJECTED: 'red',
-    };
-
-    const totalSum = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { amount }) => acc + amount, 0));
-    }
-
-    const groupedData = expenseTransactionList.reduce((acc, item) => {
-        if (!acc[item.expense_type]) {
-            acc[item.expense_type] = {
-                items: [],
-                total: 0
-            };
-        }
-
-        acc[item.expense_type].items.push(item);
-        acc[item.expense_type].total += Number(item.amount);
-
-        return acc;
-    }, {});
 
     return (
-        <div>
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
-            <Form>
-                <div style={{ float: 'right', marginRight: 500 }}>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Expenses: </Form.Label>
-                        <Form.Control type="text" value={totalSum(expenseTransactionList)} />
-                    </Form.Group>
-                </div>
+        <main className="er-page">
+            <div className="er-shell">
+                <header className="er-hero">
+                    <div className="er-hero-icon"><ReceiptLongRoundedIcon /></div>
+                    <div><span>Financial reports</span><h1>Expense Transactions</h1><p>Review approved expenses, payment details, recipients, and category totals.</p></div>
+                </header>
 
+                {error && <Alert severity="error" className="er-alert">{error}</Alert>}
 
-                {formErrors.expense_type_id && <p style={{ color: "red" }}>{formErrors.expense_type_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Expense Type</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Expense Type"
-                            value={expenseTransaction.expense_type_id}
-                            name="expense_type_id"
-                            onChange={onChangeType}
-                        >
-                            <MenuItem value={0} disabled></MenuItem>
-                            {
-                                expenseTypeList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.expense_type}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
+                <section className="er-summary">
+                    <article><AccountBalanceWalletOutlinedIcon /><div><span>Total expenses</span><strong>{money(totalExpenses)}</strong></div></article>
+                    <article><ReceiptLongRoundedIcon /><div><span>Transactions</span><strong>{transactions.length.toLocaleString()}</strong></div></article>
+                    <article><CheckCircleOutlineRoundedIcon /><div><span>Received</span><strong>{receivedCount.toLocaleString()}</strong></div></article>
+                    <article><PendingActionsRoundedIcon /><div><span>Not received</span><strong>{pendingCount.toLocaleString()}</strong></div></article>
+                </section>
 
+                <section className="er-filter-card">
+                    <header><strong>Report filters</strong><span>Narrow the report by expense classification and date.</span></header>
+                    <div className="er-filter-grid">
+                        <FormControl fullWidth size="small"><InputLabel>Expense type</InputLabel><Select name="expense_type_id" value={filters.expense_type_id} label="Expense type" onChange={changeType}><MenuItem value={0}>All types</MenuItem>{expenseTypes.map((item) => <MenuItem key={item.id} value={item.id}>{item.expense_type}</MenuItem>)}</Select></FormControl>
+                        <FormControl fullWidth size="small" disabled={!filters.expense_type_id}><InputLabel>Category</InputLabel><Select name="expense_category_id" value={filters.expense_category_id} label="Category" onChange={changeCategory}><MenuItem value={0}>All categories</MenuItem>{expenseCategories.map((item) => <MenuItem key={item.id} value={item.id}>{item.expense_category_name}</MenuItem>)}</Select></FormControl>
+                        <FormControl fullWidth size="small" disabled={!filters.expense_category_id}><InputLabel>Expense</InputLabel><Select name="expense_id" value={filters.expense_id} label="Expense" onChange={updateFilter}><MenuItem value={0}>All expenses</MenuItem>{expenses.map((item) => <MenuItem key={item.id} value={item.id}>{role === '1' && Number(item.is_hidden) === 1 ? '*****' : item.expense_name}</MenuItem>)}</Select></FormControl>
+                        <TextField fullWidth size="small" type="date" name="dateFrom" value={filters.dateFrom} onChange={updateFilter} label="Date from" InputLabelProps={{ shrink: true }} />
+                        <TextField fullWidth size="small" type="date" name="dateTo" value={filters.dateTo} onChange={updateFilter} label="Date to" InputLabelProps={{ shrink: true }} />
+                        <Button variant="contained" onClick={() => loadTransactions()} disabled={loading || !filters.dateFrom || !filters.dateTo}>Run report</Button>
+                    </div>
+                    {loading && <LinearProgress className="er-progress" />}
+                </section>
 
-                {formErrors.expense_category_id && <p style={{ color: "red" }}>{formErrors.expense_category_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Expense Category </InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Expense Category"
-                            value={expenseTransaction.expense_category_id}
-                            name="expense_category_id"
-                            onChange={onChangeExpenseCategory}
-                        >
-                            <MenuItem value={0} disabled></MenuItem>
-                            {
-                                expenseCategoryList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.expense_category_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
+                <section className="er-table-card">
+                    <header>
+                        <div><h2>Expense details</h2><p>{visibleTransactions.length} results across {Object.keys(groupedTransactions).length} expense types</p></div>
+                        <TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expenses..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} />
+                    </header>
+                    <div className="er-table-scroll">
+                        <table className="er-table">
+                            <thead><tr><th>ID / Code</th><th>Expense</th><th>Requestor</th><th>Approver</th><th>Status</th><th>Amount</th><th>Payment</th><th>Details</th><th>Received</th><th>Date</th><th>Action</th></tr></thead>
+                            <tbody>
+                                {Object.entries(groupedTransactions).map(([type, group]) => (
+                                    <React.Fragment key={type}>
+                                        <tr className="er-group"><td colSpan="11"><strong>{type}</strong><span>{group.items.length} transactions</span></td></tr>
+                                        {group.items.map((item) => (
+                                            <tr key={item.id}>
+                                                <td><strong>#{item.id}</strong><small>{accountCode(item)}</small></td>
+                                                <td><strong>{Number(item.is_hidden) === 1 ? '•••••' : item.expense_name || '—'}</strong><small>{item.expense_category_name || 'Uncategorized'}</small></td>
+                                                <td>{item.name || '—'}</td>
+                                                <td>{item.approver_name || '—'}</td>
+                                                <td><span className={`er-status er-status-${String(item.approval_status || 'pending').toLowerCase()}`}>{item.approval_status || 'PENDING'}</span></td>
+                                                <td className="er-money">{money(item.amount)}</td>
+                                                <td className="er-payment">{paymentDetails(item)}</td>
+                                                <td className="er-details">{item.details || '—'}</td>
+                                                <td><span className={`er-received ${Number(item.is_received) === 1 ? 'yes' : 'no'}`}>{Number(item.is_received) === 1 ? 'Received' : 'Pending'}</span></td>
+                                                <td>{formatDate(item.expense_date)}</td>
+                                                <td><Button component={Link} to={`/expensesV2/editExpenseTransaction/${item.id}`} size="small" variant="outlined">{Number(item.is_received) === 1 ? 'View' : 'Update'}</Button></td>
+                                            </tr>
+                                        ))}
+                                        <tr className="er-total"><td colSpan="5">{type} total</td><td>{money(group.total)}</td><td colSpan="5" /></tr>
+                                    </React.Fragment>
+                                ))}
+                                {!loading && !visibleTransactions.length && <tr><td colSpan="11"><div className="er-empty"><ReceiptLongRoundedIcon /><strong>No expenses found</strong><span>Change the filters or search term and try again.</span></div></td></tr>}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    );
+};
 
-
-                {formErrors.expense_id && <p style={{ color: "red" }}>{formErrors.expense_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Expense  </InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Expense"
-                            name="expense_id"
-                            value={expenseTransaction.expense_id}
-                            onChange={onChangeExpense}
-                        >
-                            <MenuItem value={0} disabled></MenuItem>
-                            {
-                                expenseList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.expense_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date From:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" value={expenseTransaction.dateFrom} onChange={onChangeInput} />
-                </Form.Group>
-
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date To:</Form.Label>
-                    <Form.Control type="date" name="dateTo" value={expenseTransaction.dateTo} onChange={onChangeInput} />
-                </Form.Group>
-
-
-
-                <Button variant="primary"
-                    disabled={isAddDisabled}
-                    onClick={saveExpenseType}>
-                    Search
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form>
-            <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Expense Transaction </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Code</th>
-                        <th>Type</th>
-                        <th>Category</th>
-                        <th>Expense</th>
-                        <th>Requestor</th>
-                        <th>Approver</th>
-                        <th>Approval Status</th>
-                        <th>Amount</th>
-                        <th>Bank</th>
-                        <th>Details</th>
-                        <th>Amount Received</th>
-                        <th>Date</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <br></br>
-                <tbody>
-                    {
-                        Object.keys(groupedData).map((type, index) => (
-                            <React.Fragment key={index}>
-
-                                {/* GROUP HEADER */}
-                                <tr style={{ backgroundColor: '#d3d3d3', fontWeight: 'bold' }}>
-                                    <td colSpan="14" style={{ textAlign: 'center' }}>
-                                        {type.toUpperCase()}
-                                    </td>
-                                </tr>
-
-                                {/* ROWS */}
-                                {
-                                    groupedData[type].items.map((data) => (
-                                        <tr key={data.id}>
-                                            <td>{data.id}</td>
-                                            <td>
-                                                <span style={{ color: 'black' }}>
-                                                    {data.chart_of_account_code}
-                                                </span>
-                                                <span style={{ color: 'red' }}>
-                                                    {data.expense_type_code}
-                                                </span>
-                                                <span style={{ color: 'green' }}>
-                                                    {data.expense_category_code}
-                                                </span>
-                                                <span style={{ color: 'gray' }}>
-                                                    {data.expense_code}
-                                                </span>
-                                            </td>
-                                            <td>{data.expense_type}</td>
-                                            <td>{data.expense_category_name}</td>
-                                            <td>{data.is_hidden == 1 ? "*****" : data.expense_name}</td>
-                                            <td>{data.name}</td>
-                                            <td>{data.approver_name}</td>
-                                            <td style={{ color: statusColorTd[data.approval_status] }}>
-                                                {data.approval_status}
-                                            </td>
-                                            <td>{numberFormat(data.amount)}</td>
-                                            <td>
-                                                {
-                                                    data.payment_type_po_id == 0 ? " " :
-                                                        data.payment_type_po_id == 1 ? data.bank_name :
-                                                            data.payment_term + " - " + data.bank_name + " " +
-                                                            data.account_name + " " + data.account_description + " " +
-                                                            data.account_number
-                                                }
-                                            </td>
-                                            <td>{data.details}</td>
-                                            <td>
-                                                {
-                                                    data.is_received == 1
-                                                        ? <CheckIcon style={{ color: 'green' }} />
-                                                        : <CloseIcon style={{ color: 'red' }} />
-                                                }
-                                            </td>
-                                            <td>{data.expense_date}</td>
-                                            <td>
-                                                <Link to={"/expensesV2/editExpenseTransaction/" + data.id}>
-                                                    <Button variant={data.is_received ? "primary" : "success"}>
-                                                        {data.is_received ? "View" : "Update"}
-                                                    </Button>
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))
-                                }
-
-                                {/* GROUP TOTAL */}
-                                <tr style={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
-                                    <td colSpan="7" align="right">Total:</td>
-                                    <td>{numberFormat(groupedData[type].total)}</td>
-                                    <td colSpan="6"></td>
-                                </tr>
-
-                            </React.Fragment>
-                        ))
-                    }
-                </tbody>
-            </table>
-            <br></br>
-            <br></br>
-
-        </div>
-    )
-}
-
-export default ReportExpenseTransaction
+export default ReportExpenseTransaction;

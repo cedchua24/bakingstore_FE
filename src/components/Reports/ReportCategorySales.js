@@ -1,354 +1,219 @@
-import React, { useState, useEffect } from "react";
-import { Button } from 'react-bootstrap';
-import { Link } from "react-router-dom";
-import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
-import CategoryServiceService from "../Category/CategoryService.service";
-import { styled } from '@mui/material/styles';
-import { Form } from 'react-bootstrap';
-import Checkbox from '@mui/material/Checkbox';
-
-import CircularProgress from '@mui/material/CircularProgress';
-
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import UpdateIcon from '@mui/icons-material/Update';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography'
-import Modal from '@mui/material/Modal';
-import PageviewIcon from '@mui/icons-material/Pageview';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
+import React, { useEffect, useMemo, useState } from 'react';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
+import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-
 import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import CategoryService from '../Category/CategoryService.service';
+import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransactionService';
+import './ProductReport.css';
+
+const emptyReport = { data: [], code: '', message: '', id: 0 };
+const money = (value) => new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+}).format(Number(value || 0));
 
 const ReportCategorySales = () => {
-
+    const role = localStorage.getItem('role_as');
+    const [filters, setFilters] = useState({
+        categoryId: '',
+        type: '',
+        status: '',
+        limit: '',
+        dateFrom: '',
+        dateTo: '',
+    });
+    const [categories, setCategories] = useState([]);
+    const [report, setReport] = useState(emptyReport);
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [query, setQuery] = useState('');
 
     useEffect(() => {
-        fetchsortedQuantityList();
-        fetchCategoryList();
+        Promise.all([
+            ShopOrderTransactionService.fetchSalesByCategory(filters),
+            CategoryService.getAll(),
+        ])
+            .then(([reportResponse, categoryResponse]) => {
+                setReport(reportResponse.data || emptyReport);
+                setCategories(Array.isArray(categoryResponse.data) ? categoryResponse.data : []);
+            })
+            .catch(() => setError('The category sales report could not be loaded. Please try again.'))
+            .finally(() => setLoading(false));
+        // Load initial data once; filters are submitted explicitly afterward.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const [categeryList, setCategoryList] = useState([]);
-    const [role] = useState(localStorage.getItem('role_as'));
+    const updateFilter = (event) => {
+        const { name, value } = event.target;
+        setFilters((current) => ({ ...current, [name]: value }));
+        if (value) setErrors((current) => ({ ...current, [name]: undefined }));
+    };
 
-    const [productSortedDate, setProductSortedDate] = useState({
-        categoryId: 0,
-        type: '',
-        status: 0,
-        limit: 0,
-        dateFrom: "",
-        dateTo: ""
-    });
-
-
-    const [sortedQuantity, setSortedQuantity] = useState({
-        data: [],
-        code: '',
-        message: '',
-        id: 0
-    });
-
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-    const [formErrors, setFormErrors] = useState({});
-
-    const fetchCategoryList = () => {
-        CategoryServiceService.getAll()
-            .then(response => {
-                setCategoryList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const onChangeInput = (e) => {
-        console.log("status", e.target.value);
-        console.log("status", e.target.name);
-        setProductSortedDate({ ...productSortedDate, [e.target.name]: e.target.value });
-
-    }
-
-
-    const validate = (values) => {
-        const errors = {};
-
-        if (productSortedDate.categoryId == 0) {
-            errors.categoryId = "Category is Required!";
+    const runReport = () => {
+        const nextErrors = {};
+        if (!filters.categoryId) nextErrors.categoryId = 'Category is required.';
+        if (!filters.status) nextErrors.status = 'Ranking is required.';
+        if (!filters.limit) nextErrors.limit = 'Limit is required.';
+        if (!filters.dateFrom) nextErrors.dateFrom = 'Start date is required.';
+        if (!filters.dateTo) nextErrors.dateTo = 'End date is required.';
+        if (filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo) {
+            nextErrors.dateTo = 'End date must be after the start date.';
         }
-        if (productSortedDate.status == 0) {
-            errors.status = "Status Type is Required!";
-        }
-        if (productSortedDate.limit == 0) {
-            errors.limit = "Limit is Required!";
-        }
-        if (productSortedDate.dateFrom.length == 0) {
-            errors.dateFrom = "Date From Required!";
-        }
-        if (productSortedDate.dateTo.length == 0) {
-            errors.dateTo = "Date To Required!";
-        }
+        setErrors(nextErrors);
+        if (Object.keys(nextErrors).length) return;
 
-        return errors;
-    }
+        setLoading(true);
+        setError('');
+        ShopOrderTransactionService.fetchSalesByCategory(filters)
+            .then((response) => setReport(response.data || emptyReport))
+            .catch(() => setError('The category sales report could not be generated. Please try again.'))
+            .finally(() => setLoading(false));
+    };
 
+    const records = Array.isArray(report.data) ? report.data : [];
+    const visibleRecords = useMemo(() => {
+        const term = query.trim().toLowerCase();
+        if (!term) return records;
+        return records.filter((item) => [item.id, item.product_name, item.business_type, item.packaging]
+            .some((value) => String(value || '').toLowerCase().includes(term)));
+    }, [query, records]);
 
-
-    const submitSortedQuantityList = () => {
-        console.log('status: ', productSortedDate);
-        console.log("count: ", Object.keys(validate(productSortedDate)).length);
-        console.log("validate: ", validate(productSortedDate));
-        setFormErrors(validate(productSortedDate));
-        if (Object.keys(validate(productSortedDate)).length > 0) {
-            console.log("Has Validation: ");
-
-        } else {
-            setSubmitLoadingAdd(true);
-            setIsAddDisabled(true);
-            ShopOrderTransactionService.fetchSalesByCategory(productSortedDate)
-                .then(response => {
-                    console.log("response.data", response.data)
-                    // setsortedQuantityList(response.data);
-                    setSortedQuantity(response.data);
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-                    console.log("sortedQuantity", sortedQuantity)
-                })
-                .catch(e => {
-                    console.log("error", e)
-                    setSubmitLoadingAdd(false);
-                    setIsAddDisabled(false);
-
-                });
-        }
-    }
-
-    const fetchsortedQuantityList = () => {
-        ShopOrderTransactionService.fetchSalesByCategory(productSortedDate)
-            .then(response => {
-                console.log("response.data", response.data)
-                // setsortedQuantityList(response.data);
-                setSortedQuantity(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-
-            });
-
-    }
-
-    const Div = styled('div')(({ theme }) => ({
-        ...theme.typography.button,
-        backgroundColor: theme.palette.background.paper,
-        fontSize: "2rem",
-        padding: theme.spacing(1),
-        textAlign: "center",
-    }));
-
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-    const totalSum = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { total_price }) => acc + total_price, 0));
-    }
-    const totalProfit = (numbers) => {
-        // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-        return numberFormat(numbers.reduce((acc, { total_profit }) => acc + total_profit, 0));
-    }
-
+    const totalSales = records.reduce((sum, item) => sum + Number(item.total_price || 0), 0);
+    const totalProfit = records.reduce((sum, item) => sum + Number(item.total_profit || 0), 0);
+    const totalUnits = records.reduce((sum, item) => sum + Number(item.total_quantity || 0), 0);
+    const selectedCategory = categories.find((category) => String(category.id) === String(filters.categoryId));
+    const soldLabel = (item) => Number(item.total_quantity || 0) < Number(item.quantity || 0)
+        ? `${item.total_quantity || 0} Pc`
+        : `${Math.floor(Number(item.total_quantity || 0) / Number(item.quantity || 1))} ${item.packaging || 'packs'} / ${item.total_quantity || 0} Pc`;
 
     return (
-        <div>
-            <div style={{ float: 'right', minWidth: 800 }}>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                    <Form.Label>Total Sales: </Form.Label>
-                    <Form.Control type="text" value={totalSum(sortedQuantity.data)} />
-                </Form.Group>
-                {
-                    role == 2 && (
-                        <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label>Total Profit: </Form.Label>
-                            <Form.Control type="text" value={totalProfit(sortedQuantity.data)} />
-                        </Form.Group>
-                    )
-                }
-            </div>
-            <Form>
-                {formErrors.categoryId && <p style={{ color: "red" }}>{formErrors.categoryId}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Category*</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            name="categoryId"
-                            onChange={onChangeInput}
-                        >
-                            {
-                                categeryList.map((category, index) => (
-                                    <MenuItem value={category.id}>{category.category_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
+        <main className="pr-page">
+            <section className="pr-hero">
+                <div className="pr-hero__icon"><CategoryOutlinedIcon /></div>
+                <div>
+                    <span>Category performance</span>
+                    <h1>Category Sales Report</h1>
+                    <p>Analyze product sales, profit, and inventory movement within a selected category.</p>
+                </div>
+            </section>
 
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Type</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            name="type"
-                            onChange={onChangeInput}
-                        >
-                            <MenuItem value='All'>All</MenuItem>
-                            <MenuItem value='WHOLESALE'>WHOLESALE</MenuItem>
-                            <MenuItem value='RETAIL'>RETAIL</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
-                {formErrors.status && <p style={{ color: "red" }}>{formErrors.status}</p>}
-                {/* <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                        <Form.Label>Date</Form.Label>
-                        <Form.Control type="date" name="date" onChange={onChangeInput} />
-                    </Form.Group> */}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Order*</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Status"
-                            name="status"
-                            onChange={onChangeInput}
-                        >
-                            <MenuItem disabled value="" style={{ fontWeight: 'bold' }}>
-                                <em>Quantity</em>
-                            </MenuItem>
-                            <MenuItem value="1" style={{ fontWeight: 'bold', color: 'green', }}>Highest to Lowest</MenuItem>
-                            <MenuItem value="2" style={{ color: 'red', }}>Lowest to Highest</MenuItem>
-                            <MenuItem disabled value="" style={{ fontWeight: 'bold' }}>
-                                <em>Amount</em>
-                            </MenuItem>
-                            <MenuItem value="3" style={{ color: 'green', }}>Highest to Lowest</MenuItem>
-                            <MenuItem value="4" style={{ color: 'red', }}>Lowest to Highest</MenuItem>
+            {error && <Alert severity="error" sx={{ mt: 3 }}>{error}</Alert>}
 
-                        </Select>
-                    </FormControl>
-                </Box>
-                {formErrors.limit && <p style={{ color: "red" }}>{formErrors.limit}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Limit*</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Limit"
-                            name="limit"
-                            onChange={onChangeInput}
-                        >
-                            <MenuItem value="10">10</MenuItem>
-                            <MenuItem value="50" >50</MenuItem>
-                            <MenuItem value="100" >100</MenuItem>
-                            <MenuItem value="200" >200</MenuItem>
-                            <MenuItem value="500" >500</MenuItem>
-                            <MenuItem value="1000" >1000</MenuItem>
-                            <MenuItem value="2000" >2000</MenuItem>
-                        </Select>
-                    </FormControl>
-                </Box>
-                {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date From*:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" onChange={onChangeInput} />
-                </Form.Group>
-                {formErrors.dateTo && <p style={{ color: "red" }}>{formErrors.dateTo}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date To*:</Form.Label>
-                    <Form.Control type="date" name="dateTo" onChange={onChangeInput} />
-                </Form.Group>
-                <Button variant="primary"
-                    onClick={submitSortedQuantityList}
-                    disabled={isAddDisabled}
-                >
-                    Find
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-                <br></br>
+            <section className="pr-summary">
+                <div><PaymentsOutlinedIcon /><div><span>Total sales</span><strong>{money(totalSales)}</strong></div></div>
+                {role === '2' && <div><TrendingUpRoundedIcon /><div><span>Total profit</span><strong>{money(totalProfit)}</strong></div></div>}
+                <div><Inventory2OutlinedIcon /><div><span>Pieces sold</span><strong>{totalUnits.toLocaleString()}</strong></div></div>
+                <div><LeaderboardOutlinedIcon /><div><span>Products</span><strong>{records.length.toLocaleString()}</strong></div></div>
+            </section>
 
-            </Form>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Category Sales List   </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Type</th>
-                        <th>Product Name</th>
-                        {
-                            role == 2 && (
-                                <th>Profit</th>
-                            )
-                        }
-                        <th>Amount</th>
-                        <th>Qty WS</th>
-                        <th>Qty RTL</th>
-                        <th>Sold</th>
-                        <th>Current Stock</th>
-                        <th>Diff</th>
-                    </tr>
-                </thead>
-                {sortedQuantity.data.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
-                    :
-                    (
+            <section className="pr-filter">
+                <div className="pr-filter__header">
+                    <strong>Report filters</strong>
+                    <span>Choose a category, sales type, ranking, result limit, and reporting period.</span>
+                </div>
+                <div className="pr-filter__grid">
+                    <div>
+                        <FormControl fullWidth size="small" error={Boolean(errors.categoryId)}>
+                            <InputLabel>Category *</InputLabel>
+                            <Select name="categoryId" value={filters.categoryId} label="Category *" onChange={updateFilter}>
+                                {categories.map((category) => <MenuItem key={category.id} value={category.id}>{category.category_name}</MenuItem>)}
+                            </Select>
+                        </FormControl>
+                        {errors.categoryId && <p className="pr-filter__error">{errors.categoryId}</p>}
+                    </div>
+                    <FormControl fullWidth size="small">
+                        <InputLabel>Type</InputLabel>
+                        <Select name="type" value={filters.type} label="Type" onChange={updateFilter}>
+                            <MenuItem value="">All types</MenuItem>
+                            <MenuItem value="All">All</MenuItem>
+                            <MenuItem value="WHOLESALE">Wholesale</MenuItem>
+                            <MenuItem value="RETAIL">Retail</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <div>
+                        <FormControl fullWidth size="small" error={Boolean(errors.status)}>
+                            <InputLabel>Rank by *</InputLabel>
+                            <Select name="status" value={filters.status} label="Rank by *" onChange={updateFilter}>
+                                <MenuItem value={1}>Quantity: highest first</MenuItem>
+                                <MenuItem value={2}>Quantity: lowest first</MenuItem>
+                                <MenuItem value={3}>Amount: highest first</MenuItem>
+                                <MenuItem value={4}>Amount: lowest first</MenuItem>
+                            </Select>
+                        </FormControl>
+                        {errors.status && <p className="pr-filter__error">{errors.status}</p>}
+                    </div>
+                    <div>
+                        <FormControl fullWidth size="small" error={Boolean(errors.limit)}>
+                            <InputLabel>Limit *</InputLabel>
+                            <Select name="limit" value={filters.limit} label="Limit *" onChange={updateFilter}>
+                                {[10, 50, 100, 200, 500, 1000, 2000].map((value) => <MenuItem key={value} value={value}>{value} products</MenuItem>)}
+                            </Select>
+                        </FormControl>
+                        {errors.limit && <p className="pr-filter__error">{errors.limit}</p>}
+                    </div>
+                    <div>
+                        <TextField fullWidth size="small" type="date" name="dateFrom" value={filters.dateFrom} onChange={updateFilter} label="Date from" error={Boolean(errors.dateFrom)} InputLabelProps={{ shrink: true }} />
+                        {errors.dateFrom && <p className="pr-filter__error">{errors.dateFrom}</p>}
+                    </div>
+                    <div>
+                        <TextField fullWidth size="small" type="date" name="dateTo" value={filters.dateTo} onChange={updateFilter} label="Date to" error={Boolean(errors.dateTo)} InputLabelProps={{ shrink: true }} />
+                        {errors.dateTo && <p className="pr-filter__error">{errors.dateTo}</p>}
+                    </div>
+                    <Button variant="contained" onClick={runReport} disabled={loading}>Run report</Button>
+                </div>
+                {loading && <LinearProgress className="pr-progress" />}
+            </section>
+
+            <section className="pr-card">
+                <header>
+                    <div>
+                        <h2>{selectedCategory?.category_name || 'Category products'}</h2>
+                        <p>{visibleRecords.length} results in this report</p>
+                    </div>
+                    <TextField className="pr-search" size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search report..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} />
+                </header>
+                <div className="table-responsive">
+                    <table className="pr-table">
+                        <thead><tr><th>Rank</th><th>Product</th><th>Type</th>{role === '2' && <th>Profit</th>}<th>Sales amount</th><th>Wholesale qty</th><th>Retail qty</th><th>Total sold</th><th>Current stock</th><th>Difference</th></tr></thead>
                         <tbody>
-                            {
-                                sortedQuantity.data.map((data, index) => (
-                                    <tr key={data.mark_up_product_id} >
-                                        <td>{data.id}</td>
-                                        <td>{data.business_type}</td>
-                                        <td>{data.product_name}</td>
-                                        {
-                                            role == 2 && (
-                                                <td>{numberFormat(data.total_profit)}</td>
-                                            )
-                                        }
-                                        {sortedQuantity.id == 3 || sortedQuantity.id == 4 ? <td style={{ fontWeight: 'bold', }}>{numberFormat(data.total_price)}</td> : <td >{numberFormat(data.total_price)}</td>}
-
-                                        {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td>{data.total_quantity < data.quantity ? "" : Math.floor(data.total_quantity / data.quantity)}</td> :
-                                            <td >{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td>}
-
-                                        <td>{data.total_quantity}</td>
-                                        {sortedQuantity.id == 0 || sortedQuantity.id == 1 || sortedQuantity.id == 2 ? <td style={{ fontWeight: 'bold', }}>{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td> :
-                                            <td >{data.total_quantity < data.quantity ? data.total_quantity + " Pc" : Math.floor(data.total_quantity / data.quantity) + " " + data.packaging + " / " + data.total_quantity + " Pc"}</td>}
-                                        <td>{data.stock + " " + data.packaging}</td>
-                                        {data.business_type === 'ALL' &&
-                                            <td>{data.stock - Math.floor(data.total_quantity / data.quantity) > 0 ? <p> {data.stock - Math.floor(data.total_quantity / data.quantity)}</p> : <p style={{ color: "red" }}>{data.stock - Math.floor(data.total_quantity / data.quantity)}</p>}</td>
-                                        }
+                            {visibleRecords.map((item, index) => {
+                                const packQuantity = Math.floor(Number(item.total_quantity || 0) / Number(item.quantity || 1));
+                                const difference = Number(item.stock || 0) - packQuantity;
+                                return (
+                                    <tr key={item.mark_up_product_id || item.id || index}>
+                                        <td><span className="pr-rank">{index + 1}</span></td>
+                                        <td><div className="pr-product"><strong>{item.product_name || 'Unnamed product'}</strong><span>#{item.id}</span></div></td>
+                                        <td><span className="pr-pill">{item.business_type || 'ALL'}</span></td>
+                                        {role === '2' && <td className="pr-money">{money(item.total_profit)}</td>}
+                                        <td className="pr-money">{money(item.total_price)}</td>
+                                        <td>{Number(item.total_quantity || 0) < Number(item.quantity || 0) ? '—' : packQuantity}</td>
+                                        <td>{item.total_quantity || 0}</td>
+                                        <td><strong>{soldLabel(item)}</strong></td>
+                                        <td>{item.stock || 0} {item.packaging}</td>
+                                        <td className={difference < 0 ? 'pr-negative' : ''}>{item.business_type === 'ALL' ? difference : '—'}</td>
                                     </tr>
-                                )
-                                )
-                            }
-                        </tbody>)}
-            </table>
+                                );
+                            })}
+                            {!loading && !visibleRecords.length && <tr><td colSpan={role === '2' ? 10 : 9}><div className="pr-empty"><CategoryOutlinedIcon /><strong>No category sales found</strong><span>Configure the report filters and try again.</span></div></td></tr>}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    );
+};
 
-        </div >
-    )
-}
-
-export default ReportCategorySales
+export default ReportCategorySales;

@@ -10,6 +10,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
@@ -24,6 +25,7 @@ import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import OrderSupplierTransactionService from '../OrderSupplierTransaction/OrderSupplierTransactionService';
+import SupplierService from '../Supplier/SupplierService.service';
 import './ReportPurchaseOrderList.css';
 
 const emptyReport = {
@@ -51,7 +53,18 @@ const getCurrentMonthFilters = () => {
     return {
         dateFrom: formatDateInput(new Date(year, month, 1)),
         dateTo: formatDateInput(new Date(year, month + 1, 0)),
+        supplier_id: '',
     };
+};
+
+const getRequestFilters = (filters) => {
+    const requestFilters = {};
+
+    if (filters?.dateFrom) requestFilters.dateFrom = filters.dateFrom;
+    if (filters?.dateTo) requestFilters.dateTo = filters.dateTo;
+    if (filters?.supplier_id) requestFilters.supplier_id = filters.supplier_id;
+
+    return Object.keys(requestFilters).length ? requestFilters : undefined;
 };
 
 const fetchAllPurchaseOrders = (filters) =>
@@ -81,6 +94,8 @@ const ReportPurchaseOrderList = ({
 }) => {
     const [report, setReport] = useState(emptyReport);
     const [filters, setFilters] = useState(getCurrentMonthFilters);
+    const [suppliers, setSuppliers] = useState([]);
+    const [suppliersLoading, setSuppliersLoading] = useState(true);
     const [filterErrors, setFilterErrors] = useState({});
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
@@ -106,8 +121,21 @@ const ReportPurchaseOrderList = ({
     }, [fetchReport]);
 
     useEffect(() => {
-        loadReport(getCurrentMonthFilters());
+        loadReport(getRequestFilters(getCurrentMonthFilters()));
     }, [loadReport]);
+
+    useEffect(() => {
+        SupplierService.getAll()
+            .then((response) => {
+                setSuppliers(Array.isArray(response.data) ? response.data : []);
+            })
+            .catch(() => {
+                setError('The supplier list could not be loaded.');
+            })
+            .finally(() => {
+                setSuppliersLoading(false);
+            });
+    }, []);
 
     const currency = (value) =>
         new Intl.NumberFormat('en-PH', {
@@ -159,14 +187,15 @@ const ReportPurchaseOrderList = ({
         }
         setFilterErrors(errors);
         if (Object.keys(errors).length === 0) {
-            loadReport(filters);
+            loadReport(getRequestFilters(filters));
         }
     };
 
     const showAllOrders = () => {
-        setFilters({ dateFrom: '', dateTo: '' });
+        const allFilters = { ...filters, dateFrom: '', dateTo: '' };
+        setFilters(allFilters);
         setFilterErrors({});
-        loadReport();
+        loadReport(getRequestFilters(allFilters));
     };
 
     const openDateEditor = (id) => {
@@ -194,7 +223,7 @@ const ReportPurchaseOrderList = ({
         })
             .then(() => {
                 setDateDialog({ open: false, id: 0, created_at: '' });
-                loadReport(filters.dateFrom && filters.dateTo ? filters : undefined);
+                loadReport(getRequestFilters(filters));
             })
             .catch(() => {
                 setError('The draft date could not be updated.');
@@ -209,7 +238,7 @@ const ReportPurchaseOrderList = ({
         deleteOrderRequest(deleteId)
             .then(() => {
                 setDeleteId(null);
-                loadReport(filters.dateFrom && filters.dateTo ? filters : undefined);
+                loadReport(getRequestFilters(filters));
             })
             .catch(() => {
                 setError('The purchase order could not be deleted.');
@@ -269,6 +298,22 @@ const ReportPurchaseOrderList = ({
                             InputLabelProps={{ shrink: true }}
                             fullWidth
                         />
+                        <TextField
+                            select
+                            label="Supplier"
+                            value={filters.supplier_id}
+                            onChange={(event) => setFilters({ ...filters, supplier_id: event.target.value })}
+                            helperText="Optional"
+                            disabled={suppliersLoading}
+                            fullWidth
+                        >
+                            <MenuItem value="">All suppliers</MenuItem>
+                            {suppliers.map((supplier) => (
+                                <MenuItem key={supplier.id} value={supplier.id}>
+                                    {supplier.supplier_name}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                         <div className="po-report-filter-actions">
                             <Button variant="contained" onClick={applyFilters} disabled={loading}>
                                 Generate report

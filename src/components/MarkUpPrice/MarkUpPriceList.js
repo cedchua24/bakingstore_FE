@@ -17,6 +17,20 @@ import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 
 const MarkUpPriceList = ({ markupPriceList, onUpdated }) => {
     const records = Array.isArray(markupPriceList) ? markupPriceList : [];
+    const productGroups = Array.from(records.reduce((groups, record) => {
+        const productKey = record.product_id ?? `record-${record.id}`;
+
+        if (!groups.has(productKey)) {
+            groups.set(productKey, {
+                productId: record.product_id,
+                productName: record.product_name,
+                records: []
+            });
+        }
+
+        groups.get(productKey).records.push(record);
+        return groups;
+    }, new Map()).values());
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -35,6 +49,10 @@ const MarkUpPriceList = ({ markupPriceList, onUpdated }) => {
         currency: 'PHP',
         maximumFractionDigits: 2
     }).format(Number(value || 0));
+
+    const getVariantLabel = record => record.business_type === 'WHOLESALE'
+        ? `${record.weight / Math.max(record.quantity, 1)}${record.variation || ''} × ${record.quantity} ${record.packaging || ''}`
+        : `${Number(record.weight / Math.max(record.quantity, 1)).toPrecision(2)}${record.variation || ''}`;
 
     const openEditor = id => {
         setLoading(true);
@@ -104,7 +122,10 @@ const MarkUpPriceList = ({ markupPriceList, onUpdated }) => {
     return (
         <section className="markup-list-card">
             <div className="markup-list-card__header">
-                <div><h2>Price records</h2><p>{records.length} wholesale and retail markup configurations.</p></div>
+                <div>
+                    <h2>Price records</h2>
+                    <p>{productGroups.length} product{productGroups.length === 1 ? '' : 's'} · {records.length} wholesale and retail configurations.</p>
+                </div>
                 <span><PriceChangeOutlinedIcon />Current pricing</span>
             </div>
             <div className="table-responsive">
@@ -122,23 +143,31 @@ const MarkUpPriceList = ({ markupPriceList, onUpdated }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {records.length > 0 ? records.map(record => (
-                            <tr key={record.id}>
-                                <td>
+                        {records.length > 0 ? productGroups.map(group => group.records.map((record, recordIndex) => (
+                            <tr key={record.id} className={recordIndex === 0 ? 'markup-list-group-start' : ''}>
+                                {recordIndex === 0 && (
+                                <td rowSpan={group.records.length} className="markup-list-product-cell">
                                     <div className="markup-list-product">
                                         <span>{record.product_name ? record.product_name.charAt(0).toUpperCase() : '?'}</span>
                                         <div>
                                             <strong>{record.product_name}</strong>
+                                            <small className="markup-list-group-meta">
+                                                Product #{group.productId || record.id} · {group.records.length} configuration{group.records.length === 1 ? '' : 's'}
+                                            </small>
                                             <small>#{record.id} · {record.business_type === 'WHOLESALE'
                                                 ? `${record.weight / Math.max(record.quantity, 1)}${record.variation} × ${record.quantity} ${record.packaging || ''}`
                                                 : `${Number(record.weight / Math.max(record.quantity, 1)).toPrecision(2)}${record.variation}`}</small>
                                         </div>
                                     </div>
                                 </td>
+                                )}
                                 <td>
-                                    <span className={`markup-type markup-type--${String(record.business_type || 'wholesale').toLowerCase()}`}>
-                                        {record.business_type || 'WHOLESALE'}
-                                    </span>
+                                    <div className="markup-list-type">
+                                        <span className={`markup-type markup-type--${String(record.business_type || 'wholesale').toLowerCase()}`}>
+                                            {record.business_type || 'WHOLESALE'}
+                                        </span>
+                                        <small>{getVariantLabel(record)}</small>
+                                    </div>
                                 </td>
                                 <td><span className="markup-warehouse"><StorefrontOutlinedIcon />{record.warehouse_name || 'Not specified'}</span></td>
                                 <td>{formatMoney(record.price)}</td>
@@ -154,7 +183,7 @@ const MarkUpPriceList = ({ markupPriceList, onUpdated }) => {
                                     <Link to={"../viewMarkUpHistory/" + record.product_id}><HistoryRoundedIcon />History</Link>
                                 </td>
                             </tr>
-                        )) : (
+                        ))) : (
                             <tr>
                                 <td colSpan="8">
                                     <div className="markup-list-empty">
