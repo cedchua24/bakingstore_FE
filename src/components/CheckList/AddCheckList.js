@@ -74,7 +74,7 @@ const AddCheckList = () => {
             checker: checkList.checker,
             time_of_day: checkList.time_of_day,
             frequency: checkList.frequency,
-            status: 0
+            status: checkList.status
         };
 
         CheckListService.sanctum().then(response => {
@@ -245,6 +245,23 @@ const AddCheckList = () => {
                     </Form.Text>
                 </Form.Group>
 
+                <Form.Group className="mb-3" controlId="formStatus">
+                    <Form.Label>Status</Form.Label>
+                    <Form.Select
+                        name="status"
+                        value={checkList.status}
+                        onChange={onChangeCheckList}
+                        style={{
+                            color: String(checkList.status) === '0' ? '#198754' : String(checkList.status) === '1' ? '#dc3545' : '#6c757d',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        <option value={0}>ENABLED</option>
+                        <option value={1}>DISABLED</option>
+                        <option value={2}>NOT APPLICABLE</option>
+                    </Form.Select>
+                </Form.Group>
+
                 <Button variant="primary" type="submit">
                     Submit
                 </Button>
@@ -318,13 +335,17 @@ const AddCheckList = () => {
                                     </span>
                                 </td>
                                 <td>
-                                    {data.status == 0 ? (
+                                    {Number(data.status) === 0 ? (
                                         <span className="badge bg-success">
                                             ✅ ENABLED
                                         </span>
-                                    ) : (
+                                    ) : Number(data.status) === 1 ? (
                                         <span className="badge bg-danger">
                                             ❌ DISABLED
+                                        </span>
+                                    ) : (
+                                        <span className="badge bg-secondary">
+                                            ➖ NOT APPLICABLE
                                         </span>
                                     )}
                                 </td>
