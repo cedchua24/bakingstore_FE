@@ -22,6 +22,12 @@ import Select from '@mui/material/Select';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
+import AssignmentReturnOutlinedIcon from '@mui/icons-material/AssignmentReturnOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+
+import './RTSList.css';
 
 
 const RTSList = (props) => {
@@ -42,12 +48,13 @@ const RTSList = (props) => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: 'min(460px, calc(100vw - 28px))',
+        maxHeight: 'calc(100vh - 40px)',
+        overflowY: 'auto',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        borderRadius: '16px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: 3,
     };
 
     const [open, setOpen] = React.useState(false);
@@ -163,21 +170,31 @@ const RTSList = (props) => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const totalReturnCost = productList.reduce((total, item) => total + Number(item.total_cost || 0), 0);
+    const inTransitCount = productList.filter(item => Number(item.status) === 1).length;
+    const statusLabel = (status) => Number(status) === 0 ? 'Declared RTS/BO'
+        : Number(status) === 1 ? 'Sent to supplier'
+            : Number(status) === 2 ? 'Received to warehouse'
+                : 'Refunded';
+
 
     return (
-        <div>
-
-            <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > RTS/BO List   </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+        <div className="rts-list-page">
+            <section className="rts-list-hero"><div className="rts-list-hero__icon"><AssignmentReturnOutlinedIcon /></div><div><span>Supplier returns</span><h1>RTS/BO List</h1><p>Track product returns from declaration through supplier handling and resolution.</p></div></section>
+            <section className="rts-list-summary">
+                <div><Inventory2OutlinedIcon /><span><small>Total records</small><strong>{productList.length}</strong></span></div>
+                <div><LocalShippingOutlinedIcon /><span><small>In transit</small><strong>{inTransitCount}</strong></span></div>
+                <div><AccountBalanceWalletOutlinedIcon /><span><small>Total return value</small><strong>{numberFormat(totalReturnCost)}</strong></span></div>
+            </section>
+            <section className="rts-list-card">
+                <div className="rts-list-card__header"><div><h2>Return records</h2><p>{productList.length} {productList.length === 1 ? 'return' : 'returns'} found.</p></div><span><AssignmentReturnOutlinedIcon />Return history</span></div>
+                <div className="table-responsive">
+            <table className="rts-list-table">
+                <thead>
+                    <tr>
                         <th>ID</th>
                         <th>Supplier</th>
-                        <th>Product</th>
-                        <th>Brand</th>
-                        <th>Category</th>
+                        <th>Product details</th>
                         <th>Unit</th>
                         <th>Price</th>
                         <th>Quantity</th>
@@ -186,12 +203,11 @@ const RTSList = (props) => {
                         <th>Reason</th>
                         <th>Date</th>
                         <th>Status</th>
-                        <th></th>
-                        <th></th>
+                        <th className="rts-list-actions-column">Actions</th>
                     </tr>
                 </thead>
                 {productList.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    (<tbody><tr><td colSpan="12"><div className="rts-list-empty"><Inventory2OutlinedIcon /><strong>No RTS/BO records</strong><span>Supplier return records will appear here.</span></div></td></tr></tbody>)
                     :
                     (
                         <tbody>
@@ -202,25 +218,24 @@ const RTSList = (props) => {
                                     <tr key={product.rts_id} >
                                         <td>{product.id}</td>
                                         <td>{product.supplier_name}</td>
-                                        <td>{product.product_name}</td>
-                                        <td>{product.brand_name}</td>
-                                        <td>{product.category_name}</td>
-                                        <td>{product.type}</td>
-                                        <td>{product.type === 'Pc' ? numberFormat(product.price / product.quantity) : numberFormat(product.price)}</td>
+                                        <td>
+                                            <div className="rts-list-product">
+                                                <strong>{product.product_name}</strong>
+                                                <span>{product.brand_name || 'No brand'} · {product.category_name || 'No category'}</span>
+                                            </div>
+                                        </td>
+                                        <td>{product.pack || product.type}</td>
+                                        <td>{product.pack === 'Pc' ? numberFormat(product.price / product.quantity) : numberFormat(product.price)}</td>
                                         <td>{product.rts_quantity}</td>
                                         <td>{product.type}</td>
                                         <td>{numberFormat(product.total_cost)}</td>
                                         <td>{product.reason}</td>
                                         <td>{covertDateString(product.updated_at)}</td>
-                                        <td>{product.status == 0 ? <p style={{ fontWeight: 'bold', color: 'red', }}>Declare RTS/BO</p>
-                                            : product.status == 1 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>Send to Supplier</p> :
-                                                product.status == 2 ? <p style={{ fontWeight: 'bold', color: 'green', }}>Received to Warehouse</p> :
-                                                    <p style={{ fontWeight: 'bold', color: 'green', }}>Refunded</p>}
-                                        </td>
+                                        <td><span className={`rts-list-status rts-list-status--${product.status}`}>{statusLabel(product.status)}</span></td>
 
-                                        <td>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
+                                        <td className="rts-list-actions-column">
+                                            <IconButton className="rts-list-action" aria-label={`Update ${product.product_name}`}>
+                                                <UpdateIcon onClick={(e) => handleOpen(product.id, e)} />
                                             </IconButton>
                                         </td>
                                     </tr>
@@ -229,6 +244,8 @@ const RTSList = (props) => {
                             }
                         </tbody>)}
             </table>
+                </div>
+            </section>
             < Modal
                 keepMounted
                 open={open}
@@ -236,73 +253,67 @@ const RTSList = (props) => {
                 aria-labelledby="keep-mounted-modal-title"
                 aria-describedby="keep-mounted-modal-description"
             >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Status
-                    </Typography>
+                <Box sx={style} className="rts-list-modal">
+                    <div className="rts-list-modal__header"><span><AssignmentReturnOutlinedIcon /></span><div><Typography id="keep-mounted-modal-title" variant="h6" component="h2">Update return status</Typography><p>Move this RTS/BO record to its next state.</p></div></div>
 
                     {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
+                        <div className="rts-list-modal__loading">
+                            <CircularProgress size={24} />
                         </div>
                     }
-
+                    <div className="rts-list-modal__fields">
                     <TextField
+                        fullWidth
                         disabled
                         id="filled-required"
                         label="Product Name"
-                        variant="filled"
                         name='product_name'
                         value={product.product_name}
                     />
 
                     <TextField
+                        fullWidth
                         disabled
                         id="filled-required"
                         label="Quantity"
-                        variant="filled"
                         name='product_name'
                         value={product.quantity}
                     />
                     <TextField
+                        fullWidth
                         disabled
                         id="filled-required"
                         label="Reason"
-                        variant="filled"
                         name='reason'
                         value={product.reason}
                     />
 
-                    <FormControl sx={{ minWidth: 230, }}>
-                        <InputLabel id="demo-simple-select-label">Choose Status</InputLabel>
+                    <FormControl fullWidth required>
+                        <InputLabel id="rts-status-label">Choose status</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            className="mb-3"
-                            id="demo-simple-select"
+                            labelId="rts-status-label"
                             name='status'
-                            label="Mark Up Option"
+                            value={product.status ?? ''}
+                            label="Choose status"
                             onChange={onChangeInput}
                         >
                             {product.current_status != 0 && <MenuItem value={0}>Declare RTS/BO</MenuItem>}
                             {product.current_status != 1 && <MenuItem value={1}>Send to Supplier</MenuItem>}
                             {product.current_status != 2 && <MenuItem value={2}>Received to Warehouse</MenuItem>}
-                            {product.current_status != 2 && <MenuItem value={3}>Refund</MenuItem>}
+                            {product.current_status != 3 && <MenuItem value={3}>Refund</MenuItem>}
                         </Select>
                     </FormControl>
+                    </div>
 
                     <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
+                        className="rts-list-modal__actions"
                     >
+                        <Button type="button" onClick={handleClose}>Cancel</Button>
                         <Button
                             variant="contained"
                             type="submit"
                             onClick={updateProduct}
-                            disabled={errorStock}
+                            disabled={errorStock || submitLoading}
                             size="large" >
                             Submit
                         </Button>

@@ -35,6 +35,7 @@ const emptyProduct = {
     quantity: 0,
     stock_reason: '',
     stock: 0,
+    type: '',
     stock_pc: 0,
     newStocks: '',
     pack: ''
@@ -142,6 +143,7 @@ const StockList = () => {
                     ...response.data,
                     newStocks: '',
                     stock_reason: '',
+                    type: '',
                     pack: ''
                 });
                 setModifyOpen(true);
@@ -183,6 +185,9 @@ const StockList = () => {
 
     const canModifyStock = Boolean(
         product.pack
+        && product.type
+        && String(product.newStocks).trim()
+        && Number.isFinite(Number(product.newStocks))
         && Number(product.newStocks) !== 0
         && String(product.stock_reason || '').trim()
     );
@@ -399,7 +404,7 @@ const StockList = () => {
                     {submitLoading && <CircularProgress size={25} className="stock-list-modal__spinner" />}
                     <div className="stock-list-modal__fields">
                         <TextField fullWidth disabled label="Product" value={product.product_name || ''} />
-                        <FormControl fullWidth>
+                        <FormControl fullWidth required>
                             <InputLabel id="modify-stock-package-label">Stock unit</InputLabel>
                             <Select
                                 labelId="modify-stock-package-label"
@@ -411,8 +416,25 @@ const StockList = () => {
                                 {Number(product.quantity) !== 1 && <MenuItem value="Pc">Piece</MenuItem>}
                             </Select>
                         </FormControl>
+                        <FormControl fullWidth required>
+                            <InputLabel id="modify-stock-type-label">Type</InputLabel>
+                            <Select
+                                labelId="modify-stock-type-label"
+                                value={product.type || ''}
+                                label="Type"
+                                onChange={event => setProduct({ ...product, type: event.target.value })}
+                            >
+                                <MenuItem value="INVENTORY">INVENTORY</MenuItem>
+                                <MenuItem value="REPACK">REPACK</MenuItem>
+                                <MenuItem value="ADJUSTMENT">ADJUSTMENT</MenuItem>
+                                <MenuItem value="SPOILAGE" disabled>SPOILAGE</MenuItem>
+                                <MenuItem value="RETURN" disabled>RETURN</MenuItem>
+                                <MenuItem value="RECEIVED_TO_WAREHOUSE" disabled>RECEIVED_TO_WAREHOUSE</MenuItem>
+                            </Select>
+                        </FormControl>
                         <TextField
                             fullWidth
+                            required
                             label="Quantity adjustment"
                             type="number"
                             value={product.newStocks}
@@ -421,6 +443,7 @@ const StockList = () => {
                         />
                         <TextField
                             fullWidth
+                            required
                             label="Reason"
                             multiline
                             minRows={2}

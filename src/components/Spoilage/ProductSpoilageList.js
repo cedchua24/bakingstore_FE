@@ -14,7 +14,6 @@ import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography'
@@ -27,6 +26,11 @@ import Select from '@mui/material/Select';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import SearchIcon from '@mui/icons-material/Search';
+
+import './ProductSpoilageList.css';
 
 
 const ProductSpoilageList = (props) => {
@@ -56,12 +60,13 @@ const ProductSpoilageList = (props) => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: 'min(460px, calc(100vw - 28px))',
+        maxHeight: 'calc(100vh - 40px)',
+        overflowY: 'auto',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        borderRadius: '16px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: 3,
     };
 
     const [open, setOpen] = React.useState(false);
@@ -77,6 +82,7 @@ const ProductSpoilageList = (props) => {
     const [product, setProduct] = useState({
         id: 0,
         product_name: '',
+        type: 'SPOILAGE',
         reason: '',
         stock: 0,
         stock_pc: 0,
@@ -130,7 +136,7 @@ const ProductSpoilageList = (props) => {
             newStocks: e.target.value,
         });
 
-        if (e.target.value > 0) {
+        if (e.target.value === '' || Number(e.target.value) >= 0) {
             setErrorStock(true);
             console.log('true')
         } else {
@@ -144,7 +150,13 @@ const ProductSpoilageList = (props) => {
     const fetchByProductId = async (id) => {
         await ProductServiceService.get(id)
             .then(response => {
-                setProduct(response.data);
+                setProduct({
+                    ...response.data,
+                    type: 'SPOILAGE',
+                    pack: response.data.packaging || '',
+                    newStocks: '',
+                    reason: ''
+                });
                 setRealStock(response.data.stock);
             })
             .catch(e => {
@@ -164,7 +176,10 @@ const ProductSpoilageList = (props) => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
-        SpoilageService.create(product)
+        SpoilageService.create({
+            ...product,
+            type: 'SPOILAGE'
+        })
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
@@ -223,16 +238,30 @@ const ProductSpoilageList = (props) => {
     }
 
     return (
-        <div>
-            <Form>
+        <div className="product-spoilage-page">
+            <section className="product-spoilage-hero">
+                <div className="product-spoilage-hero__icon"><WarningAmberRoundedIcon /></div>
+                <div>
+                    <span>Inventory control</span>
+                    <h1>Product Spoilage</h1>
+                    <p>Record damaged, expired, or unusable stock and keep inventory accurate.</p>
+                </div>
+            </section>
+
+            <Form className="product-spoilage-filter">
+                <div className="product-spoilage-filter__copy">
+                    <strong>Filter products</strong>
+                    <span>Select a category to find stock for spoilage.</span>
+                </div>
+                <div className="product-spoilage-filter__controls">
                 <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                    <FormControl size="small" sx={{ m: 0, minWidth: 240 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
                             // value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
+                            label="Category"
                             name="category_id"
                             defaultValue={2}
                             onChange={onChangeInput}
@@ -250,25 +279,30 @@ const ProductSpoilageList = (props) => {
                     variant="contained"
                     onClick={fetchProductByCategoryId}
                     disabled={isAddDisabled}
+                    startIcon={<SearchIcon />}
+                    className="product-spoilage-filter__button"
                 >
                     Search
                 </Button>
-                <br></br>
-                <br></br>
+                </div>
                 {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
+                    <LinearProgress color="warning" className="product-spoilage-progress" />
                 }
             </Form>
-            <br></br>
             <Stack sx={{ width: '100%' }} spacing={2}>
                 {validator.isShow &&
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                 }
             </Stack>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Add Spoilage </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+            <section className="product-spoilage-card">
+                <div className="product-spoilage-card__header">
+                    <div><h2>Available products</h2><p>Choose a product to record spoilage.</p></div>
+                    <span><Inventory2OutlinedIcon />{productList.data?.length || 0} products</span>
+                </div>
+                <div className="table-responsive">
+            <table className="product-spoilage-table">
+                <thead>
+                    <tr>
                         <th>ID</th>
                         <th>Product</th>
                         <th>Brand</th>
@@ -282,7 +316,7 @@ const ProductSpoilageList = (props) => {
                     </tr>
                 </thead>
                 {productList.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    (<tbody><tr><td colSpan="10"><div className="product-spoilage-empty"><Inventory2OutlinedIcon /><strong>No products available</strong><span>Try selecting another category.</span></div></td></tr></tbody>)
                     :
                     (
                         <tbody>
@@ -306,13 +340,13 @@ const ProductSpoilageList = (props) => {
                                             : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
                                         </td>
                                         <td>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
+                                            <IconButton className="product-spoilage-action" aria-label={`Add spoilage for ${product.product_name}`}>
+                                                <UpdateIcon onClick={(e) => handleOpen(product.id, e)} />
                                             </IconButton>
                                         </td>
                                         <td>
                                             <Link variant="primary" to={"/viewTransaction/" + product.id}   >
-                                                <Button variant="contained" disabled>
+                                                <Button variant="text" disabled>
                                                     View
                                                 </Button>
                                             </Link>
@@ -328,6 +362,8 @@ const ProductSpoilageList = (props) => {
                             }
                         </tbody>)}
             </table>
+                </div>
+            </section>
             < Modal
                 keepMounted
                 open={open}
@@ -335,89 +371,96 @@ const ProductSpoilageList = (props) => {
                 aria-labelledby="keep-mounted-modal-title"
                 aria-describedby="keep-mounted-modal-description"
             >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Stock
-                    </Typography>
+                <Box sx={style} className="product-spoilage-modal">
+                    <div className="product-spoilage-modal__header">
+                        <span><WarningAmberRoundedIcon /></span>
+                        <div>
+                            <Typography id="keep-mounted-modal-title" variant="h6" component="h2">Add spoilage</Typography>
+                            <p>Record stock that can no longer be sold.</p>
+                        </div>
+                    </div>
 
                     {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
+                        <div className="product-spoilage-modal__loading">
+                            <CircularProgress size={24} />
                         </div>
                     }
 
+                    <div className="product-spoilage-modal__stock">
+                        <div><span>Wholesale stock</span><strong>{product.stock ?? 0}</strong></div>
+                        <div><span>Piece stock</span><strong>{product.stock_pc ?? 0}</strong></div>
+                    </div>
+
+                    <div className="product-spoilage-modal__fields">
                     <TextField
+                        fullWidth
                         disabled
-                        id="filled-required"
                         label="Product Name"
-                        variant="filled"
                         name='product_name'
-                        value={product.product_name}
+                        value={product.product_name || ''}
                     />
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel id="demo-simple-select-label">Packaging</InputLabel>
+                    <TextField
+                        fullWidth
+                        disabled
+                        label="Type"
+                        value="SPOILAGE"
+                    />
+                    <FormControl fullWidth required>
+                        <InputLabel id="spoilage-packaging-label">Stock unit</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={product.packaging}
-                            label="Packaging"
+                            labelId="spoilage-packaging-label"
+                            value={product.pack || ''}
+                            label="Stock unit"
                             name="pack"
                             onChange={onChangePackaging}
                         >
-                            <MenuItem value={product.packaging}>{product.packaging}</MenuItem>
+                            <MenuItem value={product.packaging}>{product.packaging || 'Wholesale package'}</MenuItem>
                             {product.quantity != 1 &&
                                 <MenuItem value="Pc">Pc</MenuItem>}
-
-
                         </Select>
                     </FormControl>
 
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Quantity (must be negative)</InputLabel>
-                        <Input
+                    <TextField
+                            fullWidth
+                            required
                             type='number'
-                            id="filled-required"
-                            label="Stock"
-                            variant="filled"
+                            label="Spoilage quantity"
                             name='newStocks'
-                            errorText='{this.state.password_error_text}'
-                            // min='1'
-                            // value={product.stock}
+                            value={product.newStocks}
                             onChange={onChangeStock}
-                            // helperText="Incorrect entry."
                             error={errorStock}
+                            helperText={errorStock ? 'Enter a quantity less than zero.' : 'This amount will be deducted from stock.'}
+                            inputProps={{ max: -1 }}
                         />
-                    </FormControl>
 
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Reason</InputLabel>
-                        <Input
-                            type='text'
-                            id="filled-required"
+                        <TextField
+                            fullWidth
+                            required
                             label="Reason"
-                            variant="filled"
                             name='reason'
+                            value={product.reason || ''}
                             error={errorStock2}
                             onChange={onChange}
+                            multiline
+                            minRows={3}
+                            helperText={errorStock2 ? 'Explain why this stock is being marked as spoilage.' : 'Reason recorded in the spoilage history.'}
                         />
-                    </FormControl>
-
-
+                    </div>
 
                     <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
+                        className="product-spoilage-modal__actions"
                     >
+                        <Button
+                            onClick={handleClose}
+                            disabled={submitLoading}
+                        >
+                            Cancel
+                        </Button>
                         <Button
                             variant="contained"
                             type="submit"
                             onClick={updateProduct}
-                            disabled={errorStock}
+                            disabled={errorStock || errorStock2 || submitLoading || !product.pack}
                             size="large" >
                             Submit
                         </Button>

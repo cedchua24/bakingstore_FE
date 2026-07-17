@@ -1,0 +1,61 @@
+.product-spoilage-page {
+    --sp-ink: #192132;
+    --sp-muted: #6d7686;
+    --sp-border: #e3e7ed;
+    min-height: 100%;
+    padding: 26px;
+    color: var(--sp-ink);
+    background: #f6f7f9;
+}
+
+.product-spoilage-hero { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; padding: 22px 24px; color: #fff; background: linear-gradient(120deg,#3a2524,#713d38 62%,#985046); border-radius: 16px; }
+.product-spoilage-hero__icon { display: grid; place-items: center; width: 48px; height: 48px; color: #ffd1c9; background: rgba(255,255,255,.1); border-radius: 13px; }
+.product-spoilage-hero span { color: #ffd1c9; font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.product-spoilage-hero h1 { margin: 2px 0 0; font-size: 1.75rem; }
+.product-spoilage-hero p { margin: 4px 0 0; color: rgba(255,255,255,.72); font-size: .78rem; }
+
+.product-spoilage-filter { display: flex; align-items: center; justify-content: space-between; gap: 18px; position: relative; margin-bottom: 14px; padding: 14px 16px; background: #fff; border: 1px solid var(--sp-border); border-radius: 12px; }
+.product-spoilage-filter__copy { display: flex; flex-direction: column; }
+.product-spoilage-filter__copy strong { font-size: .82rem; }
+.product-spoilage-filter__copy span { margin-top: 2px; color: var(--sp-muted); font-size: .7rem; }
+.product-spoilage-filter__controls { display: flex; align-items: center; gap: 8px; }
+.product-spoilage-filter__button.MuiButton-root { height: 40px; padding-inline: 16px; background: var(--sp-ink); border-radius: 8px; box-shadow: none; font-size: .72rem; font-weight: 700; text-transform: none; }
+.product-spoilage-progress { position: absolute !important; right: 10px; bottom: 0; left: 10px; }
+.product-spoilage-page .MuiAlert-root { margin-bottom: 14px; border-radius: 10px; }
+
+.product-spoilage-card { overflow: hidden; background: #fff; border: 1px solid var(--sp-border); border-radius: 14px; }
+.product-spoilage-card__header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--sp-border); }
+.product-spoilage-card__header h2 { margin: 0; font-size: 1rem; }
+.product-spoilage-card__header p { margin: 3px 0 0; color: var(--sp-muted); font-size: .7rem; }
+.product-spoilage-card__header > span { display: inline-flex; align-items: center; gap: 5px; padding: 5px 8px; color: #7b4039; background: #fff0ed; border-radius: 999px; font-size: .64rem; font-weight: 700; }
+.product-spoilage-card__header svg { font-size: 15px; }
+.product-spoilage-table { width: 100%; min-width: 940px; border-collapse: collapse; }
+.product-spoilage-table th { padding: 10px 12px; color: #778195; background: #fafbfc; border-bottom: 1px solid var(--sp-border); font-size: .65rem; letter-spacing: .07em; text-align: left; text-transform: uppercase; }
+.product-spoilage-table td { padding: 12px; border-bottom: 1px solid #edf0f4; font-size: .76rem; vertical-align: middle; }
+.product-spoilage-table tbody tr:hover { background: #fffaf9; }
+.product-spoilage-table p { margin: 0; }
+.product-spoilage-action.MuiIconButton-root { color: #8c493f; background: #fff0ed; border-radius: 9px; }
+.product-spoilage-empty { display: flex; align-items: center; flex-direction: column; gap: 4px; padding: 44px; color: var(--sp-muted); }
+.product-spoilage-empty svg { margin-bottom: 4px; font-size: 32px; }
+.product-spoilage-empty strong { color: var(--sp-ink); font-size: .9rem; }
+
+.product-spoilage-modal__header { display: flex; align-items: center; gap: 11px; padding-bottom: 16px; border-bottom: 1px solid var(--sp-border); }
+.product-spoilage-modal__header > span { display: grid; place-items: center; width: 40px; height: 40px; color: #8c493f; background: #fff0ed; border-radius: 10px; }
+.product-spoilage-modal__header h2 { margin: 0; font-size: 1.05rem; }
+.product-spoilage-modal__header p { margin: 2px 0 0; color: var(--sp-muted); font-size: .72rem; }
+.product-spoilage-modal__loading { display: flex; justify-content: center; padding-top: 14px; color: #8c493f; }
+.product-spoilage-modal__stock { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.product-spoilage-modal__stock > div { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #f8f9fb; border: 1px solid var(--sp-border); border-radius: 10px; }
+.product-spoilage-modal__stock span { color: var(--sp-muted); font-size: .68rem; }
+.product-spoilage-modal__stock strong { font-size: .88rem; }
+.product-spoilage-modal__fields { display: flex; flex-direction: column; gap: 14px; padding: 18px 0; }
+.product-spoilage-modal__fields .MuiFormControl-root { margin: 0; }
+.product-spoilage-modal__actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 15px; border-top: 1px solid var(--sp-border); }
+.product-spoilage-modal__actions .MuiButton-root { border-radius: 9px; font-size: .74rem; font-weight: 700; text-transform: none; }
+.product-spoilage-modal__actions .MuiButton-contained { min-width: 120px; background: #8c493f; box-shadow: none; }
+
+@media (max-width: 700px) {
+    .product-spoilage-page { padding: 15px; }
+    .product-spoilage-filter, .product-spoilage-filter__controls { align-items: stretch; flex-direction: column; }
+    .product-spoilage-filter__controls > .MuiBox-root, .product-spoilage-filter__controls .MuiFormControl-root { width: 100%; min-width: 0; }
+}
