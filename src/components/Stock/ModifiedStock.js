@@ -5,6 +5,14 @@ import ProductServiceService from "../Product/ProductService.service";
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import LinearProgress from '@mui/material/LinearProgress';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
 import SearchIcon from '@mui/icons-material/Search';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
@@ -17,15 +25,32 @@ import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
 
 import './ModifiedStock.css';
 
+const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 const ModifiedStock = () => {
     const [report, setReport] = useState({ data: [] });
-    const [date, setDate] = useState('');
+    const [date, setDate] = useState(getTodayDate);
+    const [typeList, setTypeList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
+    const stockTypeOptions = [
+        'INVENTORY',
+        'REPACK',
+        'ADJUSTMENT',
+        'SPOILAGE',
+        'RETURN',
+        'RECEIVED_TO_WAREHOUSE'
+    ];
 
     useEffect(() => {
-        ProductServiceService.fetchModifiedStockDaily()
+        ProductServiceService.fetchModifiedStockDaily(getTodayDate())
             .then(response => setReport(response.data))
             .catch(fetchError => {
                 console.log("error", fetchError);
@@ -55,7 +80,7 @@ const ModifiedStock = () => {
 
         setLoading(true);
         setError('');
-        ProductServiceService.fetchModifiedStockDaily(date)
+        ProductServiceService.fetchModifiedStockDaily(date, typeList)
             .then(response => setReport(response.data))
             .catch(fetchError => {
                 console.log("error", fetchError);
@@ -130,6 +155,32 @@ const ModifiedStock = () => {
                         onChange={event => setDate(event.target.value)}
                         InputLabelProps={{ shrink: true }}
                     />
+                    <FormControl size="small" className="modified-stock-type-filter">
+                        <InputLabel id="modified-stock-type-label">Types</InputLabel>
+                        <Select
+                            labelId="modified-stock-type-label"
+                            multiple
+                            value={typeList}
+                            label="Types"
+                            onChange={event => setTypeList(
+                                typeof event.target.value === 'string'
+                                    ? event.target.value.split(',')
+                                    : event.target.value
+                            )}
+                            renderValue={(selected) => selected.length ? (
+                                <Box className="modified-stock-type-chips">
+                                    {selected.map(type => <Chip key={type} label={type} size="small" />)}
+                                </Box>
+                            ) : 'All types'}
+                        >
+                            {stockTypeOptions.map(type => (
+                                <MenuItem key={type} value={type}>
+                                    <Checkbox checked={typeList.includes(type)} />
+                                    <ListItemText primary={type} />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     <Button
                         variant="contained"
                         disabled={loading}
@@ -158,6 +209,7 @@ const ModifiedStock = () => {
                         <thead>
                             <tr>
                                 <th>Product</th>
+                                <th>Type</th>
                                 <th>Reason</th>
                                 <th>Adjustment</th>
                                 <th>Unit price</th>
@@ -178,6 +230,7 @@ const ModifiedStock = () => {
                                                 </div>
                                             </div>
                                         </td>
+                                        <td><span className="modified-stock-type">{record.type || 'Not specified'}</span></td>
                                         <td><span className="modified-stock-reason">{record.stock_reason || 'No reason provided'}</span></td>
                                         <td>
                                             <span className={isAddition ? 'modified-stock-quantity modified-stock-quantity--added' : 'modified-stock-quantity modified-stock-quantity--reduced'}>
@@ -195,7 +248,7 @@ const ModifiedStock = () => {
                                 );
                             }) : (
                                 <tr>
-                                    <td colSpan="6">
+                                    <td colSpan="7">
                                         <div className="modified-stock-empty">
                                             <Inventory2OutlinedIcon />
                                             <h3>No stock modifications</h3>

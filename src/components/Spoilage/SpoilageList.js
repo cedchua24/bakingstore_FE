@@ -22,6 +22,12 @@ import Select from '@mui/material/Select';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
+import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+
+import './SpoilageList.css';
 
 
 const SpoilageList = (props) => {
@@ -195,20 +201,40 @@ const SpoilageList = (props) => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const totalSpoilageCost = productList.reduce(
+        (total, currentProduct) => total + Number(currentProduct.total_cost || 0),
+        0
+    );
+
 
     return (
-        <div>
-
-            <br></br>
-            {submitLoading &&
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <CircularProgress />
+        <div className="spoilage-list-page">
+            <section className="spoilage-list-hero">
+                <div className="spoilage-list-hero__icon"><WarningAmberRoundedIcon /></div>
+                <div>
+                    <span>Inventory audit</span>
+                    <h1>Spoilage List</h1>
+                    <p>Review damaged, expired, and unusable stock recorded across inventory.</p>
                 </div>
+            </section>
+
+            <section className="spoilage-list-summary">
+                <div><Inventory2OutlinedIcon /><span><small>Records</small><strong>{productList.length}</strong></span></div>
+                <div><AccountBalanceWalletOutlinedIcon /><span><small>Total spoilage cost</small><strong>{numberFormat(totalSpoilageCost)}</strong></span></div>
+            </section>
+
+            {submitLoading &&
+                <LinearProgress color="warning" className="spoilage-list-progress" />
             }
-            <legend align="center" style={{ fontWeight: 'bold' }} > Spoilage List   </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+            <section className="spoilage-list-card">
+                <div className="spoilage-list-card__header">
+                    <div><h2>Recorded spoilage</h2><p>{productList.length} {productList.length === 1 ? 'record' : 'records'} found.</p></div>
+                    <span><WarningAmberRoundedIcon />Audit history</span>
+                </div>
+                <div className="table-responsive">
+            <table className="spoilage-list-table">
+                <thead>
+                    <tr>
                         <th>ID</th>
                         <th>Product</th>
                         <th>Brand</th>
@@ -219,12 +245,11 @@ const SpoilageList = (props) => {
                         <th>Total Cost</th>
                         <th>Reason</th>
                         <th>Date</th>
-                        <th></th>
-                        <th></th>
+                        <th aria-label="Actions"></th>
                     </tr>
                 </thead>
                 {productList.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    (<tbody><tr><td colSpan="11"><div className="spoilage-list-empty"><Inventory2OutlinedIcon /><strong>No spoilage records</strong><span>Recorded spoilage will appear here.</span></div></td></tr></tbody>)
                     :
                     (
                         <tbody>
@@ -248,7 +273,7 @@ const SpoilageList = (props) => {
 
 
                                         <td>
-                                            <Button variant="contained" onClick={(e) => deleteSpoilage(product.spoilage_id, e)} disabled={submitLoading}>
+                                            <Button variant="outlined" startIcon={<DeleteOutlineRoundedIcon />} disabled className="spoilage-list-delete">
                                                 Delete
                                             </Button>
                                         </td>
@@ -258,6 +283,8 @@ const SpoilageList = (props) => {
                             }
                         </tbody>)}
             </table>
+                </div>
+            </section>
             < Modal
                 keepMounted
                 open={open}

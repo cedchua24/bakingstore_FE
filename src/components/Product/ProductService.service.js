@@ -58,8 +58,10 @@ class ProductService {
     fetchProductListDisabled(id) {
         return axios.get(`/api/products/fetchProductListDisabled/${id}`);
     }
-    fetchModifiedStockDaily(id) {
-        return axios.get(`/api/products/fetchModifiedStockDaily/${id}`);
+    fetchModifiedStockDaily(id, typeList = []) {
+        return axios.get(`/api/products/fetchModifiedStockDaily/${id}`, {
+            params: typeList.length > 0 ? { typeList } : {}
+        });
     }
     fetchPendingProduct(data) {
         return axios.post("/api/products/fetchPendingProduct", data);

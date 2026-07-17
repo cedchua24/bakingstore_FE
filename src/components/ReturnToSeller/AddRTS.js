@@ -15,7 +15,6 @@ import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
-import Input from '@mui/material/Input';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography'
@@ -28,6 +27,11 @@ import Select from '@mui/material/Select';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
+import AssignmentReturnOutlinedIcon from '@mui/icons-material/AssignmentReturnOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import SearchIcon from '@mui/icons-material/Search';
+
+import './AddRTS.css';
 
 
 const AddRTS = (props) => {
@@ -57,12 +61,13 @@ const AddRTS = (props) => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: 'min(480px, calc(100vw - 28px))',
+        maxHeight: 'calc(100vh - 40px)',
+        overflowY: 'auto',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        borderRadius: '16px',
         boxShadow: 24,
-        p: 4,
-        '& .MuiTextField-root': { m: 1, width: '25ch' },
+        p: 3,
     };
 
     const [open, setOpen] = React.useState(false);
@@ -73,11 +78,17 @@ const AddRTS = (props) => {
         setOpen(true);
     }
 
-    const handleClose = () => setOpen(false);
+    const handleClose = () => {
+        setOpen(false);
+        setSubmitLoading(false);
+        setErrorStock(true);
+        setErrorStock2(true);
+    };
 
     const [product, setProduct] = useState({
         id: 0,
         product_name: '',
+        type: 'RETURN',
         supplier_id: '',
         reason: '',
         stock: 0,
@@ -143,7 +154,7 @@ const AddRTS = (props) => {
             newStocks: e.target.value,
         });
 
-        if (e.target.value > 0) {
+        if (e.target.value === '' || Number(e.target.value) >= 0) {
             setErrorStock(true);
             console.log('true')
         } else {
@@ -157,7 +168,14 @@ const AddRTS = (props) => {
     const fetchByProductId = async (id) => {
         await ProductServiceService.get(id)
             .then(response => {
-                setProduct(response.data);
+                setProduct({
+                    ...response.data,
+                    type: 'RETURN',
+                    pack: response.data.packaging || '',
+                    supplier_id: '',
+                    newStocks: '',
+                    reason: ''
+                });
                 setRealStock(response.data.stock);
             })
             .catch(e => {
@@ -187,7 +205,10 @@ const AddRTS = (props) => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
-        RTSService.create(product)
+        RTSService.create({
+            ...product,
+            type: 'RETURN'
+        })
             .then(response => {
                 fetchProductList();
                 setSubmitLoading(false);
@@ -246,16 +267,22 @@ const AddRTS = (props) => {
     }
 
     return (
-        <div>
-            <Form>
+        <div className="add-rts-page">
+            <section className="add-rts-hero">
+                <div className="add-rts-hero__icon"><AssignmentReturnOutlinedIcon /></div>
+                <div><span>Supplier returns</span><h1>Add RTS/BO</h1><p>Record products being returned to a supplier and adjust inventory accurately.</p></div>
+            </section>
+            <Form className="add-rts-filter">
+                <div className="add-rts-filter__copy"><strong>Filter products</strong><span>Select a category to find stock for return.</span></div>
+                <div className="add-rts-filter__controls">
                 <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                    <FormControl size="small" sx={{ m: 0, minWidth: 240 }}>
                         <InputLabel id="demo-simple-select-label">Category</InputLabel>
                         <Select
                             labelId="demo-simple-select-label"
                             id="demo-simple-select"
                             // value={shopOrderTransaction.shop_id}
-                            label="Shop Name"
+                            label="Category"
                             name="category_id"
                             defaultValue={2}
                             onChange={onChangeInput}
@@ -273,25 +300,27 @@ const AddRTS = (props) => {
                     variant="contained"
                     onClick={fetchProductByCategoryId}
                     disabled={isAddDisabled}
+                    startIcon={<SearchIcon />}
+                    className="add-rts-filter__button"
                 >
                     Search
                 </Button>
-                <br></br>
-                <br></br>
+                </div>
                 {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
+                    <LinearProgress color="warning" className="add-rts-progress" />
                 }
             </Form>
-            <br></br>
             <Stack sx={{ width: '100%' }} spacing={2}>
                 {validator.isShow &&
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                 }
             </Stack>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Add RTS/BO </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+            <section className="add-rts-card">
+                <div className="add-rts-card__header"><div><h2>Available products</h2><p>Choose a product to start a supplier return.</p></div><span><Inventory2OutlinedIcon />{productList.data?.length || 0} products</span></div>
+                <div className="table-responsive">
+            <table className="add-rts-table">
+                <thead>
+                    <tr>
                         <th>ID</th>
                         <th>Product</th>
                         <th>Brand</th>
@@ -305,7 +334,7 @@ const AddRTS = (props) => {
                     </tr>
                 </thead>
                 {productList.length == 0 ?
-                    (<tr style={{ color: "red" }}>{"No Data Available"}</tr>)
+                    (<tbody><tr><td colSpan="10"><div className="add-rts-empty"><Inventory2OutlinedIcon /><strong>No products available</strong><span>Try selecting another category.</span></div></td></tr></tbody>)
                     :
                     (
                         <tbody>
@@ -329,8 +358,8 @@ const AddRTS = (props) => {
                                             : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
                                         </td>
                                         <td>
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(product.id, e)} />
+                                            <IconButton className="add-rts-action" aria-label={`Return ${product.product_name}`}>
+                                                <UpdateIcon onClick={(e) => handleOpen(product.id, e)} />
                                             </IconButton>
                                         </td>
                                         <td>
@@ -351,6 +380,8 @@ const AddRTS = (props) => {
                             }
                         </tbody>)}
             </table>
+                </div>
+            </section>
             < Modal
 
                 keepMounted
@@ -359,32 +390,35 @@ const AddRTS = (props) => {
                 aria-labelledby="keep-mounted-modal-title"
                 aria-describedby="keep-mounted-modal-description"
             >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Add RTS/BO
-                    </Typography>
+                <Box sx={style} className="add-rts-modal">
+                    <div className="add-rts-modal__header"><span><AssignmentReturnOutlinedIcon /></span><div><Typography id="keep-mounted-modal-title" variant="h6" component="h2">Add RTS/BO</Typography><p>Record stock being returned to the supplier.</p></div></div>
 
                     {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
+                        <div className="add-rts-modal__loading">
+                            <CircularProgress size={24} />
                         </div>
                     }
-
+                    <div className="add-rts-modal__stock"><div><span>Wholesale stock</span><strong>{product.stock ?? 0}</strong></div><div><span>Piece stock</span><strong>{product.stock_pc ?? 0}</strong></div></div>
+                    <div className="add-rts-modal__fields">
                     <TextField
+                        fullWidth
                         disabled
-                        id="filled-required"
                         label="Product Name"
-                        variant="filled"
                         name='product_name'
-                        value={product.product_name}
+                        value={product.product_name || ''}
                     />
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel id="demo-simple-select-label">Packaging</InputLabel>
+                    <TextField
+                        fullWidth
+                        disabled
+                        label="Type"
+                        value="RETURN"
+                    />
+                    <FormControl fullWidth required>
+                        <InputLabel id="rts-packaging-label">Stock unit</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={product.packaging}
-                            label="Packaging"
+                            labelId="rts-packaging-label"
+                            value={product.pack || ''}
+                            label="Stock unit"
                             name="pack"
                             onChange={onChangePackaging}
                         >
@@ -396,11 +430,11 @@ const AddRTS = (props) => {
                         </Select>
                     </FormControl>
 
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel id="demo-simple-select-label">Supplier</InputLabel>
+                    <FormControl fullWidth required>
+                        <InputLabel id="rts-supplier-label">Supplier</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
+                            labelId="rts-supplier-label"
+                            value={product.supplier_id || ''}
                             label="Supplier"
                             name="supplier_id"
                             onChange={onChangeSupplier}
@@ -414,52 +448,39 @@ const AddRTS = (props) => {
                         </Select>
                     </FormControl>
 
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Quantity (must be negative)</InputLabel>
-                        <Input
+                    <TextField
+                            fullWidth required
                             type='number'
-                            id="filled-required"
-                            label="Stock"
-                            variant="filled"
+                            label="Return quantity"
                             name='newStocks'
-                            errorText='{this.state.password_error_text}'
-                            // min='1'
-                            // value={product.stock}
+                            value={product.newStocks}
                             onChange={onChangeStock}
-                            // helperText="Incorrect entry."
                             error={errorStock}
+                            helperText={errorStock ? 'Enter a quantity less than zero.' : 'This amount will be deducted from stock.'}
+                            inputProps={{ max: -1 }}
                         />
-                    </FormControl>
 
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Reason</InputLabel>
-                        <Input
-                            type='text'
-                            id="filled-required"
+                        <TextField
+                            fullWidth required
                             label="Reason"
-                            variant="filled"
                             name='reason'
+                            value={product.reason || ''}
                             error={errorStock2}
                             onChange={onChange}
+                            multiline minRows={3}
+                            helperText={errorStock2 ? 'Explain why this product is being returned.' : 'Reason recorded in the return history.'}
                         />
-                    </FormControl>
-
-
+                    </div>
 
                     <Box
-                        sx={{
-                            display: 'flex',
-                            flexDirection: { xs: 'column', md: 'row' },
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
+                        className="add-rts-modal__actions"
                     >
+                        <Button type="button" onClick={handleClose}>Cancel</Button>
                         <Button
                             variant="contained"
                             type="submit"
                             onClick={updateProduct}
-                            disabled={errorStock}
+                            disabled={errorStock || errorStock2 || submitLoading || !product.pack || !product.supplier_id}
                             size="large" >
                             Submit
                         </Button>

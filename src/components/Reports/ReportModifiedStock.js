@@ -18,9 +18,35 @@ import UpdateIcon from '@mui/icons-material/Update';
 import { Form } from 'react-bootstrap';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
+import Chip from '@mui/material/Chip';
 
 import CircularProgress from '@mui/material/CircularProgress';
 import LinearProgress from '@mui/material/LinearProgress';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
+import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutlineRounded';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import SearchIcon from '@mui/icons-material/Search';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+
+import './ReportModifiedStock.css';
+
+const formatDateInput = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+const getCurrentMonthRange = () => {
+    const today = new Date();
+    return {
+        dateFrom: formatDateInput(new Date(today.getFullYear(), today.getMonth(), 1)),
+        dateTo: formatDateInput(new Date(today.getFullYear(), today.getMonth() + 1, 0))
+    };
+};
 
 
 
@@ -29,7 +55,9 @@ const ReportModifiedStock = (props) => {
 
     // const productList = props.productList;
     useEffect(() => {
-        fetchProductList();
+        ProductServiceService.fetchModifiedReportList(getCurrentMonthRange())
+            .then(response => setProductList(response.data))
+            .catch(e => console.log("error", e));
         fetchCategoryList();
     }, []);
 
@@ -64,9 +92,18 @@ const ReportModifiedStock = (props) => {
     const [open, setOpen] = React.useState(false);
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
-        dateFrom: "",
-        dateTo: ""
+        ...getCurrentMonthRange(),
+        typeList: []
     });
+
+    const stockTypeOptions = [
+        'INVENTORY',
+        'REPACK',
+        'ADJUSTMENT',
+        'SPOILAGE',
+        'RETURN',
+        'RECEIVED_TO_WAREHOUSE'
+    ];
 
     const handleOpen = (id, e) => {
         console.log('e', id);
@@ -99,6 +136,14 @@ const ReportModifiedStock = (props) => {
 
     const onChangeDate = (e) => {
         setCustomerOrderDate({ ...customerOrderDate, [e.target.name]: e.target.value });
+    }
+
+    const onChangeTypeList = (e) => {
+        const value = e.target.value;
+        setCustomerOrderDate({
+            ...customerOrderDate,
+            typeList: typeof value === 'string' ? value.split(',') : value
+        });
     }
 
     const onChangePackaging = (e) => {
@@ -198,7 +243,12 @@ const ReportModifiedStock = (props) => {
             console.log("Ready for saving: ");
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            ProductServiceService.fetchModifiedReportList(customerOrderDate)
+            const requestData = {
+                dateFrom: customerOrderDate.dateFrom,
+                dateTo: customerOrderDate.dateTo,
+                ...(customerOrderDate.typeList.length > 0 && { typeList: customerOrderDate.typeList })
+            };
+            ProductServiceService.fetchModifiedReportList(requestData)
                 .then(response => {
                     setProductList(response.data);
                     setSubmitLoadingAdd(false);
@@ -236,62 +286,76 @@ const ReportModifiedStock = (props) => {
     }
 
     return (
-        <div>
-            <Form>
+        <div className="modified-report-page">
+            <section className="modified-report-hero">
+                <div className="modified-report-hero__icon"><TuneRoundedIcon /></div>
+                <div><span>Inventory audit</span><h1>Modified Stock Report</h1><p>Review stock adjustments by date range and transaction type.</p></div>
+            </section>
 
-                <div style={{ float: 'right', marginRight: 500 }}>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Added : </Form.Label>
-                        <Form.Control type="text" value={numberFormat(totalSum(productList.data))} />
-                    </Form.Group>
-                    <br></br>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Reduced : </Form.Label>
-                        <Form.Control type="text" value={numberFormat(totalDiff(productList.data))} />
-                    </Form.Group>
-                    <br></br>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total : </Form.Label>
-                        <Form.Control type="text" value={numberFormat(totalSum(productList.data) + totalDiff(productList.data))} />
-                    </Form.Group>
-                    <br></br>
-                    <br></br>
-                </div>
-                {formErrors.dateFrom && <p style={{ color: "red" }}>{formErrors.dateFrom}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date From*:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" onChange={onChangeDate} />
+            <section className="modified-report-summary">
+                <div><span className="modified-report-summary__icon modified-report-summary__icon--green"><AddCircleOutlineRoundedIcon /></span><div><small>Total added</small><strong>{numberFormat(totalSum(productList.data))}</strong></div></div>
+                <div><span className="modified-report-summary__icon modified-report-summary__icon--red"><RemoveCircleOutlineRoundedIcon /></span><div><small>Total reduced</small><strong>{numberFormat(totalDiff(productList.data))}</strong></div></div>
+                <div><span className="modified-report-summary__icon modified-report-summary__icon--blue"><AccountBalanceWalletOutlinedIcon /></span><div><small>Net adjustment</small><strong>{numberFormat(totalSum(productList.data) + totalDiff(productList.data))}</strong></div></div>
+            </section>
+
+            <Form className="modified-report-filter">
+                <div className="modified-report-filter__header"><div><strong>Report filters</strong><span>Choose a date range and optionally limit the transaction types.</span></div></div>
+                <div className="modified-report-filter__fields">
+                <Form.Group>
+                    <Form.Label>Date from *</Form.Label>
+                    <Form.Control type="date" name="dateFrom" value={customerOrderDate.dateFrom} onChange={onChangeDate} isInvalid={Boolean(formErrors.dateFrom)} />
+                    <Form.Control.Feedback type="invalid">{formErrors.dateFrom}</Form.Control.Feedback>
                 </Form.Group>
-                {formErrors.dateTo && <p style={{ color: "red" }}>{formErrors.dateTo}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date To*:</Form.Label>
-                    <Form.Control type="date" name="dateTo" onChange={onChangeDate} />
+                <Form.Group>
+                    <Form.Label>Date to *</Form.Label>
+                    <Form.Control type="date" name="dateTo" value={customerOrderDate.dateTo} onChange={onChangeDate} isInvalid={Boolean(formErrors.dateTo)} />
+                    <Form.Control.Feedback type="invalid">{formErrors.dateTo}</Form.Control.Feedback>
                 </Form.Group>
-                <Button variant="primary"
+                <FormControl size="small" className="modified-report-type-select">
+                    <InputLabel id="modified-report-type-list-label">Types</InputLabel>
+                    <Select
+                        labelId="modified-report-type-list-label"
+                        multiple
+                        value={customerOrderDate.typeList}
+                        label="Types"
+                        onChange={onChangeTypeList}
+                        renderValue={(selected) => selected.length ? (
+                            <Box className="modified-report-type-chips">
+                                {selected.map(type => <Chip key={type} label={type} size="small" />)}
+                            </Box>
+                        ) : 'All types'}
+                    >
+                        {stockTypeOptions.map(type => (
+                            <MenuItem key={type} value={type}>
+                                <Checkbox checked={customerOrderDate.typeList.includes(type)} />
+                                <ListItemText primary={type} />
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    <small>Leave empty to include all types.</small>
+                </FormControl>
+                <Button variant="primary" className="modified-report-find"
                     onClick={saveOrderTransaction}
                     disabled={isAddDisabled}
                 >
-                    Find
+                    <SearchIcon />{isAddDisabled ? 'Loading...' : 'Find records'}
                 </Button>
-                <br></br>
-                <br></br>
+                </div>
                 {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
+                    <LinearProgress color="warning" className="modified-report-progress" />
                 }
-                <br></br>
             </Form >
 
-
-            <br></br>
-
-            <br></br>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Modified Stock Report </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+            <section className="modified-report-card">
+                <div className="modified-report-card__header"><div><h2>Adjustment records</h2><p>{productList.data.length} {productList.data.length === 1 ? 'record' : 'records'} found.</p></div><span><Inventory2OutlinedIcon />Stock history</span></div>
+                <div className="table-responsive">
+            <table className="modified-report-table">
+                <thead>
+                    <tr>
                         <th>ID</th>
                         <th>Brand</th>
                         <th>Product</th>
+                        <th>Type</th>
                         <th>Reason</th>
                         <th>Price</th>
                         <th>Quantity</th>
@@ -301,14 +365,13 @@ const ReportModifiedStock = (props) => {
                     </tr>
                 </thead>
                 <tbody>
-
-
-                    {
+                    {productList.data.length > 0 ?
                         productList.data.map((product, index) => (
                             <tr key={product.id} >
                                 <td>{product.id}</td>
                                 <td>{product.brand_name}</td>
                                 <td>{product.product_name}</td>
+                                <td>{product.type || 'Not specified'}</td>
                                 <td>{product.stock_reason}</td>
                                 <td>{numberFormat(product.price)}</td>
                                 <td>{product.stock + " " + product.pack}</td>
@@ -322,11 +385,14 @@ const ReportModifiedStock = (props) => {
                                     </Link>
                                 </td> */}
                             </tr>
-                        )
+                        )) : (
+                            <tr><td colSpan="9"><div className="modified-report-empty"><Inventory2OutlinedIcon /><strong>No modified stock records</strong><span>Adjust the filters or choose another date range.</span></div></td></tr>
                         )
                     }
                 </tbody>
             </table>
+                </div>
+            </section>
             <Modal
                 keepMounted
                 open={open}

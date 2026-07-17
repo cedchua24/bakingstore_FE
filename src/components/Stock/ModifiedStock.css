@@ -89,6 +89,10 @@
 .modified-stock-filter > div:first-child strong { font-size: .82rem; }
 .modified-stock-filter > div:first-child span { margin-top: 2px; color: var(--ms-muted); font-size: .7rem; }
 .modified-stock-filter__controls { display: flex; gap: 8px; }
+.modified-stock-type-filter { width: 300px; min-width: 220px !important; }
+.modified-stock-type-filter .MuiSelect-select { display: flex; align-items: center; min-height: 40px !important; padding-top: 4px !important; padding-bottom: 4px !important; box-sizing: border-box; }
+.modified-stock-type-chips { display: flex; align-items: center; gap: 4px; max-width: 100%; overflow: hidden; }
+.modified-stock-type-chips .MuiChip-root { height: 24px; max-width: 160px; color: #514d7a; background: #f0eff9; font-size: .62rem; font-weight: 700; }
 .modified-stock-search.MuiButton-root { background: var(--ms-ink); border-radius: 8px; box-shadow: none; font-size: .72rem; font-weight: 700; text-transform: none; }
 .modified-stock-progress { position: absolute !important; right: 10px; bottom: 0; left: 10px; }
 
@@ -115,6 +119,7 @@
 .modified-stock-product strong { font-size: .8rem; }
 .modified-stock-product small { margin-top: 2px; color: var(--ms-muted); font-size: .64rem; }
 .modified-stock-reason { display: -webkit-box; max-width: 230px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.modified-stock-type { display: inline-flex; padding: 4px 7px; color: #514d7a; background: #f0eff9; border-radius: 999px; font-size: .66rem; font-weight: 750; white-space: nowrap; }
 .modified-stock-quantity { display: inline-flex; padding: 4px 7px; border-radius: 999px; font-size: .68rem; font-weight: 750; white-space: nowrap; }
 .modified-stock-quantity--added { color: #26724a; background: #eaf8ef; }
 .modified-stock-quantity--reduced { color: #a63a34; background: #ffedeb; }
