@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -48,6 +48,34 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import LinearProgress from '@mui/material/LinearProgress';
 
+const productSearchText = (product) => [
+    product.product_name,
+    product.category_name,
+    product.business_type,
+    product.packaging,
+    product.weight,
+    product.variation,
+    product.new_price,
+    product.sale_price,
+    Number(product.sale_price) > 0 ? 'sale promo' : '',
+    product.product_id,
+    product.id
+].filter((item) => item !== null && item !== undefined).join(' ').toLowerCase();
+
+const limitProductsByGroup = (products, limit) => {
+    const limitedProducts = [];
+    let lastProductId = null;
+    for (const product of products) {
+        const productGroupId = product.product_id ?? product.id;
+        if (limitedProducts.length >= limit && productGroupId !== lastProductId) {
+            break;
+        }
+        limitedProducts.push(product);
+        lastProductId = productGroupId;
+    }
+    return limitedProducts;
+};
+
 const AddProductCustomerOrderTransaction = () => {
 
     const { id } = useParams();
@@ -84,7 +112,7 @@ const AddProductCustomerOrderTransaction = () => {
 
     const [submitLoading, setSubmitLoading] = useState(false);
     const [products, setProducts] = useState([]);
-    const [value, setValue] = useState(products[0])
+    const [value, setValue] = useState(null)
     const [deleteId, setDeleteId] = useState(0)
 
     const [stock, setStock] = useState(0);
@@ -299,6 +327,7 @@ const AddProductCustomerOrderTransaction = () => {
                                     discount_percentage: 0,
                                     discount_amount: 0,
                                 });
+                                setValue(null);
                                 fetchShopOrderDTO(id);
                                 window.scrollTo({
                                     top: 0,
@@ -466,6 +495,7 @@ const AddProductCustomerOrderTransaction = () => {
 
     const handleInputChange = (e, value) => {
         e.persist();
+        setValue(value);
         console.log('eym', value)
         if (!value) {
             setOrderShop({
@@ -745,21 +775,68 @@ const AddProductCustomerOrderTransaction = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    const productUnitWeight = (product) => {
+        const weight = Number(product.weight || 0);
+        const quantity = Number(product.quantity || 1);
+        const unitWeight = weight / quantity;
+        return Number.isInteger(unitWeight) ? unitWeight : Number(unitWeight.toFixed(3));
+    };
+
+    const productSizeLabel = (product) => {
+        const unitSize = `${productUnitWeight(product)}${product.variation || ''}`;
+        return product.business_type === 'WHOLESALE' && Number(product.quantity) > 1
+            ? `(${unitSize} x ${product.quantity})`
+            : unitSize;
+    };
+
     const productLabel = (product) => {
         if (!product) {
             return '';
         }
 
-        const productWeight = product.business_type === 'WHOLESALE'
-            ? product.weight
-            : Number.isInteger(product.weight / product.quantity)
-                ? product.weight / product.quantity
-                : (product.weight / product.quantity).toPrecision(2);
-        const packageName = product.business_type === 'WHOLESALE' ? ` ${product.packaging}` : '';
-        const saleText = product.sale_price > 0 ? ' | SALE' : '';
-
-        return `${product.product_name}${packageName} - ${productWeight}${product.variation} (${numberFormat(product.new_price)}) | Stock ${product.stock}${saleText}`;
+        const packageName = product.business_type === 'WHOLESALE' ? ` ${product.packaging || 'Box'}` : '';
+        const saleLabel = Number(product.sale_price) > 0 ? ' • SALE' : '';
+        return `${product.product_name}${packageName} ${productSizeLabel(product)}${saleLabel}`;
     };
+
+    const orderedProducts = useMemo(() => Array.from(products.reduce((productGroups, product) => {
+        const groupKey = product.product_id ?? product.id;
+        if (!productGroups.has(groupKey)) {
+            productGroups.set(groupKey, []);
+        }
+        productGroups.get(groupKey).push(product);
+        return productGroups;
+    }, new Map()).values()).flat(), [products]);
+
+    const productSearchIndex = useMemo(() => new Map(
+        orderedProducts.map((product) => [product, productSearchText(product)])
+    ), [orderedProducts]);
+
+    const filterProducts = (options, state) => {
+        const searchTerms = state.inputValue.toLowerCase().trim().split(/\s+/).filter(Boolean);
+        if (searchTerms.length === 0) {
+            return limitProductsByGroup(options, 80);
+        }
+
+        const matches = [];
+        let lastMatchedProductId = null;
+        for (const product of options) {
+            const searchableProduct = productSearchIndex.get(product) || '';
+            if (searchTerms.every((term) => searchableProduct.includes(term))) {
+                const productGroupId = product.product_id ?? product.id;
+                if (matches.length >= 80 && productGroupId !== lastMatchedProductId) {
+                    break;
+                }
+                matches.push(product);
+                lastMatchedProductId = productGroupId;
+            }
+        }
+        return matches;
+    };
+
+    const availableProductStock = (product) => product.business_type === 'WHOLESALE'
+        ? Number(product.stock || 0)
+        : Number(product.stock_pc ?? product.stock ?? 0);
 
     const itemDescription = (row) => row.business_type === 'WHOLESALE'
         ? `${row.packaging} (${row.weight / row.quantity}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
@@ -769,7 +846,7 @@ const AddProductCustomerOrderTransaction = () => {
         ? `${row.discount_percentage}%, -${row.discount_amount}`
         : row.discount === 'AMOUNT'
             ? `-${row.discount_amount}`
-            : 'None';
+            : '';
 
     const currentOrderType = shopOrderTransaction.checker !== 0 ? 'Shop Branch Order' : 'Online Order';
     const selectedProductReady = orderShop.product_id !== 0;
@@ -934,19 +1011,166 @@ const AddProductCustomerOrderTransaction = () => {
 
                             <Autocomplete
                                 fullWidth
-                                options={[...products].sort((a, b) =>
-                                    b.category_name.toString().localeCompare(a.category_name.toString())
-                                )}
-                                getOptionDisabled={(products) => products.stock < 1}
+                                options={orderedProducts}
+                                getOptionDisabled={(product) => availableProductStock(product) < 1}
                                 value={value}
-                                id="disable-close-on-select"
+                                id="product-search"
                                 onChange={handleInputChange}
-                                groupBy={(products) => products.category_name}
+                                groupBy={(product) => product.category_name || 'Other Products'}
                                 getOptionLabel={productLabel}
+                                isOptionEqualToValue={(option, selectedValue) => option.id === selectedValue.id}
+                                filterOptions={filterProducts}
+                                autoHighlight
+                                openOnFocus
+                                selectOnFocus
+                                clearOnBlur={false}
+                                noOptionsText="No products match your search"
+                                renderOption={(props, product) => {
+                                    const isWholesale = product.business_type === 'WHOLESALE';
+                                    return (
+                                    <Box
+                                        component="li"
+                                        {...props}
+                                        sx={{
+                                            py: 1.25,
+                                            gap: 1.5,
+                                            alignItems: 'center',
+                                            bgcolor: '#fff',
+                                            '&.Mui-focused': {
+                                                bgcolor: '#f3f4f6'
+                                            },
+                                            '&[aria-selected="true"]': {
+                                                bgcolor: '#e5e7eb'
+                                            }
+                                        }}
+                                    >
+                                        <Box
+                                            aria-hidden="true"
+                                            sx={{
+                                                width: 8,
+                                                height: 8,
+                                                flexShrink: 0,
+                                                borderRadius: '50%',
+                                                bgcolor: isWholesale ? '#d97706' : '#2563eb'
+                                            }}
+                                        />
+                                        <Box sx={{ minWidth: 0, flex: 1 }}>
+                                            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ minWidth: 0 }}>
+                                                <Typography sx={{ minWidth: 0, fontWeight: 700 }} noWrap>
+                                                    {product.product_name}
+                                                </Typography>
+                                                {isWholesale &&
+                                                    <Chip
+                                                        size="small"
+                                                        variant="outlined"
+                                                        label={String(product.packaging || 'Box').toUpperCase()}
+                                                        sx={{
+                                                            height: 20,
+                                                            flexShrink: 0,
+                                                            borderColor: '#92400e',
+                                                            color: '#92400e',
+                                                            bgcolor: '#fffbeb',
+                                                            fontSize: '0.65rem',
+                                                            fontWeight: 800
+                                                        }}
+                                                    />
+                                                }
+                                                {Number(product.sale_price) > 0 &&
+                                                    <Chip
+                                                        size="small"
+                                                        color="error"
+                                                        label="SALE"
+                                                        sx={{ height: 20, flexShrink: 0, fontSize: '0.65rem', fontWeight: 900 }}
+                                                    />
+                                                }
+                                            </Stack>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {productSizeLabel(product)}
+                                            </Typography>
+                                        </Box>
+                                        <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexShrink: 0 }}>
+                                            <Chip
+                                                size="small"
+                                                color={isWholesale ? 'warning' : 'primary'}
+                                                variant="outlined"
+                                                label={isWholesale ? 'WHOLESALE' : 'RETAIL'}
+                                                sx={{ fontWeight: 800 }}
+                                            />
+                                            <Chip
+                                                size="small"
+                                                color={availableProductStock(product) > 0 ? 'success' : 'error'}
+                                                label={`Stock ${availableProductStock(product)}`}
+                                            />
+                                            <Typography sx={{ minWidth: 80, textAlign: 'right', fontWeight: 800 }}>
+                                                {numberFormat(product.new_price)}
+                                            </Typography>
+                                        </Stack>
+                                    </Box>
+                                    );
+                                }}
                                 renderInput={(params) => (
-                                    <TextField {...params} label="Choose Product" variant="outlined" />
+                                    <TextField
+                                        {...params}
+                                        label="Search and choose product"
+                                        placeholder="Try product name, category, package, weight, or price"
+                                        helperText={`${products.length} products available • Type more words to narrow large result sets`}
+                                        variant="outlined"
+                                    />
                                 )}
                             />
+
+                            {value &&
+                                <Paper
+                                    variant="outlined"
+                                    sx={{
+                                        display: 'flex',
+                                        alignItems: { xs: 'flex-start', sm: 'center' },
+                                        justifyContent: 'space-between',
+                                        flexDirection: { xs: 'column', sm: 'row' },
+                                        gap: 1.5,
+                                        p: 1.5,
+                                        borderColor: '#d1d5db',
+                                        bgcolor: '#fafafa'
+                                    }}
+                                >
+                                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
+                                        <Box
+                                            aria-hidden="true"
+                                            sx={{
+                                                width: 9,
+                                                height: 9,
+                                                flexShrink: 0,
+                                                borderRadius: '50%',
+                                                bgcolor: value.business_type === 'WHOLESALE' ? '#d97706' : '#2563eb'
+                                            }}
+                                        />
+                                        <Box sx={{ minWidth: 0 }}>
+                                            <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                                                <Typography sx={{ fontWeight: 800 }}>{value.product_name}</Typography>
+                                                {value.business_type === 'WHOLESALE' &&
+                                                    <Chip size="small" variant="outlined" color="warning" label={String(value.packaging || 'Box').toUpperCase()} />
+                                                }
+                                                {Number(value.sale_price) > 0 &&
+                                                    <Chip size="small" color="error" label="SALE" sx={{ fontWeight: 900 }} />
+                                                }
+                                            </Stack>
+                                            <Typography variant="body2" color="text.secondary">{productSizeLabel(value)}</Typography>
+                                        </Box>
+                                    </Stack>
+                                    <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexShrink: 0 }}>
+                                        <Chip
+                                            size="small"
+                                            variant="outlined"
+                                            color={value.business_type === 'WHOLESALE' ? 'warning' : 'primary'}
+                                            label={value.business_type === 'WHOLESALE' ? 'WHOLESALE' : 'RETAIL'}
+                                        />
+                                        <Chip size="small" color="success" label={`Stock ${availableProductStock(value)}`} />
+                                        <Typography sx={{ minWidth: 82, textAlign: 'right', fontWeight: 800 }}>
+                                            {numberFormat(value.new_price)}
+                                        </Typography>
+                                    </Stack>
+                                </Paper>
+                            }
 
                             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2 }}>
                                 <FormControl fullWidth variant="outlined">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from 'react-router-dom';
 import { Button, Form } from 'react-bootstrap';
 import CustomerService from "./CustomerService";
+import "./CustomerReportLists.css";
 
 const CustomerProductList = () => {
 
@@ -72,28 +73,47 @@ const CustomerProductList = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    const customerName = [sortedProduct.customerDetails.first_name, sortedProduct.customerDetails.last_name]
+        .filter(Boolean).join(" ") || "Customer";
+    const productTotals = sortedProduct.data.reduce((totals, product) => ({
+        quantity: totals.quantity + Number(product.total_quantity || 0),
+        sales: totals.sales + Number(product.total_price || 0),
+        profit: totals.profit + Number(product.total_profit || 0)
+    }), { quantity: 0, sales: 0, profit: 0 });
+
 
     return (
-        <div>
-            <h1>{sortedProduct.customerDetails.first_name + " " + sortedProduct.customerDetails.last_name}</h1>
-            <Form onSubmit={submitCustomerProduct} className="mb-3">
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
+        <div className="customer-list-page">
+            <section className="customer-list-hero">
+                <div className="customer-list-hero__copy">
+                    <span>Customer purchases</span>
+                    <h1>{customerName}</h1>
+                    <p>See which products this customer buys and their sales contribution.</p>
+                </div>
+                <Form onSubmit={submitCustomerProduct} className="customer-list-filters">
                     <Form.Group controlId="customerProductDateFrom">
-                        <Form.Label>Date From:</Form.Label>
+                        <Form.Label>Date From</Form.Label>
                         <Form.Control type="date" name="dateFrom" value={dateFilter.dateFrom} onChange={onChangeInput} />
                     </Form.Group>
                     <Form.Group controlId="customerProductDateTo">
-                        <Form.Label>Date To:</Form.Label>
+                        <Form.Label>Date To</Form.Label>
                         <Form.Control type="date" name="dateTo" value={dateFilter.dateTo} onChange={onChangeInput} />
                     </Form.Group>
                     <Button variant="primary" type="submit">
-                        Find
+                        Apply Filter
                     </Button>
-                </div>
-            </Form>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+                </Form>
+            </section>
+            <section className="customer-list-metrics customer-list-metrics--products">
+                <article className="customer-list-metric"><span>Products</span><strong>{sortedProduct.data.length}</strong></article>
+                <article className="customer-list-metric"><span>Units Sold</span><strong>{productTotals.quantity}</strong></article>
+                <article className="customer-list-metric"><span>Sales</span><strong>{numberFormat(productTotals.sales)}</strong></article>
+                <article className="customer-list-metric customer-list-metric--total"><span>Profit</span><strong>{numberFormat(productTotals.profit)}</strong></article>
+            </section>
+            <section className="customer-list-table-card customer-list-table-card--products">
+            <table className="table customer-list-table">
+                <thead>
+                    <tr>
                         <th>Type</th>
                         <th>Product Name</th>
                         <th>Price</th>
@@ -122,7 +142,7 @@ const CustomerProductList = () => {
                             }
                         </tbody>)}
             </table>
-            <div></div>
+            </section>
         </div>
     )
 }

@@ -523,7 +523,7 @@ const FinalizeShopOrder = () => {
         ? `${row.discount_percentage}%, -${row.discount_amount}`
         : row.discount === 'AMOUNT'
             ? `-${row.discount_amount}`
-            : 'None';
+            : '';
 
     const paymentLabel = (paymentType) => paymentType
         ? `${paymentType.payment_type} - ${paymentType.payment_type_description}`
