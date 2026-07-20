@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Tooltip from '@mui/material/Tooltip';
+import "./CustomerReportLists.css";
 
 const CustomerTransactionList = () => {
 
@@ -85,59 +86,61 @@ const CustomerTransactionList = () => {
         return numberFormat(numbers.reduce((acc, { shop_order_transaction_total_price }) => acc + shop_order_transaction_total_price, 0));
     }
 
+    const customerName = [customerTransactionList.customerDetails.first_name, customerTransactionList.customerDetails.last_name]
+        .filter(Boolean).join(" ") || "Customer";
+
 
     return (
-        <div>
-            <h1>{customerTransactionList.customerDetails.first_name + " " + customerTransactionList.customerDetails.last_name}</h1>
-            <Form onSubmit={submitCustomerTransaction} className="mb-3">
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
+        <div className="customer-list-page">
+            <section className="customer-list-hero">
+                <div className="customer-list-hero__copy">
+                    <span>Customer activity</span>
+                    <h1>{customerName}</h1>
+                    <p>Review transaction history, payment totals, and order performance.</p>
+                </div>
+                <Form onSubmit={submitCustomerTransaction} className="customer-list-filters">
                     <Form.Group controlId="customerTransactionDateFrom">
-                        <Form.Label>Date From:</Form.Label>
+                        <Form.Label>Date From</Form.Label>
                         <Form.Control type="date" name="dateFrom" value={dateFilter.dateFrom} onChange={onChangeInput} />
                     </Form.Group>
                     <Form.Group controlId="customerTransactionDateTo">
-                        <Form.Label>Date To:</Form.Label>
+                        <Form.Label>Date To</Form.Label>
                         <Form.Control type="date" name="dateTo" value={dateFilter.dateTo} onChange={onChangeInput} />
                     </Form.Group>
                     <Button variant="primary" type="submit">
-                        Find
+                        Apply Filter
                     </Button>
-                </div>
-            </Form>
-            <div style={{ width: 600, marginRight: 100 }}>
+                </Form>
+            </section>
+            <section className="customer-list-metrics">
 
                 {
                     customerTransactionList.payment.map((payment, index) => (
-                        <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description} </Form.Label>
-
+                        <article className="customer-list-metric" key={payment.id || index}>
+                            <div>
+                                <span>{payment.payment_type} {payment.payment_type_description}</span>
                             {payment.total_paid_count != payment.total_count ?
                                 <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
-                                    <span>
+                                        <span className="customer-list-metric__check">
                                         <CloseIcon style={{ color: 'red', }} />
                                     </span>
                                 </Tooltip> : <CheckIcon style={{ color: 'green', }} />}
-                            <Form.Control type="text" value={numberFormat(payment.total_amount)} />
-
-                        </Form.Group>
+                            </div>
+                            <strong>{numberFormat(payment.total_amount)}</strong>
+                        </article>
                     )
                     )
                 }
+                <article className="customer-list-metric customer-list-metric--total">
+                    <span>Total Amount</span>
+                    <strong>{totalSum(customerTransactionList.data)}</strong>
+                </article>
+            </section>
 
-
-
-                <div >
-                    <Form.Group className="w-25 mb-3" controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Amount: </Form.Label>
-                        <Form.Control type="text" value={totalSum(customerTransactionList.data)} />
-                    </Form.Group>
-                </div>
-            </div>
-
-
-            <table class="table table-bordered" >
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+            <section className="customer-list-table-card">
+            <table className="table customer-list-table" >
+                <thead>
+                    <tr>
                         <th>ID</th>
                         <th>Shop Name</th>
                         <th>Customer Type</th>
@@ -169,26 +172,20 @@ const CustomerTransactionList = () => {
                                         <td>{customerTransactionList.shop_order_transaction_total_quantity != 0 ? customerTransactionList.shop_order_transaction_total_quantity : ""}</td>
                                         <td>{customerTransactionList.total_cash != 0 ? numberFormat(customerTransactionList.total_cash) : ""}</td>
                                         <td>{customerTransactionList.total_online != 0 ? numberFormat(customerTransactionList.total_online) : ""}</td>
-                                        <td>{customerTransactionList.status == 1 ? (
-
-                                            customerTransactionList.mode_of_payment.map((sot, index) => (
-                                                <>
-                                                    <tr>
-                                                        <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
-                                                        <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
-                                                    </tr>
-                                                </>
-                                            )
-                                            )
-                                        ) : (<></>)
-                                        }</td>
+                                        <td>{customerTransactionList.status == 1 &&
+                                            <div className="customer-list-payment-list">
+                                                {customerTransactionList.mode_of_payment.map((sot, index) => (
+                                                    <span key={sot.id || index}><small>{sot.payment_type}</small>{numberFormat(sot.amount)}</span>
+                                                ))}
+                                            </div>}
+                                        </td>
 
                                         <td style={{ fontWeight: 'bold', }}>{customerTransactionList.shop_order_transaction_total_price != 0 ? numberFormat(customerTransactionList.shop_order_transaction_total_price) : ""}</td>
                                         <td style={{ fontWeight: 'bold', }}>{customerTransactionList.profit != 0 ? numberFormat(customerTransactionList.profit) : ""}</td>
                                         <td>{customerTransactionList.date}</td>
-                                        <td>{customerTransactionList.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                            : customerTransactionList.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                        <td><span className={`customer-list-status customer-list-status--${customerTransactionList.status === 1 ? "completed" : customerTransactionList.status === 2 ? "pending" : "cancelled"}`}>
+                                            {customerTransactionList.status === 1 ? "COMPLETED" : customerTransactionList.status === 2 ? "PENDING" : "CANCELLED"}
+                                        </span></td>
                                         <td>
                                             <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + customerTransactionList.id}   >
                                                 <Button variant="primary" >
@@ -202,7 +199,7 @@ const CustomerTransactionList = () => {
                             }
                         </tbody>)}
             </table>
-            <div></div>
+            </section>
         </div>
     )
 }

@@ -25,6 +25,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import LinearProgress from '@mui/material/LinearProgress';
 import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
+import { getTransactionCategoryTags } from "./shopOrderTransactionTagHelpers";
 import useActiveShopColor from "../Shop/useActiveShopColor";
 import "./CustomerOrderTransactionList.css";
 
@@ -613,6 +614,7 @@ const PendingTransactionList = () => {
                                         shopOrderTransaction.data.map((shopOrderTransaction, index) => {
                                             const primaryVipCustomer = getPrimaryTransactionVipCustomer(shopOrderTransaction);
                                             const vipCustomers = getTransactionVipCustomers(shopOrderTransaction);
+                                            const transactionTags = getTransactionCategoryTags(shopOrderTransaction);
 
                                             return (
                                                 <tr key={shopOrderTransaction.id} >
@@ -644,7 +646,16 @@ const PendingTransactionList = () => {
                                                             }
                                                         </span>
                                                     </td>
-                                                    <td>{shopOrderTransaction.shop_name}</td>
+                                                    <td>
+                                                        <strong>{shopOrderTransaction.shop_name}</strong>
+                                                        {transactionTags.length > 0 &&
+                                                            <span className="customer-report-tag-list" title="Transaction category tags">
+                                                                {transactionTags.map((tag) => (
+                                                                    <span className="customer-report-tag" key={`${shopOrderTransaction.id}-${tag}`}>{tag}</span>
+                                                                ))}
+                                                            </span>
+                                                        }
+                                                    </td>
                                                     <td className="customer-report-optional-col">{shopOrderTransaction.customer_type}</td>
                                                     <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
                                                     <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>

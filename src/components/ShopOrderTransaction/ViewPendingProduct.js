@@ -5,6 +5,7 @@ import { Button, Form, Alert } from 'react-bootstrap';
 import ProductServiceService from "../Product/ProductService.service";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
 import LinearProgress from '@mui/material/LinearProgress';
+import "../Product/ProductOrderTransactionList.css";
 
 const ViewPendingProduct = () => {
 
@@ -26,7 +27,8 @@ const ViewPendingProduct = () => {
         id: id,
         dateFrom: safeDateFrom,
         dateTo: safeDateTo,
-        status: safeStatus
+        status: safeStatus,
+        is_pickup: ''
     });
 
 
@@ -105,8 +107,13 @@ const ViewPendingProduct = () => {
         }).format(value).replace(/(\.|,)00$/g, '');
 
     return (
-        <div>
-            <Form>
+        <div className="product-order-page">
+            <Form className="product-order-filters">
+                <div className="product-order-filters__heading">
+                    <span>Pending product report</span>
+                    <h1>Product order transactions</h1>
+                    <p>Review orders by date, payment, and pickup status.</p>
+                </div>
 
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Date From:</Form.Label>
@@ -117,6 +124,24 @@ const ViewPendingProduct = () => {
                     <Form.Label>Date To:</Form.Label>
                     <Form.Control type="date" value={customerOrderDate.dateTo} name="dateTo" onChange={onChangeInput} />
                 </Form.Group>
+
+                <Form.Group className="w-25 mb-3 product-order-filter-field" controlId="paymentStatus">
+                    <Form.Label>Payment Status:</Form.Label>
+                    <Form.Select name="status" value={customerOrderDate.status} onChange={onChangeInput}>
+                        <option value="">All Payment Status</option>
+                        <option value="1">COMPLETED</option>
+                        <option value="2">PENDING</option>
+                    </Form.Select>
+                </Form.Group>
+
+                <Form.Group className="w-25 mb-3 product-order-filter-field product-order-filter-field--pickup" controlId="pickupStatus">
+                    <Form.Label>Pickup Status:</Form.Label>
+                    <Form.Select name="is_pickup" value={customerOrderDate.is_pickup} onChange={onChangeInput}>
+                        <option value="">All Pickup Status</option>
+                        <option value="0">PENDING</option>
+                        <option value="1">COMPLETED</option>
+                    </Form.Select>
+                </Form.Group>
                 <Button variant="primary"
                     onClick={submitSortedCustomerList}
                     disabled={isAddDisabled}
@@ -126,19 +151,15 @@ const ViewPendingProduct = () => {
                 <br></br>
                 <br></br>
                 {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
+                    <div className="product-order-progress"><LinearProgress color="warning" /></div>
                 }
                 <br></br>
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Payment Status:</Form.Label>
-                    <Form.Control type="text" value={status == 1 ? "COMPLETED PAYMENT" : status == 2 ? "PENDING PAYMENT" : "ALL"} disabled />
-                </Form.Group>
                 <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
                     <Form.Label>Total Count:</Form.Label>
                     <Form.Control type="text" value={totalSum(shopOrderTransaction.data)} disabled />
                 </Form.Group>
             </Form>
-            <Form>
+            <Form className="product-order-summary">
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Product Name</Form.Label>
                     <Form.Control type="text" value={product.product_name} name="product_name" />
@@ -149,21 +170,18 @@ const ViewPendingProduct = () => {
                 </Form.Group>
 
             </Form>
-            <div>
+            <div className="product-order-results">
                 <legend align="center" style={{ fontWeight: 'bold' }} > Online Orders  </legend>
                 <legend align="center" style={{ fontWeight: 'bold', color: 'orange' }} > Note! Quantity is compute by per piece! </legend>
 
 
-                <table class="table table-bordered" >
-                    <thead class="table-dark">
-                        <tr class="table-secondary">
+                <table className="table table-bordered product-order-table" >
+                    <thead className="table-dark">
+                        <tr className="table-secondary">
                             <th>ID</th>
-                            <th>Shop Name</th>
                             <th>Customer Type</th>
                             <th>Customer</th>
-                            <th>Total Quantity</th>
-                            <th>Total Cash</th>
-                            <th>Total Online</th>
+                            <th>Payment Breakdown</th>
                             <th>Bank</th>
                             <th>Total Amount</th>
                             <th>Profit</th>
@@ -184,12 +202,14 @@ const ViewPendingProduct = () => {
                                     shopOrderTransaction.data.map((shopOrderTransaction, index) => (
                                         <tr key={shopOrderTransaction.id} style={{ border: "2px solid black" }}>
                                             <td >{shopOrderTransaction.id}</td>
-                                            <td>{shopOrderTransaction.shop_name}</td>
                                             <td>{shopOrderTransaction.customer_type}</td>
                                             <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
-                                            <td>{shopOrderTransaction.shop_order_transaction_total_quantity != 0 ? shopOrderTransaction.shop_order_transaction_total_quantity : ""}</td>
-                                            <td>{shopOrderTransaction.total_cash != 0 ? numberFormat(shopOrderTransaction.total_cash) : ""}</td>
-                                            <td>{shopOrderTransaction.total_online != 0 ? numberFormat(shopOrderTransaction.total_online) : ""}</td>
+                                            <td>
+                                                <div className="product-order-payment-breakdown">
+                                                    <span><small>Cash</small>{shopOrderTransaction.total_cash != 0 ? numberFormat(shopOrderTransaction.total_cash) : "—"}</span>
+                                                    <span><small>Online</small>{shopOrderTransaction.total_online != 0 ? numberFormat(shopOrderTransaction.total_online) : "—"}</span>
+                                                </div>
+                                            </td>
                                             <td>{shopOrderTransaction.status == 1 ? (
 
                                                 shopOrderTransaction.mode_of_payment.map((sot, index) => (

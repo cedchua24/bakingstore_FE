@@ -311,29 +311,31 @@ const ReportModifiedStock = (props) => {
                     <Form.Control type="date" name="dateTo" value={customerOrderDate.dateTo} onChange={onChangeDate} isInvalid={Boolean(formErrors.dateTo)} />
                     <Form.Control.Feedback type="invalid">{formErrors.dateTo}</Form.Control.Feedback>
                 </Form.Group>
-                <FormControl size="small" className="modified-report-type-select">
-                    <InputLabel id="modified-report-type-list-label">Types</InputLabel>
-                    <Select
-                        labelId="modified-report-type-list-label"
-                        multiple
-                        value={customerOrderDate.typeList}
-                        label="Types"
-                        onChange={onChangeTypeList}
-                        renderValue={(selected) => selected.length ? (
-                            <Box className="modified-report-type-chips">
-                                {selected.map(type => <Chip key={type} label={type} size="small" />)}
-                            </Box>
-                        ) : 'All types'}
-                    >
-                        {stockTypeOptions.map(type => (
-                            <MenuItem key={type} value={type}>
-                                <Checkbox checked={customerOrderDate.typeList.includes(type)} />
-                                <ListItemText primary={type} />
-                            </MenuItem>
-                        ))}
-                    </Select>
+                <div className="modified-report-filter__field">
+                    <label id="modified-report-type-list-label">Types</label>
+                    <FormControl size="small" className="modified-report-type-select">
+                        <Select
+                            aria-labelledby="modified-report-type-list-label"
+                            multiple
+                            displayEmpty
+                            value={customerOrderDate.typeList}
+                            onChange={onChangeTypeList}
+                            renderValue={(selected) => selected.length ? (
+                                <Box className="modified-report-type-chips">
+                                    {selected.map(type => <Chip key={type} label={type} size="small" />)}
+                                </Box>
+                            ) : 'All types'}
+                        >
+                            {stockTypeOptions.map(type => (
+                                <MenuItem key={type} value={type}>
+                                    <Checkbox checked={customerOrderDate.typeList.includes(type)} />
+                                    <ListItemText primary={type} />
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     <small>Leave empty to include all types.</small>
-                </FormControl>
+                </div>
                 <Button variant="primary" className="modified-report-find"
                     onClick={saveOrderTransaction}
                     disabled={isAddDisabled}

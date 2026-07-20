@@ -1,0 +1,244 @@
+.customer-list-page {
+    min-height: 100vh;
+    width: 100%;
+    padding: 18px;
+    background: #f6f7fb;
+    color: #1f2937;
+}
+
+.customer-list-hero,
+.customer-list-metrics,
+.customer-list-table-card {
+    width: 100%;
+    margin-bottom: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.customer-list-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px;
+}
+
+.customer-list-hero__copy > span {
+    color: #c2410c;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.customer-list-hero h1 {
+    margin: 5px 0 3px;
+    color: #111827;
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 750;
+}
+
+.customer-list-hero p {
+    margin: 0;
+    color: #6b7280;
+}
+
+.customer-list-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.customer-list-filters .form-label {
+    margin-bottom: 6px;
+    color: #4b5563;
+    font-size: 0.75rem;
+    font-weight: 750;
+}
+
+.customer-list-filters .form-control,
+.customer-list-filters .btn {
+    min-height: 42px;
+    border-radius: 9px;
+}
+
+.customer-list-filters .btn {
+    border: 0;
+    padding: 0 18px;
+    background: #c2410c;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.customer-list-filters .btn:hover,
+.customer-list-filters .btn:focus {
+    background: #9a3412;
+}
+
+.customer-list-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    background: #e5e7eb;
+}
+
+.customer-list-metric {
+    min-width: 0;
+    padding: 18px 20px;
+    background: #fff;
+}
+
+.customer-list-metric > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.customer-list-metric span {
+    color: #6b7280;
+    font-size: 0.72rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.customer-list-metric strong {
+    display: block;
+    margin-top: 6px;
+    color: #111827;
+    font-size: 1.25rem;
+}
+
+.customer-list-metric svg {
+    font-size: 1.15rem;
+}
+
+.customer-list-metric--total {
+    background: #fff7ed;
+}
+
+.customer-list-metric--total strong {
+    color: #9a3412;
+}
+
+.customer-list-table-card {
+    overflow-x: auto;
+    padding: 14px;
+}
+
+.customer-list-table {
+    min-width: 1080px;
+    margin: 0;
+    border-color: #e5e7eb;
+    vertical-align: middle;
+}
+
+.customer-list-table-card--products .customer-list-table {
+    min-width: 680px;
+}
+
+.customer-list-table thead th {
+    padding: 10px 8px;
+    border-color: #374151;
+    background: #1f2937;
+    color: #fff;
+    font-size: 0.7rem;
+    letter-spacing: 0.025em;
+    white-space: nowrap;
+}
+
+.customer-list-table tbody tr:hover {
+    background: #fff7ed;
+}
+
+.customer-list-table td {
+    padding: 9px 8px;
+    color: #374151;
+    font-size: 0.78rem;
+}
+
+.customer-list-table td p {
+    margin: 0;
+}
+
+.customer-list-table .btn {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+}
+
+.customer-list-payment-list {
+    display: grid;
+    gap: 3px;
+    min-width: 105px;
+}
+
+.customer-list-payment-list span {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.customer-list-payment-list small {
+    color: #9a3412;
+    font-weight: 750;
+}
+
+.customer-list-status {
+    display: inline-flex;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.customer-list-status--completed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.customer-list-status--pending {
+    background: #ffedd5;
+    color: #9a3412;
+}
+
+.customer-list-status--cancelled {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+@media (max-width: 900px) {
+    .customer-list-hero {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .customer-list-filters {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 600px) {
+    .customer-list-page {
+        padding: 10px;
+    }
+
+    .customer-list-hero {
+        padding: 18px;
+    }
+
+    .customer-list-filters,
+    .customer-list-filters > div,
+    .customer-list-filters .btn {
+        width: 100%;
+    }
+
+    .customer-list-table-card {
+        padding: 10px;
+    }
+}
