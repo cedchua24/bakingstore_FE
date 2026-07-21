@@ -39,6 +39,8 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
 import Modal from '@mui/material/Modal';
 import UpdateIcon from '@mui/icons-material/Update';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -61,6 +63,7 @@ const OrderSupplierApproval = () => {
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
         fetchApprovalPO(id);
+        fetchApprovalPOBranch(id);
         fetchPaymentTypePo();
         fetchPaymentTerm();
         fetchPaymentTypePoByShopTransactionId(id);
@@ -109,11 +112,20 @@ const OrderSupplierApproval = () => {
     const [orderList, setOrderList] = useState({
         data: []
     });
+    const [branchOrderList, setBranchOrderList] = useState({ data: [] });
 
     const [paymentTermList, setPaymentTermList] = useState([]);
     const [paymentTypePoList, setPaymentTypePoList] = useState([]);
     const [errorStock, setErrorStock] = useState(false);
     const [formErrors, setFormErrors] = useState({});
+    const [productTableTab, setProductTableTab] = useState(0);
+    const [customDateRanges, setCustomDateRanges] = useState([
+        { label: '', date_from: '', date_to: '' }
+    ]);
+    const [customRangeResults, setCustomRangeResults] = useState({ data: [], ranges: [] });
+    const [customBranchRangeResults, setCustomBranchRangeResults] = useState({ data: [], ranges: [] });
+    const [customRangeLoading, setCustomRangeLoading] = useState(false);
+    const [customRangeError, setCustomRangeError] = useState('');
 
     const [orderSupplierTransaction, setOrderSupplierTransaction] = useState({
         id: 0,
@@ -122,6 +134,7 @@ const OrderSupplierApproval = () => {
         withTax: 0,
         status: '',
         total_transaction_price: 0,
+        requestor: '',
         approval: localStorage.getItem('name'),
         approval_status: '',
         note: '',
@@ -399,6 +412,66 @@ const OrderSupplierApproval = () => {
             });
     }
 
+    const fetchApprovalPOBranch = async (id) => {
+        await OrderSupplierService.fetchApprovalPOBranch(id)
+            .then(response => {
+                setBranchOrderList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const updateCustomDateRange = (index, field, value) => {
+        setCustomDateRanges((ranges) => ranges.map((range, rangeIndex) =>
+            rangeIndex === index ? { ...range, [field]: value } : range
+        ));
+        setCustomRangeError('');
+    }
+
+    const addCustomDateRange = () => {
+        if (customDateRanges.length < 12) {
+            setCustomDateRanges([...customDateRanges, { label: '', date_from: '', date_to: '' }]);
+        }
+    }
+
+    const removeCustomDateRange = (index) => {
+        if (customDateRanges.length > 1) {
+            setCustomDateRanges(customDateRanges.filter((range, rangeIndex) => rangeIndex !== index));
+        }
+    }
+
+    const fetchCustomDateRanges = () => {
+        const invalidRange = customDateRanges.find((range) =>
+            !range.date_from || !range.date_to || range.date_to < range.date_from
+        );
+
+        if (invalidRange) {
+            setCustomRangeError('Enter a valid From and To date for every range. The To date cannot be earlier than From.');
+            return;
+        }
+
+        setCustomRangeLoading(true);
+        setCustomRangeError('');
+        Promise.all([
+            OrderSupplierService.fetchApprovalPOByDateRanges(id, { date_ranges: customDateRanges }),
+            OrderSupplierService.fetchApprovalPOBranchByDateRanges(id, { date_ranges: customDateRanges })
+        ])
+            .then(([customerResponse, branchResponse]) => {
+                setCustomRangeResults(customerResponse.data);
+                setCustomBranchRangeResults(branchResponse.data);
+                setCustomRangeLoading(false);
+            })
+            .catch((error) => {
+                const validationErrors = error.response?.data?.errors;
+                const firstValidationError = validationErrors
+                    ? Object.values(validationErrors).flat()[0]
+                    : null;
+                setCustomRangeError(firstValidationError || error.response?.data?.message || 'Unable to load sales for these date ranges.');
+                setCustomRangeLoading(false);
+            });
+    }
+
     const onChange = (e) => {
         setOrderSupplierTransaction({ ...orderSupplierTransaction, [e.target.name]: e.target.value, approval: localStorage.getItem('name') });
     }
@@ -420,7 +493,33 @@ const OrderSupplierApproval = () => {
             });
     }
 
+    const loginAccountName = (localStorage.getItem('name') || '').trim();
+    const isRequestorApprover = Boolean(
+        loginAccountName &&
+        orderSupplierTransaction.requestor &&
+        loginAccountName.toLowerCase() === orderSupplierTransaction.requestor.trim().toLowerCase()
+    );
+
     const submitApproval = () => {
+        if (isRequestorApprover && orderSupplierTransaction.approval_status == 'APPROVED') {
+            window.scrollTo(0, 0);
+            setValidator({
+                severity: 'error',
+                message: 'The account that requested this purchase order cannot also approve it.',
+                isShow: true,
+            });
+            return;
+        }
+
+        if (!orderSupplierTransaction.note || !orderSupplierTransaction.note.trim()) {
+            setValidator({
+                severity: 'error',
+                message: 'An approval note is required before saving the decision.',
+                isShow: true,
+            });
+            return;
+        }
+
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
         OrderSupplierTransactionService.orderSupplierApproval(orderSupplierTransaction)
@@ -529,6 +628,28 @@ const OrderSupplierApproval = () => {
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
+    const findMatchingProduct = (list, row) =>
+        list?.data?.find((item) => item.product_id === row.product_id) || {};
+
+    const formatDemandQuantity = (row, value) => {
+        const quantity = Number(value) || 0;
+        return row.pQuantity > 1
+            ? Math.floor(quantity / row.pQuantity) + " " + row.packaging + " / " + quantity + " pc"
+            : quantity + " " + row.packaging;
+    }
+
+    const demandComparison = (row, branchRow, field) => {
+        const customerDemand = Number(row[field]) || 0;
+        const branchDemand = Number(branchRow[field]) || 0;
+        return (
+            <div className="po-demand-comparison">
+                <span><small>Customer</small>{formatDemandQuantity(row, customerDemand)}</span>
+                <span><small>Branch</small>{formatDemandQuantity(row, branchDemand)}</span>
+                <strong><small>Combined</small>{formatDemandQuantity(row, customerDemand + branchDemand)}</strong>
+            </div>
+        );
+    }
+
     const statusColor = {
         PENDING: 'warning.main',
         APPROVED: 'success.main',
@@ -608,15 +729,105 @@ const OrderSupplierApproval = () => {
                 </div>
                 <strong>{orderList.data.length} {orderList.data.length === 1 ? 'product' : 'products'}</strong>
             </div>
-            <TableContainer component={Paper} className="po-items-table po-approval-table">
-                <Table sx={{ minWidth: 1500 }} aria-label="Purchase order review details">
+            <Paper className="po-approval-tabs" elevation={0}>
+                <Tabs
+                    value={productTableTab}
+                    onChange={(event, value) => setProductTableTab(value)}
+                    aria-label="Purchase order product views"
+                >
+                    <Tab label="All Details" id="product-tab-0" aria-controls="product-tabpanel-0" />
+                    <Tab label="Stock & Sold" id="product-tab-1" aria-controls="product-tabpanel-1" />
+                    <Tab label="Custom Date Ranges" id="product-tab-2" aria-controls="product-tabpanel-2" />
+                </Tabs>
+            </Paper>
+            {productTableTab === 1 && (
+            <TableContainer
+                component={Paper}
+                className="po-items-table po-approval-table po-approval-compact-table"
+                role="tabpanel"
+                id="product-tabpanel-1"
+                aria-labelledby="product-tab-1"
+            >
+                <Table aria-label="Product stock and sold summary">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell rowSpan={2}>Product Name</TableCell>
+                            <TableCell rowSpan={2} align="right">Qty</TableCell>
+                            <TableCell colSpan={2} align="center">Stock</TableCell>
+                            <TableCell colSpan={4} align="center">Sold</TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell align="right">Current</TableCell>
+                            <TableCell align="right">Warning</TableCell>
+                            <TableCell align="right">
+                                <Tooltip title={orderList.last15Days + " - " + orderSupplierTransaction.created_at}>
+                                    <span className="po-sales-period">15 days<small>{orderList.last15Days} – {orderSupplierTransaction.created_at}</small></span>
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell align="right">
+                                <Tooltip title={orderList.last30Days + " - " + orderSupplierTransaction.created_at}>
+                                    <span className="po-sales-period">30 days<small>{orderList.last30Days} – {orderSupplierTransaction.created_at}</small></span>
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell align="right">
+                                <Tooltip title={orderList.twoMonthsAgoStart + " - " + orderList.twoMonthsAgoEnd}>
+                                    <span className="po-sales-period">2 months<small>{orderList.twoMonthsAgoStart} – {orderList.twoMonthsAgoEnd}</small></span>
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell align="right">
+                                <Tooltip title={orderList.startLastYear + " - " + orderList.endLastYear}>
+                                    <span className="po-sales-period">Last year<small>{orderList.startLastYear} – {orderList.endLastYear}</small></span>
+                                </Tooltip>
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {orderList.data.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={8}>
+                                    <div className="po-empty-state">
+                                        <Inventory2OutlinedIcon />
+                                        <strong>No products found</strong>
+                                        <span>Add products before reviewing this purchase order.</span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        )}
+                        {orderList.data.map((row) => {
+                            const branchRow = findMatchingProduct(branchOrderList, row);
+                            return (
+                            <TableRow key={row.id} hover>
+                                <TableCell><strong>{row.product_name}</strong></TableCell>
+                                <TableCell align="right">{row.quantity}</TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                                    {row.enable == 1
+                                        ? (row.pQuantity > 1 ? row.os_stock + " " + row.packaging + " / " + row.os_stock_pc + " pc" : row.os_stock)
+                                        : (row.pQuantity > 1 ? row.stock + " " + row.packaging + " / " + row.stock_pc + " pc" : row.stock)}
+                                </TableCell>
+                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.stock_warning}{row.stock_warning_type == 'RETAIL' ? ' pc' : ''}</TableCell>
+                                <TableCell>{demandComparison(row, branchRow, 'last_15_days_sales')}</TableCell>
+                                <TableCell>{demandComparison(row, branchRow, 'last_30_days_sales')}</TableCell>
+                                <TableCell>{demandComparison(row, branchRow, 'last_2_months_sales')}</TableCell>
+                                <TableCell>{demandComparison(row, branchRow, 'last_year_same_month_30_days')}</TableCell>
+                            </TableRow>
+                            );
+                        })}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            )}
+            {productTableTab === 0 && (
+            <TableContainer
+                component={Paper}
+                className="po-items-table po-approval-table"
+                role="tabpanel"
+                id="product-tabpanel-0"
+                aria-labelledby="product-tab-0"
+            >
+                <Table sx={{ minWidth: 760 }} aria-label="Purchase order details">
                     <TableHead>
                         <TableRow>
                             <TableCell align="center" colSpan={6} ><h5 style={{ fontWeight: 'bold' }}>Order Details</h5></TableCell>
-                            <TableCell align="center" ><h5 style={{ fontWeight: 'bold' }}></h5></TableCell>
-                            <TableCell align="center" colSpan={2} style={{ fontWeight: 'bold' }}><h5 style={{ fontWeight: 'bold' }}>Stock</h5></TableCell>
-                            <TableCell align="center" ><h5 style={{ fontWeight: 'bold' }}></h5></TableCell>
-                            <TableCell align="center" colSpan={5} style={{ fontWeight: 'bold' }}><h5 style={{ fontWeight: 'bold' }}>Sold</h5></TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }}>Product</h6></TableCell>
@@ -625,20 +836,12 @@ const OrderSupplierApproval = () => {
                             <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }}>Unit</h6></TableCell>
                             <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }}>Expiration</h6></TableCell>
                             <TableCell align="center" style={{ fontWeight: 'bold' }}><h6 style={{ fontWeight: 'bold' }} >Sum</h6></TableCell>
-                            <TableCell align="center" style={{ backgroundColor: '#FFFAF0' }}><h6 style={{ fontWeight: 'bold' }}></h6></TableCell>
-                            <TableCell align="center" style={{ color: '#28a745' }}><h6 style={{ fontWeight: 'bold' }}>Current Stock</h6></TableCell>
-                            <TableCell align="center" style={{ color: '#fd7e14' }}><h6 style={{ fontWeight: 'bold' }}>Stock Warning</h6></TableCell>
-                            <TableCell align="center" style={{ backgroundColor: '#FFFAF0' }}><h6 style={{ fontWeight: 'bold' }}></h6></TableCell>
-                            <TableCell align="center" style={{ color: '#007bff' }}><h6 style={{ fontWeight: 'bold' }}> <Tooltip title={orderList.last15Days + " - " + orderSupplierTransaction.created_at} >    <span>     Last 15 days   </span></Tooltip></h6></TableCell>
-                            <TableCell align="center" style={{ color: '#20c997' }}><h6 style={{ fontWeight: 'bold' }}><Tooltip title={orderList.last30Days + " - " + orderSupplierTransaction.created_at} >    <span>     Last 30 days   </span></Tooltip></h6></TableCell>
-                            <TableCell align="center" style={{ color: '#6f42c1' }}><h6 style={{ fontWeight: 'bold' }}><Tooltip title={orderList.twoMonthsAgoStart + " - " + orderList.twoMonthsAgoEnd} >    <span>    Last 2 months   </span></Tooltip></h6></TableCell>
-                            <TableCell align="center" style={{ color: '#6c757d' }}><h6 style={{ fontWeight: 'bold' }}><Tooltip title={orderList.startLastYear + " - " + orderList.endLastYear} >    <span>    Last year   </span></Tooltip></h6></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {orderList.data.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={14}>
+                                <TableCell colSpan={6}>
                                     <div className="po-empty-state">
                                         <Inventory2OutlinedIcon />
                                         <strong>No products found</strong>
@@ -657,21 +860,6 @@ const OrderSupplierApproval = () => {
 
                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.expiration != null ? formatStatementDate(row.expiration) : "—"}</TableCell>
                                 <TableCell align="right">{numberFormat(row.total_price)}</TableCell>
-                                <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
-                                {row.enable == 1 ?
-                                    <>
-                                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? row.os_stock + " " + row.packaging + " / " + row.os_stock_pc + " pc" : row.os_stock}</TableCell>
-                                    </> :
-                                    <>
-                                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? row.stock + " " + row.packaging + " / " + row.stock_pc + " pc" : row.stock}</TableCell>
-                                    </>
-                                }
-                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.stock_warning}{row.stock_warning_type == 'RETAIL' ? ' pc' : ''}</TableCell>
-                                <TableCell align="right" style={{ backgroundColor: '#FFFAF0' }}></TableCell>
-                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_15_days_sales / row.pQuantity)) + " " + row.packaging + " / " + row.last_15_days_sales + " pc" : row.last_15_days_sales + " " + row.packaging}</TableCell>
-                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_30_days_sales / row.pQuantity)) + " " + row.packaging + " / " + row.last_30_days_sales + " pc" : row.last_30_days_sales + " " + row.packaging}</TableCell>
-                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_2_months_sales / row.pQuantity)) + " " + row.packaging + " / " + row.last_2_months_sales + " pc" : row.last_2_months_sales + " " + row.packaging}</TableCell>
-                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{row.pQuantity > 1 ? (Math.floor(row.last_year_same_month_30_days / row.pQuantity)) + " " + row.packaging + " / " + row.last_year_same_month_30_days + " pc" : row.last_year_same_month_30_days + " " + row.packaging}</TableCell>
                             </TableRow>
                         ))}
                         <TableRow className="po-grand-total-row">
@@ -681,6 +869,144 @@ const OrderSupplierApproval = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            )}
+
+            {productTableTab === 2 && (
+            <section
+                className="po-custom-ranges"
+                role="tabpanel"
+                id="product-tabpanel-2"
+                aria-labelledby="product-tab-2"
+            >
+                <Paper className="po-custom-range-controls" elevation={0}>
+                    <div className="po-custom-range-heading">
+                        <div>
+                            <h3>Compare custom sales dates</h3>
+                            <p>Add up to 12 date ranges. Each range becomes a Sold column in the table.</p>
+                        </div>
+                        <Button
+                            variant="outlined"
+                            onClick={addCustomDateRange}
+                            disabled={customDateRanges.length >= 12}
+                        >
+                            Add date range
+                        </Button>
+                    </div>
+
+                    <div className="po-custom-range-list">
+                        {customDateRanges.map((range, index) => (
+                            <div className="po-custom-range-row" key={index}>
+                                <TextField
+                                    size="small"
+                                    label="Label (optional)"
+                                    placeholder={`Range ${index + 1}`}
+                                    value={range.label}
+                                    inputProps={{ maxLength: 50 }}
+                                    onChange={(event) => updateCustomDateRange(index, 'label', event.target.value)}
+                                />
+                                <TextField
+                                    size="small"
+                                    label="From"
+                                    type="date"
+                                    value={range.date_from}
+                                    onChange={(event) => updateCustomDateRange(index, 'date_from', event.target.value)}
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                                <TextField
+                                    size="small"
+                                    label="To"
+                                    type="date"
+                                    value={range.date_to}
+                                    inputProps={{ min: range.date_from || undefined }}
+                                    onChange={(event) => updateCustomDateRange(index, 'date_to', event.target.value)}
+                                    InputLabelProps={{ shrink: true }}
+                                />
+                                <Button
+                                    color="error"
+                                    onClick={() => removeCustomDateRange(index)}
+                                    disabled={customDateRanges.length === 1}
+                                >
+                                    Remove
+                                </Button>
+                            </div>
+                        ))}
+                    </div>
+
+                    {customRangeError && <Alert severity="error">{customRangeError}</Alert>}
+
+                    <div className="po-custom-range-actions">
+                        <span>{customDateRanges.length} / 12 ranges</span>
+                        <Button
+                            variant="contained"
+                            onClick={fetchCustomDateRanges}
+                            disabled={customRangeLoading}
+                        >
+                            {customRangeLoading ? 'Loading sales…' : 'View sales'}
+                        </Button>
+                    </div>
+                    {customRangeLoading && <LinearProgress color="warning" />}
+                </Paper>
+
+                {customRangeResults.ranges.length > 0 && (
+                <TableContainer component={Paper} className="po-items-table po-custom-range-table">
+                    <Table aria-label="Sales by custom date ranges">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell rowSpan={2}>Product Name</TableCell>
+                                <TableCell rowSpan={2} align="center">Qty</TableCell>
+                                <TableCell colSpan={2} align="center">Stock</TableCell>
+                                <TableCell colSpan={customRangeResults.ranges.length} align="center">Sold</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell align="center">Current</TableCell>
+                                <TableCell align="center">Warning</TableCell>
+                                {customRangeResults.ranges.map((range) => (
+                                    <TableCell align="center" key={range.key}>
+                                        <strong>{range.label || range.key.replace('_', ' ')}</strong>
+                                        <span>{range.date_from} to {range.date_to}</span>
+                                    </TableCell>
+                                ))}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {customRangeResults.data.map((row) => {
+                                const branchRow = findMatchingProduct(customBranchRangeResults, row);
+                                return (
+                                <TableRow key={row.id} hover>
+                                    <TableCell><strong>{row.product_name}</strong></TableCell>
+                                    <TableCell align="center">{row.quantity}</TableCell>
+                                    <TableCell align="center">
+                                        {row.pQuantity > 1
+                                            ? row.stock + " " + row.packaging + " / " + row.stock_pc + " pc"
+                                            : row.stock}
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        {row.stock_warning}{row.stock_warning_type == 'RETAIL' ? ' pc' : ''}
+                                    </TableCell>
+                                    {customRangeResults.ranges.map((range) => {
+                                        const customerRange = row.sales_ranges?.find((item) => item.key === range.key);
+                                        const branchRange = branchRow.sales_ranges?.find((item) => item.key === range.key);
+                                        const customerDemand = Number(customerRange?.sold) || 0;
+                                        const branchDemand = Number(branchRange?.sold) || 0;
+                                        return (
+                                            <TableCell align="center" key={range.key}>
+                                                <div className="po-demand-comparison">
+                                                    <span><small>Customer</small>{formatDemandQuantity(row, customerDemand)}</span>
+                                                    <span><small>Branch</small>{formatDemandQuantity(row, branchDemand)}</span>
+                                                    <strong><small>Combined</small>{formatDemandQuantity(row, customerDemand + branchDemand)}</strong>
+                                                </div>
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                )}
+            </section>
+            )}
 
             <section className="po-approval-card">
                 <div className="po-card-heading">
@@ -695,6 +1021,12 @@ const OrderSupplierApproval = () => {
                         <div className="po-approved-badge"><CheckCircleIcon /> Approved</div>
                     )}
                 </div>
+
+                {isRequestorApprover && orderSupplierTransaction.status != 'COMPLETED' && (
+                    <Alert severity="warning" className="po-self-approval-note">
+                        <strong>Self-approval is not allowed.</strong> This purchase order was requested by {orderSupplierTransaction.requestor}. You may leave it Pending or Reject it with a note, but a different authorized account must approve it.
+                    </Alert>
+                )}
 
                 {submitLoadingAdd && <LinearProgress color="warning" className="po-approval-progress" />}
 
@@ -740,7 +1072,13 @@ const OrderSupplierApproval = () => {
                                 displayEmpty
                             >
                                 <MenuItem value="PENDING" sx={{ color: "warning.main" }}>Pending</MenuItem>
-                                <MenuItem value="APPROVED" sx={{ color: "success.main" }}>Approved</MenuItem>
+                                <MenuItem
+                                    value="APPROVED"
+                                    sx={{ color: "success.main" }}
+                                    disabled={isRequestorApprover}
+                                >
+                                    Approved{isRequestorApprover ? ' — different approver required' : ''}
+                                </MenuItem>
                                 <MenuItem value="REJECTED" sx={{ color: "error.main" }}>Rejected</MenuItem>
                             </Select>
                         </FormControl>
@@ -751,6 +1089,7 @@ const OrderSupplierApproval = () => {
                         multiline
                         minRows={4}
                         label="Approval note"
+                        required
                         placeholder="Add context for this decision…"
                         name="note"
                         value={orderSupplierTransaction.note}
@@ -765,7 +1104,7 @@ const OrderSupplierApproval = () => {
                         ? 'Continue to the supplier sending step.'
                         : 'Your decision will be saved to this purchase order.'}</p>
                     <Button
-                        disabled={isAddDisabled}
+                        disabled={isAddDisabled || (isRequestorApprover && orderSupplierTransaction.approval_status == 'APPROVED')}
                         variant="contained"
                         onClick={orderSupplierTransaction.status == 'COMPLETED' ? nextSubmit : submitApproval}
                         size="large"

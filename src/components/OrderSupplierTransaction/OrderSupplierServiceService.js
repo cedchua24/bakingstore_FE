@@ -30,6 +30,15 @@ class OrderSupplierService {
     fetchApprovalPO(id) {
         return axios.get(`/api/orderSuppliers/fetchApprovalPO/${id}`);
     }
+    fetchApprovalPOBranch(id) {
+        return axios.get(`/api/orderSuppliers/fetchApprovalPOBranch/${id}`);
+    }
+    fetchApprovalPOByDateRanges(id, data) {
+        return axios.post(`/api/orderSuppliers/fetchApprovalPOByDateRanges/${id}`, data);
+    }
+    fetchApprovalPOBranchByDateRanges(id, data) {
+        return axios.post(`/api/orderSuppliers/fetchApprovalPOBranchByDateRanges/${id}`, data);
+    }
     fetchOrderBySupplierId(id) {
         return axios.get(`/api/orderSuppliers/fetchOrderBySupplierId/${id}`);
     }
