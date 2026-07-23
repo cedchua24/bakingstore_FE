@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Form } from 'react-bootstrap';
 import CustomerService from "./CustomerService";
 import { Link } from "react-router-dom";
@@ -12,6 +12,7 @@ const CustomerTransactionList = () => {
 
     const { id } = useParams();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const [customerTransactionList, setCustomerTransactionList] = useState({
         data: [],
@@ -74,6 +75,13 @@ const CustomerTransactionList = () => {
         fetchCustomerTransaction(id, dateFilter);
     }
 
+    const showAllDates = () => {
+        const emptyFilters = { dateFrom: '', dateTo: '' };
+        setDateFilter(emptyFilters);
+        fetchCustomerTransaction(id, emptyFilters);
+        navigate(location.pathname, { replace: true });
+    }
+
     const numberFormat = (value) =>
         new Intl.NumberFormat('en-us', {
             style: 'currency',
@@ -109,6 +117,9 @@ const CustomerTransactionList = () => {
                     </Form.Group>
                     <Button variant="primary" type="submit">
                         Apply Filter
+                    </Button>
+                    <Button variant="outline-secondary" type="button" onClick={showAllDates}>
+                        All Dates
                     </Button>
                 </Form>
             </section>
@@ -172,12 +183,14 @@ const CustomerTransactionList = () => {
                                         <td>{customerTransactionList.shop_order_transaction_total_quantity != 0 ? customerTransactionList.shop_order_transaction_total_quantity : ""}</td>
                                         <td>{customerTransactionList.total_cash != 0 ? numberFormat(customerTransactionList.total_cash) : ""}</td>
                                         <td>{customerTransactionList.total_online != 0 ? numberFormat(customerTransactionList.total_online) : ""}</td>
-                                        <td>{customerTransactionList.status == 1 &&
-                                            <div className="customer-list-payment-list">
+                                        <td>
+                                            {Array.isArray(customerTransactionList.mode_of_payment) && customerTransactionList.mode_of_payment.length > 0 &&
+                                                <div className="customer-list-payment-list">
                                                 {customerTransactionList.mode_of_payment.map((sot, index) => (
                                                     <span key={sot.id || index}><small>{sot.payment_type}</small>{numberFormat(sot.amount)}</span>
                                                 ))}
-                                            </div>}
+                                                </div>
+                                            }
                                         </td>
 
                                         <td style={{ fontWeight: 'bold', }}>{customerTransactionList.shop_order_transaction_total_price != 0 ? numberFormat(customerTransactionList.shop_order_transaction_total_price) : ""}</td>
