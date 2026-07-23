@@ -72,6 +72,11 @@ const VipCustomerTransactionTemplateList = () => {
                                                 Pending Balances
                                             </Button>
                                         </Link>
+                                        <Link to={"/vipTransactionHistory/" + vipCustomer.id}>
+                                            <Button variant="success">
+                                                Transaction History
+                                            </Button>
+                                        </Link>
                                     </div>
                                 </td>
                             </tr>
