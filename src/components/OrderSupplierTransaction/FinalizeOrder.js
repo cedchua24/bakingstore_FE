@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
@@ -102,6 +102,7 @@ const FinalizeOrder = () => {
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const isReceivingRef = useRef(false);
 
     const [orderList, setOrderList] = useState([]);
 
@@ -410,14 +411,16 @@ const FinalizeOrder = () => {
 
 
     const updateOrderTransaction = () => {
+        if (isReceivingRef.current) {
+            return;
+        }
+
+        isReceivingRef.current = true;
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
 
         OrderSupplierTransactionService.updateReceivedOrder(id, orderSupplierTransaction)
             .then(response => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-
                 if (response.data.code === 200) {
                     setValidator({
                         severity: 'success',
@@ -429,6 +432,10 @@ const FinalizeOrder = () => {
                         navigate('/supplierTransactionList/');
                     }, 2000);
                 } else {
+                    isReceivingRef.current = false;
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+
                     setValidator({
                         severity: 'error',
                         message: response.data.message || 'Something went wrong',
@@ -437,6 +444,7 @@ const FinalizeOrder = () => {
                 }
             })
             .catch(e => {
+                isReceivingRef.current = false;
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
 

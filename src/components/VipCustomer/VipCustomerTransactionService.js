@@ -37,6 +37,19 @@ class VipCustomerTransactionService {
         });
     }
 
+    fetchVipCustomerMonthlyPaid(id, month, nextMonths) {
+        const params = {};
+        if (month) {
+            params.month = month;
+        } else if (nextMonths !== undefined && nextMonths !== null) {
+            params.next_months = nextMonths;
+        }
+
+        return axios.get(`/api/vipCustomerTransaction/fetchVIPCustomerMonthlyPaid/${id}`, {
+            params,
+        });
+    }
+
     create(data) {
         return axios.post("/api/vipCustomerTransaction", data);
     }
