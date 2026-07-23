@@ -453,9 +453,7 @@ const VipTransaction = () => {
     }
 
     const getOpenTransactionPayment = (vipTransaction) => {
-        var completedSales = Number(vipTransaction.total_order_price || 0);
-        var allPayments = Number(vipTransaction.total_completed_payment || 0);
-        return Math.max(allPayments - completedSales, 0);
+        return Math.max(Number(vipTransaction.total_open_payment || 0), 0);
     }
 
     const getTotalOpenTransactionPayments = () => {
@@ -554,6 +552,48 @@ const VipTransaction = () => {
                         </Button>
                     </div>
                 </Form>
+            </div>
+
+            <div style={{ ...styles.analysisPanel, marginTop: '0', marginBottom: '16px' }}>
+                <h5 style={styles.analysisTitle}>Sales Analysis</h5>
+                <div style={styles.collectedPaymentsHero}>
+                    <div>
+                        <span style={styles.keyMetricBadge}>KEY METRIC</span>
+                        <p style={{ ...styles.analysisLabel, color: '#084298', marginBottom: '3px' }}>
+                            All Payments Collected
+                        </p>
+                        <p style={styles.analysisHelp}>Total cash received from full and partial payments across every status</p>
+                    </div>
+                    <p style={styles.collectedPaymentsValue}>
+                        {formatTotalOrderPrice(getTotalCompletedPayment())}
+                    </p>
+                </div>
+                <div style={styles.analysisGrid}>
+                    <div style={styles.openTransactionItem}>
+                        <p style={styles.analysisLabel}>Open Transaction Value</p>
+                        <p style={styles.analysisValue}>{formatTotalOrderPrice(getPossibleSales())}</p>
+                        <p style={styles.analysisHelp}>Full value of transactions not completed yet</p>
+                    </div>
+                    <div style={styles.completedTransactionItem}>
+                        <p style={styles.analysisLabel}>Completed Transaction Value</p>
+                        <p style={styles.analysisValue}>{formatTotalOrderPrice(getGrandTotal())}</p>
+                        <p style={styles.analysisHelp}>Value of fully completed transactions</p>
+                    </div>
+                </div>
+                <div style={styles.analysisSecondaryGrid}>
+                    <div style={styles.estimatedBalanceItem}>
+                        <p style={styles.analysisLabel}>Estimated Open Balance</p>
+                        <p style={{ ...styles.analysisValue, color: '#b45309' }}>
+                            {formatTotalOrderPrice(getEstimatedOpenBalance())}
+                        </p>
+                        <p style={styles.analysisHelp}>Open value less partial payments already collected</p>
+                    </div>
+                    <div style={styles.projectedSalesItem}>
+                        <p style={styles.analysisLabel}>Projected Sales After Completion</p>
+                        <p style={styles.analysisValue}>{formatTotalOrderPrice(getProjectedSales())}</p>
+                        <p style={styles.analysisHelp}>Completed sales plus all open transaction value</p>
+                    </div>
+                </div>
             </div>
 
             <div className="table-responsive" style={styles.tableWrapper}>
@@ -660,47 +700,6 @@ const VipTransaction = () => {
                         </tr>
                     </tfoot>
                 </table>
-            </div>
-            <div style={styles.analysisPanel}>
-                <h5 style={styles.analysisTitle}>Sales Analysis</h5>
-                <div style={styles.collectedPaymentsHero}>
-                    <div>
-                        <span style={styles.keyMetricBadge}>KEY METRIC</span>
-                        <p style={{ ...styles.analysisLabel, color: '#084298', marginBottom: '3px' }}>
-                            All Payments Collected
-                        </p>
-                        <p style={styles.analysisHelp}>Total cash received from full and partial payments across every status</p>
-                    </div>
-                    <p style={styles.collectedPaymentsValue}>
-                        {formatTotalOrderPrice(getTotalCompletedPayment())}
-                    </p>
-                </div>
-                <div style={styles.analysisGrid}>
-                    <div style={styles.openTransactionItem}>
-                        <p style={styles.analysisLabel}>Open Transaction Value</p>
-                        <p style={styles.analysisValue}>{formatTotalOrderPrice(getPossibleSales())}</p>
-                        <p style={styles.analysisHelp}>Full value of transactions not completed yet</p>
-                    </div>
-                    <div style={styles.completedTransactionItem}>
-                        <p style={styles.analysisLabel}>Completed Transaction Value</p>
-                        <p style={styles.analysisValue}>{formatTotalOrderPrice(getGrandTotal())}</p>
-                        <p style={styles.analysisHelp}>Value of fully completed transactions</p>
-                    </div>
-                </div>
-                <div style={styles.analysisSecondaryGrid}>
-                    <div style={styles.estimatedBalanceItem}>
-                        <p style={styles.analysisLabel}>Estimated Open Balance</p>
-                        <p style={{ ...styles.analysisValue, color: '#b45309' }}>
-                            {formatTotalOrderPrice(getEstimatedOpenBalance())}
-                        </p>
-                        <p style={styles.analysisHelp}>Open value less partial payments already collected</p>
-                    </div>
-                    <div style={styles.projectedSalesItem}>
-                        <p style={styles.analysisLabel}>Projected Sales After Completion</p>
-                        <p style={styles.analysisValue}>{formatTotalOrderPrice(getProjectedSales())}</p>
-                        <p style={styles.analysisHelp}>Completed sales plus all open transaction value</p>
-                    </div>
-                </div>
             </div>
         </div>
     )
