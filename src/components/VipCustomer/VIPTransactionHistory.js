@@ -85,6 +85,7 @@ const VIPTransactionHistory = () => {
     const [error, setError] = useState("");
     const [monthlyQuota, setMonthlyQuota] = useState("");
     const [viewMode, setViewMode] = useState("sales");
+    const [sortBy, setSortBy] = useState("sales");
 
     const loadReport = useCallback(month => {
         setLoading(true);
@@ -109,6 +110,15 @@ const VIPTransactionHistory = () => {
 
     const months = report ? [report.report_month, ...(report.previous_months || [])] : [];
     const customers = Array.isArray(report?.data) ? report.data : [];
+    const sortedCustomers = [...customers].sort((firstCustomer, secondCustomer) => {
+        if (sortBy === "profit") {
+            return Number(secondCustomer.current_profit || 0) - Number(firstCustomer.current_profit || 0);
+        }
+        if (sortBy === "name") {
+            return String(firstCustomer.customer_name || "").localeCompare(String(secondCustomer.customer_name || ""));
+        }
+        return Number(secondCustomer.current_paid || 0) - Number(firstCustomer.current_paid || 0);
+    });
     const lastMonthPaid = Number(report?.previous_months?.[0]?.paid_amount || 0);
     const neededFromLastMonth = Math.max(lastMonthPaid - Number(report?.current_month_paid || 0), 0);
     const previousMonthTotals = report?.previous_months || [];
@@ -253,7 +263,7 @@ const VIPTransactionHistory = () => {
                 </Form>
             </div>
 
-            <div className="d-flex justify-content-center mb-3">
+            <div className="d-flex justify-content-center align-items-end gap-3 flex-wrap mb-3">
                 <div className="btn-group" role="group" aria-label="Transaction data view">
                     {[{ key: "sales", label: "Sales" }, { key: "profit", label: "Profit" }, { key: "both", label: "Sales & Profit" }].map(option => (
                         <Button
@@ -265,6 +275,14 @@ const VIPTransactionHistory = () => {
                         </Button>
                     ))}
                 </div>
+                <Form.Group style={{ minWidth: 210 }}>
+                    <Form.Label className="mb-1">Order customer list by</Form.Label>
+                    <Form.Select value={sortBy} onChange={event => setSortBy(event.target.value)}>
+                        <option value="sales">Current sales — highest first</option>
+                        <option value="profit">Current profit — highest first</option>
+                        <option value="name">Customer name — A to Z</option>
+                    </Form.Select>
+                </Form.Group>
             </div>
 
             {error && <div className="alert alert-danger">{error}</div>}
@@ -384,7 +402,7 @@ const VIPTransactionHistory = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {customers.map(customer => {
+                            {sortedCustomers.map(customer => {
                                 const history = new Map((customer.previous_months || []).map(month => [month.month, month]));
                                 const customerLastMonthPaid = Number(customer.previous_months?.[0]?.paid_amount || 0);
                                 const customerLastMonthProfit = Number(customer.previous_months?.[0]?.profit_amount || 0);

@@ -32,27 +32,55 @@ const styles = {
     summaryLabel: { color: "#6c757d", fontSize: "13px", marginBottom: "5px" },
     summaryValue: { fontSize: "22px", fontWeight: "700", marginBottom: "0" },
     customerCard: {
-        backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "8px",
-        marginBottom: "16px", overflow: "hidden",
+        backgroundColor: "#ffffff", border: "1px solid #b7d8c4", borderLeft: "6px solid #198754",
+        borderRadius: "10px", marginBottom: "24px", overflow: "hidden",
+        boxShadow: "0 5px 14px rgba(15, 23, 42, .08)",
     },
     customerHeader: {
-        padding: "16px", borderBottom: "1px solid #e5e7eb", display: "flex",
+        padding: "16px", borderBottom: "3px solid #64748b", display: "flex",
         justifyContent: "space-between", gap: "14px", flexWrap: "wrap",
+    },
+    customerIdentity: { display: "flex", alignItems: "center", gap: "12px" },
+    customerNumber: {
+        display: "grid", placeItems: "center", flex: "0 0 42px", width: "42px", height: "42px",
+        borderRadius: "10px", color: "#ffffff", backgroundColor: "#198754",
+        fontSize: "13px", fontWeight: "800",
     },
     customerName: { fontWeight: "700", marginBottom: "3px" },
     customerMeta: { color: "#6c757d", fontSize: "13px", marginBottom: "0" },
-    customerTotals: { display: "flex", gap: "18px", flexWrap: "wrap" },
-    totalItem: { minWidth: "110px" },
+    customerTotals: { display: "flex", gap: "8px", flexWrap: "wrap" },
+    totalItem: {
+        minWidth: "112px", padding: "9px 12px", backgroundColor: "#ffffff",
+        border: "1px solid #d7e0e8", borderRadius: "8px",
+    },
     totalLabel: { color: "#6c757d", fontSize: "12px", marginBottom: "2px" },
     totalValue: { fontWeight: "700", marginBottom: "0" },
     pendingValue: { fontWeight: "700", color: "#b45309", marginBottom: "0" },
-    table: { marginBottom: "0" },
+    table: { marginBottom: "0", minWidth: "900px", width: "100%", tableLayout: "fixed" },
     tableHeader: { backgroundColor: "#212529", color: "#ffffff" },
-    tableHeaderCell: { color: "#ffffff" },
+    tableHeaderCell: {
+        color: "#ffffff", backgroundColor: "#212529", borderColor: "#495057",
+        position: "sticky", top: "0", zIndex: "2", verticalAlign: "middle",
+    },
+    centerCell: { textAlign: "center", verticalAlign: "middle" },
+    dateCell: { textAlign: "center", verticalAlign: "middle", whiteSpace: "nowrap" },
+    moneyCell: {
+        textAlign: "right", verticalAlign: "middle", whiteSpace: "nowrap",
+        fontVariantNumeric: "tabular-nums",
+    },
+    actionCell: { textAlign: "center", verticalAlign: "middle" },
+    pendingAgeBadge: {
+        display: "inline-block", padding: "5px 9px", borderRadius: "999px",
+        color: "#842029", backgroundColor: "#f8d7da", fontSize: "12px", fontWeight: "700",
+    },
     paymentList: { minWidth: "250px", display: "flex", flexDirection: "column", gap: "6px" },
     paymentItem: {
         border: "1px solid #d1e7dd", backgroundColor: "#f0fff4", borderRadius: "6px",
         padding: "7px 9px", fontSize: "12px",
+    },
+    paymentTiming: {
+        marginTop: "4px", paddingTop: "4px", borderTop: "1px dashed #badbcc",
+        color: "#5c636a", fontSize: "11px",
     },
     initialBadge: {
         display: "inline-block", borderRadius: "999px", padding: "3px 8px",
@@ -161,6 +189,24 @@ const VIPTransactionDebt = () => {
         fetchPendingBalances();
     };
 
+    const daysBetween = (fromValue, toValue = new Date()) => {
+        if (!fromValue) {
+            return 0;
+        }
+        const fromDate = new Date(String(fromValue).replace(" ", "T"));
+        const toDate = toValue instanceof Date
+            ? new Date(toValue)
+            : new Date(String(toValue).replace(" ", "T"));
+        if (Number.isNaN(fromDate.getTime()) || Number.isNaN(toDate.getTime())) {
+            return 0;
+        }
+        fromDate.setHours(0, 0, 0, 0);
+        toDate.setHours(0, 0, 0, 0);
+        return Math.max(Math.floor((toDate.getTime() - fromDate.getTime()) / 86400000), 0);
+    };
+
+    const dayText = days => `${days} ${days === 1 ? "day" : "days"}`;
+
     const renderPaymentHistory = (order) => {
         const payments = Array.isArray(order.payments) && order.payments.length > 0
             ? order.payments
@@ -189,6 +235,13 @@ const VIPTransactionDebt = () => {
                                 <div>{payment.payment_type_description}</div>
                             }
                             <div>{formatDate(payment.created_at, true)}</div>
+                            <div style={styles.paymentTiming}>
+                                {daysBetween(order.order_date, payment.created_at) === 0
+                                    ? "Paid on order date"
+                                    : `${dayText(daysBetween(order.order_date, payment.created_at))} after order`}
+                                {" • "}
+                                {dayText(daysBetween(payment.created_at))} since payment
+                            </div>
                         </div>
                     );
                 })}
@@ -271,33 +324,47 @@ const VIPTransactionDebt = () => {
             {debtCustomers.map((customer, customerIndex) => (
                 <section
                     key={customer.vip_customer_transaction_id || customer.customer_id || customerIndex}
-                    style={styles.customerCard}
+                    style={{
+                        ...styles.customerCard,
+                        borderLeftColor: "#198754",
+                    }}
                 >
-                    <div style={styles.customerHeader}>
-                        <div>
+                    <div style={{
+                        ...styles.customerHeader,
+                        backgroundColor: customerIndex % 2 === 0 ? "#ecfdf3" : "#f3fbf6",
+                    }}>
+                        <div style={styles.customerIdentity}>
+                            <span style={{
+                                ...styles.customerNumber,
+                                backgroundColor: "#198754",
+                            }}>
+                                {customerIndex + 1}
+                            </span>
+                            <div>
                             <h5 style={styles.customerName}>{customer.customer_name || "Unnamed customer"}</h5>
                             <p style={styles.customerMeta}>
                                 {customer.store_name || "No store name"}
                                 {customer.contact_number ? ` • ${customer.contact_number}` : ""}
                                 {customer.email ? ` • ${customer.email}` : ""}
                             </p>
+                            </div>
                         </div>
                         <div style={styles.customerTotals}>
-                            <div style={styles.totalItem}>
+                            <div style={{ ...styles.totalItem, borderColor: "#bfdbfe" }}>
                                 <p style={styles.totalLabel}>Orders</p>
                                 <p style={styles.totalValue}>{customer.debt_order_count || 0}</p>
                             </div>
-                            <div style={styles.totalItem}>
+                            <div style={{ ...styles.totalItem, borderColor: "#d7e0e8" }}>
                                 <p style={styles.totalLabel}>Total</p>
                                 <p style={styles.totalValue}>{formatAmount(customer.debt_order_total_price)}</p>
                             </div>
-                            <div style={styles.totalItem}>
+                            <div style={{ ...styles.totalItem, borderColor: "#a7f3d0", backgroundColor: "#f0fdf4" }}>
                                 <p style={styles.totalLabel}>Paid</p>
                                 <p style={{ ...styles.totalValue, color: "#146c43" }}>
                                     {formatAmount(customer.total_payment)}
                                 </p>
                             </div>
-                            <div style={styles.totalItem}>
+                            <div style={{ ...styles.totalItem, borderColor: "#fed7aa", backgroundColor: "#fff7ed" }}>
                                 <p style={styles.totalLabel}>Pending</p>
                                 <p style={styles.pendingValue}>{formatAmount(customer.balance)}</p>
                             </div>
@@ -306,42 +373,50 @@ const VIPTransactionDebt = () => {
 
                     <div className="table-responsive">
                         <table className="table table-bordered table-hover align-middle" style={styles.table}>
+                            <colgroup>
+                                <col style={{ width: "11%" }} />
+                                <col style={{ width: "12%" }} />
+                                <col style={{ width: "9%" }} />
+                                <col style={{ width: "12%" }} />
+                                <col style={{ width: "12%" }} />
+                                <col style={{ width: "13%" }} />
+                                <col style={{ width: "31%" }} />
+                            </colgroup>
                             <thead style={styles.tableHeader}>
                                 <tr>
-                                    <th style={styles.tableHeaderCell}>#</th>
-                                    <th style={styles.tableHeaderCell}>Transaction ID</th>
-                                    <th style={styles.tableHeaderCell}>Order Date</th>
-                                    <th style={styles.tableHeaderCell}>Total</th>
-                                    <th style={styles.tableHeaderCell}>Paid</th>
-                                    <th style={styles.tableHeaderCell}>Pending Balance</th>
+                                    <th style={{ ...styles.tableHeaderCell, textAlign: "center" }}>Transaction ID</th>
+                                    <th style={{ ...styles.tableHeaderCell, textAlign: "center" }}>Order Date</th>
+                                    <th style={{ ...styles.tableHeaderCell, textAlign: "center" }}>Pending Age</th>
+                                    <th style={{ ...styles.tableHeaderCell, textAlign: "right" }}>Total</th>
+                                    <th style={{ ...styles.tableHeaderCell, textAlign: "right" }}>Paid</th>
+                                    <th style={{ ...styles.tableHeaderCell, textAlign: "right" }}>Pending Balance</th>
                                     <th style={styles.tableHeaderCell}>Payment History</th>
-                                    <th style={styles.tableHeaderCell}>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {(Array.isArray(customer.debt_orders) ? customer.debt_orders : [])
                                     .map((order, orderIndex) => (
                                         <tr key={order.shop_order_transaction_id || orderIndex}>
-                                            <td>{orderIndex + 1}</td>
-                                            <td>{order.shop_order_transaction_id}</td>
-                                            <td>{formatDate(order.order_date)}</td>
-                                            <td>{formatAmount(order.order_total_price)}</td>
-                                            <td style={{ color: "#146c43", fontWeight: "600" }}>
-                                                {formatAmount(order.total_payment)}
-                                            </td>
-                                            <td style={{ color: "#b45309", fontWeight: "700" }}>
-                                                {formatAmount(order.balance)}
-                                            </td>
-                                            <td>{renderPaymentHistory(order)}</td>
-                                            <td>
+                                            <td style={styles.centerCell}>
                                                 <Link
                                                     to={`/shopOrderTransaction/finalizeShopOrder/${order.shop_order_transaction_id}`}
+                                                    style={{ color: "#0d6efd", fontWeight: "700", textDecoration: "underline" }}
                                                 >
-                                                    <Button variant="primary" size="sm">
-                                                        View Transaction
-                                                    </Button>
+                                                    {order.shop_order_transaction_id}
                                                 </Link>
                                             </td>
+                                            <td style={styles.dateCell}>{formatDate(order.order_date)}</td>
+                                            <td style={styles.centerCell}>
+                                                <span style={styles.pendingAgeBadge}>{dayText(daysBetween(order.order_date))}</span>
+                                            </td>
+                                            <td style={styles.moneyCell}>{formatAmount(order.order_total_price)}</td>
+                                            <td style={{ ...styles.moneyCell, color: "#146c43", fontWeight: "600" }}>
+                                                {formatAmount(order.total_payment)}
+                                            </td>
+                                            <td style={{ ...styles.moneyCell, color: "#b45309", fontWeight: "700" }}>
+                                                {formatAmount(order.balance)}
+                                            </td>
+                                            <td style={{ verticalAlign: "middle" }}>{renderPaymentHistory(order)}</td>
                                         </tr>
                                     ))}
                             </tbody>
