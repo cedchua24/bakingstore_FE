@@ -40,19 +40,11 @@ const formatPackage = (record, isRetail = false) => {
     return `${formattedWeight}${record.variation || ""} × ${quantity} ${record.packaging || ""}`.trim();
 };
 
-const PriceHistoryCard = ({ record, type }) => {
+const PriceHistoryCard = ({ record, type, paired = false }) => {
     const isRetail = type === "RETAIL";
 
     if (!record) {
-        return (
-            <div className="markup-history-price markup-history-price--empty">
-                <span>{isRetail ? <StorefrontOutlinedIcon /> : <WarehouseOutlinedIcon />}</span>
-                <div>
-                    <strong>{isRetail ? "Retail" : "Wholesale"}</strong>
-                    <small>No price recorded for this date</small>
-                </div>
-            </div>
-        );
+        return <div className="markup-history-price-blank" aria-hidden="true" />;
     }
 
     const supplierPrice = Number(record.price) || 0;
@@ -71,7 +63,7 @@ const PriceHistoryCard = ({ record, type }) => {
                     <small>{formatPackage(record, isRetail)}</small>
                 </div>
                 <span className={`markup-type markup-type--${isRetail ? "retail" : "wholesale"}`}>
-                    {record.mark_up_option === "PERCENTAGE" ? "Percentage" : "Fixed"}
+                    {paired ? "Paired update" : (record.status === 1 ? "Active" : "Previous")}
                 </span>
             </div>
 
@@ -93,6 +85,10 @@ const PriceHistoryCard = ({ record, type }) => {
                     <strong>{money.format(sellingPrice)}</strong>
                 </div>
             </div>
+            <div className="markup-history-price__meta">
+                <span>Record #{record.id}</span>
+                <strong>{formatDate(record.created_at)}</strong>
+            </div>
         </div>
     );
 };
@@ -113,29 +109,65 @@ const ViewMarkUpHistory = () => {
             .finally(() => setLoading(false));
     }, [id]);
 
-    const pairedMarkupList = useMemo(() => {
-        const groupedByDate = markupPriceList.reduce((groups, item) => {
-            const key = formatDate(item.created_at);
+    const historyEvents = useMemo(() => {
+        const byDate = markupPriceList.reduce((dates, record) => {
+            const dateKey = String(record.created_at || "").slice(0, 10) || `record-${record.id}`;
+            if (!dates.has(dateKey)) dates.set(dateKey, { wholesale: [], retail: [] });
+            const type = record.business_type === "WHOLESALE" ? "wholesale" : "retail";
+            dates.get(dateKey)[type].push(record);
+            return dates;
+        }, new Map());
 
-            if (!groups[key]) {
-                groups[key] = {
-                    date: key,
-                    timestamp: new Date(item.created_at).getTime() || 0,
-                    retail: null,
+        const events = [];
+        byDate.forEach((records, dateKey) => {
+            const availableRetail = [...records.retail];
+
+            records.wholesale.forEach(wholesale => {
+                const wholesaleTime = new Date(wholesale.created_at).getTime() || 0;
+                let closestIndex = -1;
+                let closestDistance = Infinity;
+
+                availableRetail.forEach((retail, index) => {
+                    const retailTime = new Date(retail.created_at).getTime() || 0;
+                    const distance = Math.abs(wholesaleTime - retailTime);
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestIndex = index;
+                    }
+                });
+
+                const retail = closestIndex >= 0 ? availableRetail.splice(closestIndex, 1)[0] : null;
+                const retailTime = retail ? (new Date(retail.created_at).getTime() || 0) : 0;
+                events.push({
+                    key: `pair-${wholesale.id}-${retail?.id || "none"}`,
+                    created_at: wholesaleTime >= retailTime ? wholesale.created_at : retail.created_at,
+                    timestamp: Math.max(wholesaleTime, retailTime),
+                    wholesale,
+                    retail
+                });
+            });
+
+            availableRetail.forEach(retail => {
+                events.push({
+                    key: `retail-${retail.id}-${dateKey}`,
+                    created_at: retail.created_at,
+                    timestamp: new Date(retail.created_at).getTime() || 0,
                     wholesale: null,
-                };
-            }
+                    retail
+                });
+            });
+        });
 
-            if (item.business_type === "RETAIL") groups[key].retail = item;
-            if (item.business_type === "WHOLESALE") groups[key].wholesale = item;
-            return groups;
-        }, {});
-
-        return Object.values(groupedByDate).sort((a, b) => b.timestamp - a.timestamp);
+        return events.sort((a, b) =>
+            b.timestamp - a.timestamp
+            || Number(b.wholesale?.id || b.retail?.id || 0) - Number(a.wholesale?.id || a.retail?.id || 0)
+        );
     }, [markupPriceList]);
 
     const productName = markupPriceList[0]?.product_name || "Product markup";
-    const latestEntry = pairedMarkupList[0];
+    const latestRecord = [...markupPriceList].sort((a, b) =>
+        (new Date(b.created_at).getTime() || 0) - (new Date(a.created_at).getTime() || 0)
+    )[0];
 
     return (
         <main className="markup-page">
@@ -158,11 +190,11 @@ const ViewMarkUpHistory = () => {
                 </div>
                 <div>
                     <span><HistoryRoundedIcon /></span>
-                    <p>History entries<strong>{pairedMarkupList.length}</strong></p>
+                    <p>History records<strong>{markupPriceList.length}</strong></p>
                 </div>
                 <div>
                     <span><LocalOfferOutlinedIcon /></span>
-                    <p>Latest update<strong>{latestEntry?.date || "No updates yet"}</strong></p>
+                    <p>Latest update<strong>{latestRecord ? formatDate(latestRecord.created_at) : "No updates yet"}</strong></p>
                 </div>
             </section>
 
@@ -170,7 +202,7 @@ const ViewMarkUpHistory = () => {
                 <header className="markup-list-card__header">
                     <div>
                         <h2>Price change timeline</h2>
-                        <p>Retail and wholesale prices are paired by update date.</p>
+                        <p>Wholesale and retail changes are tracked independently.</p>
                     </div>
                     <span><HistoryRoundedIcon /> Newest first</span>
                 </header>
@@ -180,29 +212,36 @@ const ViewMarkUpHistory = () => {
                         <CircularProgress size={28} />
                         <p>Loading price history…</p>
                     </div>
-                ) : pairedMarkupList.length === 0 ? (
+                ) : markupPriceList.length === 0 ? (
                     <div className="markup-list-empty">
                         <HistoryRoundedIcon />
                         <h3>No markup history yet</h3>
                         <p>Price changes for this product will appear here.</p>
                     </div>
                 ) : (
-                    <div className="markup-history-timeline">
-                        {pairedMarkupList.map((row, index) => (
-                            <article className="markup-history-entry" key={`${row.date}-${index}`}>
-                                <div className="markup-history-entry__date">
-                                    <span>{index + 1}</span>
-                                    <div>
-                                        <small>{index === 0 ? "Latest update" : "Previous update"}</small>
-                                        <strong>{row.date}</strong>
+                    <div className="markup-history-events">
+                        <div className="markup-history-events__labels">
+                            <span><WarehouseOutlinedIcon />Wholesale</span>
+                            <span><StorefrontOutlinedIcon />Retail</span>
+                        </div>
+                        {historyEvents.map((event, index) => {
+                            const paired = Boolean(event.wholesale && event.retail);
+                            return (
+                                <article className={`markup-history-event ${paired ? "is-paired" : ""}`} key={event.key}>
+                                    <header>
+                                        <span>{index + 1}</span>
+                                        <div>
+                                            <small>{paired ? "Paired price update" : "Single price update"}</small>
+                                            <strong>{formatDate(event.created_at)}</strong>
+                                        </div>
+                                    </header>
+                                    <div className="markup-history-event__prices">
+                                        <PriceHistoryCard record={event.wholesale} type="WHOLESALE" paired={paired} />
+                                        <PriceHistoryCard record={event.retail} type="RETAIL" paired={paired} />
                                     </div>
-                                </div>
-                                <div className="markup-history-entry__prices">
-                                    <PriceHistoryCard record={row.retail} type="RETAIL" />
-                                    <PriceHistoryCard record={row.wholesale} type="WHOLESALE" />
-                                </div>
-                            </article>
-                        ))}
+                                </article>
+                            );
+                        })}
                     </div>
                 )}
             </section>

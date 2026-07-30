@@ -752,8 +752,8 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         },
         {
-            "name": "Mark-Up New Price",
-            "url": "/markUpNewPrice",
+            "name": "Supplier Price Changes",
+            "url": "/markUpNewPriceV2",
             "icon": <ListIcon />
         }
     ]);

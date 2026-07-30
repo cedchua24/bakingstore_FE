@@ -3,8 +3,15 @@ import { Link } from "react-router-dom";
 
 import ProductServiceService from "./ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
+import OrderSupplierServiceService from "../OrderSupplierTransaction/OrderSupplierServiceService";
 
+import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -18,6 +25,7 @@ import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 
 import './ProductList.css';
 
@@ -27,6 +35,10 @@ const ProductList = () => {
     const [productList, setProductList] = useState({ total_value: {}, data: [] });
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [priceHistoryProduct, setPriceHistoryProduct] = useState(null);
+    const [priceHistory, setPriceHistory] = useState([]);
+    const [priceHistoryLoading, setPriceHistoryLoading] = useState(false);
+    const [priceHistoryError, setPriceHistoryError] = useState('');
 
     useEffect(() => {
         ProductServiceService.fetchProductListV2()
@@ -77,6 +89,64 @@ const ProductList = () => {
         currency: 'PHP',
         maximumFractionDigits: 2
     }).format(Number(value || 0));
+
+    const viewPriceHistory = (product) => {
+        setPriceHistoryProduct(product);
+        setPriceHistory([]);
+        setPriceHistoryError('');
+        setPriceHistoryLoading(true);
+
+        OrderSupplierServiceService.fetchPriceHistory(product.id)
+            .then(response => {
+                const payload = response.data;
+                const history = Array.isArray(payload)
+                    ? payload
+                    : (Array.isArray(payload?.data) ? payload.data : []);
+                setPriceHistory(history);
+            })
+            .catch(() => setPriceHistoryError('Unable to load the price history. Please try again.'))
+            .finally(() => setPriceHistoryLoading(false));
+    };
+
+    const closePriceHistory = () => {
+        if (!priceHistoryLoading) {
+            setPriceHistoryProduct(null);
+        }
+    };
+
+    const formatHistoryDate = (entry) => {
+        const value = entry.order_date ?? entry.date ?? entry.created_at;
+        if (!value) return '—';
+
+        const parsedDate = new Date(value);
+        return Number.isNaN(parsedDate.getTime())
+            ? value
+            : parsedDate.toLocaleDateString('en-PH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+    };
+
+    const formatHistoryUnit = (entry) => {
+        const orderType = String(
+            entry.business_type ?? entry.order_type ?? entry.pricing_variation ?? entry.variation ?? ''
+        ).toUpperCase();
+        const unitPrice = Number(entry.price ?? entry.unit_price);
+        const wholesalePrice = Number(entry.real_price);
+        const isRetail = orderType === 'RETAIL'
+            || (
+                orderType !== 'WHOLESALE'
+                && Number.isFinite(unitPrice)
+                && Number.isFinite(wholesalePrice)
+                && wholesalePrice > 0
+                && unitPrice !== wholesalePrice
+            );
+
+        return isRetail
+            ? 'PC'
+            : String(entry.packaging ?? priceHistoryProduct?.packaging ?? 'BOX').toUpperCase();
+    };
 
     const formatPackage = (product) => {
         if (product.quantity == null || product.weight == null) {
@@ -202,7 +272,6 @@ const ProductList = () => {
                                 <th>Inventory</th>
                                 <th>Stock warning</th>
                                 <th>Value</th>
-                                <th>Note</th>
                                 <th>Status</th>
                                 <th aria-label="Actions"></th>
                             </tr>
@@ -241,11 +310,6 @@ const ProductList = () => {
                                         </td>
                                         <td><strong>{numberFormat(Number(product.price || 0) * Number(product.stock || 0))}</strong></td>
                                         <td>
-                                            <span className={product.note ? 'product-list-note' : 'product-list-note product-list-note--empty'}>
-                                                {product.note || 'No note'}
-                                            </span>
-                                        </td>
-                                        <td>
                                             <span className={product.disabled === 0 ? 'product-list-status product-list-status--active' : 'product-list-status product-list-status--disabled'}>
                                                 {product.disabled === 0
                                                     ? <><CheckCircleRoundedIcon />Active</>
@@ -254,6 +318,9 @@ const ProductList = () => {
                                         </td>
                                         <td className="product-list-actions">
                                             <div>
+                                                <button type="button" onClick={() => viewPriceHistory(product)}>
+                                                    Price history
+                                                </button>
                                                 <Link to={"/supplierProductList/" + product.id}>Suppliers</Link>
                                                 <Link to={"/productOrderTransactionList/" + product.id}>Orders</Link>
                                                 <Link to={"/editProduct/" + product.id} className="product-list-actions__primary">Edit</Link>
@@ -263,7 +330,7 @@ const ProductList = () => {
                                 );
                             }) : (
                                 <tr>
-                                    <td colSpan="9">
+                                    <td colSpan="8">
                                         <div className="product-list-empty">
                                             <Inventory2OutlinedIcon />
                                             <h3>No products found</h3>
@@ -276,6 +343,78 @@ const ProductList = () => {
                     </table>
                 </div>
             </section>
+
+            <Dialog
+                open={Boolean(priceHistoryProduct)}
+                onClose={closePriceHistory}
+                fullWidth
+                maxWidth="md"
+                aria-labelledby="price-history-title"
+            >
+                <DialogTitle id="price-history-title" className="price-history-title">
+                    <span><HistoryRoundedIcon /> Price history</span>
+                    <small>{priceHistoryProduct?.product_name}</small>
+                </DialogTitle>
+                <DialogContent dividers>
+                    {priceHistoryLoading ? (
+                        <div className="price-history-loading">
+                            <CircularProgress size={28} />
+                            <span>Loading price history...</span>
+                        </div>
+                    ) : priceHistoryError ? (
+                        <Alert severity="error">{priceHistoryError}</Alert>
+                    ) : priceHistory.length > 0 ? (
+                        <div className="table-responsive">
+                            <table className="price-history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Purchase order</th>
+                                        <th>Supplier</th>
+                                        <th>Unit</th>
+                                        <th>Unit price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {priceHistory.map((entry, index) => {
+                                        const unitPrice = entry.price ?? entry.unit_price ?? entry.real_price;
+                                        const purchaseOrderId = entry.order_supplier_transaction_id;
+                                        return (
+                                            <tr key={entry.id ?? `${formatHistoryDate(entry)}-${index}`}>
+                                                <td>{formatHistoryDate(entry)}</td>
+                                                <td>
+                                                    {purchaseOrderId
+                                                        ? (
+                                                            <Link
+                                                                className="price-history-po-link"
+                                                                to={`/orderSupplierApproval/${purchaseOrderId}`}
+                                                            >
+                                                                #{purchaseOrderId}
+                                                            </Link>
+                                                        )
+                                                        : '\u2014'}
+                                                </td>
+                                                <td>{entry.supplier_name ?? entry.supplier?.supplier_name ?? entry.supplier?.name ?? '—'}</td>
+                                                <td><strong>{formatHistoryUnit(entry)}</strong></td>
+                                                <td><strong>{numberFormat(unitPrice)}</strong></td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="price-history-empty">
+                            <HistoryRoundedIcon />
+                            <h3>No price history</h3>
+                            <p>No supplier price records were found for this product.</p>
+                        </div>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={closePriceHistory} disabled={priceHistoryLoading}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

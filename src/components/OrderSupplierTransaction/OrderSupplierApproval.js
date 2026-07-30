@@ -644,8 +644,12 @@ const OrderSupplierApproval = () => {
         return (
             <div className="po-demand-comparison">
                 <span><small>Customer</small>{formatDemandQuantity(row, customerDemand)}</span>
-                <span><small>Branch</small>{formatDemandQuantity(row, branchDemand)}</span>
-                <strong><small>Combined</small>{formatDemandQuantity(row, customerDemand + branchDemand)}</strong>
+                {branchDemand > 0 && (
+                    <>
+                        <span><small>Branch</small>{formatDemandQuantity(row, branchDemand)}</span>
+                        <strong><small>Combined</small>{formatDemandQuantity(row, customerDemand + branchDemand)}</strong>
+                    </>
+                )}
             </div>
         );
     }
@@ -992,8 +996,12 @@ const OrderSupplierApproval = () => {
                                             <TableCell align="center" key={range.key}>
                                                 <div className="po-demand-comparison">
                                                     <span><small>Customer</small>{formatDemandQuantity(row, customerDemand)}</span>
-                                                    <span><small>Branch</small>{formatDemandQuantity(row, branchDemand)}</span>
-                                                    <strong><small>Combined</small>{formatDemandQuantity(row, customerDemand + branchDemand)}</strong>
+                                                    {branchDemand > 0 && (
+                                                        <>
+                                                            <span><small>Branch</small>{formatDemandQuantity(row, branchDemand)}</span>
+                                                            <strong><small>Combined</small>{formatDemandQuantity(row, customerDemand + branchDemand)}</strong>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </TableCell>
                                         );

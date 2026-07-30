@@ -6,6 +6,10 @@ import LinearProgress from "@mui/material/LinearProgress";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import VipProductService from "./VipProductService";
 import VipProductTransactionService from "./VipProductTransactionService";
+import {
+    formatSupplierSentTracking,
+    isSentToSupplier,
+} from "../Stock/supplierOrderTracking";
 
 const formatDateParam = (date) => {
     const year = date.getFullYear();
@@ -244,6 +248,14 @@ const styles = {
         fontWeight: 800,
         letterSpacing: "0.04em",
     },
+    pendingAge: {
+        display: "block",
+        marginTop: "3px",
+        color: "#718096",
+        fontSize: "10px",
+        fontWeight: 600,
+        lineHeight: 1,
+    },
     pendingQuantity: {
         textAlign: "right",
         whiteSpace: "nowrap",
@@ -380,6 +392,7 @@ const VipProductTransactionReport = () => {
         const ids = normalizeArray(product.pending_order_transaction_ids);
         const statuses = normalizeArray(product.pending_order_status);
         const dates = normalizeArray(product.pending_order_dates);
+        const sendDates = normalizeArray(product.pending_order_send_dates);
         const suppliers = normalizeArray(product.pending_order_suppliers, "||");
         const quantities = normalizeArray(product.pending_order_quantity);
         const orderTypes = normalizeArray(product.pending_order_types || product.pending_order_type);
@@ -411,8 +424,12 @@ const VipProductTransactionReport = () => {
                 {ids.map((transactionId, index) => {
                     const orderType = orderTypes[index] || product.last_order_type;
                     const status = String(statuses[index] || "PENDING").toUpperCase();
+                    const sentTracking = isSentToSupplier(status)
+                        ? formatSupplierSentTracking(sendDates[index])
+                        : "";
                     const statusColors = {
                         PENDING: { color: "#8a4b08", backgroundColor: "#fff1d6" },
+                        SEND_TO_SUPPLIER: { color: "#2457a6", backgroundColor: "#eaf1ff" },
                         SENT_TO_SUPPLIER: { color: "#2457a6", backgroundColor: "#eaf1ff" },
                         APPROVED: { color: "#2457a6", backgroundColor: "#eaf1ff" },
                         COMPLETED: { color: "#216e46", backgroundColor: "#e9f8ef" },
@@ -439,6 +456,11 @@ const VipProductTransactionReport = () => {
                                     <span style={{ ...styles.pendingStatus, ...(statusColors[status] || {}) }}>
                                         {status.replaceAll("_", " ")}
                                     </span>
+                                    {sentTracking && (
+                                        <span style={styles.pendingAge}>
+                                            {sentTracking}
+                                        </span>
+                                    )}
                                 </span>
                                 <span style={styles.pendingQuantity}>
                                     <span style={styles.incomingLabel}>Incoming</span>

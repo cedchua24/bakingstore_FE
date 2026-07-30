@@ -241,10 +241,64 @@
 
 .stock-warning-table {
     width: 100%;
-    min-width: 880px;
+    min-width: 1180px;
+    table-layout: fixed;
     border-collapse: separate;
     border-spacing: 0;
 }
+
+/* Shared seven-column layout used by No Stock, Stock Supplier, and
+   Stock Supplier Warning. It preserves readable orders without allowing
+   the action column to cover adjacent content. */
+.stock-balanced-table {
+    min-width: 1190px;
+    table-layout: fixed;
+}
+
+.stock-balanced-table th:nth-child(1) { width: 190px; }
+.stock-balanced-table th:nth-child(2) { width: 130px; }
+.stock-balanced-table th:nth-child(3) { width: 130px; }
+.stock-balanced-table th:nth-child(4) { width: 145px; }
+.stock-balanced-table th:nth-child(5) { width: 175px; }
+.stock-balanced-table th:nth-child(6) { width: 320px; }
+.stock-balanced-table th:nth-child(7) { width: 100px; }
+
+.stock-balanced-table .stock-warning-orders-cell {
+    width: 320px;
+    min-width: 320px;
+}
+
+.stock-balanced-table .stock-warning-order {
+    grid-template-columns: 30px minmax(145px, 1fr) minmax(48px, auto);
+    gap: 8px;
+    padding: 9px;
+}
+
+.stock-balanced-table .stock-warning-order__icon {
+    width: 30px;
+    height: 30px;
+}
+
+.stock-balanced-table .stock-warning-order__details strong {
+    font-size: 0.74rem;
+}
+
+/* No Stock has Current Stock in column four and Last Stock Date in column
+   five, so it needs a page-specific map rather than the supplier layout. */
+.no-stock-table th:nth-child(1) { width: 190px; }
+.no-stock-table th:nth-child(2) { width: 125px; }
+.no-stock-table th:nth-child(3) { width: 135px; }
+.no-stock-table th:nth-child(4) { width: 175px; }
+.no-stock-table th:nth-child(5) { width: 145px; }
+.no-stock-table th:nth-child(6) { width: 310px; }
+.no-stock-table th:nth-child(7) { width: 130px; }
+
+.stock-warning-col-product { width: 220px; }
+.stock-warning-col-category { width: 135px; }
+.stock-warning-col-threshold { width: 135px; }
+.stock-warning-col-stock { width: 175px; }
+.stock-warning-col-orders { width: 415px; }
+.stock-warning-col-actions { width: 100px; }
 
 .stock-warning-table th {
     padding: 10px 11px;
@@ -326,6 +380,23 @@
     font-size: 0.76rem;
     font-weight: 650;
     white-space: nowrap;
+}
+
+.stock-warning-table .stock-warning-category-pill {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+    text-align: left;
+    white-space: normal;
+}
+
+.stock-balanced-table .stock-warning-category-pill {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.3;
+    text-align: left;
+    white-space: normal;
 }
 
 .stock-warning-supplier-pill {
@@ -429,7 +500,8 @@
 }
 
 .stock-warning-orders-cell {
-    min-width: 275px;
+    width: 415px;
+    min-width: 415px;
 }
 
 .stock-warning-orders {
@@ -474,10 +546,10 @@
 
 .stock-warning-order {
     display: grid;
-    grid-template-columns: 28px minmax(105px, 1fr) auto;
+    grid-template-columns: 34px minmax(210px, 1fr) minmax(64px, auto);
     align-items: center;
-    gap: 9px;
-    padding: 8px 9px;
+    gap: 11px;
+    padding: 11px 12px;
     color: inherit;
     background: #f8faff;
     border: 1px solid #e4eaf7;
@@ -496,8 +568,8 @@
 .stock-warning-order__icon {
     display: grid;
     place-items: center;
-    width: 28px;
-    height: 28px;
+    width: 34px;
+    height: 34px;
     color: var(--sw-blue);
     background: #e9f0ff;
     border-radius: 8px;
@@ -514,10 +586,10 @@
 }
 
 .stock-warning-order__details strong {
-    overflow: hidden;
-    font-size: 0.76rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    white-space: normal;
 }
 
 .stock-warning-order__details span,
@@ -541,10 +613,19 @@
     letter-spacing: 0.035em;
 }
 
+.stock-warning-order__details .stock-warning-order__status--send_to_supplier,
 .stock-warning-order__details .stock-warning-order__status--sent_to_supplier,
 .stock-warning-order__details .stock-warning-order__status--approved {
     color: #2457a6;
     background: #eaf1ff;
+}
+
+.stock-warning-order__details .stock-warning-order__sent-age {
+    margin-top: 3px;
+    color: #64748b;
+    font-size: 0.58rem;
+    font-weight: 650;
+    line-height: 1.2;
 }
 
 .stock-warning-order__details .stock-warning-order__status--completed {
@@ -560,6 +641,7 @@
 
 .stock-warning-order__quantity {
     align-items: flex-end;
+    min-width: 64px;
 }
 
 .stock-warning-order__quantity strong {
@@ -616,6 +698,38 @@
 .stock-warning-history-link:hover {
     color: #1847a8;
     background: #f4f7fd;
+}
+
+.stock-warning-table.no-stock-table th:last-child,
+.no-stock-table .stock-warning-actions {
+    width: 130px;
+    min-width: 130px;
+}
+
+.no-stock-table .stock-warning-action-stack {
+    align-items: stretch;
+}
+
+.no-stock-table .stock-warning-history-link {
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.stock-supplier-warning-table th:nth-child(6) {
+    width: 290px;
+}
+
+.stock-warning-table.stock-supplier-warning-table th:last-child,
+.stock-supplier-warning-table .stock-warning-actions {
+    width: 130px;
+    min-width: 130px;
+}
+
+.stock-supplier-warning-table .stock-warning-history-link {
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .stock-warning-action-stack {

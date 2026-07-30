@@ -29,6 +29,9 @@ class ExpenseTransactionService {
     getTotalExpense(data) {
         return axios.post("/api/expenseTransaction/getTotalExpense", data);
     }
+    getTotalExpenseWithFilters(data) {
+        return axios.post("/api/expenseTransaction/getTotalExpenseWithFilters", data);
+    }
     create(data) {
         return axios.post("/api/expenseTransaction", data);
     }
