@@ -23,6 +23,7 @@ import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import OrderSupplierTransactionService from '../OrderSupplierTransaction/OrderSupplierTransactionService';
 import SupplierService from '../Supplier/SupplierService.service';
@@ -44,6 +45,27 @@ const formatDateInput = (date) => {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
+
+const getDaysAgoLabel = (value) => {
+    if (!value) return '';
+
+    const sentDate = new Date(String(value).replace(' ', 'T'));
+    if (Number.isNaN(sentDate.getTime())) return '';
+
+    const today = new Date();
+    const sentDay = new Date(sentDate.getFullYear(), sentDate.getMonth(), sentDate.getDate());
+    const currentDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const daysAgo = Math.max(0, Math.floor((currentDay - sentDay) / 86400000));
+
+    if (daysAgo === 0) return 'Sent today';
+    return `${daysAgo} day${daysAgo === 1 ? '' : 's'} ago`;
+};
+
+const formatStatusLabel = (value, fallback = 'Pending') =>
+    String(value || fallback)
+        .toLowerCase()
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
 const getCurrentMonthFilters = () => {
     const now = new Date();
@@ -391,6 +413,10 @@ const ReportPurchaseOrderList = ({
                                         : [];
                                     const canDelete = canDeleteOrder(order);
                                     const deliveryCompleted = String(order.status).toUpperCase() === 'COMPLETED';
+                                    const supplierProcessingAge =
+                                        String(order.status).toUpperCase() === 'SEND_TO_SUPPLIER'
+                                            ? getDaysAgoLabel(order.send_date)
+                                            : '';
 
                                     return (
                                         <tr key={order.id}>
@@ -443,13 +469,13 @@ const ReportPurchaseOrderList = ({
                                                     <span>
                                                         <small>Approval</small>
                                                         <b className={statusClass(order.approval_status)}>
-                                                            {order.approval_status || 'PENDING'}
+                                                            {formatStatusLabel(order.approval_status)}
                                                         </b>
                                                     </span>
                                                     <span>
                                                         <small>Delivery</small>
                                                         <b className={statusClass(order.status)}>
-                                                            {order.status || 'PENDING'}
+                                                            {formatStatusLabel(order.status)}
                                                         </b>
                                                     </span>
                                                     <span>
@@ -457,7 +483,7 @@ const ReportPurchaseOrderList = ({
                                                         <b className={statusClass(
                                                             Number(order.payment_status) === 1 ? 'COMPLETED' : 'PENDING'
                                                         )}>
-                                                            {Number(order.payment_status) === 1 ? 'COMPLETED' : 'PENDING'}
+                                                            {Number(order.payment_status) === 1 ? 'Completed' : 'Pending'}
                                                         </b>
                                                     </span>
                                                 </div>
@@ -479,7 +505,18 @@ const ReportPurchaseOrderList = ({
                                                             </Tooltip>
                                                         )}
                                                     </span>
-                                                    <span><small>Sent</small>{formatDate(order.send_date)}</span>
+                                                    <span>
+                                                        <small>Sent</small>
+                                                        <span className="po-report-sent-date">
+                                                            {formatDate(order.send_date)}
+                                                            {supplierProcessingAge && (
+                                                                <em>
+                                                                    <ScheduleRoundedIcon />
+                                                                    {supplierProcessingAge}
+                                                                </em>
+                                                            )}
+                                                        </span>
+                                                    </span>
                                                     {deliveryCompleted && (
                                                         <span className="received">
                                                             <small>Received</small>

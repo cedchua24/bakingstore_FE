@@ -42,6 +42,7 @@ const initialProduct = {
 
 const EditProduct = () => {
   const { id } = useParams();
+  const isAdmin = Number(localStorage.getItem("role_as")) === 2;
   const [product, setProduct] = useState(initialProduct);
   const [brandList, setBrandList] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
@@ -74,6 +75,8 @@ const EditProduct = () => {
 
   const updateField = (event) => {
     const { name, value, type, checked } = event.target;
+    if (name === "price" && !isAdmin) return;
+
     setProduct((current) => ({
       ...current,
       [name]: type === "checkbox" ? (checked ? 1 : 0) : value,
@@ -208,8 +211,10 @@ const EditProduct = () => {
                         name="price"
                         value={product.price}
                         onChange={updateField}
+                        disabled={!isAdmin}
                       />
                     </div>
+                    {!isAdmin && <Form.Text>Only administrators can change this price.</Form.Text>}
                     {packageQuantity > 1 && (
                       <Form.Text>{currency(retailPrice)} per {product.variation || "unit"}</Form.Text>
                     )}

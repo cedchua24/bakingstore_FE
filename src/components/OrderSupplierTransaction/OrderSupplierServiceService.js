@@ -45,6 +45,9 @@ class OrderSupplierService {
     fetchOrderByProductId(id) {
         return axios.get(`/api/orderSuppliers/fetchOrderByProductId/${id}`);
     }
+    fetchPriceHistory(productId) {
+        return axios.get(`/api/orderSuppliers/priceHistory/${productId}`);
+    }
     sanctum() {
         return axios.get("/sanctum/csrf-cookie");
     }

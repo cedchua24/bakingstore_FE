@@ -552,26 +552,18 @@ const AddProductCustomerOrderTransaction = () => {
     }
 
     const fetchProductList = (checker) => {
-        if (checker != 0) {
-            MarkUpPriceService.fetchMarkUpShoporder()
-                .then(response => {
-                    console.log("product List: ", response.data)
-                    setProducts(response.data);
-                })
-                .catch(e => {
-                    console.log("error", e)
-                });
-        } else {
-            MarkUpPriceService.getAll()
-                .then(response => {
-                    console.log("product List: ", response.data)
-                    setProducts(response.data);
-                })
-                .catch(e => {
-                    console.log("error", e)
-                });
-        }
+        const productRequest = Number(checker) !== 0
+            ? MarkUpPriceService.fetchMarkUpShoporder()
+            : MarkUpPriceService.salesAvailability();
 
+        productRequest
+            .then(response => {
+                console.log("product List: ", response.data)
+                setProducts(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
     }
 
     const fetchShopOrderTransaction = async (id) => {
@@ -1012,7 +1004,9 @@ const AddProductCustomerOrderTransaction = () => {
                             <Autocomplete
                                 fullWidth
                                 options={orderedProducts}
-                                getOptionDisabled={(product) => availableProductStock(product) < 1}
+                                getOptionDisabled={(product) =>
+                                    Boolean(product.sale_blocked) || availableProductStock(product) < 1
+                                }
                                 value={value}
                                 id="product-search"
                                 onChange={handleInputChange}
@@ -1087,6 +1081,14 @@ const AddProductCustomerOrderTransaction = () => {
                                             <Typography variant="caption" color="text.secondary">
                                                 {productSizeLabel(product)}
                                             </Typography>
+                                            {product.sale_blocked && product.sale_block_reason && (
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{ display: 'block', color: 'error.main', lineHeight: 1.2 }}
+                                                >
+                                                    {product.sale_block_reason}
+                                                </Typography>
+                                            )}
                                         </Box>
                                         <Stack direction="row" spacing={0.75} alignItems="center" sx={{ flexShrink: 0 }}>
                                             <Chip

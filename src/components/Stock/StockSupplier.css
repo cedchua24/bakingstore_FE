@@ -7,7 +7,33 @@
 }
 
 .stock-supplier-table {
-    min-width: 1080px;
+    min-width: 1190px;
+    table-layout: fixed;
+}
+
+.stock-supplier-table .stock-warning-supplier-pill {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.25;
+    text-align: left;
+    white-space: normal;
+}
+
+.stock-supplier-table th:nth-child(6) {
+    width: 290px;
+}
+
+.stock-warning-table.stock-supplier-table th:last-child,
+.stock-supplier-table .stock-warning-actions {
+    width: 130px;
+    min-width: 130px;
+}
+
+.stock-supplier-table .stock-warning-history-link {
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .stock-supplier-price {

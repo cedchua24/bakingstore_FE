@@ -15,6 +15,7 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
+import { formatSupplierSentTracking, isSentToSupplier } from './supplierOrderTracking';
 
 import './StockWarning.css';
 
@@ -149,7 +150,7 @@ const StockSupplierWarning = () => {
                 </div>
 
                 <div className="table-responsive">
-                    <table className="stock-warning-table">
+                    <table className="stock-warning-table stock-balanced-table stock-supplier-warning-table">
                         <thead>
                             <tr>
                                 <th>Product</th>
@@ -158,7 +159,7 @@ const StockSupplierWarning = () => {
                                 <th>Warning level</th>
                                 <th>Current stock</th>
                                 <th>Pending supplier orders</th>
-                                <th aria-label="Actions"></th>
+                                <th>History</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -215,6 +216,11 @@ const StockSupplierWarning = () => {
                                                             <span className={`stock-warning-order__status stock-warning-order__status--${String(order.status || 'PENDING').toLowerCase()}`}>
                                                                 {String(order.status || 'PENDING').replaceAll('_', ' ')}
                                                             </span>
+                                                            {isSentToSupplier(order.status) && order.send_date && (
+                                                                <span className="stock-warning-order__sent-age">
+                                                                    {formatSupplierSentTracking(order.send_date)}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                         <div className="stock-warning-order__quantity">
                                                             <span>Incoming</span><strong>{order.quantity}</strong>

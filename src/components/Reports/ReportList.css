@@ -144,6 +144,46 @@
     width: 100%;
 }
 
+.profit-report__expense-types {
+    grid-column: 1 / -1;
+    padding-top: 18px;
+    border-top: 1px solid var(--report-border);
+}
+
+.profit-report__expense-types-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.profit-report__expense-types-heading strong {
+    font-size: 0.9rem;
+}
+
+.profit-report__expense-types-heading span {
+    color: var(--report-muted);
+    font-size: 0.78rem;
+}
+
+.profit-report__expense-type-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+}
+
+.profit-report__expense-type-options .form-check {
+    min-width: 180px;
+    margin: 0;
+}
+
+.profit-report__expense-type-options .form-check-label {
+    color: #4d5569;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
 @media (max-width: 1180px) {
     .profit-report__metrics {
         grid-template-columns: repeat(2, minmax(0, 1fr));

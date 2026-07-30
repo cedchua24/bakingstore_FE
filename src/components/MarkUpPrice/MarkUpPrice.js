@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import MarkUpPriceService from "./MarkUpPriceService.service";
-import ProductService from "../Product/ProductService.service";
 import MarkUpPriceList from "./MarkUpPriceList";
 import AddMarkUpPrice from "./AddMarkUpPrice";
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
@@ -20,11 +19,22 @@ const MarkUpPrice = () => {
             .catch(error => console.log("error", error));
     };
 
-    useEffect(() => {
-        fetchMarkUpPriceList();
-        ProductService.getAll()
-            .then(response => setProducts(response.data))
+    const fetchProductsWithoutMarkup = () => {
+        MarkUpPriceService.productsWithoutMarkup()
+            .then(response => {
+                const payload = response.data;
+                setProducts(Array.isArray(payload) ? payload : (payload?.data || []));
+            })
             .catch(error => console.log("error", error));
+    };
+
+    const refreshPricing = () => {
+        fetchMarkUpPriceList();
+        fetchProductsWithoutMarkup();
+    };
+
+    useEffect(() => {
+        refreshPricing();
     }, []);
 
     return (
@@ -41,7 +51,7 @@ const MarkUpPrice = () => {
                     <div><strong>{productCount}</strong><span>Grouped products · {markupPriceList.length} prices</span></div>
                 </div>
             </section>
-            <AddMarkUpPrice products={products} onSaved={fetchMarkUpPriceList} />
+            <AddMarkUpPrice products={products} onSaved={refreshPricing} />
             <MarkUpPriceList markupPriceList={markupPriceList} onUpdated={fetchMarkUpPriceList} />
         </div>
     );

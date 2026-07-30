@@ -1,9 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import LinearProgress from "@mui/material/LinearProgress";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
 import ExpenseTransactionService from "../ExpensesV2/ExpenseTransactionService";
+import ExpenseTypeV2Service from "../ExpensesV2/ExpensesTypeV2Service";
 import ReportBar from "./ReportBar";
 import "./ReportSales.css";
 import "./ReportList.css";
@@ -15,6 +16,9 @@ const ReportList = () => {
     const [profitTarget, setProfitTarget] = useState("");
     const [formErrors, setFormErrors] = useState({});
     const [requestError, setRequestError] = useState("");
+    const [expenseTypes, setExpenseTypes] = useState([]);
+    const [selectedExpenseTypeIds, setSelectedExpenseTypeIds] = useState([]);
+    const [expenseTypesLoading, setExpenseTypesLoading] = useState(false);
     const [customerOrderDate, setCustomerOrderDate] = useState({
         dateFrom: "",
         dateTo: "",
@@ -52,6 +56,28 @@ const ReportList = () => {
             online: paymentTotal ? (totalOnline / paymentTotal) * 100 : 0,
         };
     }, [totalCash, totalOnline]);
+
+    useEffect(() => {
+        setExpenseTypesLoading(true);
+        ExpenseTypeV2Service.getAll()
+            .then((response) => {
+                const types = Array.isArray(response.data)
+                    ? response.data
+                    : response.data?.data || [];
+
+                setExpenseTypes(types);
+                setSelectedExpenseTypeIds(
+                    types
+                        .filter((type) => Number(type.is_profit) === 1)
+                        .map((type) => Number(type.id))
+                );
+            })
+            .catch((error) => {
+                console.error("Unable to load expense types", error);
+                setRequestError("Expense types could not be loaded. Please refresh and try again.");
+            })
+            .finally(() => setExpenseTypesLoading(false));
+    }, []);
 
     const profitForecast = useMemo(() => {
         const referenceDate = customerOrderDate.dateTo
@@ -139,6 +165,16 @@ const ReportList = () => {
         }));
     };
 
+    const onChangeExpenseType = (event) => {
+        const expenseTypeId = Number(event.target.value);
+
+        setSelectedExpenseTypeIds((current) =>
+            event.target.checked
+                ? [...new Set([...current, expenseTypeId])]
+                : current.filter((id) => id !== expenseTypeId)
+        );
+    };
+
     const validate = () => {
         const errors = {};
 
@@ -174,17 +210,17 @@ const ReportList = () => {
                 data: response.data?.data || [],
             };
 
-            if (Number(reportData.total_expenses || 0) === 0) {
-                const expenseResponse = await ExpenseTransactionService.getTotalExpense({
+            const expenseResponse =
+                await ExpenseTransactionService.getTotalExpenseWithFilters({
                     ...customerOrderDate,
                     approval_status: "APPROVED",
+                    expense_transaction_ids: selectedExpenseTypeIds,
                 });
 
-                reportData = {
-                    ...reportData,
-                    total_expenses: Number(expenseResponse.data.total_expense) || 0,
-                };
-            }
+            reportData = {
+                ...reportData,
+                total_expenses: Number(expenseResponse.data.total_expense) || 0,
+            };
 
             setShopOrderTransaction(reportData);
             setHasGenerated(true);
@@ -252,6 +288,30 @@ const ReportList = () => {
                         {submitLoadingAdd ? "Generating…" : "Generate report"}
                     </Button>
                 </Form>
+                <div className="profit-report__expense-types">
+                    <div className="profit-report__expense-types-heading">
+                        <strong>Included expense types</strong>
+                        <span>
+                            {expenseTypesLoading
+                                ? "Loading expense types..."
+                                : `${selectedExpenseTypeIds.length} selected`}
+                        </span>
+                    </div>
+                    <div className="profit-report__expense-type-options">
+                        {expenseTypes.map((expenseType) => (
+                            <Form.Check
+                                key={expenseType.id}
+                                id={`report-expense-type-${expenseType.id}`}
+                                type="checkbox"
+                                label={expenseType.expense_type}
+                                value={expenseType.id}
+                                checked={selectedExpenseTypeIds.includes(Number(expenseType.id))}
+                                onChange={onChangeExpenseType}
+                                disabled={expenseTypesLoading}
+                            />
+                        ))}
+                    </div>
+                </div>
                 {formErrors.dateRange && (
                     <p className="sales-report__error">{formErrors.dateRange}</p>
                 )}

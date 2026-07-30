@@ -141,7 +141,7 @@ const NavBar = () => {
                         <NavDropdown title="MarkUpPrice" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/markUpPrice">Add MarkUpPrice</NavDropdown.Item>
                             <NavDropdown.Item href="/markUpPriceListV2">MarkUpPrice List</NavDropdown.Item>
-                            <NavDropdown.Item href="/markUpNewPrice">Mark Up New Price</NavDropdown.Item>
+                            <NavDropdown.Item href="/markUpNewPriceV2">Supplier Price Changes</NavDropdown.Item>
 
                         </NavDropdown>
                     </Nav>
