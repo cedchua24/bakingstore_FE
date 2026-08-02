@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button, Form } from 'react-bootstrap';
 import LinearProgress from '@mui/material/LinearProgress';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
 import VipCustomerTransactionService from "./VipCustomerTransactionService";
 import VipCustomerService from "./VipCustomerService";
 
@@ -276,6 +279,12 @@ const styles = {
     actionButton: {
         whiteSpace: 'nowrap',
     },
+    viewActions: {
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', whiteSpace: 'nowrap',
+    },
+    iconButton: {
+        width: '34px', height: '34px', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    },
 }
 
 const VipTransaction = () => {
@@ -517,6 +526,16 @@ const VipTransaction = () => {
         return "/customers/customerProductList/" + customerId + "?" + params.toString();
     }
 
+    const buildCustomerProductSalesLink = (customerId, customerName) => {
+        var reportDate = dateFilter.dateTo || dateFilter.dateFrom || formatDateParam(new Date());
+        var params = new URLSearchParams({
+            customer_id: customerId,
+            month: reportDate.slice(0, 7),
+            customer_name: customerName || '',
+        });
+        return "/productMonthlySalesHistory?" + params.toString();
+    }
+
     return (
         <div style={styles.page}>
 
@@ -555,7 +574,12 @@ const VipTransaction = () => {
             </div>
 
             <div style={{ ...styles.analysisPanel, marginTop: '0', marginBottom: '16px' }}>
-                <h5 style={styles.analysisTitle}>Sales Analysis</h5>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", marginBottom: "10px" }}>
+                    <h5 style={{ ...styles.analysisTitle, marginBottom: 0 }}>Sales Analysis</h5>
+                    <Link to="/productMonthlySalesHistory">
+                        <Button variant="primary" size="sm">Products Sold History</Button>
+                    </Link>
+                </div>
                 <div style={styles.collectedPaymentsHero}>
                     <div>
                         <span style={styles.keyMetricBadge}>KEY METRIC</span>
@@ -607,8 +631,7 @@ const VipTransaction = () => {
                             <th rowSpan="2" style={styles.groupHeader}>Completed Transaction</th>
                             <th rowSpan="2" style={styles.groupHeader}>All Payments Collected</th>
                             <th rowSpan="2" style={styles.groupHeader}>Note</th>
-                            <th rowSpan="2" style={styles.groupHeader}>Transaction</th>
-                            <th rowSpan="2" style={styles.groupHeader}>Products</th>
+                            <th rowSpan="2" style={styles.groupHeader}>View</th>
                         </tr>
                         <tr>
                             <th style={styles.subHeader}>Dates</th>
@@ -649,27 +672,22 @@ const VipTransaction = () => {
                                         </Link>
                                     </td>
                                     <td>
-                                        {vipTransaction.customer_id &&
-                                            <Link variant="primary" to={buildCustomerTransactionLink(vipTransaction.customer_id)}>
-                                                <Button variant="primary" size="sm" style={styles.actionButton}>
-                                                    View Transaction
-                                                </Button>
+                                        {vipTransaction.customer_id && <div style={styles.viewActions}>
+                                            <Link to={buildCustomerTransactionLink(vipTransaction.customer_id)} title="View transactions" aria-label="View transactions">
+                                                <Button variant="primary" size="sm" style={styles.iconButton}><ReceiptLongOutlinedIcon fontSize="small" /></Button>
                                             </Link>
-                                        }
-                                    </td>
-                                    <td>
-                                        {vipTransaction.customer_id &&
-                                            <Link variant="primary" to={buildCustomerProductLink(vipTransaction.customer_id)}>
-                                                <Button variant="primary" size="sm" style={styles.actionButton}>
-                                                    View Products
-                                                </Button>
+                                            <Link to={buildCustomerProductLink(vipTransaction.customer_id)} title="View products" aria-label="View products">
+                                                <Button variant="outline-primary" size="sm" style={styles.iconButton}><Inventory2OutlinedIcon fontSize="small" /></Button>
                                             </Link>
-                                        }
+                                            <Link to={buildCustomerProductSalesLink(vipTransaction.customer_id, vipTransaction.customer_name)} title="View product sales history" aria-label="View product sales history">
+                                                <Button variant="success" size="sm" style={styles.iconButton}><QueryStatsOutlinedIcon fontSize="small" /></Button>
+                                            </Link>
+                                        </div>}
                                     </td>
                                 </tr>
                             )) : (
                                 <tr>
-                                    <td colSpan="12" style={styles.emptyState}>No VIP customer transactions found.</td>
+                                    <td colSpan="11" style={styles.emptyState}>No VIP customer transactions found.</td>
                                 </tr>
                             )
                         }
@@ -686,17 +704,17 @@ const VipTransaction = () => {
                                     getEstimatedOpenBalance()
                                 )}
                             </td>
-                            <td colSpan="7"></td>
+                            <td colSpan="6"></td>
                         </tr>
                         <tr style={styles.grandTotalRow}>
                             <td colSpan="7" style={styles.footerLabel}>Completed Transaction Value</td>
                             <td style={styles.footerValue}>{formatTotalOrderPrice(getGrandTotal())}</td>
-                            <td colSpan="4"></td>
+                            <td colSpan="3"></td>
                         </tr>
                         <tr style={styles.paymentsTotalRow}>
                             <td colSpan="8" style={styles.footerLabel}>All Payments Collected</td>
                             <td style={styles.footerValue}>{formatTotalOrderPrice(getTotalCompletedPayment())}</td>
-                            <td colSpan="3"></td>
+                            <td colSpan="2"></td>
                         </tr>
                     </tfoot>
                 </table>

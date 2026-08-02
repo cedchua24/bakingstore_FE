@@ -4,6 +4,8 @@ import { Link, useParams } from "react-router-dom";
 import Alert from "@mui/material/Alert";
 import LinearProgress from "@mui/material/LinearProgress";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
+import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
+import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import VipProductService from "./VipProductService";
 import VipProductTransactionService from "./VipProductTransactionService";
 import {
@@ -396,10 +398,12 @@ const VipProductTransactionReport = () => {
         const suppliers = normalizeArray(product.pending_order_suppliers, "||");
         const quantities = normalizeArray(product.pending_order_quantity);
         const orderTypes = normalizeArray(product.pending_order_types || product.pending_order_type);
-        const totalQuantity = quantities.reduce(
-            (total, quantity) => total + Number(quantity || 0),
-            0
-        );
+        const incomingOrderCount = statuses.filter(status => String(status || "").toUpperCase() === "SEND_TO_SUPPLIER").length;
+        const totalIncomingQuantity = quantities.reduce((total, quantity, index) =>
+            String(statuses[index] || "").toUpperCase() === "SEND_TO_SUPPLIER"
+                ? total + Number(quantity || 0)
+                : total,
+        0);
 
         if (!ids.length && !dates.length && !suppliers.length) {
             return (
@@ -412,11 +416,11 @@ const VipProductTransactionReport = () => {
 
         return (
             <div style={styles.pendingList}>
-                {ids.length > 1 &&
+                {incomingOrderCount > 1 &&
                     <div style={styles.pendingTotal}>
                         <span>Total Incoming</span>
                         <span>
-                            {formatNumber(totalQuantity)}{" "}
+                            {formatNumber(totalIncomingQuantity)}{" "}
                             {getSupplierOrderUnit(product, orderTypes[0] || product.last_order_type)}
                         </span>
                     </div>
@@ -424,6 +428,7 @@ const VipProductTransactionReport = () => {
                 {ids.map((transactionId, index) => {
                     const orderType = orderTypes[index] || product.last_order_type;
                     const status = String(statuses[index] || "PENDING").toUpperCase();
+                    const isIncoming = status === "SEND_TO_SUPPLIER";
                     const sentTracking = isSentToSupplier(status)
                         ? formatSupplierSentTracking(sendDates[index])
                         : "";
@@ -463,7 +468,7 @@ const VipProductTransactionReport = () => {
                                     )}
                                 </span>
                                 <span style={styles.pendingQuantity}>
-                                    <span style={styles.incomingLabel}>Incoming</span>
+                                    <span style={styles.incomingLabel}>{isIncoming ? "Incoming" : ""}</span>
                                     <span style={styles.incomingValue}>
                                         {formatNumber(quantities[index])}{" "}
                                         {getSupplierOrderUnit(product, orderType)}
@@ -534,8 +539,8 @@ const VipProductTransactionReport = () => {
                         fontSize: "13px",
                         lineHeight: 1.35,
                         tableLayout: "fixed",
-                        minWidth: "1250px",
-                        width: "1250px",
+                        minWidth: "1160px",
+                        width: "1160px",
                     }}
                 >
                     <thead>
@@ -546,8 +551,7 @@ const VipProductTransactionReport = () => {
                             <th colSpan="2" style={{ ...styles.groupHeader, width: "170px" }}>Sold to Customers</th>
                             <th colSpan="3" style={{ ...styles.groupHeader, width: "300px" }}>Last Supplier Order</th>
                             <th rowSpan="2" style={{ ...styles.groupHeader, width: "250px" }}>Pending Supplier Orders</th>
-                            <th rowSpan="2" style={{ ...styles.groupHeader, width: "90px" }}>Note</th>
-                            <th rowSpan="2" style={{ ...styles.groupHeader, width: "90px" }}>OOS History</th>
+                            <th rowSpan="2" style={{ ...styles.groupHeader, width: "82px" }}>Actions</th>
                         </tr>
                         <tr>
                             <th style={styles.subHeader}>Current Stock</th>
@@ -628,24 +632,22 @@ const VipProductTransactionReport = () => {
                                     </td>
                                     <td>{renderPendingOrders(product)}</td>
                                     <td>
-                                        {product.vip_product_transaction_id
-                                            ? <Link to={`/vipProductNote/${product.vip_product_transaction_id}`}>
-                                                <Button variant="info" size="sm">Add Note</Button>
+                                        <div className="d-flex align-items-center justify-content-center gap-1">
+                                            {product.vip_product_transaction_id
+                                                ? <Link to={`/vipProductNote/${product.vip_product_transaction_id}`} title="Add or view note" aria-label="Add or view note">
+                                                    <Button variant="info" size="sm" style={{ width: 32, height: 32, padding: 0 }}><EditNoteOutlinedIcon fontSize="small" /></Button>
+                                                </Link>
+                                                : <span style={styles.muted}>-</span>}
+                                            <Link to={`/viewOutOfStockHistory/${product.id || product.product_id}`} title="View out-of-stock history" aria-label="View out-of-stock history">
+                                                <Button variant="outline-danger" size="sm" style={{ width: 32, height: 32, padding: 0 }}><HistoryOutlinedIcon fontSize="small" /></Button>
                                             </Link>
-                                            : <span style={styles.muted}>-</span>}
-                                    </td>
-                                    <td>
-                                        <Link to={`/viewOutOfStockHistory/${product.id || product.product_id}`}>
-                                            <Button variant="outline-danger" size="sm">
-                                                View
-                                            </Button>
-                                        </Link>
+                                        </div>
                                     </td>
                                 </tr>
                             );
                         }) : (
                             <tr>
-                                <td colSpan="12" style={styles.empty}>No VIP Product transactions found.</td>
+                                <td colSpan="11" style={styles.empty}>No VIP Product transactions found.</td>
                             </tr>
                         )}
                     </tbody>
