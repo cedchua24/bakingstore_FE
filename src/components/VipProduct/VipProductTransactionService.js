@@ -22,6 +22,12 @@ class VipProductTransactionService {
         });
     }
 
+    fetchVipProductMonthlySold(id, month, filters = {}) {
+        return axios.get(`/api/vipProductTransaction/fetchVIPProductMonthlySold/${id}`, {
+            params: { ...(month ? { month } : {}), ...filters },
+        });
+    }
+
     create(data) {
         return axios.post("/api/vipProductTransaction", data);
     }

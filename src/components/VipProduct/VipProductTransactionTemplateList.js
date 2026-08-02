@@ -58,9 +58,14 @@ const VipProductTransactionTemplateList = () => {
                                         : <CloseIcon style={{ color: "red" }} />}
                                 </td>
                                 <td>
-                                    <Link to={`/vipProductTransactionView/${template.id}`}>
-                                        <Button variant="primary">View Transaction</Button>
-                                    </Link>
+                                    <div className="d-flex flex-wrap gap-2">
+                                        <Link to={`/vipProductTransactionView/${template.id}`}>
+                                            <Button variant="primary">View Transaction</Button>
+                                        </Link>
+                                        <Link to={`/vipProductSoldHistory/${template.id}`}>
+                                            <Button variant="info">Product Sold History</Button>
+                                        </Link>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

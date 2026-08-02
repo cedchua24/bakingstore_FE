@@ -344,7 +344,7 @@ const StockList = () => {
                                                         <div className="stock-warning-orders__summary">
                                                             <span>{currentProduct.pending_orders.length} pending orders</span>
                                                             <div>
-                                                                <small>Total incoming</small>
+                                                                <small>Total quantity</small>
                                                                 <strong>{sumPendingOrderQuantities(currentProduct.pending_orders)}</strong>
                                                             </div>
                                                         </div>
@@ -369,7 +369,7 @@ const StockList = () => {
                                                                 )}
                                                             </div>
                                                             <div className="stock-warning-order__quantity">
-                                                                <span>Incoming</span><strong>{order.quantity}</strong>
+                                                                <span>{String(order.status || '').toUpperCase() === 'SEND_TO_SUPPLIER' ? 'Incoming' : ''}</span><strong>{order.quantity}</strong>
                                                             </div>
                                                         </Link>
                                                     ))}
