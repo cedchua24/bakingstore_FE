@@ -505,6 +505,8 @@ const PaymentOrder = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    const dateOnly = (value) => value ? String(value).split('T')[0].split(' ')[0] : '';
+
     const isFullyPaid = Number(orderSupplierTransaction.payment_status) === 1;
 
 
@@ -679,6 +681,7 @@ const PaymentOrder = () => {
                         <TableRow>
                             <TableCell>Payment account</TableCell>
                             <TableCell>Term</TableCell>
+                            <TableCell>Payment date</TableCell>
                             <TableCell align="right">Amount</TableCell>
                             <TableCell align="right" colSpan={2}>Actions</TableCell>
                         </TableRow>
@@ -686,7 +689,7 @@ const PaymentOrder = () => {
                     <TableBody>
                         {modeOfPaymentDTO.data.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={5}>
+                                <TableCell colSpan={6}>
                                     <div className="po-empty-state">
                                         <PaymentsOutlinedIcon />
                                         <strong>No payments recorded</strong>
@@ -695,7 +698,14 @@ const PaymentOrder = () => {
                                 </TableCell>
                             </TableRow>
                         )}
-                        {modeOfPaymentDTO.data.map((row) => (
+                        {modeOfPaymentDTO.data.map((row) => {
+                            const paymentDate = row.payment_date || row.date;
+                            const isDifferentFromOrderDate = Boolean(
+                                paymentDate && orderSupplierTransaction.order_date
+                                && dateOnly(paymentDate) !== dateOnly(orderSupplierTransaction.order_date)
+                            );
+
+                            return (
                             <TableRow key={row.id} hover>
                                 <TableCell>
                                     <strong>
@@ -705,6 +715,9 @@ const PaymentOrder = () => {
                                     </strong>
                                 </TableCell>
                                 <TableCell>{row.payment_term || '—'}</TableCell>
+                                <TableCell className={isDifferentFromOrderDate ? 'po-payment-date-mismatch' : undefined}>
+                                    {paymentDate || '—'}
+                                </TableCell>
                                 <TableCell align="right"><strong>{numberFormat(row.amount || 0)}</strong></TableCell>
                                 <TableCell align="right">
                                     <Tooltip title={isFullyPaid ? "Fully paid orders cannot be updated" : "Edit payment"}>
@@ -726,10 +739,10 @@ const PaymentOrder = () => {
                                 </TableCell>
 
                             </TableRow>
-
-                        ))}
+                            );
+                        })}
                         <TableRow className="po-grand-total-row">
-                            <TableCell colSpan={2}>Total paid</TableCell>
+                            <TableCell colSpan={3}>Total paid</TableCell>
                             <TableCell align="right">{numberFormat(modeOfPaymentDTO.total_payment || 0)}</TableCell>
                             <TableCell colSpan={2}></TableCell>
                         </TableRow>

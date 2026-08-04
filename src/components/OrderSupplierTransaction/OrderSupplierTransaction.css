@@ -485,6 +485,10 @@
     text-transform: uppercase;
 }
 
+.po-payment-history .po-payment-date-mismatch {
+    color: #b85f1c;
+}
+
 .po-empty-state {
     display: flex;
     align-items: center;
