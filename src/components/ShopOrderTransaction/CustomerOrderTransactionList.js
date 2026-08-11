@@ -69,6 +69,9 @@ const CustomerOrderTransactionList = () => {
 
 
     const [role, setRole] = useState(localStorage.getItem('role_as'));
+    const [showFinancialAmounts, setShowFinancialAmounts] = useState(
+        Number(localStorage.getItem('role_as')) !== 1
+    );
 
 
     const [expenses, setExpenses] = useState({
@@ -841,6 +844,15 @@ const CustomerOrderTransactionList = () => {
                     <p className="customer-report-date">{moment(customerOrderDate.date).format("MMMM D, YYYY")}</p>
                 </div>
 
+                <label className={`customer-report-amount-toggle${Number(role) === 1 ? " is-secret" : ""}`}>
+                    <Checkbox
+                        checked={showFinancialAmounts}
+                        onChange={(event) => setShowFinancialAmounts(event.target.checked)}
+                        inputProps={{ "aria-label": "Show financial amounts" }}
+                    />
+                    <span>{showFinancialAmounts ? "Financial report visible" : "Show financial report"}</span>
+                </label>
+
                 <Form className="customer-report-filter">
                     {formErrors.date && <p className="customer-report-error">{formErrors.date}</p>}
                     <Form.Group controlId="customerOrderReportDate">
@@ -885,19 +897,23 @@ const CustomerOrderTransactionList = () => {
                     <span>Transactions</span>
                     <strong>{shopOrderTransaction.total_count || 0}</strong>
                 </article>
-                <article className="customer-report-kpi">
-                    <span>Completed Sales</span>
-                    <strong>{money(shopOrderTransaction.total_sales_completed)}</strong>
-                </article>
-                <article className="customer-report-kpi">
-                    <span>Paid Today</span>
-                    <strong>{money(totalPaidToday)}</strong>
-                    <small>{money(totalCashToday)} cash / {money(totalOnlineToday)} online</small>
-                </article>
+                {showFinancialAmounts && (
+                    <>
+                        <article className="customer-report-kpi">
+                            <span>Completed Sales</span>
+                            <strong>{money(shopOrderTransaction.total_sales_completed)}</strong>
+                        </article>
+                        <article className="customer-report-kpi">
+                            <span>Paid Today</span>
+                            <strong>{money(totalPaidToday)}</strong>
+                            <small>{money(totalCashToday)} cash / {money(totalOnlineToday)} online</small>
+                        </article>
+                    </>
+                )}
                 <article className="customer-report-kpi customer-report-photo-card">
                     <img src="/mapi_blossom.jpg" alt="Mapi Blossom" />
                 </article>
-                {role == 2 && (
+                {showFinancialAmounts && role == 2 && (
                     <article className="customer-report-kpi customer-report-kpi-profit">
                         <span>Total Profit</span>
                         <strong>{money(shopOrderTransaction.total_profit)}</strong>
@@ -905,7 +921,7 @@ const CustomerOrderTransactionList = () => {
                 )}
             </section>
 
-            <section className="customer-report-summary-grid">
+            {showFinancialAmounts && <section className="customer-report-summary-grid">
                 <article className="customer-report-panel">
                     <div className="customer-report-panel-header">
                         <div>
@@ -1006,7 +1022,7 @@ const CustomerOrderTransactionList = () => {
                         {role == 2 && <div className="customer-report-net"><span>Net Profit</span><strong>{money(netProfit)}</strong></div>}
                     </div>
                 </article>
-            </section>
+            </section>}
 
             <div className="customer-report-customer-grid">
                 <section className="customer-report-table-card customer-report-new-customers">

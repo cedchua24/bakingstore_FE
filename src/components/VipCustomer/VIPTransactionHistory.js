@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import LinearProgress from "@mui/material/LinearProgress";
-import { useParams } from "react-router-dom";
+import Box from "@mui/material/Box";
+import { BarChart } from "@mui/x-charts/BarChart";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import { useNavigate, useParams } from "react-router-dom";
 import VipCustomerService from "./VipCustomerService";
 import VipCustomerTransactionService from "./VipCustomerTransactionService";
 
@@ -66,6 +69,10 @@ const styles = {
     label: { color: "#6c757d", fontSize: 13, marginBottom: 5 },
     value: { fontSize: 23, fontWeight: 700, margin: 0 },
     tableCard: { background: "white", border: "1px solid #e5e7eb", borderRadius: 9, overflow: "hidden" },
+    chartCard: { background: "white", border: "1px solid #e5e7eb", borderRadius: 9, padding: 18, overflow: "hidden" },
+    chartHeader: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 8 },
+    chartInsights: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10, margin: "16px 0 4px" },
+    chartInsight: { borderRadius: 9, padding: "12px 14px", background: "#f8fafc", border: "1px solid #e2e8f0" },
     tableHeader: { backgroundColor: "#212529", color: "#ffffff" },
     tableHeaderCell: { backgroundColor: "#212529", color: "#ffffff", borderColor: "#495057" },
     totalRow: { background: "#dce5ec" },
@@ -78,6 +85,7 @@ const styles = {
 
 const VIPTransactionHistory = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [selectedMonth, setSelectedMonth] = useState(currentMonth());
     const [report, setReport] = useState(null);
     const [template, setTemplate] = useState({});
@@ -85,6 +93,7 @@ const VIPTransactionHistory = () => {
     const [error, setError] = useState("");
     const [monthlyQuota, setMonthlyQuota] = useState("");
     const [viewMode, setViewMode] = useState("sales");
+    const [reportView, setReportView] = useState("table");
     const [sortBy, setSortBy] = useState("sales");
 
     const loadReport = useCallback(month => {
@@ -158,7 +167,32 @@ const VIPTransactionHistory = () => {
     const quotaPace = getPace(quotaAmount);
     const showSales = viewMode === "sales" || viewMode === "both";
     const showProfit = viewMode === "profit" || viewMode === "both";
-
+    const chartData = report ? [
+        ...(report.previous_months || []).map(month => ({
+            month: month.label,
+            sales: Number(month.paid_amount || 0),
+            profit: Number(month.profit_amount || 0),
+        })).reverse(),
+        {
+            month: report.report_month?.label || "Selected month",
+            sales: Number(report.current_month_paid || 0),
+            profit: Number(report.current_month_profit || 0),
+        },
+    ] : [];
+    const chartSeries = [
+        ...(showSales ? [{ dataKey: "sales", label: "Paid sales", color: "#2563eb", valueFormatter: money }] : []),
+        ...(showProfit ? [{ dataKey: "profit", label: "Profit", color: "#f97316", valueFormatter: money }] : []),
+    ];
+    const highestSalesMonth = chartData.length
+        ? chartData.reduce((highest, month) => month.sales > highest.sales ? month : highest)
+        : null;
+    const highestProfitMonth = chartData.length
+        ? chartData.reduce((highest, month) => month.profit > highest.profit ? month : highest)
+        : null;
+    const highlightedMonth = showProfit && !showSales ? highestProfitMonth : highestSalesMonth;
+    const graphMonthColors = chartData.map(month =>
+        month.month === highlightedMonth?.month ? "#dc2626" : "#94a3b8"
+    );
     const renderPaceDetails = pace => (
         <div style={styles.metricGrid}>
             <div style={styles.metricBox}>
@@ -264,6 +298,20 @@ const VIPTransactionHistory = () => {
             </div>
 
             <div className="d-flex justify-content-center align-items-end gap-3 flex-wrap mb-3">
+                <div className="btn-group" role="group" aria-label="Report display">
+                    <Button
+                        variant={reportView === "table" ? "dark" : "outline-dark"}
+                        onClick={() => setReportView("table")}
+                    >
+                        Table
+                    </Button>
+                    <Button
+                        variant={reportView === "graph" ? "dark" : "outline-dark"}
+                        onClick={() => setReportView("graph")}
+                    >
+                        Graph
+                    </Button>
+                </div>
                 <div className="btn-group" role="group" aria-label="Transaction data view">
                     {[{ key: "sales", label: "Sales" }, { key: "profit", label: "Profit" }, { key: "both", label: "Sales & Profit" }].map(option => (
                         <Button
@@ -383,7 +431,65 @@ const VIPTransactionHistory = () => {
                     </>}
                 </div>
 
-                <div style={styles.tableCard} className="table-responsive">
+                {reportView === "graph" ? <div style={styles.chartCard}>
+                    <div style={styles.chartHeader}>
+                        <div>
+                            <h4 className="fw-bold mb-1">Monthly performance report</h4>
+                            <p className="text-muted mb-0">Compare the selected month with the three previous months.</p>
+                        </div>
+                        <span className="badge bg-light text-dark border">{report.report_month?.label}</span>
+                    </div>
+                    <div style={styles.chartInsights}>
+                        {showSales && highestSalesMonth && <div style={{ ...styles.chartInsight, borderLeft: "5px solid #dc2626", background: "#fff7f7" }}>
+                            <span style={{ ...styles.metricLabel, color: "#dc2626" }}>TOP MONTH · HIGHEST PAID SALES</span>
+                            <strong style={{ display: "block", fontSize: 18 }}>{highestSalesMonth.month}</strong>
+                            <span style={{ color: "#dc2626", fontSize: 17, fontWeight: 800 }}>{money(highestSalesMonth.sales)}</span>
+                        </div>}
+                        {showProfit && highestProfitMonth && <div style={{ ...styles.chartInsight, borderLeft: "5px solid #f97316", background: "#fffaf5" }}>
+                            <span style={{ ...styles.metricLabel, color: "#c2410c" }}>TOP MONTH · HIGHEST PROFIT</span>
+                            <strong style={{ display: "block", fontSize: 18 }}>{highestProfitMonth.month}</strong>
+                            <span style={{ color: "#c2410c", fontSize: 17, fontWeight: 800 }}>{money(highestProfitMonth.profit)}</span>
+                        </div>}
+                    </div>
+                    {chartData.length > 0 ? <div style={{ overflowX: "auto" }}>
+                        <Box sx={{ minWidth: 680, height: 440 }}>
+                            <BarChart
+                                dataset={chartData}
+                                height={440}
+                                margin={{ left: 85, right: 25, top: 65, bottom: 45 }}
+                                grid={{ horizontal: true }}
+                                barLabel={item => new Intl.NumberFormat("en-PH", {
+                                    style: "currency", currency: "PHP", notation: "compact", maximumFractionDigits: 2,
+                                }).format(Number(item.value || 0))}
+                                series={chartSeries}
+                                xAxis={[{
+                                    scaleType: "band",
+                                    dataKey: "month",
+                                    ...(chartSeries.length === 1 ? {
+                                        colorMap: {
+                                            type: "ordinal",
+                                            values: chartData.map(month => month.month),
+                                            colors: graphMonthColors,
+                                        },
+                                    } : {}),
+                                }]}
+                                yAxis={[{
+                                    min: 0,
+                                    width: 80,
+                                    valueFormatter: value => new Intl.NumberFormat("en-PH", {
+                                        style: "currency", currency: "PHP", notation: "compact", maximumFractionDigits: 1,
+                                    }).format(Number(value || 0)),
+                                }]}
+                                sx={{
+                                    "& .MuiChartsGrid-line": { stroke: "#e5e7eb", strokeDasharray: "4 4" },
+                                    "& .MuiChartsAxis-line, & .MuiChartsAxis-tick": { stroke: "#cfd4da" },
+                                    "& .MuiChartsAxis-tickLabel": { fill: "#596174", fontSize: 12 },
+                                    "& .MuiBarLabel-root": { fill: "#ffffff", fontSize: 12, fontWeight: 800 },
+                                }}
+                            />
+                        </Box>
+                    </div> : <div className="text-center text-muted py-5">No graph data available for this month.</div>}
+                </div> : <div style={styles.tableCard} className="table-responsive">
                     <table className="table table-bordered table-hover align-middle mb-0">
                         <thead style={styles.tableHeader}>
                             <tr>
@@ -399,6 +505,7 @@ const VIPTransactionHistory = () => {
                                 <th style={styles.tableHeaderCell}>Profit gap</th>
                                 <th style={styles.tableHeaderCell}>Last month profit gap</th>
                                 </>}
+                                <th style={{ ...styles.tableHeaderCell, width: 52, textAlign: "center" }} aria-label="View graph" />
                             </tr>
                         </thead>
                         <tbody>
@@ -410,7 +517,8 @@ const VIPTransactionHistory = () => {
                                 const customerThreeMonthAverage = customerPreviousMonths.length
                                     ? customerPreviousMonths.reduce((total, month) => total + Number(month.paid_amount || 0), 0) / customerPreviousMonths.length
                                     : 0;
-                                return <tr key={customer.vip_customer_transaction_id || customer.customer_id}>
+                                const customerId = customer.customer_id || customer.vip_customer_transaction_id;
+                                return <tr key={customerId}>
                                     <td>
                                         <div style={styles.customer}>{customer.customer_name || "Unnamed customer"}</div>
                                         <div style={styles.meta}>{customer.store_name || "No store name"}</div>
@@ -437,9 +545,21 @@ const VIPTransactionHistory = () => {
                                     <td>{renderTargetGap(customer.current_profit, customer.average_monthly_profit)}</td>
                                     <td>{renderTargetGap(customer.current_profit, customerLastMonthProfit)}</td>
                                     </>}
+                                    <td className="text-center">
+                                        <Button
+                                            variant="outline-primary"
+                                            size="sm"
+                                            title="View graph"
+                                            aria-label={`View graph for ${customer.customer_name || "customer"}`}
+                                            onClick={() => navigate(`/vipTransactionHistory/${id}/customer/${customerId}?month=${report.report_month?.month || selectedMonth}`)}
+                                            style={{ width: 34, height: 32, padding: 0, fontSize: 16, lineHeight: 1 }}
+                                        >
+                                            <BarChartIcon fontSize="small" />
+                                        </Button>
+                                    </td>
                                 </tr>;
                             })}
-                            {!loading && customers.length === 0 && <tr><td colSpan={months.length + 1 + (showSales ? 3 : 0) + (showProfit ? 3 : 0)} className="text-center text-muted py-4">No VIP customers found for this template.</td></tr>}
+                            {!loading && customers.length === 0 && <tr><td colSpan={months.length + 2 + (showSales ? 3 : 0) + (showProfit ? 3 : 0)} className="text-center text-muted py-4">No VIP customers found for this template.</td></tr>}
                         </tbody>
                         <tfoot>
                             <tr style={styles.totalRow}>
@@ -465,10 +585,11 @@ const VIPTransactionHistory = () => {
                                 <td style={styles.totalCell}>{renderTargetGap(currentMonthProfit, averageMonthlyProfit)}</td>
                                 <td style={styles.totalCell}>{renderTargetGap(currentMonthProfit, lastMonthProfit)}</td>
                                 </>}
+                                <td style={styles.totalCell} />
                             </tr>
                         </tfoot>
                     </table>
-                </div>
+                </div>}
             </>}
         </div>
     );

@@ -3,7 +3,8 @@ import { Button, Form } from "react-bootstrap";
 import LinearProgress from "@mui/material/LinearProgress";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { useParams } from "react-router-dom";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import { useNavigate, useParams } from "react-router-dom";
 import VipProductTransactionService from "./VipProductTransactionService";
 
 const money = value => Number(value || 0).toLocaleString("en-PH", {
@@ -32,6 +33,21 @@ const moveMonth = (month, offset) => {
     const date = new Date(year, monthNumber - 1 + offset, 1);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 };
+const quantityDifference = product => {
+    const comparison = product.previous_months?.[0];
+    const currentBoxes = Number(product.current_month?.quantity_sold || 0);
+    const comparisonBoxes = Number(comparison?.quantity_sold || 0);
+    return currentBoxes !== comparisonBoxes
+        ? currentBoxes - comparisonBoxes
+        : Number(product.current_month?.pieces_sold || 0) - Number(comparison?.pieces_sold || 0);
+};
+const averageQuantityDifference = product => {
+    const currentBoxes = Number(product.current_month?.quantity_sold || 0);
+    const averageBoxes = Number(product.average_quantity || 0);
+    return currentBoxes !== averageBoxes
+        ? currentBoxes - averageBoxes
+        : Number(product.current_month?.pieces_sold || 0) - Number(product.average_pieces || 0);
+};
 
 const styles = {
     page: { minHeight: "100vh", padding: "22px", background: "#f6f8fb" },
@@ -48,7 +64,7 @@ const styles = {
     modeRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" },
     metricControls: { display: "flex", alignItems: "center", gap: 16, width: "fit-content", padding: "6px 10px", background: "#f8fafc", border: "1px solid #d8dee6", borderRadius: 6 },
     tableWrap: { overflowX: "auto", background: "#fff", border: "1px solid #e1e6ec", borderTop: 0, borderRadius: "0 0 10px 10px" },
-    table: { minWidth: 1260, margin: 0, tableLayout: "fixed" },
+    table: { minWidth: 1247, margin: 0, tableLayout: "fixed" },
     th: { color: "#fff", background: "#60758a", borderColor: "#8193a5", verticalAlign: "middle", padding: "12px 9px", fontSize: 14 },
     selectedTh: { color: "#fff", background: "#356fa8", borderColor: "#78a8d5", borderBottom: "4px solid #8ec5ff", verticalAlign: "middle", padding: "10px 9px", fontSize: 17 },
     selectedBadge: { display: "inline-flex", marginTop: 5, padding: "2px 6px", borderRadius: 999, color: "#fff", background: "#2563eb", fontSize: 8, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase" },
@@ -60,15 +76,19 @@ const styles = {
     monthCell: { display: "flex", flexDirection: "column", gap: 3 },
     profit: { color: "#6f42c1", fontSize: 11, fontWeight: 700 },
     dormant: { display: "inline-flex", padding: "4px 8px", color: "#842029", background: "#f8d7da", borderRadius: 999, fontSize: 10, fontWeight: 800 },
+    actionTh: { position: "sticky", right: 0, zIndex: 3, width: 52, minWidth: 52, textAlign: "center", color: "#fff", background: "#455a6f", borderColor: "#8193a5" },
+    actionCell: { position: "sticky", right: 0, zIndex: 2, width: 52, minWidth: 52, textAlign: "center", background: "#fff", boxShadow: "-3px 0 6px rgba(15, 23, 42, .08)" },
 };
 
 const VipProductSoldHistory = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [selectedMonth, setSelectedMonth] = useState(thisMonth());
     const [comparisonPage, setComparisonPage] = useState(0);
     const [report, setReport] = useState(null);
     const [mode, setMode] = useState("all");
     const [visibleMetrics, setVisibleMetrics] = useState({ quantity: true, sales: false, profit: false });
+    const [query, setQuery] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -88,17 +108,24 @@ const VipProductSoldHistory = () => {
 
     const products = Array.isArray(report?.data) ? report.data : [];
     const dormantProducts = products.filter(product =>
-        Number(product.current_month?.pieces_sold || 0) === 0
-        && (product.previous_months || []).some(month => Number(month.pieces_sold || 0) > 0)
+        Number(product.current_month?.quantity_sold || 0) === 0
+        && Number(product.current_month?.pieces_sold || 0) === 0
+        && (product.previous_months || []).some(month => Number(month.quantity_sold || 0) > 0 || Number(month.pieces_sold || 0) > 0)
     );
-    const activeProducts = products.filter(product => Number(product.current_month?.pieces_sold || 0) > 0);
+    const activeProducts = products.filter(product => Number(product.current_month?.quantity_sold || 0) > 0 || Number(product.current_month?.pieces_sold || 0) > 0);
     const visibleProducts = useMemo(() => {
-        if (mode === "dormant") return [...dormantProducts].sort((a, b) => Number(b.average_sales) - Number(a.average_sales));
-        if (mode === "sold") return [...activeProducts].sort((a, b) => Number(b.current_month.sales_amount) - Number(a.current_month.sales_amount));
-        if (mode === "best") return [...products].filter(product => Number(product.average_sales || 0) > 0).sort((a, b) => Number(b.average_sales) - Number(a.average_sales));
-        if (mode === "low") return [...activeProducts].sort((a, b) => Number(a.current_month.sales_amount) - Number(b.current_month.sales_amount));
-        return [...products].sort((a, b) => Number(b.average_sales || 0) - Number(a.average_sales || 0));
-    }, [mode, products, dormantProducts, activeProducts]);
+        const search = query.trim().toLowerCase();
+        const matched = products.filter(product => !search || [product.product_name, product.brand_name, product.category_name]
+            .some(value => String(value || "").toLowerCase().includes(search)));
+        if (mode === "dormant") return matched.filter(product => dormantProducts.includes(product)).sort((a, b) => Number(b.average_sales) - Number(a.average_sales));
+        if (mode === "comparison_higher") return matched.filter(product => quantityDifference(product) > 0).sort((a, b) => quantityDifference(b) - quantityDifference(a));
+        if (mode === "comparison_lower") return matched.filter(product => quantityDifference(product) < 0).sort((a, b) => quantityDifference(a) - quantityDifference(b));
+        if (mode === "average_higher") return matched.filter(product => averageQuantityDifference(product) > 0).sort((a, b) => averageQuantityDifference(b) - averageQuantityDifference(a));
+        if (mode === "average_lower") return matched.filter(product => averageQuantityDifference(product) < 0).sort((a, b) => averageQuantityDifference(a) - averageQuantityDifference(b));
+        if (mode === "current_highest") return matched.filter(product => activeProducts.includes(product)).sort((a, b) => Number(b.current_month?.sales_amount || 0) - Number(a.current_month?.sales_amount || 0));
+        if (mode === "current_lowest") return matched.filter(product => activeProducts.includes(product)).sort((a, b) => Number(a.current_month?.sales_amount || 0) - Number(b.current_month?.sales_amount || 0));
+        return matched.sort((a, b) => Number(b.average_sales || 0) - Number(a.average_sales || 0));
+    }, [mode, products, dormantProducts, activeProducts, query]);
 
     const templateName = products[0]?.vip_product_name || "VIP Product";
     const change = Number(report?.sales_last_month_gap || 0);
@@ -110,6 +137,14 @@ const VipProductSoldHistory = () => {
         setComparisonPage(page);
         load(selectedMonth, page);
     };
+    const showingTruePreviousMonth = Number(report?.comparison?.page ?? comparisonPage) === 0;
+    const comparisonReferenceLabel = report?.previous_months?.[0]?.label || "comparison month";
+    const shortComparisonLabel = showingTruePreviousMonth ? "last month" : comparisonReferenceLabel;
+    const comparisonHigherCount = products.filter(product => quantityDifference(product) > 0).length;
+    const comparisonLowerCount = products.filter(product => quantityDifference(product) < 0).length;
+    const averageHigherCount = products.filter(product => averageQuantityDifference(product) > 0).length;
+    const averageLowerCount = products.filter(product => averageQuantityDifference(product) < 0).length;
+    const openProductGraph = productId => navigate(`/vipProductSoldHistory/${id}/product/${productId}?month=${selectedMonth}&comparison_page=${comparisonPage}`);
 
     return <div style={styles.page}>
         {loading && <LinearProgress color="primary" />}
@@ -154,39 +189,76 @@ const VipProductSoldHistory = () => {
 
             <div style={styles.modeBar}>
                 <div style={styles.modeRow}>
-                    <div className="btn-group" role="group" aria-label="Product ranking view">
-                        {[['all', `All (${products.length})`], ['sold', `Have sales (${activeProducts.length})`], ['dormant', `Not sold now (${dormantProducts.length})`], ['best', 'Highest (3 months)'], ['low', 'Low products']].map(([key, label]) =>
-                            <Button key={key} size="sm" variant={mode === key ? (key === 'dormant' ? 'danger' : 'primary') : 'outline-secondary'} onClick={() => setMode(key)}>{label}</Button>
+                    <div className="btn-group flex-wrap w-100" role="group" aria-label="Product ranking view">
+                        {[['all', `All (${products.length})`], ['current_highest', 'Highest sales'], ['current_lowest', 'Lowest sales'], ['dormant', `No sales in ${report.report_month?.label} (${dormantProducts.length})`]].map(([key, label]) =>
+                            <Button key={key} size="sm" style={{ flex: "1 1 190px" }} variant={mode === key ? (key === 'dormant' ? 'danger' : 'primary') : 'outline-secondary'} onClick={() => setMode(key)}>{label}</Button>
                         )}
                     </div>
-                    <small className="text-muted">Highest ranking uses the displayed three-month comparison.</small>
                 </div>
-                <div style={styles.metricControls}>
-                    <strong className="small text-muted">Show:</strong>
-                    {[['quantity', 'Quantity'], ['sales', 'Sales'], ['profit', 'Profit']].map(([key, label]) =>
-                        <Form.Check key={key} inline className="mb-0" type="checkbox" id={`vip-metric-${key}`} label={label} checked={visibleMetrics[key]} onChange={() => toggleMetric(key)} />
-                    )}
+                <div className="d-flex align-items-center gap-2 flex-wrap px-2 py-2 border rounded bg-light">
+                    <strong className="small text-muted me-1">Compare quantity with {shortComparisonLabel}:</strong>
+                    <Button size="sm" variant={mode === "comparison_higher" ? "success" : "outline-success"} onClick={() => setMode("comparison_higher")}>Higher ({comparisonHigherCount})</Button>
+                    <Button size="sm" variant={mode === "comparison_lower" ? "danger" : "outline-danger"} onClick={() => setMode("comparison_lower")}>Lower ({comparisonLowerCount})</Button>
+                </div>
+                <div className="d-flex align-items-center gap-2 flex-wrap px-2 py-2 border rounded bg-light">
+                    <strong className="small text-muted me-1">Compare quantity with 3-month average:</strong>
+                    <Button size="sm" variant={mode === "average_higher" ? "success" : "outline-success"} onClick={() => setMode("average_higher")}>Higher ({averageHigherCount})</Button>
+                    <Button size="sm" variant={mode === "average_lower" ? "danger" : "outline-danger"} onClick={() => setMode("average_lower")}>Lower ({averageLowerCount})</Button>
+                </div>
+                <div style={styles.modeRow}>
+                    <div style={styles.metricControls}>
+                        <strong className="small text-muted">Show:</strong>
+                        {[['quantity', 'Quantity'], ['sales', 'Sales'], ['profit', 'Profit']].map(([key, label]) =>
+                            <Form.Check key={key} inline className="mb-0" type="checkbox" id={`vip-metric-${key}`} label={label} checked={visibleMetrics[key]} onChange={() => toggleMetric(key)} />
+                        )}
+                    </div>
+                    <Form.Control style={{ width: 300, maxWidth: "100%" }} placeholder="Search product, category, brand..." value={query} onChange={event => setQuery(event.target.value)} />
                 </div>
             </div>
 
             <div style={styles.tableWrap}>
                 <table className="table table-bordered table-hover align-middle" style={styles.table}>
-                    <colgroup><col style={{ width: 195 }} /><col style={{ width: 80 }} /><col style={{ width: 155 }} /><col style={{ width: 155 }} /><col style={{ width: 155 }} /><col style={{ width: 155 }} /><col style={{ width: 190 }} /><col style={{ width: 145 }} /></colgroup>
+                    <colgroup><col style={{ width: 180 }} /><col style={{ width: 75 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 170 }} /><col style={{ width: 210 }} /><col style={{ width: 52 }} /></colgroup>
                     <thead><tr>
                         <th style={styles.th}>Product<span style={styles.thHint}>Product details</span></th><th style={{ ...styles.th, textAlign: "center" }}>Stock<span style={styles.thHint}>Available</span></th><th style={styles.selectedTh}>{report.report_month?.label}<br/><span style={styles.selectedBadge}>Selected month</span></th>
-                        {(report.previous_months || []).map((month, index) => <th style={styles.th} key={month.month}>{month.label}<span style={styles.thHint}>{index === 0 ? "Previous month" : "Comparison month"}</span></th>)}
-                        <th style={styles.averageTh}>3-month average<span style={styles.thHint}>Current comparison</span></th><th style={{ ...styles.th, textAlign: "center" }}>Status / Trend<span style={styles.thHint}>Vs previous month</span></th>
+                        {(report.previous_months || []).map((month, index) => <th style={styles.th} key={month.month}>{month.label}<span style={styles.thHint}>{index === 0 && showingTruePreviousMonth ? "Previous month" : "Comparison month"}</span></th>)}
+                        <th style={styles.averageTh}>3-month average<span style={styles.thHint}>Current comparison</span></th><th style={{ ...styles.th, textAlign: "left", padding: "12px 14px", fontSize: 15 }}>Status / Quantity Trend<span style={{ ...styles.thHint, fontSize: 9, marginTop: 6 }}>Boxes vs {showingTruePreviousMonth ? "previous month" : comparisonReferenceLabel}</span></th><th style={styles.actionTh} title="View graph"><BarChartIcon fontSize="small" /></th>
                     </tr></thead>
                     <tbody>
-                        {visibleProducts.map(product => <tr key={product.product_id}>
+                        {visibleProducts.map(product => {
+                            const comparisonMonth = product.previous_months?.[0];
+                            const currentBoxes = Number(product.current_month?.quantity_sold || 0);
+                            const currentPieces = Number(product.current_month?.pieces_sold || 0);
+                            const comparisonBoxes = Number(comparisonMonth?.quantity_sold || 0);
+                            const comparisonPieces = Number(comparisonMonth?.pieces_sold || 0);
+                            const averageBoxes = Number(product.average_quantity || 0);
+                            const averagePieces = Number(product.average_pieces || 0);
+                            const compareDifference = currentBoxes !== comparisonBoxes ? currentBoxes - comparisonBoxes : currentPieces - comparisonPieces;
+                            const compareBasis = currentBoxes !== comparisonBoxes ? comparisonBoxes : comparisonPieces;
+                            const comparePercentage = compareBasis > 0 ? (compareDifference / compareBasis) * 100 : compareDifference > 0 ? 100 : 0;
+                            const averageDifference = currentBoxes !== averageBoxes ? currentBoxes - averageBoxes : currentPieces - averagePieces;
+                            const averageBasis = currentBoxes !== averageBoxes ? averageBoxes : averagePieces;
+                            const averagePercentage = averageBasis > 0 ? (averageDifference / averageBasis) * 100 : averageDifference > 0 ? 100 : 0;
+                            const verdict = value => value > 0
+                                ? { label: "High sales", color: "#146c43", background: "#d1e7dd" }
+                                : value < 0 ? { label: "Low sales", color: "#dc3545", background: "#f8d7da" }
+                                    : { label: "Unchanged", color: "#6c757d", background: "#e2e3e5" };
+                            const averageVerdict = verdict(averageDifference);
+                            const comparisonVerdict = verdict(compareDifference);
+                            return <tr key={product.product_id}>
                             <td><div style={styles.product}>{product.product_name}</div><div style={styles.meta}>{product.brand_name} · {product.category_name}</div></td>
                             <td>{stockDisplay(product)}</td>
                             <td className={selectedMonthClass(product)}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true)}{visibleMetrics.sales && <span>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{Number(product.current_month?.pieces_sold) === 0 && <span style={styles.dormant}>NOT SOLD</span>}</div></td>
                             {(product.previous_months || []).map(month => <td key={month.month}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(month.quantity_sold, month.pieces_sold)}{visibleMetrics.sales && <span>{money(month.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(month.profit_amount)}</span>}</div></td>)}
                             <td style={styles.averageCell}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}</div></td>
-                            <td style={{ textAlign: "center" }}><span className={`badge ${product.sales_trend === 'HIGHER' ? 'bg-success' : product.sales_trend === 'LOWER' ? 'bg-danger' : 'bg-secondary'}`}>{product.sales_trend}</span><div style={{ ...styles.meta, marginTop: 5 }}>{product.sales_change_percentage === null ? 'No prior sales' : `${Number(product.sales_change_percentage) >= 0 ? '+' : ''}${number(product.sales_change_percentage)}%`}</div></td>
-                        </tr>)}
-                        {!loading && visibleProducts.length === 0 && <tr><td colSpan="8" className="text-center text-muted py-4">No products match this view.</td></tr>}
+                            <td style={{ padding: "12px 14px" }}>
+                                <div><span style={{ display: "block", marginBottom: 6, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>3-month average</span><span style={{ display: "inline-flex", padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: averageVerdict.color, background: averageVerdict.background }}>{averageVerdict.label}</span><span style={{ display: "block", marginTop: 5, color: averageVerdict.color, fontSize: 15, fontWeight: 800 }}>{averagePercentage >= 0 ? "+" : ""}{number(averagePercentage)}%</span></div>
+                                <div style={{ marginTop: 12, paddingTop: 10, borderTop: "2px solid #cbd5e1" }}><span style={{ display: "block", marginBottom: 5, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>Vs {showingTruePreviousMonth ? `last month (${comparisonReferenceLabel})` : comparisonReferenceLabel}</span><span style={{ display: "inline-flex", marginBottom: 5, padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: comparisonVerdict.color, background: comparisonVerdict.background }}>{comparisonVerdict.label}</span><span style={{ display: "block", color: comparisonVerdict.color, fontSize: 15, fontWeight: 800 }}>{comparePercentage >= 0 ? "+" : ""}{number(comparePercentage)}%</span></div>
+                            </td>
+                            <td style={styles.actionCell}><Button size="sm" variant="outline-primary" title="View graph" aria-label={`View graph for ${product.product_name}`} onClick={() => openProductGraph(product.product_id)} style={{ width: 34, height: 32, padding: 0 }}><BarChartIcon fontSize="small" /></Button></td>
+                        </tr>;
+                        })}
+                        {!loading && visibleProducts.length === 0 && <tr><td colSpan="9" className="text-center text-muted py-4">No products match this view.</td></tr>}
                     </tbody>
                 </table>
             </div>

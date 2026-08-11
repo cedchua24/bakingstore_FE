@@ -8,6 +8,7 @@ import AddProduct from "./components/Product/AddProduct";
 import ProductList from "./components/Product/ProductList";
 import ProductExpirationList from "./components/Product/ProductExpirationList";
 import ProductMonthlySalesHistory from "./components/Product/ProductMonthlySalesHistory";
+import ProductMonthlySalesGraph from "./components/Product/ProductMonthlySalesGraph";
 import ProductNoteList from "./components/Product/ProductNoteList";
 
 import ProductSpoilageList from "./components/Spoilage/ProductSpoilageList";
@@ -226,6 +227,7 @@ import VipCustomerTransactionTemplateList from "./components/VipCustomer/VipCust
 import VipTransaction from "./components/VipCustomer/VipTransaction";
 import VIPTransactionDebt from "./components/VipCustomer/VIPTransactionDebt";
 import VIPTransactionHistory from "./components/VipCustomer/VIPTransactionHistory";
+import VIPCustomerHistoryGraph from "./components/VipCustomer/VIPCustomerHistoryGraph";
 import EditVipCustomer from "./components/VipCustomer/EditVipCustomer";
 import VipNote from "./components/VipCustomer/VipNote";
 import VipProductTemplate from "./components/VipProduct/VipProductTemplate";
@@ -236,6 +238,7 @@ import VipProductListPage from "./components/VipProduct/VipProductListPage";
 import VipProductTransactionTemplateList from "./components/VipProduct/VipProductTransactionTemplateList";
 import VipProductTransactionReport from "./components/VipProduct/VipProductTransactionReport";
 import VipProductSoldHistory from "./components/VipProduct/VipProductSoldHistory";
+import VipProductSoldGraph from "./components/VipProduct/VipProductSoldGraph";
 import VipProductNote from "./components/VipProduct/VipProductNote";
 
 
@@ -758,7 +761,9 @@ const App = () => {
           <Route exact path="/vipTransaction/:id" element={<VipTransaction />} />
           <Route exact path="/vipTransactionDebt/:id" element={<VIPTransactionDebt />} />
           <Route exact path="/vipTransactionHistory/:id" element={<VIPTransactionHistory />} />
+          <Route exact path="/vipTransactionHistory/:id/customer/:customerId" element={<VIPCustomerHistoryGraph />} />
           <Route exact path="/productMonthlySalesHistory" element={<ProductMonthlySalesHistory />} />
+          <Route exact path="/productMonthlySalesHistory/product/:productId" element={<ProductMonthlySalesGraph />} />
           <Route exact path="/vipNote/:id" element={<VipNote />} />
           <Route exact path="/vipProduct" element={<VipProductTemplate />} />
           <Route exact path="/vipProductListV2" element={<VipProductTemplateListPage />} />
@@ -768,6 +773,7 @@ const App = () => {
           <Route exact path="/vipProductTransactionTemplateList" element={<VipProductTransactionTemplateList />} />
           <Route exact path="/vipProductTransactionView/:id" element={<VipProductTransactionReport />} />
           <Route exact path="/vipProductSoldHistory/:id" element={<VipProductSoldHistory />} />
+          <Route exact path="/vipProductSoldHistory/:id/product/:productId" element={<VipProductSoldGraph />} />
           <Route exact path="/vipProductNote/:id" element={<VipProductNote />} />
 
 
