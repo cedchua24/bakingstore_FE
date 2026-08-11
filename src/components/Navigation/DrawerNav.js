@@ -152,6 +152,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 export default function PersistentDrawerLeft() {
 
     const theme = useTheme();
+    const currentRole = Number(localStorage.getItem('role_as'));
 
     const navigate = useNavigate();
     const [open, setOpen] = React.useState(false);
@@ -740,7 +741,7 @@ export default function PersistentDrawerLeft() {
     const [markup, setMarkUp] = useState([
         {
             "name": "Add Mark-Up Price",
-            "url": "/markUpPrice",
+            "url": "/markUpNewPrice",
             "icon": <AddIcon />
         }
         ,
@@ -790,17 +791,20 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Transaction Daily",
             "url": "/shopOrderTransaction/customerOrderTransactionList/" + moment().format("YYYY-MM-DD"),
-            "icon": <TodayIcon />
+            "icon": <TodayIcon />,
+            "roles": [2, 3]
         },
         {
             "name": "Transaction List",
             "url": "/reports/reportsList",
-            "icon": <ListIcon />
+            "icon": <ListIcon />,
+            "roles": [2, 3]
         },
         {
             "name": "Sales List",
             "url": "/reports/reportSales",
-            "icon": <ListIcon />
+            "icon": <ListIcon />,
+            "roles": [2, 3]
         },
         {
             "name": "Pending Payment List",
@@ -2239,7 +2243,9 @@ export default function PersistentDrawerLeft() {
 
 
                         <Collapse in={openTransactionReport} timeout="auto" unmountOnExit>
-                            {transactionReportList.map((nav, index) => (
+                            {transactionReportList
+                                .filter((nav) => !nav.roles || nav.roles.includes(currentRole))
+                                .map((nav) => (
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>

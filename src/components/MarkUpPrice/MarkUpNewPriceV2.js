@@ -36,6 +36,7 @@ const comparableProductCost = row => row.business_type === "RETAIL"
     : Number(row.product_price || 0);
 
 const MarkUpNewPriceV2 = () => {
+    const isAdmin = [2, 3].includes(Number(localStorage.getItem("role_as")));
     const [searchParams] = useSearchParams();
     const requestedProductId = searchParams.get("product_id") || "";
     const [rows, setRows] = useState([]);
@@ -181,6 +182,8 @@ const MarkUpNewPriceV2 = () => {
                             const newPrice = comparableProductCost(primaryMarkup || product);
                             const primaryDifference = newPrice - oldPrice;
                             const primaryPercentage = oldPrice ? primaryDifference / oldPrice * 100 : null;
+                            const hasAdminOverride = isAdmin && !product.can_change_selling_price;
+                            const canEdit = product.can_change_selling_price || isAdmin;
 
                             return (
                             <article className="markup-v2__card" key={product.product_id}>
@@ -192,8 +195,12 @@ const MarkUpNewPriceV2 = () => {
                                             <small>Product #{product.product_id} · {product.packaging || "Packaging not set"} · {product.pieces_per_pack || 0} pcs per {String(product.packaging || "pack").toLowerCase()}</small>
                                         </div>
                                     </div>
-                                    <span className={`markup-v2__status ${product.can_change_selling_price ? "is-ready" : "is-waiting"}`}>
-                                        {product.can_change_selling_price ? "Old stock consumed — ready" : "Keep current selling price"}
+                                    <span className={`markup-v2__status ${product.can_change_selling_price ? "is-ready" : hasAdminOverride ? "is-admin" : "is-waiting"}`}>
+                                        {product.can_change_selling_price
+                                            ? "Old stock consumed — ready"
+                                            : hasAdminOverride
+                                                ? "Admin access — editing allowed"
+                                                : "Keep current selling price"}
                                     </span>
                                 </header>
 
@@ -277,13 +284,14 @@ const MarkUpNewPriceV2 = () => {
                                                 </div>
                                                 <div><span>Current selling price</span><strong className="markup-selling-price">{money(markup.new_price)}</strong></div>
                                                 <Link
-                                                    className={product.can_change_selling_price ? "markup-v2__edit" : "markup-v2__edit is-disabled"}
-                                                    to={product.can_change_selling_price
+                                                    className={`markup-v2__edit${hasAdminOverride ? " is-admin" : canEdit ? "" : " is-disabled"}`}
+                                                    to={canEdit
                                                         ? `/markUpPriceListV2?product_id=${product.product_id}&product_price=${product.product_price}&pieces_per_pack=${product.pieces_per_pack}`
                                                         : "#"}
-                                                    onClick={event => { if (!product.can_change_selling_price) event.preventDefault(); }}
-                                                    aria-disabled={!product.can_change_selling_price}
-                                                ><EditOutlinedIcon /> Edit</Link>
+                                                    onClick={event => { if (!canEdit) event.preventDefault(); }}
+                                                    aria-disabled={!canEdit}
+                                                    title={hasAdminOverride ? "You can edit this price because you are an administrator." : undefined}
+                                                ><EditOutlinedIcon /> {hasAdminOverride ? "Admin edit" : "Edit"}</Link>
                                             </div>
                                         );
                                     })}

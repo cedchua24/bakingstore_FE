@@ -5,6 +5,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
 import ExpenseTransactionService from "../ExpensesV2/ExpenseTransactionService";
 import ExpenseTypeV2Service from "../ExpensesV2/ExpensesTypeV2Service";
+import DiscountService from "../OtherService/DiscountService";
 import ReportBar from "./ReportBar";
 import "./ReportSales.css";
 import "./ReportList.css";
@@ -19,6 +20,7 @@ const ReportList = () => {
     const [expenseTypes, setExpenseTypes] = useState([]);
     const [selectedExpenseTypeIds, setSelectedExpenseTypeIds] = useState([]);
     const [expenseTypesLoading, setExpenseTypesLoading] = useState(false);
+    const [totalDiscountLoss, setTotalDiscountLoss] = useState(0);
     const [customerOrderDate, setCustomerOrderDate] = useState({
         dateFrom: "",
         dateTo: "",
@@ -201,14 +203,24 @@ const ReportList = () => {
         setSubmitLoadingAdd(true);
 
         try {
-            const response =
-                await ShopOrderTransactionService.fetchOnlineShopOrderTransactionListReportByDate(
+            const [response, discountLossResponse] = await Promise.all([
+                ShopOrderTransactionService.fetchOnlineShopOrderTransactionListReportByDate(
                     customerOrderDate
-                );
+                ),
+                DiscountService.fetchDiscountLossReport(customerOrderDate),
+            ]);
             let reportData = {
                 ...response.data,
                 data: response.data?.data || [],
             };
+
+            const discountLossRows = Array.isArray(discountLossResponse.data?.data)
+                ? discountLossResponse.data.data
+                : [];
+            const discountLossTotal = discountLossRows.reduce(
+                (total, item) => total + (Number(item.loss_amount) || 0),
+                0
+            );
 
             const expenseResponse =
                 await ExpenseTransactionService.getTotalExpenseWithFilters({
@@ -223,6 +235,7 @@ const ReportList = () => {
             };
 
             setShopOrderTransaction(reportData);
+            setTotalDiscountLoss(discountLossTotal);
             setHasGenerated(true);
         } catch (error) {
             console.error("Unable to generate online order report", error);
@@ -351,6 +364,12 @@ const ReportList = () => {
                                 <span>Total expenses</span>
                                 <strong>{numberFormat(-Math.abs(totalExpenses))}</strong>
                                 <small>{expenseMargin.toFixed(2)}% expense margin</small>
+                            </article>
+
+                            <article className="sales-metric profit-metric--expense">
+                                <span>Total discount loss</span>
+                                <strong>{numberFormat(-Math.abs(totalDiscountLoss))}</strong>
+                                <small>Sum of discount loss amounts</small>
                             </article>
 
                             {isAdmin && (

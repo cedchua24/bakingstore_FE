@@ -40,6 +40,56 @@
     font-size: 16px;
 }
 
+.customer-report-amount-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    min-width: 142px;
+    padding: 5px 12px 5px 7px;
+    margin-left: auto;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.13);
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.customer-report-amount-toggle:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.customer-report-amount-toggle .MuiCheckbox-root {
+    padding: 4px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.customer-report-amount-toggle .MuiCheckbox-root.Mui-checked {
+    color: #fff;
+}
+
+.customer-report-amount-toggle span {
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.customer-report-amount-toggle.is-secret {
+    min-width: 180px;
+    min-height: 48px;
+    padding: 0;
+    color: transparent;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+    cursor: default;
+    opacity: 0;
+}
+
+.customer-report-amount-toggle.is-secret:hover {
+    background: transparent;
+}
+
 .customer-report-filter {
     display: grid;
     grid-template-columns: 180px 220px auto;

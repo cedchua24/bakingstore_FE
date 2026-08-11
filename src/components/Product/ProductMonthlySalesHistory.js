@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import LinearProgress from "@mui/material/LinearProgress";
+import BarChartIcon from "@mui/icons-material/BarChart";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ProductService from "./ProductService.service";
 
 const money = value => Number(value || 0).toLocaleString("en-PH", {
@@ -51,6 +52,21 @@ const trendMeta = {
     LOWER: { label: "Lower than last month", color: "#dc3545" },
     UNCHANGED: { label: "Same as last month", color: "#6c757d" },
 };
+const quantityDifference = product => {
+    const comparison = product.previous_months?.[0];
+    const currentBoxes = Number(product.current_month?.quantity_sold || 0);
+    const comparisonBoxes = Number(comparison?.quantity_sold || 0);
+    return currentBoxes !== comparisonBoxes
+        ? currentBoxes - comparisonBoxes
+        : Number(product.current_month?.pieces_sold || 0) - Number(comparison?.pieces_sold || 0);
+};
+const averageQuantityDifference = product => {
+    const currentBoxes = Number(product.current_month?.quantity_sold || 0);
+    const averageBoxes = Number(product.average_quantity || 0);
+    return currentBoxes !== averageBoxes
+        ? currentBoxes - averageBoxes
+        : Number(product.current_month?.pieces_sold || 0) - Number(product.average_pieces || 0);
+};
 
 const styles = {
     page: { minHeight: "100vh", padding: 22, background: "#f6f8fb" },
@@ -64,7 +80,7 @@ const styles = {
     controls: { display: "flex", flexDirection: "column", alignItems: "stretch", gap: 12, padding: 13, background: "#fff", border: "1px solid #e1e6ec", borderRadius: "10px 10px 0 0" },
     toolsRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", paddingTop: 10, borderTop: "1px solid #edf0f3" },
     tableWrap: { overflowX: "auto", background: "#fff", border: "1px solid #e1e6ec", borderTop: 0, borderRadius: "0 0 10px 10px" },
-    table: { minWidth: 1260, marginBottom: 0, tableLayout: "fixed" },
+    table: { minWidth: 1247, marginBottom: 0, tableLayout: "fixed" },
     th: { color: "#fff", background: "#60758a", borderColor: "#8193a5", verticalAlign: "middle", padding: "12px 9px", fontSize: 14 },
     selectedTh: { color: "#fff", background: "#356fa8", borderColor: "#78a8d5", borderBottom: "4px solid #8ec5ff", verticalAlign: "middle", padding: "10px 9px", fontSize: 17 },
     selectedBadge: { display: "inline-flex", marginTop: 5, padding: "2px 6px", borderRadius: 999, color: "#fff", background: "#2563eb", fontSize: 8, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase" },
@@ -76,10 +92,13 @@ const styles = {
     month: { display: "flex", flexDirection: "column", gap: 3 },
     profit: { color: "#6f42c1", fontSize: 11, fontWeight: 700 },
     notSold: { display: "inline-flex", width: "fit-content", padding: "3px 7px", borderRadius: 999, color: "#a61b1b", background: "#f8d7da", fontSize: 9, fontWeight: 800, letterSpacing: ".04em" },
+    actionTh: { position: "sticky", right: 0, zIndex: 3, width: 52, minWidth: 52, textAlign: "center", color: "#fff", background: "#455a6f", borderColor: "#8193a5" },
+    actionCell: { position: "sticky", right: 0, zIndex: 2, width: 52, minWidth: 52, textAlign: "center", background: "#fff", boxShadow: "-3px 0 6px rgba(15, 23, 42, .08)" },
 };
 
 const ProductMonthlySalesHistory = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const initialParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
     const customerId = initialParams.get("customer_id") || "";
     const customerName = initialParams.get("customer_name") || "";
@@ -121,6 +140,12 @@ const ProductMonthlySalesHistory = () => {
         if (mode === "sold") list = list.filter(product => Number(product.current_month?.sales_amount || 0) > 0);
         if (mode === "trending") list = list.filter(product => product.sales_trend === "HIGHER");
         if (mode === "highest") list = list.filter(product => Number(product.average_sales || 0) > 0);
+        if (mode === "comparison_higher") list = list.filter(product => quantityDifference(product) > 0);
+        if (mode === "comparison_lower") list = list.filter(product => quantityDifference(product) < 0);
+        if (mode === "average_higher") list = list.filter(product => averageQuantityDifference(product) > 0);
+        if (mode === "average_lower") list = list.filter(product => averageQuantityDifference(product) < 0);
+        if (mode === "current_highest") return [...list].filter(product => Number(product.current_month?.sales_amount || 0) > 0).sort((a, b) => Number(b.current_month?.sales_amount || 0) - Number(a.current_month?.sales_amount || 0));
+        if (mode === "current_lowest") return [...list].filter(product => Number(product.current_month?.sales_amount || 0) > 0).sort((a, b) => Number(a.current_month?.sales_amount || 0) - Number(b.current_month?.sales_amount || 0));
         if (["highest", "all"].includes(mode)) {
             return [...list].sort((a, b) => {
                 const averageDifference = Number(b.average_sales || 0) - Number(a.average_sales || 0);
@@ -146,7 +171,21 @@ const ProductMonthlySalesHistory = () => {
     };
     const gap = Number(report?.sales_average_gap || 0);
     const counts = report?.counts || {};
+    const showingTruePreviousMonth = Number(report?.comparison?.page ?? comparisonPage) === 0;
+    const comparisonReferenceLabel = report?.previous_months?.[0]?.label || "comparison month";
+    const shortComparisonLabel = showingTruePreviousMonth ? "last month" : comparisonReferenceLabel;
+    const selectedMonthLabel = report?.report_month?.label || "selected month";
+    const comparisonHigherCount = products.filter(product => quantityDifference(product) > 0).length;
+    const comparisonLowerCount = products.filter(product => quantityDifference(product) < 0).length;
+    const averageHigherCount = products.filter(product => averageQuantityDifference(product) > 0).length;
+    const averageLowerCount = products.filter(product => averageQuantityDifference(product) < 0).length;
     const toggleMetric = metric => setVisibleMetrics(current => ({ ...current, [metric]: !current[metric] }));
+    const openProductGraph = productId => {
+        const params = new URLSearchParams({ month, comparison_page: String(comparisonPage) });
+        if (customerId) params.set("customer_id", customerId);
+        if (customerName) params.set("customer_name", customerName);
+        navigate(`/productMonthlySalesHistory/product/${productId}?${params.toString()}`);
+    };
 
     return <div style={styles.page}>
         {loading && <LinearProgress />}
@@ -194,9 +233,19 @@ const ProductMonthlySalesHistory = () => {
             </section>
             <div style={styles.controls}>
                 <div className="btn-group flex-wrap" role="group">
-                    {[["all", `All (${counts.total_products || 0})`], ["sold", `Have sales (${Math.max(0, Number(counts.total_products || 0) - Number(counts.no_sales || 0))})`], ["highest", "Highest (3 months)"], ["trending", "Trending up"], ["high", `High (${counts.high_sales || 0})`], ["low", `Low (${counts.low_sales || 0})`], ["no_sales", "No sales now"], ["no_sales_4", "No sales 4 months"]].map(([key, label]) =>
+                    {[["all", `All (${counts.total_products || 0})`], ["current_highest", "Highest sales"], ["current_lowest", "Lowest sales"], ["no_sales", `No sales in ${selectedMonthLabel}`], ["no_sales_4", "No sales 4 months"]].map(([key, label]) =>
                         <Button key={key} size="sm" variant={mode === key ? (key.startsWith("no_sales") ? "danger" : "primary") : "outline-secondary"} onClick={() => setMode(key)}>{label}</Button>
                     )}
+                </div>
+                <div className="d-flex align-items-center gap-2 flex-wrap px-2 py-2 border rounded bg-light">
+                    <strong className="small text-muted me-1">Compare quantity with {shortComparisonLabel}:</strong>
+                    <Button size="sm" variant={mode === "comparison_higher" ? "success" : "outline-success"} onClick={() => setMode("comparison_higher")}>Higher ({comparisonHigherCount})</Button>
+                    <Button size="sm" variant={mode === "comparison_lower" ? "danger" : "outline-danger"} onClick={() => setMode("comparison_lower")}>Lower ({comparisonLowerCount})</Button>
+                </div>
+                <div className="d-flex align-items-center gap-2 flex-wrap px-2 py-2 border rounded bg-light">
+                    <strong className="small text-muted me-1">Compare quantity with 3-month average:</strong>
+                    <Button size="sm" variant={mode === "average_higher" ? "success" : "outline-success"} onClick={() => setMode("average_higher")}>Higher ({averageHigherCount})</Button>
+                    <Button size="sm" variant={mode === "average_lower" ? "danger" : "outline-danger"} onClick={() => setMode("average_lower")}>Lower ({averageLowerCount})</Button>
                 </div>
                 <div style={styles.toolsRow}>
                     <div className="d-flex align-items-center gap-3 px-2 py-1 border rounded bg-light">
@@ -210,22 +259,62 @@ const ProductMonthlySalesHistory = () => {
             </div>
             <div style={styles.tableWrap}>
                 <table className="table table-bordered table-hover align-middle" style={styles.table}>
-                    <colgroup><col style={{ width: 220 }} /><col style={{ width: 90 }} /><col style={{ width: 155 }} /><col style={{ width: 155 }} /><col style={{ width: 155 }} /><col style={{ width: 155 }} /><col style={{ width: 155 }} /><col style={{ width: 145 }} /></colgroup>
-                    <thead><tr><th style={styles.th}>Product<span style={styles.thHint}>Product details</span></th><th style={{ ...styles.th, textAlign: "center" }}>Stock<span style={styles.thHint}>Available</span></th><th style={styles.selectedTh}>{report.report_month?.label}<br/><span style={styles.selectedBadge}>Selected month</span></th>{(report.previous_months || []).map((item, index) => <th style={styles.th} key={item.month}>{item.label}<span style={styles.thHint}>{index === 0 ? "Previous month" : "Comparison month"}</span></th>)}<th style={styles.averageTh}>3-month average<span style={styles.thHint}>Current comparison</span></th><th style={styles.th}>Status / Trend<span style={styles.thHint}>Vs previous month</span></th></tr></thead>
+                    <colgroup><col style={{ width: 180 }} /><col style={{ width: 75 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 170 }} /><col style={{ width: 210 }} /><col style={{ width: 52 }} /></colgroup>
+                    <thead><tr><th style={styles.th}>Product<span style={styles.thHint}>Product details</span></th><th style={{ ...styles.th, textAlign: "center" }}>Stock<span style={styles.thHint}>Available</span></th><th style={styles.selectedTh}>{report.report_month?.label}<br/><span style={styles.selectedBadge}>Selected month</span></th>{(report.previous_months || []).map((item, index) => <th style={styles.th} key={item.month}>{item.label}<span style={styles.thHint}>{index === 0 && showingTruePreviousMonth ? "Previous month" : "Comparison month"}</span></th>)}<th style={styles.averageTh}>3-month average<span style={styles.thHint}>Current comparison</span></th><th style={{ ...styles.th, padding: "12px 14px", fontSize: 15 }}>Status / Quantity Trend<span style={{ ...styles.thHint, fontSize: 9, marginTop: 6 }}>Boxes vs {showingTruePreviousMonth ? "previous month" : comparisonReferenceLabel}</span></th><th style={styles.actionTh} title="View graph"><BarChartIcon fontSize="small" /></th></tr></thead>
                     <tbody>
                         {visibleProducts.map(product => {
                             const meta = statusMeta[product.sales_status] || statusMeta.UNCHANGED;
-                            const trend = trendMeta[product.sales_trend] || trendMeta.UNCHANGED;
+                            const comparisonMonth = product.previous_months?.[0];
+                            const currentBoxes = Number(product.current_month?.quantity_sold || 0);
+                            const comparisonBoxes = Number(comparisonMonth?.quantity_sold || 0);
+                            const currentPieces = Number(product.current_month?.pieces_sold || 0);
+                            const comparisonPieces = Number(comparisonMonth?.pieces_sold || 0);
+                            const averageBoxes = Number(product.average_quantity || 0);
+                            const averagePieces = Number(product.average_pieces || 0);
+                            const averageDifference = currentBoxes !== averageBoxes
+                                ? currentBoxes - averageBoxes
+                                : currentPieces - averagePieces;
+                            const averageBasis = currentBoxes !== averageBoxes ? averageBoxes : averagePieces;
+                            const averageChangePercentage = averageBasis > 0
+                                ? (averageDifference / averageBasis) * 100
+                                : averageDifference > 0 ? 100 : 0;
+                            const quantityComparison = currentBoxes !== comparisonBoxes
+                                ? currentBoxes - comparisonBoxes
+                                : currentPieces - comparisonPieces;
+                            const trend = quantityComparison > 0 ? trendMeta.HIGHER : quantityComparison < 0 ? trendMeta.LOWER : trendMeta.UNCHANGED;
+                            const comparisonBasis = currentBoxes !== comparisonBoxes ? comparisonBoxes : comparisonPieces;
+                            const quantityChangePercentage = comparisonBasis > 0
+                                ? (quantityComparison / comparisonBasis) * 100
+                                : quantityComparison > 0 ? 100 : 0;
+                            const quantityTrendTitle = `${report.report_month?.label}: ${number(currentBoxes)} Box / ${number(currentPieces)} Pc; ${comparisonReferenceLabel}: ${number(comparisonBoxes)} Box / ${number(comparisonPieces)} Pc`;
                             return <tr key={product.product_id}>
                                 <td><div style={styles.product}>{product.product_name}</div><div style={styles.meta}>{product.brand_name} · {product.category_name}</div></td>
                                 <td>{stockDisplay(product)}</td>
                                 <td className={selectedMonthClass(product)}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true)}{visibleMetrics.sales && <span>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{Number(product.current_month?.sales_amount || 0) === 0 && <span style={styles.notSold}>NOT SOLD</span>}</div></td>
                                 {(product.previous_months || []).map(item => <td key={item.month}><div style={styles.month}>{visibleMetrics.quantity && totalSold(item.quantity_sold, item.pieces_sold)}{visibleMetrics.sales && <span>{money(item.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(item.profit_amount)}</span>}</div></td>)}
                                 <td style={styles.averageCell}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}</div></td>
-                                <td><span style={{ display: "inline-flex", padding: "4px 8px", borderRadius: 999, fontSize: 10, fontWeight: 800, color: meta.color, background: meta.background }}>{meta.label}</span><div style={{ ...styles.meta, marginTop: 6, color: trend.color, fontWeight: 800 }}>{trend.label}{product.sales_change_percentage === null ? "" : ` · ${Number(product.sales_change_percentage) >= 0 ? "+" : ""}${number(product.sales_change_percentage)}%`}</div></td>
+                                <td>
+                                    <div>
+                                        <span style={{ display: "block", marginBottom: 4, color: "#64748b", fontSize: 8, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase" }}>3-month average</span>
+                                        <span style={{ display: "inline-flex", padding: "4px 8px", borderRadius: 999, fontSize: 10, fontWeight: 800, color: meta.color, background: meta.background }}>{meta.label}</span>
+                                        <span style={{ display: "block", marginTop: 4, color: averageChangePercentage >= 0 ? "#146c43" : "#dc3545", fontSize: 13, fontWeight: 800 }}>
+                                            {averageChangePercentage >= 0 ? "+" : ""}{number(averageChangePercentage)}%
+                                        </span>
+                                    </div>
+                                    <div title={quantityTrendTitle} style={{ ...styles.meta, marginTop: 9, paddingTop: 8, borderTop: "2px solid #cbd5e1", color: trend.color, fontWeight: 800, cursor: "help" }}>
+                                        <span style={{ display: "block", marginBottom: 3, color: "#64748b", fontSize: 8, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase" }}>
+                                            Vs {showingTruePreviousMonth ? `last month (${comparisonReferenceLabel})` : comparisonReferenceLabel}
+                                        </span>
+                                        <span style={{ display: "inline-flex", marginBottom: 4, padding: "4px 8px", borderRadius: 999, fontSize: 10, fontWeight: 800, color: trend.color, background: trend === trendMeta.HIGHER ? "#d1e7dd" : trend === trendMeta.LOWER ? "#f8d7da" : "#e2e3e5" }}>
+                                            {trend === trendMeta.HIGHER ? "High sales" : trend === trendMeta.LOWER ? "Low sales" : "Unchanged"}
+                                        </span>
+                                        <span style={{ display: "block", fontSize: 13 }}>{quantityChangePercentage >= 0 ? "+" : ""}{number(quantityChangePercentage)}%</span>
+                                    </div>
+                                </td>
+                                    <td style={styles.actionCell}><Button size="sm" variant="outline-primary" title="View graph" aria-label={`View graph for ${product.product_name}`} onClick={() => openProductGraph(product.product_id)} style={{ width: 34, height: 32, padding: 0 }}><BarChartIcon fontSize="small" /></Button></td>
                             </tr>;
                         })}
-                        {!loading && visibleProducts.length === 0 && <tr><td colSpan="8" className="text-center text-muted py-4">No products match this view.</td></tr>}
+                        {!loading && visibleProducts.length === 0 && <tr><td colSpan="9" className="text-center text-muted py-4">No products match this view.</td></tr>}
                     </tbody>
                 </table>
             </div>
