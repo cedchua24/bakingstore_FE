@@ -69,9 +69,7 @@ const CustomerOrderTransactionList = () => {
 
 
     const [role, setRole] = useState(localStorage.getItem('role_as'));
-    const [showFinancialAmounts, setShowFinancialAmounts] = useState(
-        Number(localStorage.getItem('role_as')) !== 1
-    );
+    const [showFinancialAmounts, setShowFinancialAmounts] = useState(false);
 
 
     const [expenses, setExpenses] = useState({
@@ -844,7 +842,7 @@ const CustomerOrderTransactionList = () => {
                     <p className="customer-report-date">{moment(customerOrderDate.date).format("MMMM D, YYYY")}</p>
                 </div>
 
-                <label className={`customer-report-amount-toggle${Number(role) === 1 ? " is-secret" : ""}`}>
+                <label className="customer-report-amount-toggle is-secret">
                     <Checkbox
                         checked={showFinancialAmounts}
                         onChange={(event) => setShowFinancialAmounts(event.target.checked)}
