@@ -741,7 +741,7 @@ export default function PersistentDrawerLeft() {
     const [markup, setMarkUp] = useState([
         {
             "name": "Add Mark-Up Price",
-            "url": "/markUpNewPrice",
+            "url": "/markUpPrice",
             "icon": <AddIcon />
         }
         ,
@@ -2246,15 +2246,15 @@ export default function PersistentDrawerLeft() {
                             {transactionReportList
                                 .filter((nav) => !nav.roles || nav.roles.includes(currentRole))
                                 .map((nav) => (
-                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton sx={{ pl: 6 }}>
-                                        <ListItemIcon>
-                                            {nav.icon}
-                                        </ListItemIcon>
-                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
+                                    <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                        <ListItemButton sx={{ pl: 6 }}>
+                                            <ListItemIcon>
+                                                {nav.icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
                         </Collapse>
 
                         <ListItemButton className="report-menu-item report-menu-delivery" sx={{ pl: 4 }} onClick={handleClickDeliveryReport}>
