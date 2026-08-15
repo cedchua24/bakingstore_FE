@@ -26,6 +26,7 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import CancelRoundedIcon from '@mui/icons-material/CancelRounded';
 import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
+import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 
 import './ProductList.css';
 
@@ -323,6 +324,14 @@ const ProductList = () => {
                                                 </button>
                                                 <Link to={"/supplierProductList/" + product.id}>Suppliers</Link>
                                                 <Link to={"/productOrderTransactionList/" + product.id}>Orders</Link>
+                                                <Link
+                                                    to={"/productSoldHistory/" + product.id}
+                                                    className="product-list-actions__sold"
+                                                    title={`View sold history for ${product.product_name}`}
+                                                    aria-label={`View sold history for ${product.product_name}`}
+                                                >
+                                                    <BarChartRoundedIcon /> Sold history
+                                                </Link>
                                                 <Link to={"/editProduct/" + product.id} className="product-list-actions__primary">Edit</Link>
                                             </div>
                                         </td>
@@ -372,6 +381,7 @@ const ProductList = () => {
                                         <th>Purchase order</th>
                                         <th>Supplier</th>
                                         <th>Unit</th>
+                                        <th>Quantity</th>
                                         <th>Unit price</th>
                                     </tr>
                                 </thead>
@@ -396,6 +406,7 @@ const ProductList = () => {
                                                 </td>
                                                 <td>{entry.supplier_name ?? entry.supplier?.supplier_name ?? entry.supplier?.name ?? '—'}</td>
                                                 <td><strong>{formatHistoryUnit(entry)}</strong></td>
+                                                <td><strong>{entry.quantity ?? entry.quantity_order ?? '—'}</strong></td>
                                                 <td><strong>{numberFormat(unitPrice)}</strong></td>
                                             </tr>
                                         );

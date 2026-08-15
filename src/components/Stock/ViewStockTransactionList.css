@@ -1,0 +1,130 @@
+.stock-history-page {
+    --history-ink: #172033;
+    --history-muted: #6b7587;
+    --history-border: #e5e9f0;
+    min-height: 100%;
+    padding: 28px;
+    color: var(--history-ink);
+    background: radial-gradient(circle at 90% 0, rgba(104, 162, 210, .18), transparent 28%), #f6f7f9;
+}
+
+.stock-history-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    color: #526077;
+    font-size: .82rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.stock-history-back:hover { color: #285fc7; }
+.stock-history-back svg { font-size: 18px; }
+
+.stock-history-hero {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    position: relative;
+    overflow: hidden;
+    padding: 26px;
+    margin-bottom: 18px;
+    color: #fff;
+    background: linear-gradient(120deg, #192638 0%, #243d59 58%, #28526f 100%);
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(30, 54, 78, .18);
+}
+
+.stock-history-hero::after {
+    content: "";
+    position: absolute;
+    right: 25%;
+    top: -125px;
+    width: 240px;
+    height: 240px;
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 50%;
+}
+
+.stock-history-hero__icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 56px;
+    width: 56px;
+    height: 56px;
+    color: #83c6ff;
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 15px;
+}
+
+.stock-history-hero__icon svg { font-size: 30px; }
+.stock-history-hero__copy { flex: 1; position: relative; z-index: 1; min-width: 0; }
+.stock-history-hero__copy > span { color: #83c6ff; font-size: .71rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.stock-history-hero h1 { margin: 2px 0 0; font-size: clamp(1.55rem, 2.3vw, 2.15rem); letter-spacing: -.03em; }
+.stock-history-hero p { margin: 5px 0 0; color: rgba(255, 255, 255, .7); font-size: .9rem; }
+.stock-history-hero p strong { color: #fff; }
+
+.stock-history-hero__stat {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    position: relative;
+    z-index: 1;
+    min-width: 175px;
+    padding: 13px 15px;
+    background: rgba(255, 255, 255, .09);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 12px;
+}
+
+.stock-history-hero__stat > svg { color: #83c6ff; }
+.stock-history-hero__stat div { display: flex; flex-direction: column; }
+.stock-history-hero__stat strong { font-size: 1.25rem; line-height: 1.1; }
+.stock-history-hero__stat span { margin-top: 3px; color: rgba(255, 255, 255, .64); font-size: .7rem; }
+
+.stock-history-card { overflow: hidden; background: #fff; border: 1px solid var(--history-border); border-radius: 16px; box-shadow: 0 8px 24px rgba(30, 42, 62, .05); }
+.stock-history-card__header { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 19px 22px; border-bottom: 1px solid var(--history-border); }
+.stock-history-card__header h2 { margin: 0; font-size: 1.08rem; }
+.stock-history-card__header p { margin: 4px 0 0; color: var(--history-muted); font-size: .8rem; }
+
+.stock-history-search { display: flex; align-items: center; gap: 8px; width: min(310px, 100%); padding: 9px 12px; background: #f8f9fb; border: 1px solid #dfe4eb; border-radius: 10px; color: #8490a2; transition: border-color .2s, box-shadow .2s; }
+.stock-history-search:focus-within { background: #fff; border-color: #6a94d5; box-shadow: 0 0 0 3px rgba(40, 95, 199, .1); }
+.stock-history-search svg { font-size: 20px; }
+.stock-history-search input { width: 100%; padding: 0; background: transparent; border: 0; outline: 0; color: var(--history-ink); font: inherit; font-size: .82rem; }
+.stock-history-search input::placeholder { color: #929bab; }
+
+.stock-history-table-wrap { overflow-x: auto; }
+.stock-history-table { width: 100%; min-width: 1040px; border-collapse: collapse; }
+.stock-history-table th { padding: 11px 16px; color: #687386; background: #fafbfc; border-bottom: 1px solid var(--history-border); font-size: .68rem; font-weight: 800; letter-spacing: .055em; text-align: left; text-transform: uppercase; }
+.stock-history-table td { padding: 16px; border-bottom: 1px solid #edf0f4; color: #435067; font-size: .8rem; vertical-align: middle; }
+.stock-history-table tbody tr { transition: background-color .16s; }
+.stock-history-table tbody tr:hover { background: #f9fbfe; }
+.stock-history-table tbody tr:last-child td { border-bottom: 0; }
+.stock-history-id { color: #7a8799; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .74rem; }
+.stock-history-product { display: block; max-width: 190px; color: var(--history-ink); }
+.stock-history-unit, .stock-history-type { display: inline-flex; padding: 5px 9px; border-radius: 999px; font-size: .68rem; font-weight: 750; white-space: nowrap; }
+.stock-history-unit { color: #6a4b17; background: #fff5df; }
+.stock-history-type { color: #275998; background: #edf4ff; }
+.stock-history-reason { display: block; max-width: 270px; color: #596679; line-height: 1.45; }
+.stock-history-balance { display: inline-grid; place-items: center; min-width: 38px; min-height: 30px; padding: 0 8px; color: #226845; background: #ebf8f1; border-radius: 8px; font-size: .9rem; }
+.stock-history-date { display: flex; flex-direction: column; min-width: 112px; }
+.stock-history-date strong { color: #344159; font-size: .78rem; }
+.stock-history-date small { margin-top: 3px; color: #8a94a4; font-size: .67rem; }
+
+.stock-history-state { display: flex; align-items: center; flex-direction: column; justify-content: center; min-height: 310px; padding: 30px; color: #8390a3; text-align: center; }
+.stock-history-state > svg { padding: 12px; color: #6e8fbe; background: #edf4fd; border-radius: 14px; font-size: 52px; }
+.stock-history-state h3 { margin: 14px 0 4px; color: #27344a; font-size: 1rem; }
+.stock-history-state p { margin: 0; font-size: .8rem; }
+.stock-history-state--error > svg { color: #b84943; background: #fff0ef; }
+.stock-history-loader { width: 34px; height: 34px; border: 3px solid #dfe8f4; border-top-color: #285fc7; border-radius: 50%; animation: stock-history-spin .8s linear infinite; }
+@keyframes stock-history-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 760px) {
+    .stock-history-page { padding: 16px; }
+    .stock-history-hero { align-items: flex-start; flex-wrap: wrap; padding: 21px; }
+    .stock-history-hero__stat { width: 100%; }
+    .stock-history-card__header { align-items: stretch; flex-direction: column; }
+    .stock-history-search { box-sizing: border-box; width: 100%; }
+}

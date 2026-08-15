@@ -17,6 +17,9 @@ class ShopOrderTransactionService {
         // return axios.post("/api/customers/customerLastOrderList", data);
         return axios.post(`/api/shopOrderTransaction/fetctProductOrderTransaction/${id}`, data);
     }
+    fetchProductSoldHistory(id, data) {
+        return axios.post(`/api/shopOrderTransaction/fetchProductSoldHistory/${id}`, data);
+    }
     fetctPendingProductOrderTransaction(id, data) {
         // return axios.post("/api/customers/customerLastOrderList", data);
         return axios.post(`/api/shopOrderTransaction/fetctPendingProductOrderTransaction/${id}`, data);

@@ -76,6 +76,12 @@ const limitProductsByGroup = (products, limit) => {
     return limitedProducts;
 };
 
+const isProductSaleBlocked = (product) =>
+    product.sale_blocked === true || Number(product.sale_blocked) === 1;
+
+const productSaleBlockReason = (product) => product.sale_block_reason
+    || 'Old stock is consumed. Update the product to the new price before selling it.';
+
 const AddProductCustomerOrderTransaction = () => {
 
     const { id } = useParams();
@@ -495,6 +501,9 @@ const AddProductCustomerOrderTransaction = () => {
 
     const handleInputChange = (e, value) => {
         e.persist();
+        if (value && isProductSaleBlocked(value)) {
+            return;
+        }
         setValue(value);
         console.log('eym', value)
         if (!value) {
@@ -1005,7 +1014,7 @@ const AddProductCustomerOrderTransaction = () => {
                                 fullWidth
                                 options={orderedProducts}
                                 getOptionDisabled={(product) =>
-                                    Boolean(product.sale_blocked) || availableProductStock(product) < 1
+                                    isProductSaleBlocked(product) || availableProductStock(product) < 1
                                 }
                                 value={value}
                                 id="product-search"
@@ -1081,12 +1090,12 @@ const AddProductCustomerOrderTransaction = () => {
                                             <Typography variant="caption" color="text.secondary">
                                                 {productSizeLabel(product)}
                                             </Typography>
-                                            {product.sale_blocked && product.sale_block_reason && (
+                                            {isProductSaleBlocked(product) && (
                                                 <Typography
                                                     variant="caption"
                                                     sx={{ display: 'block', color: 'error.main', lineHeight: 1.2 }}
                                                 >
-                                                    {product.sale_block_reason}
+                                                    {productSaleBlockReason(product)}
                                                 </Typography>
                                             )}
                                         </Box>
