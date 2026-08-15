@@ -388,7 +388,7 @@ const StockList = () => {
                                                 <button type="button" onClick={() => openCustomerFollowUp(currentProduct)}>
                                                     <PersonAddAltOutlinedIcon />Follow up
                                                 </button>
-                                                <Link to={"/viewStockTransactionList/" + currentProduct.id}>Stock history</Link>
+                                                <Link to={"/viewStockTransactionList/" + currentProduct.id}>Modify History</Link>
                                                 <Link to={"/viewOutOfStockHistory/" + currentProduct.id}>OOS history</Link>
                                             </div>
                                         </td>

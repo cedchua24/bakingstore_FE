@@ -442,6 +442,21 @@
     border-color: var(--pl-blue);
 }
 
+.product-list-actions .product-list-actions__sold {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #7a421d;
+    background: #fff8f1;
+    border-color: #efd7c2;
+}
+
+.product-list-actions .product-list-actions__sold svg {
+    flex: 0 0 auto;
+    font-size: 13px;
+}
+
 .product-list-table th:last-child {
     background: #fafbfc;
 }

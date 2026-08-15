@@ -88,6 +88,7 @@ import SupplierListV2 from "./components/Supplier/SupplierListV2";
 import EditSupplier from "./components/Supplier/EditSupplier";
 import SupplierProductList from "./components/Product/SupplierProductList";
 import ProductOrderTransactionList from "./components/Product/ProductOrderTransactionList";
+import ProductSoldHistory from "./components/Product/ProductSoldHistory";
 
 
 
@@ -394,6 +395,7 @@ const App = () => {
 
           <Route path="/addProduct" element={<AddProduct />} />
           <Route path="/productList" element={<ProductList />} />
+          <Route path="/productSoldHistory/:productId" element={<ProductSoldHistory />} />
           <Route path="/ProductListV2" element={<ProductListV2 />} />
           <Route path="/productListDisabled" element={<ProductListDisabled />} />
 
