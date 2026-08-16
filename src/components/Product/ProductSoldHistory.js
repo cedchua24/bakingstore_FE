@@ -27,8 +27,7 @@ const toInputDate = date => {
 
 const initialDates = () => {
     const dateTo = new Date();
-    const dateFrom = new Date();
-    dateFrom.setDate(dateFrom.getDate() - 29);
+    const dateFrom = new Date(dateTo.getFullYear(), dateTo.getMonth() - 1, 1);
     return { dateFrom: toInputDate(dateFrom), dateTo: toInputDate(dateTo) };
 };
 
@@ -63,7 +62,7 @@ const ProductSoldHistory = () => {
     const [filters, setFilters] = useState({
         dateFrom: searchParams.get("dateFrom") || defaults.dateFrom,
         dateTo: searchParams.get("dateTo") || defaults.dateTo,
-        groupBy: searchParams.get("groupBy") || "day",
+        groupBy: searchParams.get("groupBy") || "month",
         type: searchParams.get("type") || "",
     });
     const [report, setReport] = useState(null);

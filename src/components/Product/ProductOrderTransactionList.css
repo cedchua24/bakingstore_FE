@@ -156,8 +156,8 @@
     white-space: nowrap;
 }
 
-.product-order-table tbody tr {
-    border: 0 !important;
+.product-order-table > tbody > tr > td {
+    border-bottom: 2px solid #cbd5e1;
 }
 
 .product-order-table tbody tr:hover {

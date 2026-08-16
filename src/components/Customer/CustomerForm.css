@@ -527,6 +527,84 @@
   text-decoration: none;
 }
 
+.customer-sales-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(140px, 1fr)) auto;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.customer-sales-progress,
+.customer-sales-alert {
+  margin-bottom: 16px;
+}
+
+.customer-sales-profit-toggle.MuiFormControlLabel-root {
+  margin: -8px 0 12px;
+}
+
+.customer-sales-totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.customer-sales-totals > div {
+  padding: 14px 16px;
+  background: #f7f9fc;
+  border: 1px solid #e3e8ef;
+  border-radius: 10px;
+}
+
+.customer-sales-totals span,
+.customer-sales-totals strong {
+  display: block;
+}
+
+.customer-sales-totals span {
+  color: #7b8494;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.customer-sales-totals strong {
+  margin-top: 4px;
+  font-size: 1rem;
+}
+
+.customer-sales-totals small {
+  display: block;
+  margin-top: 4px;
+  color: #718096;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.customer-sales-highlight--highest {
+  border-left: 4px solid #218c55 !important;
+  background: #f0faf5 !important;
+}
+
+.customer-sales-highlight--lowest {
+  border-left: 4px solid #c75b12 !important;
+  background: #fff7ed !important;
+}
+
+.customer-sales-chart {
+  overflow-x: auto;
+}
+
+.customer-sales-back.MuiButton-root {
+  margin-bottom: 12px;
+}
+
+.customer-sales-page-card {
+  margin-top: 18px;
+}
+
 .customer-empty {
   padding: 34px;
   margin-top: 18px;
@@ -568,6 +646,11 @@
   .customer-search-row {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .customer-sales-filters,
+  .customer-sales-totals {
+    grid-template-columns: 1fr;
   }
 
   .customer-search-button.MuiButton-root {
