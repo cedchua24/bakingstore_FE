@@ -213,6 +213,7 @@ import Customer from "./components/Customer/Customer";
 import CustomerListV2 from "./components/Customer/CustomerListV2";
 import EditCustomer from "./components/Customer/EditCustomer";
 import SearchCustomer from "./components/Customer/SearchCustomer";
+import CustomerSalesHistory from "./components/Customer/CustomerSalesHistory";
 import CustomerTransactionList from "./components/Customer/CustomerTransactionList";
 import CustomerListTransaction from "./components/Customer/CustomerListTransaction";
 import CustomerAds from "./components/Customer/CustomerAds";
@@ -744,6 +745,7 @@ const App = () => {
 
           <Route exact path="/customers/" element={<Customer />} />
           <Route exact path="/searchCustomer" element={<SearchCustomer />} />
+          <Route exact path="/customers/:customerId/sales-history" element={<CustomerSalesHistory />} />
           <Route exact path="/customerListV2" element={<CustomerListV2 />} />
           <Route exact path="/customerListTransaction" element={<CustomerListTransaction />} />
           <Route exact path="/customerAds" element={<CustomerAds />} />

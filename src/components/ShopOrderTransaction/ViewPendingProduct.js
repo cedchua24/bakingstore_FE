@@ -200,7 +200,7 @@ const ViewPendingProduct = () => {
 
                                 {
                                     shopOrderTransaction.data.map((shopOrderTransaction, index) => (
-                                        <tr key={shopOrderTransaction.id} style={{ border: "2px solid black" }}>
+                                        <tr key={shopOrderTransaction.id}>
                                             <td >{shopOrderTransaction.id}</td>
                                             <td>{shopOrderTransaction.customer_type}</td>
                                             <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>

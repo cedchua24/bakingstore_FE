@@ -9,6 +9,7 @@ import PersonSearchOutlinedIcon from "@mui/icons-material/PersonSearchOutlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import QueryStatsOutlinedIcon from "@mui/icons-material/QueryStatsOutlined";
 import CustomerService from "./CustomerService";
 import "./CustomerForm.css";
 
@@ -180,6 +181,9 @@ const SearchCustomer = () => {
                 <Link to={`/customers/customerProductList/${result.id}`}>
                   <Button variant="outlined" startIcon={<Inventory2OutlinedIcon />}>View products</Button>
                 </Link>
+                <Link to={`/customers/${result.id}/sales-history`}>
+                  <Button variant="outlined" color="success" startIcon={<QueryStatsOutlinedIcon />}>Sales history</Button>
+                </Link>
               </div>
             </div>
           </section>
@@ -187,6 +191,7 @@ const SearchCustomer = () => {
           <div className="customer-empty">Select a customer above to view their profile and activity.</div>
         )}
       </div>
+
     </div>
   );
 };

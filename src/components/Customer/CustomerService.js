@@ -55,6 +55,10 @@ class CustomerService {
     return axios.post("/api/customers/searchVipCustomerList", data);
   }
 
+  fetchCustomerSalesHistory(id, data) {
+    return axios.post(`/api/customers/fetchCustomerSalesHistory/${id}`, data);
+  }
+
 
   fetchCustomerProduct(data) {
     return axios.post("/api/customers/fetchCustomerProduct", data);
