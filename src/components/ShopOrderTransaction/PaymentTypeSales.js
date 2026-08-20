@@ -13,7 +13,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import Checkbox from '@mui/material/Checkbox';
-import moment from "moment";
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
+import "./PaymentTypeSales.css";
 
 const PaymentTypeSales = () => {
 
@@ -29,9 +30,10 @@ const PaymentTypeSales = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 300,
+        width: { xs: 'calc(100% - 32px)', sm: 420 },
+        maxWidth: 'calc(100vw - 32px)',
         bgcolor: 'background.paper',
-        border: '2px solid #000',
+        borderRadius: 2,
         boxShadow: 24,
         p: 4,
         '& .MuiTextField-root': { m: 1, width: '25ch' },
@@ -51,9 +53,8 @@ const PaymentTypeSales = () => {
         count: 0
     });
 
-    const [open, setOpen] = React.useState(false);
     const [openPickUp, setOpenPickUp] = React.useState(false);
-    const handleClosePickUp = () => setOpen(false);
+    const handleClosePickUp = () => setOpenPickUp(false);
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         data: [],
@@ -61,7 +62,8 @@ const PaymentTypeSales = () => {
         code: '',
         message: '',
         total_price: 0,
-        total_profit: 0
+        total_profit: 0,
+        date: ''
     });
 
     const [shopOrderTransactionUpdateModal, setShopOrderTransactionUpdateModal] = useState({
@@ -102,33 +104,37 @@ const PaymentTypeSales = () => {
 
     const fetchShopOrderTransactionList = () => {
 
-        var dateToday = moment().format("YYYY-MM-DD")
-        console.log('test: ', dateToday);
         var valueParam = id.split("+");
         console.log('pieces', valueParam);
         console.log('date', valueParam[1]);
 
         if (valueParam[1] === '') {
             console.log('empty');
-            valueParam[1] = dateToday;
+            valueParam[1] = 0;
         } else {
             console.log('non empty');
         }
 
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByIdDate(valueParam[0], valueParam[1])
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByIdDateV2(valueParam[0], valueParam[1])
             .then(response => {
-                console.log('fetchOnlineShopOrderTransactionListByIdDate', response.data)
+                console.log('fetchOnlineShopOrderTransactionListByIdDateV2', response.data)
                 // setShopOrderTransactionList(response.data);
-                setShopOrderTransaction(response.data);
+                const transactionSummary = response.data || {};
+                const transactions = Array.isArray(transactionSummary.data) ? transactionSummary.data : [];
+                setShopOrderTransaction({
+                    ...transactionSummary,
+                    data: transactions,
+                    payment: transactionSummary.payment || {},
+                });
                 // console.log('filterByPaid', filterByPaid(response.data.data));
-                console.log('filterByPaid', subtotal(filterByPaid(response.data.data)));
-                console.log('filterByNonPaid', subtotal(filterByNonPaid(response.data.data)));
-                setCount(filterByPaid(response.data.data).length);
+                console.log('filterByPaid', subtotal(filterByPaid(transactions)));
+                console.log('filterByNonPaid', subtotal(filterByNonPaid(transactions)));
+                setCount(filterByPaid(transactions).length);
                 setPaymentDetails({
                     ...paymentDetails,
-                    paid: subtotal(filterByPaid(response.data.data)),
-                    nonPaid: subtotal(filterByNonPaid(response.data.data)),
-                    count: filterByPaid(response.data.data).length
+                    paid: subtotal(filterByPaid(transactions)),
+                    nonPaid: subtotal(filterByNonPaid(transactions)),
+                    count: filterByPaid(transactions).length
                 });
             })
             .catch(e => {
@@ -147,7 +153,7 @@ const PaymentTypeSales = () => {
 
     function subtotal(items) {
         console.log(items);
-        return items.reduce((total, currentValue) => total = total + currentValue.amount, 0);
+        return items.reduce((total, currentValue) => total + Number(currentValue.amount || 0), 0);
 
         // return items.map(({ items }) => items.amount).reduce((sum, i) => sum + i, 0);
     }
@@ -162,7 +168,6 @@ const PaymentTypeSales = () => {
         ModeOfPaymentService.updatePaidStatus(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
             .then(response => {
                 fetchShopOrderTransactionList();
-                setOpen(false);
                 setOpenPickUp(false);
             })
             .catch(e => {
@@ -170,118 +175,127 @@ const PaymentTypeSales = () => {
             });
     }
 
+    const reportDate = shopOrderTransaction.date || id.split("+")[1];
+    const totalAmount = Number(shopOrderTransaction.payment.total_amount || 0);
+    const paidAmount = Number(paymentDetails.paid || 0);
+    const paidCount = filterByPaid(shopOrderTransaction.data).length;
+    const transactionCount = shopOrderTransaction.data.length;
+    const isReconciled = paidCount === transactionCount && paidAmount === totalAmount;
+    const numberFormat = (value) => new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        maximumFractionDigits: 2,
+    }).format(Number(value || 0));
 
 
     return (
-        <div>
-            <div style={{ width: 300 }}>
-                {shopOrderTransaction.data.length == 0 ?
-                    (<tr style={{ color: "red", }}>{"No Data Available"}</tr>)
-                    :
-                    (
-                        <>
-                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold' }}> {shopOrderTransaction.payment.payment_type} {shopOrderTransaction.payment.payment_type_description}</Form.Label>
-                                <Form.Control type="text" value={"₱ " + shopOrderTransaction.payment.total_amount} />
-
-                            </Form.Group>
-
-
-
-                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold' }}> Count</Form.Label>
-                                {filterByPaid(shopOrderTransaction.data).length == shopOrderTransaction.data.length ? <CheckIcon style={{ color: 'green', }} /> :
-                                    <CloseIcon style={{ color: 'red', }} />}
-                                <Form.Control type="text" value={filterByPaid(shopOrderTransaction.data).length + "/" + shopOrderTransaction.data.length} />
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold' }}> Payment</Form.Label>
-                                {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
-                                    <CloseIcon style={{ color: 'red', }} />}
-                                <Form.Control type="text" value={paymentDetails.paid + "/" + shopOrderTransaction.payment.total_amount} />
-                            </Form.Group>
-
-                            <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                                <Form.Label style={{ fontWeight: 'bold' }}> Discrepancy</Form.Label>
-                                {paymentDetails.paid == shopOrderTransaction.payment.total_amount ? <CheckIcon style={{ color: 'green', }} /> :
-                                    <CloseIcon style={{ color: 'red', }} />}
-                                <Form.Control type="text" value={shopOrderTransaction.payment.total_amount - paymentDetails.paid} />
-                            </Form.Group>
-
-
-
-                        </>)}
+        <div className="payment-account-sales-page">
+            <header className="payment-account-sales-hero">
                 <div>
-                </div>        </div>
+                    <span className="payment-account-sales-eyebrow">Payment reconciliation</span>
+                    <h1>Account Sales</h1>
+                    <p>{formatPaymentLabel(shopOrderTransaction.payment) || 'Account'} · {reportDate || 'Today'}</p>
+                </div>
+                <div className={`payment-account-sales-status ${isReconciled ? 'is-complete' : 'is-pending'}`}>
+                    {isReconciled ? <CheckIcon /> : <CloseIcon />}
+                    {isReconciled ? 'Reconciled' : 'Needs review'}
+                </div>
+            </header>
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Payment Type Sales   </legend>
-            <legend align="center" style={{ fontWeight: 'bold' }} ><h6> {id.split("+")[1]}  </h6></legend>
+            <section className="payment-account-sales-metrics">
+                <article>
+                    <span>Account total</span>
+                    <strong>{numberFormat(totalAmount)}</strong>
+                    <small>{formatPaymentLabel(shopOrderTransaction.payment) || '—'}</small>
+                </article>
+                <article>
+                    <span>Confirmed records</span>
+                    <strong>{paidCount} / {transactionCount}</strong>
+                    <small>{transactionCount === 1 ? '1 transaction' : `${transactionCount} transactions`}</small>
+                </article>
+                <article>
+                    <span>Confirmed amount</span>
+                    <strong>{numberFormat(paidAmount)}</strong>
+                    <small>of {numberFormat(totalAmount)}</small>
+                </article>
+                <article className={totalAmount - paidAmount === 0 ? 'is-balanced' : 'has-discrepancy'}>
+                    <span>Discrepancy</span>
+                    <strong>{numberFormat(totalAmount - paidAmount)}</strong>
+                    <small>{totalAmount - paidAmount === 0 ? 'Account is balanced' : 'Amount still unconfirmed'}</small>
+                </article>
+            </section>
 
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+            <section className="payment-account-sales-table-card">
+                <div className="payment-account-sales-table-heading">
+                    <div>
+                        <span>Transactions</span>
+                        <h2>Account payment records</h2>
+                    </div>
+                    <strong>{transactionCount} {transactionCount === 1 ? 'record' : 'records'}</strong>
+                </div>
+
+                <div className="payment-account-sales-table-wrap">
+                <table className="table payment-account-sales-table">
+                <thead>
+                    <tr>
                         <th>ID</th>
                         <th>Transaction ID</th>
-                        <th>Shop Name</th>
-                        <th>Customer Type</th>
+                        <th>Shop</th>
+                        <th>Type</th>
                         <th>Customer</th>
                         <th>Amount</th>
-                        <th>Total Quantity</th>
-                        <th>Total Cash</th>
-                        <th>Total Online</th>
-                        <th>Total Amount</th>
-                        <th>Transaction Date</th>
+                        <th>Qty</th>
+                        <th>Order Total</th>
+                        <th>Date</th>
                         <th>Status</th>
-                        <th>Payment Record</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
+                        <th>Confirmation</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
-                {shopOrderTransaction.data.length == 0 ?
-                    (<tr style={{ color: "red", }}>{"No Data Available"}</tr>)
-                    :
-                    (
                         <tbody>
-                            {
-                                shopOrderTransaction.data.map((shopOrderTransaction, index) => (
+                            {transactionCount === 0 ? (
+                                <tr>
+                                    <td colSpan="12" className="payment-account-sales-empty">No payment records available.</td>
+                                </tr>
+                            ) : (
+                                shopOrderTransaction.data.map((shopOrderTransaction) => (
                                     <tr key={shopOrderTransaction.id} >
                                         <td>{shopOrderTransaction.id}</td>
                                         <td>{shopOrderTransaction.transaction_id}</td>
                                         <td>{shopOrderTransaction.shop_name}</td>
                                         <td>{shopOrderTransaction.customer_type}</td>
                                         <td>{shopOrderTransaction.requestor_name}</td>
-                                        <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.amount}</td>
+                                        <td className="payment-account-sales-amount">{numberFormat(shopOrderTransaction.amount)}</td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                        <td>{shopOrderTransaction.total_cash}</td>
-                                        <td>{shopOrderTransaction.total_online}</td>
-                                        <td >{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                        <td>{shopOrderTransaction.date != id.split("+")[1] ? <p style={{ color: 'orange', }}>{shopOrderTransaction.date}</p> : shopOrderTransaction.date}</td>
+                                        <td>{numberFormat(shopOrderTransaction.shop_order_transaction_total_price)}</td>
+                                        <td>{shopOrderTransaction.date != reportDate ? <p style={{ color: 'orange', }}>{shopOrderTransaction.date}</p> : shopOrderTransaction.date}</td>
 
-                                        <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                            : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                                <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                        <td><span className={`payment-account-sales-order-status status-${shopOrderTransaction.status}`}>
+                                            {Number(shopOrderTransaction.status) === 1 ? 'Completed' : Number(shopOrderTransaction.status) === 2 ? 'Pending' : 'Cancelled'}
+                                        </span></td>
                                         <td>
-                                            {shopOrderTransaction.is_paid === 1 ? <CheckIcon style={{ color: 'green', }} /> :
-                                                <CloseIcon style={{ color: 'red', }} />}
-                                            <IconButton>
+                                            <span className={`payment-account-sales-confirmation ${Number(shopOrderTransaction.is_paid) === 1 ? 'is-confirmed' : 'is-unconfirmed'}`}>
+                                                {Number(shopOrderTransaction.is_paid) === 1 ? <CheckIcon /> : <CloseIcon />}
+                                                {Number(shopOrderTransaction.is_paid) === 1 ? 'Confirmed' : 'Unconfirmed'}
+                                            </span>
+                                            <IconButton size="small" title="Update confirmation">
                                                 <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
                                             </IconButton>
                                         </td>
                                         <td>
                                             <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.shop_order_transaction_id}   >
-                                                <Button variant="primary" >
+                                                <Button variant="outline-primary" size="sm">
                                                     View
                                                 </Button>
                                             </Link>
                                         </td>
                                     </tr>
-                                )
-                                )
-                            }
-                        </tbody>)}
-            </table>
+                                ))
+                            )}
+                        </tbody>
+                </table>
+                </div>
+            </section>
 
             <Modal
                 keepMounted

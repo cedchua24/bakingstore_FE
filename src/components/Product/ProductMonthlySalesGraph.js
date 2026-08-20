@@ -5,6 +5,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import ProductService from "./ProductService.service";
+import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
 
 const money = value => Number(value || 0).toLocaleString("en-PH", { style: "currency", currency: "PHP", minimumFractionDigits: 2 });
 
@@ -19,14 +20,29 @@ const ProductMonthlySalesGraph = () => {
     const month = params.get("month") || "";
     const comparisonPage = Number(params.get("comparison_page") || 0);
     const customerId = params.get("customer_id") || "";
+    const source = params.get("source") || "";
 
     useEffect(() => {
-        const filters = { comparison_page: comparisonPage, ...(customerId ? { customer_id: customerId } : {}) };
-        ProductService.fetchProductMonthlySales(month, filters)
-            .then(response => setReport(response.data))
+        const request = source === "trend"
+            ? ShopOrderTransactionService.fetchMonthlyProductSalesComparison({ month, limit: 5000, sort: "current_sales", direction: "desc", type: "ALL", supplier_id: null, category_id: null })
+            : ProductService.fetchProductMonthlySales(month, { comparison_page: comparisonPage, ...(customerId ? { customer_id: customerId } : {}) });
+        request
+            .then(response => {
+                if (source !== "trend") return setReport(response.data);
+                const payload = response.data?.data && !Array.isArray(response.data.data) ? response.data.data : response.data || {};
+                const rows = Array.isArray(payload.data) ? payload.data : Array.isArray(payload.products) ? payload.products : [];
+                const item = rows.find(row => String(row.product_id || row.id) === String(productId));
+                if (!item) return setReport({ data: [] });
+                const history = item.three_month_comparison || item.three_month_sales || item.monthly_sales || [];
+                const packSize = Math.max(1, Number(item.quantity || 1));
+                const sales = entry => Number(entry?.sales ?? entry?.total_sales ?? entry?.sales_amount ?? entry?.total_price ?? entry?.amount ?? 0);
+                const pieces = entry => Number(entry?.total_quantity ?? entry?.current_quantity ?? entry?.pieces_sold ?? entry?.quantity_sold ?? 0);
+                const normalized = history.map(entry => ({ label: entry.label || entry.month, sales_amount: sales(entry), profit_amount: Number(entry.profit ?? entry.total_profit ?? entry.profit_amount ?? 0), quantity_sold: Math.floor(pieces(entry) / packSize) }));
+                setReport({ report_month: { label: normalized[0]?.label || month }, data: [{ ...item, product_id: item.product_id || item.id, current_month: normalized[0] || {}, previous_months: normalized.slice(1) }] });
+            })
             .catch(requestError => setError(requestError.response?.data?.message || "Unable to load product graph."))
             .finally(() => setLoading(false));
-    }, [month, comparisonPage, customerId]);
+    }, [month, comparisonPage, customerId, source, productId]);
 
     const product = (report?.data || []).find(item => String(item.product_id) === String(productId));
     const chartData = useMemo(() => product && report ? [

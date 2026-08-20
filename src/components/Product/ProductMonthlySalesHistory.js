@@ -11,10 +11,12 @@ const money = value => Number(value || 0).toLocaleString("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2,
 });
 const number = value => Number(value || 0).toLocaleString("en-PH", { maximumFractionDigits: 2 });
-const totalSold = (quantity, pieces, emphasized = false) => {
+const totalSold = (quantity, pieces, emphasized = false, piecesPerBox = 1) => {
     if (Number(quantity || 0) === 0 && Number(pieces || 0) === 0) return null;
-    return <div style={{ whiteSpace: "nowrap", fontSize: emphasized ? 15 : 12.5, fontWeight: emphasized ? 900 : 750 }}>
-        <span>{number(quantity)} Box</span><span style={{ margin: "0 4px", color: "#94a3b8", fontWeight: 600 }}>/</span><span>{number(pieces)} Pc</span>
+    return <div style={{ fontSize: emphasized ? 15 : 12.5, fontWeight: emphasized ? 900 : 750, lineHeight: 1.35 }}>
+        {Number(pieces || 0) > Number(piecesPerBox || 1)
+            ? <span style={{ display: "block", whiteSpace: "nowrap" }}>{number(quantity)} Box</span>
+            : <span style={{ display: "block", whiteSpace: "nowrap" }}>{number(pieces)} Pc</span>}
     </div>;
 };
 const stockDisplay = product => {
@@ -33,6 +35,31 @@ const shiftMonth = (month, offset) => {
     const [year, monthNumber] = month.split("-").map(Number);
     const date = new Date(year, monthNumber - 1 + offset, 1);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+};
+const projectedOutput = (month, boxes, pieces) => {
+    if (!/^\d{4}-\d{2}$/.test(month || "")) return null;
+    const now = new Date();
+    const [year, monthNumber] = month.split("-").map(Number);
+    const daysInMonth = new Date(year, monthNumber, 0).getDate();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    if (month > currentMonth) return null;
+    const elapsedDays = month === currentMonth ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
+    const runRate = daysInMonth / elapsedDays;
+    return {
+        boxes: Math.round(Number(boxes || 0) * runRate),
+        pieces: Math.round(Number(pieces || 0) * runRate),
+        projected: month === currentMonth,
+    };
+};
+const projectionAssessment = (projection, targetBoxes, targetPieces) => {
+    if (!projection?.projected) return null;
+    const useBoxes = Number(targetBoxes || 0) > 0;
+    const target = useBoxes ? Number(targetBoxes) : Number(targetPieces || 0);
+    const projected = useBoxes ? projection.boxes : projection.pieces;
+    const attainment = target > 0 ? (projected / target) * 100 : projected > 0 ? 100 : 0;
+    if (attainment >= 100) return { label: "On Track", color: "#146c43", background: "#d1e7dd", attainment };
+    if (attainment >= 80) return { label: "At risk", color: "#92400e", background: "#fef3c7", attainment };
+    return { label: "Unlikely", color: "#b42318", background: "#fee2e2", attainment };
 };
 
 const statusMeta = {
@@ -287,12 +314,14 @@ const ProductMonthlySalesHistory = () => {
                                 ? (quantityComparison / comparisonBasis) * 100
                                 : quantityComparison > 0 ? 100 : 0;
                             const quantityTrendTitle = `${report.report_month?.label}: ${number(currentBoxes)} Box / ${number(currentPieces)} Pc; ${comparisonReferenceLabel}: ${number(comparisonBoxes)} Box / ${number(comparisonPieces)} Pc`;
+                            const projection = projectedOutput(month, currentBoxes, currentPieces);
+                            const projectionStatus = projectionAssessment(projection, averageBoxes, averagePieces);
                             return <tr key={product.product_id}>
                                 <td><div style={styles.product}>{product.product_name}</div><div style={styles.meta}>{product.brand_name} · {product.category_name}</div></td>
                                 <td>{stockDisplay(product)}</td>
-                                <td className={selectedMonthClass(product)}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true)}{visibleMetrics.sales && <span>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{Number(product.current_month?.sales_amount || 0) === 0 && <span style={styles.notSold}>NOT SOLD</span>}</div></td>
-                                {(product.previous_months || []).map(item => <td key={item.month}><div style={styles.month}>{visibleMetrics.quantity && totalSold(item.quantity_sold, item.pieces_sold)}{visibleMetrics.sales && <span>{money(item.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(item.profit_amount)}</span>}</div></td>)}
-                                <td style={styles.averageCell}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}</div></td>
+                                <td className={selectedMonthClass(product)}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && projectionStatus && <span style={{ display: "block", width: "100%", maxWidth: 90, height: 4, marginTop: 6, marginBottom: 3, borderRadius: 999, background: projectionStatus.color }} />}{visibleMetrics.sales && <span>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{Number(product.current_month?.sales_amount || 0) === 0 && <span style={styles.notSold}>NOT SOLD</span>}</div></td>
+                                {(product.previous_months || []).map(item => <td key={item.month}><div style={styles.month}>{visibleMetrics.quantity && totalSold(item.quantity_sold, item.pieces_sold, false, product.quantity)}{visibleMetrics.sales && <span>{money(item.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(item.profit_amount)}</span>}</div></td>)}
+                                <td style={styles.averageCell}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}</div></td>
                                 <td>
                                     <div>
                                         <span style={{ display: "block", marginBottom: 4, color: "#64748b", fontSize: 8, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase" }}>3-month average</span>
@@ -310,6 +339,15 @@ const ProductMonthlySalesHistory = () => {
                                         </span>
                                         <span style={{ display: "block", fontSize: 13 }}>{quantityChangePercentage >= 0 ? "+" : ""}{number(quantityChangePercentage)}%</span>
                                     </div>
+                                    {projection && <div style={{ marginTop: 9, paddingTop: 8, borderTop: "2px solid #cbd5e1" }}>
+                                        <span style={{ display: "block", marginBottom: 4, color: "#64748b", fontSize: 8, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase" }}>{projection.projected ? "Projected month-end output" : "Final output"}</span>
+                                        <strong style={{ display: "block", color: "#1d4ed8", fontSize: 12, lineHeight: 1.4 }}>{number(projection.boxes)} Box<br/>{number(projection.pieces)} Pc</strong>
+                                        {projection.projected && <span style={{ display: "block", marginTop: 3, color: "#64748b", fontSize: 8 }}>Based on current daily sales</span>}
+                                        {projectionStatus && <div style={{ marginTop: 6 }}>
+                                            <span style={{ display: "inline-flex", padding: "4px 8px", borderRadius: 999, color: projectionStatus.color, background: projectionStatus.background, fontSize: 9, fontWeight: 900 }}>{projectionStatus.label}</span>
+                                            <span style={{ display: "block", marginTop: 4, color: projectionStatus.color, fontSize: 10, fontWeight: 800 }}>{number(projectionStatus.attainment)}% of 3-month average</span>
+                                        </div>}
+                                    </div>}
                                 </td>
                                     <td style={styles.actionCell}><Button size="sm" variant="outline-primary" title="View graph" aria-label={`View graph for ${product.product_name}`} onClick={() => openProductGraph(product.product_id)} style={{ width: 34, height: 32, padding: 0 }}><BarChartIcon fontSize="small" /></Button></td>
                             </tr>;

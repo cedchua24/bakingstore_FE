@@ -2,11 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
 import LinearProgress from '@mui/material/LinearProgress';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
@@ -49,6 +51,7 @@ const ReportCustomerSorted = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [query, setQuery] = useState('');
+    const [showProfit, setShowProfit] = useState(false);
 
     const loadReport = (requestFilters) => {
         setLoading(true);
@@ -113,7 +116,7 @@ const ReportCustomerSorted = () => {
                 <section className="cr-summary">
                     <article><GroupsOutlinedIcon /><div><span>Customers</span><strong>{records.length.toLocaleString()}</strong></div></article>
                     <article><PaymentsOutlinedIcon /><div><span>Total sales</span><strong>{money(totalSales)}</strong></div></article>
-                    <article><TrendingUpRoundedIcon /><div><span>Total profit</span><strong>{money(totalProfit)}</strong></div></article>
+                    {showProfit && <article><TrendingUpRoundedIcon /><div><span>Total profit</span><strong>{money(totalProfit)}</strong></div></article>}
                 </section>
 
                 <section className="cr-filter-card">
@@ -154,21 +157,21 @@ const ReportCustomerSorted = () => {
                 <section className="cr-table-card">
                     <header>
                         <div><h2>Ranked customers</h2><p>{visibleRecords.length} results in this report</p></div>
-                        <TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search customer..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} />
+                        <div className="cr-table-tools"><FormControlLabel control={<Switch size="small" checked={showProfit} onChange={(event) => setShowProfit(event.target.checked)} />} label="Show profit" /><TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search customer..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></div>
                     </header>
                     <div className="cr-table-scroll">
                         <table className="cr-table">
-                            <thead><tr><th>Rank</th><th>Customer</th><th>Profit</th><th>Sales amount</th></tr></thead>
+                            <thead><tr><th>Rank</th><th>Customer</th>{showProfit && <th>Profit</th>}<th>Sales amount</th></tr></thead>
                             <tbody>
                                 {visibleRecords.map((customer, index) => (
                                     <tr key={customer.id || index}>
                                         <td><span className="cr-rank">{index + 1}</span></td>
                                         <td><div className="cr-customer"><strong>{customerName(customer)}</strong><span>Customer #{customer.id}</span></div></td>
-                                        <td className="cr-money cr-profit">{money(customer.total_profit)}</td>
+                                        {showProfit && <td className="cr-money cr-profit">{money(customer.total_profit)}</td>}
                                         <td className="cr-money">{money(customer.total_price)}</td>
                                     </tr>
                                 ))}
-                                {!loading && !visibleRecords.length && <tr><td colSpan="4"><div className="cr-empty"><GroupsOutlinedIcon /><strong>No customers found</strong><span>Configure the report filters or try another search.</span></div></td></tr>}
+                                {!loading && !visibleRecords.length && <tr><td colSpan={showProfit ? 4 : 3}><div className="cr-empty"><GroupsOutlinedIcon /><strong>No customers found</strong><span>Configure the report filters or try another search.</span></div></td></tr>}
                             </tbody>
                         </table>
                     </div>

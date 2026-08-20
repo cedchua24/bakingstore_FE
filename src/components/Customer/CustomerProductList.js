@@ -8,6 +8,7 @@ const CustomerProductList = () => {
 
     const { id } = useParams();
     const location = useLocation();
+    const [showProfit, setShowProfit] = useState(false);
 
     const [sortedProduct, setSortedProduct] = useState({
         data: [],
@@ -102,13 +103,14 @@ const CustomerProductList = () => {
                     <Button variant="primary" type="submit">
                         Apply Filter
                     </Button>
+                    <Form.Check type="switch" id="customer-product-profit" label="Show profit" checked={showProfit} onChange={(event) => setShowProfit(event.target.checked)} />
                 </Form>
             </section>
             <section className="customer-list-metrics customer-list-metrics--products">
                 <article className="customer-list-metric"><span>Products</span><strong>{sortedProduct.data.length}</strong></article>
                 <article className="customer-list-metric"><span>Units Sold</span><strong>{productTotals.quantity}</strong></article>
                 <article className="customer-list-metric"><span>Sales</span><strong>{numberFormat(productTotals.sales)}</strong></article>
-                <article className="customer-list-metric customer-list-metric--total"><span>Profit</span><strong>{numberFormat(productTotals.profit)}</strong></article>
+                {showProfit && <article className="customer-list-metric customer-list-metric--total"><span>Profit</span><strong>{numberFormat(productTotals.profit)}</strong></article>}
             </section>
             <section className="customer-list-table-card customer-list-table-card--products">
             <table className="table customer-list-table">
@@ -119,7 +121,7 @@ const CustomerProductList = () => {
                         <th>Price</th>
                         <th>Sold</th>
                         <th>Amount</th>
-                        <th>Profit</th>
+                        {showProfit && <th>Profit</th>}
                     </tr>
                 </thead>
                 {sortedProduct.data.length == 0 ?
@@ -135,7 +137,7 @@ const CustomerProductList = () => {
                                         <td>{numberFormat(data.new_price)}</td>
                                         <td>{data.total_quantity}</td>
                                         <td>{numberFormat(data.total_price)}</td>
-                                        <td>{numberFormat(data.total_profit)}</td>
+                                        {showProfit && <td>{numberFormat(data.total_profit)}</td>}
                                     </tr>
                                 )
                                 )

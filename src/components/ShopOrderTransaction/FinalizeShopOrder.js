@@ -7,7 +7,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
-import PaymentTypeService from "../OtherService/PaymentTypeService";
+import PaymentTypePoService from "../OtherService/PaymentTypePoService";
+import PaymentTermService from "../OtherService/PaymentTermService";
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
 
 import TextField from '@mui/material/TextField';
@@ -57,16 +58,21 @@ import PrintIcon from '@mui/icons-material/Print';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const FinalizeShopOrder = () => {
+    const CUSTOMER_PAYMENT_ACCOUNT_FILTER = {
+        is_supplier: 0,
+        is_customer: 1,
+        status: 0
+    };
 
 
     const { id } = useParams();
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchPaymentType();
+        fetchPaymentTerms();
         fetchShopOrderTransaction(id);
         fetchShopOrderDTO(id);
-        fetchPaymentTypeByShopTransactionId(id);
+        fetchPaymentTypeByShopTransactionIdV2(id);
 
     }, []);
 
@@ -79,7 +85,26 @@ const FinalizeShopOrder = () => {
         setSubmitOpenModal(false);
     };
 
-    const [paymentTypeList, setPaymentTypeList] = useState([]);
+    const [paymentTermList, setPaymentTermList] = useState([]);
+    const [paymentAccountList, setPaymentAccountList] = useState([]);
+    const [selectedPaymentTerm, setSelectedPaymentTerm] = useState(null);
+    const [selectedPaymentAccount, setSelectedPaymentAccount] = useState(null);
+
+    const hasDisplayValue = (value) => {
+        const normalizedValue = String(value ?? '').trim();
+        return normalizedValue !== '' && normalizedValue !== '0';
+    };
+
+    const sortPaymentAccounts = (accounts) => [...accounts].sort((firstAccount, secondAccount) => {
+        const firstLabel = [firstAccount.bank_name, firstAccount.account_name, firstAccount.account_number]
+            .filter(hasDisplayValue)
+            .join(' ');
+        const secondLabel = [secondAccount.bank_name, secondAccount.account_name, secondAccount.account_number]
+            .filter(hasDisplayValue)
+            .join(' ');
+
+        return firstLabel.localeCompare(secondLabel, undefined, { sensitivity: 'base', numeric: true });
+    });
 
     const [orderShop, setOrderShop] = useState({
         id: 0,
@@ -147,11 +172,16 @@ const FinalizeShopOrder = () => {
     const [modeOfPaymentModal, setModeOfPaymentModal] = useState({
         id: 0,
         payment_type_id: '',
+        payment_type_po_id: '',
+        payment_term_id: 0,
         shop_order_transaction_id: 0,
         amount: 0,
         created_at: '',
         updated_at: ''
     });
+    const [modalPaymentAccountList, setModalPaymentAccountList] = useState([]);
+    const [selectedModalPaymentTerm, setSelectedModalPaymentTerm] = useState(null);
+    const [selectedModalPaymentAccount, setSelectedModalPaymentAccount] = useState(null);
 
 
 
@@ -213,15 +243,21 @@ const FinalizeShopOrder = () => {
             });
     }
 
-    const fetchPaymentTypeByShopTransactionId = async (id) => {
-        await ModeOfPaymentService.fetchPaymentTypeByShopTransactionId(id)
+    const fetchPaymentTypeByShopTransactionIdV2 = async (id) => {
+        await ModeOfPaymentService.fetchPaymentTypeByShopTransactionIdV2(id)
             .then(response => {
-                setModeOfPaymentDTO(response.data);
-                console.log('balance', response.data)
-                setModeOfPayment({
-                    ...modeOfPayment,
-                    amount: response.data.balance,
+                const paymentSummary = response.data || {};
+                setModeOfPaymentDTO({
+                    ...paymentSummary,
+                    data: Array.isArray(paymentSummary.data) ? paymentSummary.data : [],
+                    balance: Number(paymentSummary.balance || 0),
+                    total_payment: Number(paymentSummary.total_payment || 0),
                 });
+                console.log('balance', response.data)
+                setModeOfPayment((currentPayment) => ({
+                    ...currentPayment,
+                    amount: Number(paymentSummary.balance || 0),
+                }));
 
             })
             .catch(e => {
@@ -238,7 +274,7 @@ const FinalizeShopOrder = () => {
             status: 1,
         });
 
-        ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransaction.id, shopOrderTransaction)
+        ShopOrderTransactionService.updateShopOrderTransactionStatusV2(shopOrderTransaction.id, shopOrderTransaction)
             .then(response => {
                 setMessage(true);
                 setSubmitLoading(false);
@@ -255,12 +291,20 @@ const FinalizeShopOrder = () => {
     }
 
     const savePaymentType = () => {
-        const result = modeOfPaymentDTO.data.find(mop => mop.payment_type_id === modeOfPayment.payment_type_id);
+        const result = modeOfPaymentDTO.data.find((payment) =>
+            Number(payment.payment_type_po_id ?? payment.payment_type_id) === Number(modeOfPayment.payment_type_id)
+        );
         console.log('index:', result);
-        if (modeOfPayment.payment_type_id == '') {
+        if (!selectedPaymentTerm) {
             setValidator({
                 severity: 'error',
-                message: 'Please Select choose Payment method!',
+                message: 'Please choose a payment term!',
+                isShow: true,
+            });
+        } else if (!selectedPaymentAccount || modeOfPayment.payment_type_id == '') {
+            setValidator({
+                severity: 'error',
+                message: 'Please choose an account!',
                 isShow: true,
             });
         } else {
@@ -269,7 +313,7 @@ const FinalizeShopOrder = () => {
             ModeOfPaymentService.sanctum().then(response => {
                 ModeOfPaymentService.create(modeOfPayment)
                     .then(response => {
-                        fetchPaymentTypeByShopTransactionId(id);
+                        fetchPaymentTypeByShopTransactionIdV2(id);
                         setSubmitLoadingAdd(false);
                         setValidator({
                             severity: 'success',
@@ -316,38 +360,90 @@ const FinalizeShopOrder = () => {
         }
     }
 
-    const fetchPaymentType = () => {
-        PaymentTypeService.fetchEnablePaymentType()
+    const fetchPaymentTerms = () => {
+        PaymentTermService.getAll()
             .then(response => {
-                setPaymentTypeList(response.data);
+                const excludedTerms = ['cheque', 'credit card'];
+                const availableTerms = Array.isArray(response.data)
+                    ? response.data.filter((term) => {
+                        const termName = String(term.payment_term || '').trim().toLowerCase();
+                        return !excludedTerms.includes(termName);
+                    })
+                    : [];
+
+                setPaymentTermList(availableTerms);
             })
             .catch(e => {
                 console.log("error", e)
             });
     }
 
-    const handleInputChange = (e, value) => {
-        e.persist();
-        if (!value) {
-            setModeOfPayment({
-                ...modeOfPayment,
-                shop_order_transaction_id: shopOrderTransaction.id,
-                payment_type_id: '',
-            });
-            return;
+    const handlePaymentTermChange = (e, value) => {
+        setSelectedPaymentTerm(value);
+        setSelectedPaymentAccount(null);
+        setPaymentAccountList([]);
+        setModeOfPayment((currentPayment) => ({
+            ...currentPayment,
+            payment_type_id: ''
+        }));
+
+        if (value) {
+            PaymentTypePoService.findByCategoryV2(value.id, CUSTOMER_PAYMENT_ACCOUNT_FILTER)
+                .then(response => {
+                    const accounts = Array.isArray(response.data) ? sortPaymentAccounts(response.data) : [];
+                    setPaymentAccountList(accounts);
+                })
+                .catch(e => {
+                    console.log("error", e);
+                });
         }
-        setModeOfPayment({
-            ...modeOfPayment,
-            shop_order_transaction_id: shopOrderTransaction.id,
-            payment_type_id: value.id,
-        });
     }
 
-    const onChangePaymentModal = (e) => {
-        setModeOfPaymentModal({
-            ...modeOfPaymentModal,
-            payment_type_id: e.target.value,
-        });
+    const handlePaymentAccountChange = (e, value) => {
+        setSelectedPaymentAccount(value);
+        if (!value) {
+            setModeOfPayment((currentPayment) => ({
+                ...currentPayment,
+                shop_order_transaction_id: shopOrderTransaction.id,
+                payment_type_id: '',
+            }));
+            return;
+        }
+        setModeOfPayment((currentPayment) => ({
+            ...currentPayment,
+            shop_order_transaction_id: shopOrderTransaction.id,
+            payment_type_id: value.id,
+        }));
+    }
+
+    const handleModalPaymentTermChange = (e, value) => {
+        setSelectedModalPaymentTerm(value);
+        setSelectedModalPaymentAccount(null);
+        setModalPaymentAccountList([]);
+        setModeOfPaymentModal((currentPayment) => ({
+            ...currentPayment,
+            payment_term_id: value ? value.id : 0,
+            payment_type_id: '',
+            payment_type_po_id: '',
+        }));
+
+        if (value) {
+            PaymentTypePoService.findByCategoryV2(value.id, CUSTOMER_PAYMENT_ACCOUNT_FILTER)
+                .then(response => {
+                    const accounts = Array.isArray(response.data) ? sortPaymentAccounts(response.data) : [];
+                    setModalPaymentAccountList(accounts);
+                })
+                .catch(error => console.log('error', error));
+        }
+    }
+
+    const handleModalPaymentAccountChange = (e, value) => {
+        setSelectedModalPaymentAccount(value);
+        setModeOfPaymentModal((currentPayment) => ({
+            ...currentPayment,
+            payment_type_id: value ? value.id : '',
+            payment_type_po_id: value ? value.id : '',
+        }));
     }
 
 
@@ -375,9 +471,39 @@ const FinalizeShopOrder = () => {
     const fetchModeOfPayment = async (id) => {
         await ModeOfPaymentService.get(id)
             .then(response => {
-                setModeOfPaymentModal(response.data);
-                setAmount(response.data.amount)
-                console.log(response.data)
+                const summaryPayment = modeOfPaymentDTO.data.find((payment) => Number(payment.id) === Number(id)) || {};
+                const payment = { ...response.data, ...summaryPayment };
+                const paymentTermId = Number(payment.payment_term_id || 0);
+                const paymentAccountId = Number(payment.payment_type_po_id ?? payment.payment_type_id ?? 0);
+
+                setModeOfPaymentModal({
+                    ...payment,
+                    payment_term_id: paymentTermId,
+                    payment_type_id: paymentAccountId || '',
+                    payment_type_po_id: paymentAccountId || '',
+                });
+                setAmount(Number(payment.amount || 0));
+                setSelectedModalPaymentTerm(
+                    paymentTermList.find((term) => Number(term.id) === paymentTermId) || null
+                );
+
+                if (paymentTermId) {
+                    PaymentTypePoService.findByCategoryV2(paymentTermId, CUSTOMER_PAYMENT_ACCOUNT_FILTER)
+                        .then(accountResponse => {
+                            const accounts = Array.isArray(accountResponse.data)
+                                ? sortPaymentAccounts(accountResponse.data)
+                                : [];
+                            setModalPaymentAccountList(accounts);
+                            setSelectedModalPaymentAccount(
+                                accounts.find((account) => Number(account.id) === paymentAccountId) || null
+                            );
+                        })
+                        .catch(error => console.log('error', error));
+                } else {
+                    setModalPaymentAccountList([]);
+                    setSelectedModalPaymentAccount(null);
+                }
+                console.log('ey', response.data)
             })
             .catch(e => {
                 console.log("error", e)
@@ -410,7 +536,7 @@ const FinalizeShopOrder = () => {
                     message: 'Successfuly Deleted!',
                     isShow: true,
                 });
-                fetchPaymentTypeByShopTransactionId(id);
+                fetchPaymentTypeByShopTransactionIdV2(id);
                 // window.location.reload();
             })
             .catch(e => {
@@ -419,6 +545,15 @@ const FinalizeShopOrder = () => {
     }
 
     const updateOrderSupplier = () => {
+        if (!selectedModalPaymentTerm || !selectedModalPaymentAccount) {
+            setValidator({
+                severity: 'error',
+                message: 'Please choose a payment term and account.',
+                isShow: true,
+            });
+            return;
+        }
+
         setSubmitLoading(true);
         if (modeOfPaymentModal.amount > (modeOfPaymentDTO.balance + amount)) {
             setSubmitLoading(false);
@@ -440,10 +575,10 @@ const FinalizeShopOrder = () => {
                         window.scrollTo(0, 0);
                         setValidator({
                             severity: 'success',
-                            message: 'Successfuly Added!',
+                            message: 'Successfully updated!',
                             isShow: true,
                         });
-                        fetchPaymentTypeByShopTransactionId(id);
+                        fetchPaymentTypeByShopTransactionIdV2(id);
                     } else if (response.data.code == 400) {
                         setSubmitLoading(false);
                         setOpen(false);
@@ -494,7 +629,8 @@ const FinalizeShopOrder = () => {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: { xs: 'calc(100% - 32px)', sm: 440 },
+        width: { xs: 'calc(100% - 32px)', sm: 640, md: 760 },
+        maxWidth: 'calc(100vw - 32px)',
         maxHeight: '90vh',
         overflowY: 'auto',
         bgcolor: 'background.paper',
@@ -525,9 +661,20 @@ const FinalizeShopOrder = () => {
             ? `-${row.discount_amount}`
             : '';
 
-    const paymentLabel = (paymentType) => paymentType
-        ? `${paymentType.payment_type} - ${paymentType.payment_type_description}`
+    const paymentAccountLabel = (paymentAccount) => paymentAccount
+        ? [paymentAccount.bank_name, paymentAccount.account_name, paymentAccount.account_number]
+            .filter(hasDisplayValue)
+            .join(' · ')
         : '';
+
+    const paymentHistoryLabel = (payment) => {
+        const accountLabel = paymentAccountLabel(payment);
+        if (accountLabel) {
+            return accountLabel;
+        }
+
+        return [payment.payment_type, payment.payment_type_description].filter(Boolean).join(' - ');
+    };
 
     const transactionVipCustomers = Array.isArray(shopOrderTransaction.vip_customers)
         ? shopOrderTransaction.vip_customers
@@ -573,370 +720,264 @@ const FinalizeShopOrder = () => {
 
     if (Date.now() < 0) {
         return (
-        <div>
+            <div>
 
-            {shopOrderTransaction.checker != 0 ? (
-                <Div>{"Shop Branch Order"}</Div>)
-                :
-                (<Div>{"Online Order"}</Div>)
-            }
-
-            {message &&
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
-
-            }
-
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                {shopOrderTransaction.checker != 0 ? (
+                    <Div>{"Shop Branch Order"}</Div>)
+                    :
+                    (<Div>{"Online Order"}</Div>)
                 }
-            </Stack>
-            <br></br>
-            <br></br>
-            <Box
-                sx={{
-                    '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
-                noValidate
-                autoComplete="off"
-            >
-                <Stepper activeStep={2} alternativeLabel>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
 
+                {message &&
+                    <Stack sx={{ width: '100%' }} spacing={2}>
+                        <Alert variant="filled" severity="success">
+                            Successfully Addded!
+                        </Alert>
+                    </Stack>
 
-                        </Step>
-                    ))}
-                </Stepper>
+                }
+
+                <Stack sx={{ width: '100%' }} spacing={2}>
+                    {validator.isShow &&
+                        <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                    }
+                </Stack>
                 <br></br>
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                        <TableBody>
-                            <TableRow >
-                                <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
-                                <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
-
-                                {shopOrderTransaction.checker != 0 ?
-                                    <>
-                                        <TableCell align="right" >Checker</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
-                                        <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
-                                    :
-                                    <>    <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
-                                }
-
-                                <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
-                                <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
-                                {shopOrderTransaction.checker == 0 &&
-                                    <>
-                                        <TableCell style={{ fontWeight: 'bold' }}>  Sales Representative:</TableCell>
-                                        <TableCell align="right">{shopOrderTransaction.sr_name}</TableCell>
-                                    </>
-                                }
-
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                {modeOfPaymentDTO.balance != 0 && shopOrderTransaction.checker == 0 &&
+                <br></br>
+                <Box
+                    sx={{
+                        '& .MuiTextField-root': { m: 1, width: '25ch' },
+                    }}
+                    noValidate
+                    autoComplete="off"
+                >
+                    <Stepper activeStep={2} alternativeLabel>
+                        {steps.map((label) => (
+                            <Step key={label}>
+                                <StepLabel>{label}</StepLabel>
 
 
-                    <Box
-                        sx={{
-                            '& .MuiTextField-root': { m: 1, width: '25ch' },
-                        }}
-                        noValidate
-                        autoComplete="off"
-                    // onSubmit={saveOrderSupplier}
-                    >
-                        <FormControl variant="standard" >
-                            <Autocomplete
-                                // {...defaultProps}
-                                options={paymentTypeList}
-                                className="mb-3"
-                                id="disable-close-on-select"
-                                onChange={handleInputChange}
-                                getOptionLabel={(paymentTypeList) => paymentTypeList.payment_type + " - " + paymentTypeList.payment_type_description}
-                                renderInput={(params) => (
-                                    <TextField {...params} label="Choose Payment Type" variant="standard" />
-                                )}
-                            />
-                        </FormControl>
-                        {/* <Form.Group className="mb-3" controlId="formBasicEmail">
+                            </Step>
+                        ))}
+                    </Stepper>
+                    <br></br>
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                            <TableBody>
+                                <TableRow >
+                                    <TableCell style={{ fontWeight: 'bold' }}>Shop Name:</TableCell>
+                                    <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
+
+                                    {shopOrderTransaction.checker != 0 ?
+                                        <>
+                                            <TableCell align="right" >Checker</TableCell>
+                                            <TableCell align="right">{shopOrderTransaction.checker_name}</TableCell>
+                                            <TableCell style={{ fontWeight: 'bold' }}>Requestor:</TableCell>
+                                            <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                                        :
+                                        <>    <TableCell style={{ fontWeight: 'bold' }}>Customer:</TableCell>
+                                            <TableCell align="right">{shopOrderTransaction.requestor_name}</TableCell></>
+                                    }
+
+                                    <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
+                                    <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
+                                    {shopOrderTransaction.checker == 0 &&
+                                        <>
+                                            <TableCell style={{ fontWeight: 'bold' }}>  Sales Representative:</TableCell>
+                                            <TableCell align="right">{shopOrderTransaction.sr_name}</TableCell>
+                                        </>
+                                    }
+
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    {modeOfPaymentDTO.balance != 0 && shopOrderTransaction.checker == 0 &&
+
+
+                        <Box
+                            sx={{
+                                '& .MuiTextField-root': { m: 1, width: '25ch' },
+                            }}
+                            noValidate
+                            autoComplete="off"
+                        // onSubmit={saveOrderSupplier}
+                        >
+                            <FormControl variant="standard" >
+                                <Autocomplete
+                                    // {...defaultProps}
+                                    options={paymentAccountList}
+                                    className="mb-3"
+                                    id="disable-close-on-select"
+                                    onChange={handlePaymentAccountChange}
+                                    getOptionLabel={paymentAccountLabel}
+                                    renderInput={(params) => (
+                                        <TextField {...params} label="Choose Payment Type" variant="standard" />
+                                    )}
+                                />
+                            </FormControl>
+                            {/* <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>Amount</Form.Label>
                         <Form.Control type="text" value={modeOfPayment.amount} name="amount" placeholder="Enter Amount" onChange={onChangeAmount} />
 
                     </Form.Group> */}
-                        <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                            <InputLabel htmlFor="standard-adornment-amount">Enter Amount</InputLabel>
-                            <Input
-                                type='number'
-                                id="filled-required"
-                                label="amount"
-                                variant="filled"
-                                name='amount'
-                                errorText='{this.state.password_error_text}'
-                                max={modeOfPayment.amount}
-                                // value={product.stock}
-                                onChange={onChangeAmount}
-                                value={modeOfPayment.amount}
-                                // helperText="Incorrect entry."
-                                error={errorStock}
-                            />
-                        </FormControl>
+                            <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+                                <InputLabel htmlFor="standard-adornment-amount">Enter Amount</InputLabel>
+                                <Input
+                                    type='number'
+                                    id="filled-required"
+                                    label="amount"
+                                    variant="filled"
+                                    name='amount'
+                                    errorText='{this.state.password_error_text}'
+                                    max={modeOfPayment.amount}
+                                    // value={product.stock}
+                                    onChange={onChangeAmount}
+                                    value={modeOfPayment.amount}
+                                    // helperText="Incorrect entry."
+                                    error={errorStock}
+                                />
+                            </FormControl>
 
 
 
-                        <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                            <Form.Label>Date</Form.Label>
-                            <Form.Control type="date" value={modeOfPayment.created_at} name="created_at" onChange={onChangeInput} />
-                        </Form.Group>
+                            <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                                <Form.Label>Date</Form.Label>
+                                <Form.Control type="date" value={modeOfPayment.created_at} name="created_at" onChange={onChangeInput} />
+                            </Form.Group>
 
-                        <Button
-                            variant="contained"
-                            disabled={errorStock}
-                            onClick={savePaymentType}
-                            size="large" >
-                            Add
-                        </Button>
-                        <br></br>
-                        <br></br>
-                        {submitLoadingAdd &&
-                            <LinearProgress color="warning" />
-                        }
-                    </Box>
+                            <Button
+                                variant="contained"
+                                disabled={errorStock}
+                                onClick={savePaymentType}
+                                size="large" >
+                                Add
+                            </Button>
+                            <br></br>
+                            <br></br>
+                            {submitLoadingAdd &&
+                                <LinearProgress color="warning" />
+                            }
+                        </Box>
+                    }
+                </Box>
+
+                <br></br>
+                {shopOrderTransaction.checker == 0 &&
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 700 }} aria-label="spanning table">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell style={{ fontWeight: 'bold' }}>Account</TableCell>
+                                    <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
+                                    <TableCell align="right" style={{ fontWeight: 'bold' }}>Date</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {modeOfPaymentDTO.data.map((row) => (
+                                    <TableRow key={row.id}>
+                                        <TableCell>{paymentHistoryLabel(row)}</TableCell>
+                                        <TableCell align="right">{row.amount}</TableCell>
+                                        <TableCell align="right">{shopOrderTransaction.date != row.created_at ? <p style={{ color: 'orange', }}>{row.created_at}</p> : row.created_at}</TableCell>
+                                        <TableCell align="right">
+                                            <Tooltip title="Update">
+                                                <IconButton>
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <Tooltip title="Delete">
+                                                <IconButton>
+                                                    <DeleteIcon color="error" onClick={(e) => openDelete()} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </TableCell>
+
+                                        <Dialog
+                                            open={deleteOpenModal}
+                                            onClose={handleDeleteCloseModal}
+                                            aria-labelledby="alert-dialog-title"
+                                            aria-describedby="alert-dialog-description"
+                                        >
+
+                                            <DialogTitle id="alert-dialog-title">
+                                                {"Are you sure you want to Delete?"}
+                                            </DialogTitle>
+                                            {submitLoading &&
+                                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                    <CircularProgress />
+                                                </div>
+                                            }
+                                            <DialogActions>
+                                                <Button onClick={handleDeleteCloseModal}>Cancel</Button>
+                                                <Button onClick={(e) => deleteOrderTransaction(row.id, e)} autoFocus>
+                                                    Agree
+                                                </Button>
+                                            </DialogActions>
+                                        </Dialog>
+                                    </TableRow>
+
+                                ))}
+                                <TableRow>
+                                    <TableCell colSpan={1} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                                    <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 }
-            </Box>
-
-            <br></br>
-            {shopOrderTransaction.checker == 0 &&
+                <br></br>
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 700 }} aria-label="spanning table">
                         <TableHead>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>Mode of Payment</TableCell>
+                                <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Price</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Discount</TableCell>
                                 <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
-                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Date</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold' }}>Total Cost</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {modeOfPaymentDTO.data.map((row) => (
+                            {orderShopDTO.shopOrderList.map((row) => (
                                 <TableRow key={row.id}>
-                                    <TableCell>{row.payment_type}{" - " + row.payment_type_description}</TableCell>
-                                    <TableCell align="right">{row.amount}</TableCell>
-                                    <TableCell align="right">{shopOrderTransaction.date != row.created_at ? <p style={{ color: 'orange', }}>{row.created_at}</p> : row.created_at}</TableCell>
-                                    <TableCell align="right">
-                                        <Tooltip title="Update">
-                                            <IconButton>
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpen(row.id, e)} />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <Tooltip title="Delete">
-                                            <IconButton>
-                                                <DeleteIcon color="error" onClick={(e) => openDelete()} />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </TableCell>
-
-                                    <Dialog
-                                        open={deleteOpenModal}
-                                        onClose={handleDeleteCloseModal}
-                                        aria-labelledby="alert-dialog-title"
-                                        aria-describedby="alert-dialog-description"
-                                    >
-
-                                        <DialogTitle id="alert-dialog-title">
-                                            {"Are you sure you want to Delete?"}
-                                        </DialogTitle>
-                                        {submitLoading &&
-                                            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                                <CircularProgress />
-                                            </div>
-                                        }
-                                        <DialogActions>
-                                            <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                                            <Button onClick={(e) => deleteOrderTransaction(row.id, e)} autoFocus>
-                                                Agree
-                                            </Button>
-                                        </DialogActions>
-                                    </Dialog>
+                                    <TableCell>{row.product_name}{
+                                        row.business_type === 'WHOLESALE' ? <></>
+                                            : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) </>
+                                    }</TableCell>
+                                    <TableCell align="right">{row.shop_order_quantity}</TableCell>
+                                    <TableCell align="right">{row.unit}</TableCell>
+                                    <TableCell align="right">{numberFormat(row.fixed_price)}</TableCell>
+                                    <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
+                                    <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
+                                    <TableCell align="right">{numberFormat(row.shop_order_total_price)}</TableCell>
                                 </TableRow>
-
                             ))}
-                            <TableRow>
-                                <TableCell colSpan={1} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                                <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            }
-            <br></br>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell style={{ fontWeight: 'bold' }}>Product</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Qty.</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Unit</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Price</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Discount</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Amount</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold' }}>Total Cost</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {orderShopDTO.shopOrderList.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.product_name}{
-                                    row.business_type === 'WHOLESALE' ? <></>
-                                        : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) </>
-                                }</TableCell>
-                                <TableCell align="right">{row.shop_order_quantity}</TableCell>
-                                <TableCell align="right">{row.unit}</TableCell>
-                                <TableCell align="right">{numberFormat(row.fixed_price)}</TableCell>
-                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
-                                <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
-                                <TableCell align="right">{numberFormat(row.shop_order_total_price)}</TableCell>
-                            </TableRow>
-                        ))}
 
-                        <TableRow>
-                            <TableCell rowSpan={3} />
-                            {/* <TableCell colSpan={5}>Subtotal</TableCell> */}
-                            {/* <TableCell align="right">{invoiceSubtotal}</TableCell> */}
-                        </TableRow>
-                        {/* <TableRow>
+                            <TableRow>
+                                <TableCell rowSpan={3} />
+                                {/* <TableCell colSpan={5}>Subtotal</TableCell> */}
+                                {/* <TableCell align="right">{invoiceSubtotal}</TableCell> */}
+                            </TableRow>
+                            {/* <TableRow>
                             <TableCell>Tax</TableCell>
                             <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
                         </TableRow> */}
-                        <TableRow>
-                            <TableCell colSpan={5} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                            {/* <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell> */}
-                            <TableCell align="right">{numberFormat(invoiceSubtotal)}</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <br></br>
-            {/* <form onSubmit={ openSubmit} > */}
-            <form >
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: { xs: 'column', md: 'row' },
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                >
-                    {shopOrderTransaction.checker != 0 ? (
-                        <Div>
-                            <Button
-                                variant="contained"
-                                onClick={openSubmit}
-                                size="large" >
-                                Submit
-                            </Button>
-                        </Div>)
-                        :
-                        (<Div>
-                            <Button
-                                disabled={modeOfPaymentDTO.balance != 0}
-                                variant="contained"
-                                onClick={openSubmit}
-                                size="large" >
-                                Next and Print
-                            </Button>
-                        </Div>)
-                    }
-
-                </Box>
-            </form>
-
-
-            <Dialog
-                open={submitOpenModal}
-                onClose={handleSubmitCloseModal}
-                aria-labelledby="alert-dialog-title"
-                aria-describedby="alert-dialog-description"
-            >
-
-                <DialogTitle id="alert-dialog-title">
-                    {"Are you sure you want to Submit?"}
-                </DialogTitle>
-                {submitLoading &&
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <CircularProgress />
-                    </div>
-                }
-                <DialogActions>
-                    <Button onClick={handleSubmitCloseModal}>Cancel</Button>
-                    <Button onClick={updateShopOrderTransactionStatus} autoFocus>
-                        Agree
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-            <Modal
-                keepMounted
-                open={open}
-                onClose={handleClose}
-                aria-labelledby="keep-mounted-modal-title"
-                aria-describedby="keep-mounted-modal-description"
-            >
-                <Box sx={style}>
-                    <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
-                        Update Product
-                    </Typography>
-                    {submitLoading &&
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <CircularProgress />
-                        </div>
-                    }
-                    <br></br>
-                    <FormControl sx={{ m: 0, minWidth: 230, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Mode of Payment</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            value={modeOfPaymentModal.payment_type_id}
-                            label="Customer"
-                            name="customer_id"
-                            onChange={handleInputChange}
-                        >
-                            {
-                                paymentTypeList.map((payment, index) => (
-                                    <MenuItem value={payment.id}>{payment.payment_type} {payment.payment_type_description}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-
-                    <FormControl fullWidth sx={{ m: 1 }} variant="standard">
-                        <InputLabel htmlFor="standard-adornment-amount">Amount</InputLabel>
-                        <Input
-                            id="filled-required"
-                            label="Amount"
-                            variant="filled"
-                            name='amount'
-                            value={modeOfPaymentModal.amount}
-                            onChange={onChangeInputPriceModal}
-                            startAdornment={<InputAdornment position="start">₱</InputAdornment>}
-                        />
-                    </FormControl>
-
-
-
+                            <TableRow>
+                                <TableCell colSpan={5} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
+                                {/* <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell> */}
+                                <TableCell align="right">{numberFormat(invoiceSubtotal)}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <br></br>
+                {/* <form onSubmit={ openSubmit} > */}
+                <form >
                     <Box
                         sx={{
                             display: 'flex',
@@ -945,17 +986,123 @@ const FinalizeShopOrder = () => {
                             justifyContent: 'center',
                         }}
                     >
-                        <Button
-                            variant="contained"
-                            type="submit"
-                            onClick={updateOrderSupplier}
-                            size="large" >
-                            Submit
-                        </Button>
+                        {shopOrderTransaction.checker != 0 ? (
+                            <Div>
+                                <Button
+                                    variant="contained"
+                                    onClick={openSubmit}
+                                    size="large" >
+                                    Submit
+                                </Button>
+                            </Div>)
+                            :
+                            (<Div>
+                                <Button
+                                    disabled={modeOfPaymentDTO.balance != 0}
+                                    variant="contained"
+                                    onClick={openSubmit}
+                                    size="large" >
+                                    Next and Print
+                                </Button>
+                            </Div>)
+                        }
+
                     </Box>
-                </Box>
-            </Modal>
-        </div >
+                </form>
+
+
+                <Dialog
+                    open={submitOpenModal}
+                    onClose={handleSubmitCloseModal}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+
+                    <DialogTitle id="alert-dialog-title">
+                        {"Are you sure you want to Submit?"}
+                    </DialogTitle>
+                    {submitLoading &&
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                            <CircularProgress />
+                        </div>
+                    }
+                    <DialogActions>
+                        <Button onClick={handleSubmitCloseModal}>Cancel</Button>
+                        <Button onClick={updateShopOrderTransactionStatus} autoFocus>
+                            Agree
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Modal
+                    keepMounted
+                    open={open}
+                    onClose={handleClose}
+                    aria-labelledby="keep-mounted-modal-title"
+                    aria-describedby="keep-mounted-modal-description"
+                >
+                    <Box sx={style}>
+                        <Typography id="keep-mounted-modal-title" variant="h6" component="h2">
+                            Update Product
+                        </Typography>
+                        {submitLoading &&
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                <CircularProgress />
+                            </div>
+                        }
+                        <br></br>
+                        <FormControl sx={{ m: 0, minWidth: 230, minHeight: 70 }}>
+                            <InputLabel id="demo-simple-select-label">Account</InputLabel>
+                            <Select
+                                labelId="demo-simple-select-label"
+                                id="demo-simple-select"
+                                value={modeOfPaymentModal.payment_type_id}
+                                label="Customer"
+                                name="customer_id"
+                                onChange={handlePaymentAccountChange}
+                            >
+                                {
+                                    paymentAccountList.map((payment) => (
+                                        <MenuItem key={payment.id} value={payment.id}>{paymentAccountLabel(payment)}</MenuItem>
+                                    ))
+                                }
+                            </Select>
+                        </FormControl>
+
+                        <FormControl fullWidth sx={{ m: 1 }} variant="standard">
+                            <InputLabel htmlFor="standard-adornment-amount">Amount</InputLabel>
+                            <Input
+                                id="filled-required"
+                                label="Amount"
+                                variant="filled"
+                                name='amount'
+                                value={modeOfPaymentModal.amount}
+                                onChange={onChangeInputPriceModal}
+                                startAdornment={<InputAdornment position="start">₱</InputAdornment>}
+                            />
+                        </FormControl>
+
+
+
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: { xs: 'column', md: 'row' },
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                onClick={updateOrderSupplier}
+                                size="large" >
+                                Submit
+                            </Button>
+                        </Box>
+                    </Box>
+                </Modal>
+            </div >
         )
     }
 
@@ -1095,15 +1242,39 @@ const FinalizeShopOrder = () => {
                             </Box>
 
                             {hasBalance &&
-                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(260px, 1.4fr) minmax(180px, .8fr) minmax(180px, .8fr) auto' }, gap: 2, alignItems: 'end' }}>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(210px, 1fr))' }, gap: 2, alignItems: 'start' }}>
                                     <Autocomplete
                                         fullWidth
-                                        options={paymentTypeList}
-                                        id="payment-type-select"
-                                        onChange={handleInputChange}
-                                        getOptionLabel={paymentLabel}
+                                        options={paymentTermList}
+                                        value={selectedPaymentTerm}
+                                        id="payment-term-select"
+                                        onChange={handlePaymentTermChange}
+                                        getOptionLabel={(option) => option.payment_term || ''}
                                         renderInput={(params) => (
-                                            <TextField {...params} label="Payment Type" variant="outlined" />
+                                            <TextField {...params} label="Payment method" variant="outlined" />
+                                        )}
+                                    />
+
+                                    <Autocomplete
+                                        fullWidth
+                                        sx={{ gridColumn: '1 / -1' }}
+                                        options={paymentAccountList}
+                                        value={selectedPaymentAccount}
+                                        disabled={!selectedPaymentTerm}
+                                        id="payment-account-select"
+                                        onChange={handlePaymentAccountChange}
+                                        getOptionLabel={paymentAccountLabel}
+                                        ListboxProps={{
+                                            sx: {
+                                                maxHeight: 320,
+                                                '& .MuiAutocomplete-option': {
+                                                    whiteSpace: 'normal',
+                                                    wordBreak: 'break-word'
+                                                }
+                                            }
+                                        }}
+                                        renderInput={(params) => (
+                                            <TextField {...params} label="Account" variant="outlined" />
                                         )}
                                     />
 
@@ -1132,7 +1303,7 @@ const FinalizeShopOrder = () => {
 
                                     <Button
                                         variant="contained"
-                                        disabled={errorStock}
+                                        disabled={errorStock || !selectedPaymentTerm || !selectedPaymentAccount}
                                         onClick={savePaymentType}
                                         size="large"
                                         startIcon={<PaymentIcon />}
@@ -1152,7 +1323,7 @@ const FinalizeShopOrder = () => {
                                 <Table sx={{ minWidth: 720 }} aria-label="payments">
                                     <TableHead>
                                         <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                                            <TableCell sx={{ fontWeight: 700 }}>Mode of Payment</TableCell>
+                                            <TableCell sx={{ fontWeight: 700 }}>Account</TableCell>
                                             <TableCell align="right" sx={{ fontWeight: 700 }}>Amount</TableCell>
                                             <TableCell align="right" sx={{ fontWeight: 700 }}>Date</TableCell>
                                             <TableCell align="right" sx={{ fontWeight: 700 }}>Actions</TableCell>
@@ -1168,7 +1339,7 @@ const FinalizeShopOrder = () => {
                                             </TableRow>
                                         ) : modeOfPaymentDTO.data.map((row) => (
                                             <TableRow key={row.id} hover>
-                                                <TableCell>{row.payment_type} - {row.payment_type_description}</TableCell>
+                                                <TableCell>{paymentHistoryLabel(row)}</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 600 }}>{numberFormat(row.amount)}</TableCell>
                                                 <TableCell align="right">
                                                     <Typography component="span" color={shopOrderTransaction.date !== row.created_at ? 'warning.main' : 'text.primary'}>
@@ -1331,21 +1502,30 @@ const FinalizeShopOrder = () => {
                             </Box>
                         }
                         <Stack spacing={2}>
-                            <FormControl fullWidth>
-                                <InputLabel id="payment-modal-label">Mode of Payment</InputLabel>
-                                <Select
-                                    labelId="payment-modal-label"
-                                    id="payment-modal-select"
-                                    value={modeOfPaymentModal.payment_type_id}
-                                    label="Mode of Payment"
-                                    name="payment_type_id"
-                                    onChange={onChangePaymentModal}
-                                >
-                                    {paymentTypeList.map((payment) => (
-                                        <MenuItem key={payment.id} value={payment.id}>{payment.payment_type} {payment.payment_type_description}</MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                            <Autocomplete
+                                fullWidth
+                                options={paymentTermList}
+                                value={selectedModalPaymentTerm}
+                                id="payment-modal-term-select"
+                                onChange={handleModalPaymentTermChange}
+                                getOptionLabel={(option) => option.payment_term || ''}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Payment method" />
+                                )}
+                            />
+
+                            <Autocomplete
+                                fullWidth
+                                options={modalPaymentAccountList}
+                                value={selectedModalPaymentAccount}
+                                disabled={!selectedModalPaymentTerm}
+                                id="payment-modal-account-select"
+                                onChange={handleModalPaymentAccountChange}
+                                getOptionLabel={paymentAccountLabel}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Account" />
+                                )}
+                            />
 
                             <FormControl fullWidth variant="standard">
                                 <InputLabel htmlFor="payment-modal-amount">Amount</InputLabel>
@@ -1364,7 +1544,7 @@ const FinalizeShopOrder = () => {
                                     variant="contained"
                                     type="button"
                                     onClick={updateOrderSupplier}
-                                    disabled={submitLoading}
+                                    disabled={submitLoading || !selectedModalPaymentTerm || !selectedModalPaymentAccount}
                                 >
                                     Save Changes
                                 </Button>

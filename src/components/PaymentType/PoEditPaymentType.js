@@ -11,6 +11,8 @@ import FormControl from '@mui/material/FormControl';
 
 const PoEditPaymentType = () => {
 
+    const CASH_PAYMENT_TERM_ID = 1;
+
 
     const { id } = useParams();
 
@@ -30,6 +32,8 @@ const PoEditPaymentType = () => {
         total_balance_due: 0,
         statement_date: 0,
         status: 0,
+        is_supplier: 0,
+        is_customer: 0,
         created_at: '',
         updated_at: ''
     });
@@ -52,6 +56,13 @@ const PoEditPaymentType = () => {
         } else {
             setPaymentType({ ...paymentType, [e.target.name]: e.target.value });
         }
+    }
+
+    const onChangeAccountUsage = (e) => {
+        setPaymentType({
+            ...paymentType,
+            [e.target.name]: e.target.checked ? 1 : 0
+        });
     }
 
 
@@ -93,27 +104,26 @@ const PoEditPaymentType = () => {
             <Form>
 
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Acoount Name</Form.Label>
+                    <Form.Label>Account Name</Form.Label>
                     <Form.Control type="text" value={paymentType.account_name} name="account_name" placeholder="Enter Account Name" onChange={onChangePaymentType} />
                 </Form.Group>
 
 
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Acoount Description</Form.Label>
-                    <Form.Control type="text" value={paymentType.account_description} name="account_description" placeholder="Enter Account Description" onChange={onChangePaymentType} />
-                    <Form.Text className="text-muted"  >
-                        Ex. Platinum
-                    </Form.Text>
-                </Form.Group>
+                {Number(paymentType.payment_term_id) !== CASH_PAYMENT_TERM_ID && (
+                    <>
+                        <Form.Group className="mb-3" controlId="poEditPaymentAccountDescription">
+                            <Form.Label>Account Description</Form.Label>
+                            <Form.Control type="text" value={paymentType.account_description} name="account_description" placeholder="Enter Account Description" onChange={onChangePaymentType} />
+                            <Form.Text className="text-muted">Ex. Platinum</Form.Text>
+                        </Form.Group>
 
-
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Account Number</Form.Label>
-                    <Form.Control type="text" value={paymentType.account_number} name="account_number" placeholder="Enter Account Last 4 Digit Number" onChange={onChangePaymentType} />
-                    <Form.Text className="text-muted"  >
-                        Last 4 Digit Number
-                    </Form.Text>
-                </Form.Group>
+                        <Form.Group className="mb-3" controlId="poEditPaymentAccountNumber">
+                            <Form.Label>Account Number</Form.Label>
+                            <Form.Control type="text" value={paymentType.account_number} name="account_number" placeholder="Enter Account Last 4 Digit Number" onChange={onChangePaymentType} />
+                            <Form.Text className="text-muted">Last 4 Digit Number</Form.Text>
+                        </Form.Group>
+                    </>
+                )}
 
 
                 {paymentType.payment_term_id == 4 &&
@@ -167,6 +177,32 @@ const PoEditPaymentType = () => {
                         </Form.Group>
                     </Box>
                 }
+
+                <Form.Group className="mb-3 po-payment-usage-panel">
+                    <div>
+                        <Form.Label>Account Usage</Form.Label>
+                        <Form.Text>Choose all transaction types that can use this account.</Form.Text>
+                    </div>
+                    <div className="po-payment-usage-options">
+                        <Form.Check
+                            type="checkbox"
+                            id="po-edit-payment-is-supplier"
+                            name="is_supplier"
+                            label="Supplier payments"
+                            checked={Number(paymentType.is_supplier) === 1}
+                            onChange={onChangeAccountUsage}
+                        />
+                        <Form.Check
+                            type="checkbox"
+                            id="po-edit-payment-is-customer"
+                            name="is_customer"
+                            label="Customer payments"
+                            checked={Number(paymentType.is_customer) === 1}
+                            onChange={onChangeAccountUsage}
+                        />
+                    </div>
+                </Form.Group>
+
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Enabled ? </Form.Label>
 

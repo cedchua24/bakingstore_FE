@@ -4,6 +4,7 @@ import PaymentTermService from "../OtherService/PaymentTermService";
 import BankService from "../OtherService/BankService";
 import PoPaymentTypeList from "./PoPaymentTypeList";
 import AddPoPaymentType from "./AddPoPaymentType";
+import "./PoPaymentType.css";
 
 const PoPaymentType = () => {
 
@@ -43,7 +44,7 @@ const PoPaymentType = () => {
     }
 
     const fetchPaymentTermList = () => {
-        PaymentTermService.fetchNotCashList()
+        PaymentTermService.getAll()
             .then(response => {
                 setPaymenTermList(response.data);
             })
@@ -70,18 +71,35 @@ const PoPaymentType = () => {
 
 
     return (
-        <div>
+        <div className="po-payment-page">
+            <header className="po-payment-page-header">
+                <div>
+                    <span>PAYMENT SETTINGS</span>
+                    <h1>Payment Accounts</h1>
+                    <p>Manage accounts available for supplier and customer payments.</p>
+                </div>
+                <div className="po-payment-record-count">{paymentTypeList.length} accounts</div>
+            </header>
 
-            <AddPoPaymentType
-                paymenTermList={paymenTermList}
-                bankList={bankList}
-                onSavePaymentTypeData={savePaymentTypeDataHandler}
-            />
+            <section className="po-payment-card po-payment-add-card">
+                <div className="po-payment-section-heading">
+                    <span>NEW ACCOUNT</span>
+                    <h2>Add a payment account</h2>
+                    <p>Enter the account details and select where it can be used.</p>
+                </div>
+                <AddPoPaymentType
+                    paymenTermList={paymenTermList}
+                    bankList={bankList}
+                    onSavePaymentTypeData={savePaymentTypeDataHandler}
+                />
+            </section>
 
-            <PoPaymentTypeList
-                paymentTypeList={paymentTypeList}
-                deletePaymentType={deletePaymentType}
-            />
+            <section className="po-payment-card">
+                <PoPaymentTypeList
+                    paymentTypeList={paymentTypeList}
+                    deletePaymentType={deletePaymentType}
+                />
+            </section>
         </div>
     )
 }

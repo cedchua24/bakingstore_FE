@@ -187,7 +187,7 @@ const ViewOrder = () => {
                         <Table aria-label="Recorded payments">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>Payment account</TableCell>
+                                    <TableCell>Account</TableCell>
                                     <TableCell align="right">Amount</TableCell>
                                 </TableRow>
                             </TableHead>

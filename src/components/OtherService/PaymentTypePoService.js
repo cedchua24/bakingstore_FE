@@ -16,6 +16,9 @@ class PaymentTypePoService {
     findByCategory(id) {
         return axios.get(`/api/paymentTypePo/findByCategory/${id}`);
     }
+    findByCategoryV2(id, data) {
+        return axios.post(`/api/paymentTypePo/findByCategoryV2/${id}`, data);
+    }
     create(data) {
         return axios.post("/api/paymentTypePo", data);
     }

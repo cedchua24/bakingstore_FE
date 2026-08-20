@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Form, Alert } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
@@ -18,25 +18,28 @@ const PoPaymentTypeList = (props) => {
 
 
     return (
-        <div>
-            <legend align="center" style={{ fontWeight: 'bold' }} > Payment Type Supplier </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+        <div className="po-payment-list">
+            <div className="po-payment-section-heading po-payment-list-heading">
+                <span>CONFIGURED ACCOUNTS</span>
+                <h2>Payment account list</h2>
+                <p>Supplier and customer availability is shown under Usage.</p>
+            </div>
+            <div className="po-payment-table-wrap">
+            <table className="table po-payment-table">
+                <thead>
+                    <tr>
                         <th>ID</th>
                         <th>Type</th>
-                        <th>Account Number</th>
-                        <th>Bank Name</th>
-                        <th>Account Name</th>
-                        <th>Account Description</th>
+                        <th>Bank</th>
+                        <th>Account</th>
+                        <th>Number</th>
+                        <th>Usage</th>
                         <th>Due Date</th>
                         <th>Credit Limit</th>
-                        <th>Stement Date</th>
-                        <th>Total Due Balance</th>
-                        <th>Enable</th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
+                        <th>Statement Date</th>
+                        <th>Balance Due</th>
+                        <th>Enabled</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,10 +49,19 @@ const PoPaymentTypeList = (props) => {
                             <tr key={paymentType.id}  >
                                 <td >{paymentType.id}</td>
                                 <td>{paymentType.payment_term}</td>
-                                <td>{paymentType.account_number}</td>
                                 <td>{paymentType.bank_name}</td>
-                                <td>{paymentType.account_name}</td>
-                                <td>{paymentType.account_description}</td>
+                                <td>
+                                    <strong>{paymentType.account_name || '-'}</strong>
+                                    {paymentType.account_description && <small>{paymentType.account_description}</small>}
+                                </td>
+                                <td>{String(paymentType.account_number ?? '').trim() === '0' ? '-' : paymentType.account_number}</td>
+                                <td>
+                                    <div className="po-payment-usage-badges">
+                                        {Number(paymentType.is_supplier) === 1 && <span className="is-supplier">Supplier</span>}
+                                        {Number(paymentType.is_customer) === 1 && <span className="is-customer">Customer</span>}
+                                        {Number(paymentType.is_supplier) !== 1 && Number(paymentType.is_customer) !== 1 && <span className="is-unused">Not assigned</span>}
+                                    </div>
+                                </td>
                                 {paymentType.payment_term_id == 4 ?
                                     <>
                                         <td>{paymentType.due_date}</td>
@@ -64,25 +76,33 @@ const PoPaymentTypeList = (props) => {
                                         <td></td>
                                     </>}
 
-                                <td>{paymentType.status === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
+                                <td className="po-payment-enabled">{paymentType.status === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
+                                  <div className="po-payment-actions">
                                     <Link variant="primary" to={"/poEditPaymentType/" + paymentType.id}   >
-                                        <Button variant="primary" >
+                                        <Button size="sm" variant="primary" >
                                             Update
                                         </Button>
                                     </Link>
-                                </td>
-                                <td>
                                     <Link variant="primary" to={"/balanceHistory/" + paymentType.id}   >
-                                        <Button variant="primary" >
-                                            View History
+                                        <Button size="sm" variant="outline-primary" >
+                                            History
                                         </Button>
                                     </Link>
-                                </td>
-                                <td>
-                                    <Button variant="danger" onClick={(e) => deletePaymentType(paymentType.id, e)} disabled>
+                                    <Link className="po-payment-customer-link" to={`/poPaymentType/${paymentType.id}/customerPayments`}>
+                                        <Button size="sm" variant="outline-success">
+                                            Customer payments
+                                        </Button>
+                                    </Link>
+                                    <Link className="po-payment-customer-link" to={`/poPaymentType/${paymentType.id}/supplierPayments`}>
+                                        <Button size="sm" variant="outline-warning">
+                                            Supplier payments
+                                        </Button>
+                                    </Link>
+                                    <Button size="sm" variant="outline-danger" onClick={(e) => deletePaymentType(paymentType.id, e)} disabled>
                                         Delete
                                     </Button>
+                                  </div>
                                 </td>
                             </tr>
                         )
@@ -90,6 +110,7 @@ const PoPaymentTypeList = (props) => {
                     }
                 </tbody>
             </table>
+            </div>
         </div>
     )
 }

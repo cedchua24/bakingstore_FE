@@ -34,7 +34,9 @@ import PaymentType from "./components/PaymentType/PaymentType";
 import PaymentTypeList from "./components/PaymentType/PaymentTypeList";
 import EditPaymentType from "./components/PaymentType/EditPaymentType";
 import PoPaymentType from "./components/PaymentType/PoPaymentType";
-import PoPaymentTypeList from "./components/PaymentType/PoPaymentTypeList";
+import PaymentAccountListPage from "./components/PaymentType/PaymentAccountListPage";
+import CustomerPaymentView from "./components/PaymentType/CustomerPaymentView";
+import SupplierPaymentView from "./components/PaymentType/SupplierPaymentView";
 import BalanceHistory from "./components/PaymentType/BalanceHistory";
 
 import PoEditPaymentType from "./components/PaymentType/PoEditPaymentType";
@@ -172,6 +174,9 @@ import PendingDelivery from "./components/ShopOrderTransaction/PendingDelivery";
 
 import ReportCustomerSorted from "./components/Reports/ReportCustomerSorted";
 import ReportProductSorted from "./components/Reports/ReportProductSorted";
+import ProductTrendComparison from "./components/Reports/ProductTrendComparison";
+import ProductCustomerImpact from "./components/Reports/ProductCustomerImpact";
+import CustomerSalesImpact from "./components/Reports/CustomerSalesImpact";
 import ProductValueReport from "./components/Reports/ProductValueReport";
 import ReportCategorySales from "./components/Reports/ReportCategorySales";
 import ReportProductUnsold from "./components/Reports/ReportProductUnsold";
@@ -422,7 +427,9 @@ const App = () => {
           <Route exact path="/editPaymentType/:id" element={<EditPaymentType />} />
 
           <Route path="/poPaymentType" element={<PoPaymentType />} />
-          <Route path="/poPaymentTypeList" element={<PoPaymentTypeList />} />
+          <Route path="/poPaymentTypeList" element={<PaymentAccountListPage />} />
+          <Route path="/poPaymentType/:paymentTypePoId/customerPayments" element={<CustomerPaymentView />} />
+          <Route path="/poPaymentType/:paymentTypePoId/supplierPayments" element={<SupplierPaymentView />} />
           <Route exact path="/balanceHistory/:id" element={<BalanceHistory />} />
 
           <Route exact path="/poEditPaymentType/:id" element={<PoEditPaymentType />} />
@@ -733,6 +740,9 @@ const App = () => {
           <Route exact path="/reports/reportExpensesView/:id" element={<ReportExpensesView />} />
           <Route exact path="/reports/reportCustomerSorted/" element={<ReportCustomerSorted />} />
           <Route exact path="/reports/reportProductSorted/" element={<ReportProductSorted />} />
+          <Route exact path="/reports/productTrendComparison/" element={<ProductTrendComparison />} />
+          <Route exact path="/reports/productTrendComparison/product/:productId/customer-impact" element={<ProductCustomerImpact />} />
+          <Route exact path="/reports/customerSalesImpact/" element={<CustomerSalesImpact />} />
           <Route exact path="/reports/reportProductUnsold/" element={<ReportProductUnsold />} />
 
           <Route exact path="/reports/reportCategorySales/" element={<ReportCategorySales />} />

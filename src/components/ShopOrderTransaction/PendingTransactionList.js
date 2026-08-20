@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
 import UserService from '../User/UserService.service'
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -138,7 +139,7 @@ const PendingTransactionList = () => {
 
     const fetchShopOrderTransactionList = () => {
         setSubmitLoading(true);
-        ShopOrderTransactionService.fetchPendingTransactionList(customerOrderDate)
+        ShopOrderTransactionService.fetchPendingTransactionListV2(customerOrderDate)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -225,7 +226,7 @@ const PendingTransactionList = () => {
         console.log('orderTransaction', customerOrderDate.date);
         setSubmitLoading(true);
         setIsDeliveryDisabled(true);
-        ShopOrderTransactionService.fetchPendingTransactionList(customerOrderDate)
+        ShopOrderTransactionService.fetchPendingTransactionListV2(customerOrderDate)
             .then(response => {
                 setSubmitLoading(false);
                 setIsDeliveryDisabled(false);
@@ -511,9 +512,9 @@ const PendingTransactionList = () => {
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
+                            <Form.Label>{formatPaymentLabel(payment)}</Form.Label>
                             <Form.Control type="text" value={"₱ " + payment.total_amount} />
-                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
+                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + (payment.payment_type_po_id || payment.id) + "+" + date}   >
                                 <Button variant="primary" >
                                     View
                                 </Button>
@@ -595,9 +596,7 @@ const PendingTransactionList = () => {
                                         <th className="customer-report-optional-col">Customer Type</th>
                                         <th>Customer</th>
                                         <th>Qty</th>
-                                        <th className="customer-report-optional-col">Total Cash</th>
-                                        <th className="customer-report-optional-col">Total Online</th>
-                                        <th>Bank</th>
+                                        <th>Account</th>
                                         <th>Total</th>
                                         <th className="customer-report-optional-col">Profit</th>
                                         <th>Date</th>
@@ -659,13 +658,11 @@ const PendingTransactionList = () => {
                                                     <td className="customer-report-optional-col">{shopOrderTransaction.customer_type}</td>
                                                     <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
                                                     <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                                    <td className="customer-report-optional-col">{shopOrderTransaction.total_cash}</td>
-                                                    <td className="customer-report-optional-col">{shopOrderTransaction.total_online}</td>
                                                     <td>
                                                         <div className="customer-report-bank-list">
                                                             {shopOrderTransaction.mode_of_payment.map((sot, index) => (
-                                                                <span key={`${shopOrderTransaction.id}-${sot.payment_type}-${index}`}>
-                                                                    {numberFormat(sot.amount)} <small>{sot.payment_type}</small>
+                                                                <span key={`${shopOrderTransaction.id}-${sot.payment_type_po_id || sot.id || index}-${index}`}>
+                                                                    {numberFormat(sot.amount)} <small>{formatPaymentLabel(sot)}</small>
                                                                 </span>
                                                             ))}
                                                         </div>

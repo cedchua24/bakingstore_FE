@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
 import ProductServiceService from "../Product/ProductService.service";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 import LinearProgress from '@mui/material/LinearProgress';
 import "../Product/ProductOrderTransactionList.css";
 
@@ -75,7 +76,7 @@ const ViewPendingProduct = () => {
 
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        ShopOrderTransactionService.fetctPendingProductOrderTransaction(customerOrderDate.id, customerOrderDate)
+        ShopOrderTransactionService.fetctPendingProductOrderTransactionV2(customerOrderDate.id, customerOrderDate)
             .then(response => {
                 console.log("response.data", response.data)
                 setShopOrderTransaction(response.data);
@@ -181,8 +182,7 @@ const ViewPendingProduct = () => {
                             <th>ID</th>
                             <th>Customer Type</th>
                             <th>Customer</th>
-                            <th>Payment Breakdown</th>
-                            <th>Bank</th>
+                            <th>Account</th>
                             <th>Total Amount</th>
                             <th>Profit</th>
                             <th>Date</th>
@@ -204,19 +204,13 @@ const ViewPendingProduct = () => {
                                             <td >{shopOrderTransaction.id}</td>
                                             <td>{shopOrderTransaction.customer_type}</td>
                                             <td>{shopOrderTransaction.requestor_name} {shopOrderTransaction.store_name ? " (" + shopOrderTransaction.store_name.toUpperCase() + ")" : ""}</td>
-                                            <td>
-                                                <div className="product-order-payment-breakdown">
-                                                    <span><small>Cash</small>{shopOrderTransaction.total_cash != 0 ? numberFormat(shopOrderTransaction.total_cash) : "—"}</span>
-                                                    <span><small>Online</small>{shopOrderTransaction.total_online != 0 ? numberFormat(shopOrderTransaction.total_online) : "—"}</span>
-                                                </div>
-                                            </td>
                                             <td>{shopOrderTransaction.status == 1 ? (
 
                                                 shopOrderTransaction.mode_of_payment.map((sot, index) => (
                                                     <>
                                                         <tr>
                                                             <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
-                                                            <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
+                                                            <td><p style={{ fontSize: 12 }}>{formatPaymentLabel(sot)}</p></td>
                                                         </tr>
                                                     </>
                                                 )

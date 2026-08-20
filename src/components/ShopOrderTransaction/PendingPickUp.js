@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
 import UserService from '../User/UserService.service'
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -132,15 +133,50 @@ const PendingPickUp = () => {
 
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
 
+    const mergeMissingPaymentAccounts = (pendingPayload, dailyPayload) => {
+        const dailyTransactions = Array.isArray(dailyPayload?.data) ? dailyPayload.data : [];
+        const paymentsByTransactionId = new Map(
+            dailyTransactions.map((transaction) => [
+                Number(transaction.id),
+                Array.isArray(transaction.mode_of_payment) ? transaction.mode_of_payment : []
+            ])
+        );
+
+        return {
+            ...pendingPayload,
+            data: (Array.isArray(pendingPayload?.data) ? pendingPayload.data : []).map((transaction) => {
+                const currentPayments = Array.isArray(transaction.mode_of_payment)
+                    ? transaction.mode_of_payment
+                    : [];
+
+                if (currentPayments.length > 0) {
+                    return transaction;
+                }
+
+                return {
+                    ...transaction,
+                    mode_of_payment: paymentsByTransactionId.get(Number(transaction.id)) || []
+                };
+            })
+        };
+    };
+
+    const fetchPendingPickUpWithAccounts = () => Promise.all([
+        ShopOrderTransactionService.fetchPendingPickUpV2(customerOrderDate),
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2(customerOrderDate)
+    ]).then(([pendingResponse, dailyResponse]) => (
+        mergeMissingPaymentAccounts(pendingResponse.data, dailyResponse.data)
+    ));
+
 
 
     const fetchShopOrderTransactionList = () => {
         setSubmitLoading(true);
         setIsDeliveryDisabled(true);
-        ShopOrderTransactionService.fetchPendingPickUp(customerOrderDate)
-            .then(response => {
+        fetchPendingPickUpWithAccounts()
+            .then(data => {
                 // setShopOrderTransactionList(response.data);
-                setShopOrderTransaction(response.data);
+                setShopOrderTransaction(data);
                 setSubmitLoading(false);
                 setIsDeliveryDisabled(false);
             })
@@ -225,9 +261,9 @@ const PendingPickUp = () => {
         setSubmitLoading(true);
         setIsDeliveryDisabled(true);
         console.log('orderTransaction', customerOrderDate.date);
-        ShopOrderTransactionService.fetchPendingPickUp(customerOrderDate)
-            .then(response => {
-                setShopOrderTransaction(response.data);
+        fetchPendingPickUpWithAccounts()
+            .then(data => {
+                setShopOrderTransaction(data);
                 setSubmitLoading(false);
                 setIsDeliveryDisabled(false);
             })
@@ -576,9 +612,7 @@ const PendingPickUp = () => {
                                         <th className="customer-report-optional-col">Customer Type</th>
                                         <th>Customer</th>
                                         <th>Qty</th>
-                                        <th className="customer-report-optional-col">Total Cash</th>
-                                        <th className="customer-report-optional-col">Total Online</th>
-                                        <th>Bank</th>
+                                        <th>Account</th>
                                         <th>Total</th>
                                         {
                                             role == 2 && (
@@ -650,13 +684,11 @@ const PendingPickUp = () => {
                                                             : ""}
                                                     </td>
                                                     <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                                    <td className="customer-report-optional-col">{shopOrderTransaction.total_cash}</td>
-                                                    <td className="customer-report-optional-col">{shopOrderTransaction.total_online}</td>
                                                     <td>
                                                         <div className="customer-report-bank-list">
                                                             {shopOrderTransaction.mode_of_payment.map((sot, index) => (
-                                                                <span key={`${shopOrderTransaction.id}-${sot.payment_type}-${index}`}>
-                                                                    {numberFormat(sot.amount)} <small>{sot.payment_type}</small>
+                                                                <span key={`${shopOrderTransaction.id}-${sot.payment_type_po_id || sot.id || index}-${index}`}>
+                                                                    {numberFormat(sot.amount)} <small>{formatPaymentLabel(sot)}</small>
                                                                 </span>
                                                             ))}
                                                         </div>

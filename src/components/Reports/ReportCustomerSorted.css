@@ -28,6 +28,9 @@
 .cr-table-card h2 { margin: 0; color: #282e35; font-size: 1.2rem; }
 .cr-table-card header p { margin: 4px 0 0; color: #818894; font-size: .77rem; }
 .cr-table-card header .MuiTextField-root { width: min(100%, 310px); }
+.cr-table-tools { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+.cr-table-tools .MuiFormControlLabel-root { margin: 0; white-space: nowrap; }
+.cr-table-tools .MuiFormControlLabel-label { color: #626a75; font-size: .75rem; font-weight: 700; }
 .cr-table-scroll { overflow-x: auto; }
 .cr-table { width: 100%; min-width: 720px; border-collapse: collapse; }
 .cr-table th { padding: 13px 20px; color: #626a75; font-size: .7rem; letter-spacing: .045em; background: #f3f5f7; text-align: left; text-transform: uppercase; }
@@ -45,5 +48,5 @@
 .cr-empty strong { color: #505862; }
 .cr-empty span { font-size: .78rem; }
 @media (max-width: 1000px) { .cr-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 700px) { .cr-page { padding: 26px 14px 48px; } .cr-summary { grid-template-columns: 1fr; } .cr-table-card > header { align-items: stretch; flex-direction: column; } .cr-table-card header .MuiTextField-root { width: 100%; } }
+@media (max-width: 700px) { .cr-page { padding: 26px 14px 48px; } .cr-summary { grid-template-columns: 1fr; } .cr-table-card > header { align-items: stretch; flex-direction: column; } .cr-table-tools { align-items: stretch; flex-direction: column; } .cr-table-tools .MuiFormControlLabel-root { align-self: flex-start; } .cr-table-card header .MuiTextField-root { width: 100%; } }
 @media (max-width: 520px) { .cr-filter-grid { grid-template-columns: 1fr; padding-inline: 18px; } .cr-filter-card > header { padding-inline: 18px; } }

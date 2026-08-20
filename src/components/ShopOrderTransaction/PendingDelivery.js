@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
 import UserService from '../User/UserService.service'
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -107,7 +108,7 @@ const PendingDelivery = () => {
 
 
     const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.fetchDeliveryTransaction(transactionStatus)
+        ShopOrderTransactionService.fetchDeliveryTransactionV2(transactionStatus)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -174,7 +175,7 @@ const PendingDelivery = () => {
         event.preventDefault();
         setSubmitLoading(true);
 
-        ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
+        ShopOrderTransactionService.updateShopOrderTransactionStatusV2(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
             .then(response => {
                 setSubmitLoading(false);
                 setSubmitOpenModal(false);
@@ -204,7 +205,7 @@ const PendingDelivery = () => {
     const saveOrderTransaction = () => {
         setFindLinear(true);
         setIsDisabledFind(true);
-        ShopOrderTransactionService.fetchDeliveryTransaction(transactionStatus)
+        ShopOrderTransactionService.fetchDeliveryTransactionV2(transactionStatus)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -437,9 +438,9 @@ const PendingDelivery = () => {
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
+                            <Form.Label>{formatPaymentLabel(payment)}</Form.Label>
                             <Form.Control type="text" value={"₱ " + payment.total_amount} />
-                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
+                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + (payment.payment_type_po_id || payment.id) + "+" + date}   >
                                 <Button variant="primary" >
                                     View
                                 </Button>

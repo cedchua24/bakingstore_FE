@@ -167,7 +167,7 @@ const PurchaseOrderList = () => {
                         <th>Date Received</th>
                         <th>Delivery Status</th>
                         <th>Payment Status</th>
-                        <th>Bank</th>
+                        <th>Account</th>
                         {/* <th>Placed Stock Status</th>
                                       <th>Organize Stock</th> */}
                         <th></th>

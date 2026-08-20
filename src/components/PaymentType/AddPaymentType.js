@@ -66,7 +66,7 @@ const AddPaymentType = (props) => {
                     </Form.Text>
                 </Form.Group>
 
-                <Button variant="primary" onClick={savePaymentType}>
+                <Button variant="primary" onClick={savePaymentType} disabled>
                     Submit
                 </Button>
             </Form>

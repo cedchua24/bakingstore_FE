@@ -1,0 +1,12 @@
+.supplier-payment-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 620px; }
+.supplier-payment-table { min-width: 760px; table-layout: fixed; }
+.supplier-payment-table th:nth-child(1) { width: 22%; }
+.supplier-payment-table th:nth-child(2) { width: 36%; }
+.supplier-payment-table th:nth-child(3) { width: 24%; }
+.supplier-payment-table th:nth-child(4) { width: 18%; text-align: right; }
+.supplier-payment-table tbody tr:hover { background: #f8fafc; }
+.supplier-payment-table td:first-child { color: #475467; font-weight: 700; }
+.supplier-payment-table td:last-child { font-size: 14px; }
+.supplier-order-link { color: #0d6efd; font-weight: 800; text-decoration: none; }
+.supplier-order-link:hover { text-decoration: underline; }
+@media (max-width: 800px) { .supplier-payment-summary { grid-template-columns: 1fr; } }
