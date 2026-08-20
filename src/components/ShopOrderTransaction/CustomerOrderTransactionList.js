@@ -37,6 +37,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import moment from "moment";
 import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
 import { getTransactionCategoryTags } from "./shopOrderTransactionTagHelpers";
+import { formatPaymentLabel, getPaymentLabelParts } from "./shopOrderPaymentHelpers";
 
 import LinearProgress from '@mui/material/LinearProgress';
 import useActiveShopColor from "../Shop/useActiveShopColor";
@@ -222,7 +223,7 @@ const CustomerOrderTransactionList = () => {
         console.log('role_as: ', localStorage.getItem('role_as'));
         console.log("customerOrderDate :", customerOrderDate)
         // console.log('date', new Date().toLocaleDateString().replace("/", "-"));
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList(customerOrderDate)
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2(customerOrderDate)
             .then(response => {
                 console.log("fetchOnlineShopOrderTransactionList :", response.data)
                 // setShopOrderTransactionList(response.data);
@@ -418,7 +419,7 @@ const CustomerOrderTransactionList = () => {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
             // ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByStatus(customerOrderDate)
-            ShopOrderTransactionService.fetchOnlineShopOrderTransactionList(customerOrderDate)
+            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2(customerOrderDate)
                 .then(response => {
                     console.log("data: ", response.data);
                     setShopOrderTransaction(response.data);
@@ -934,15 +935,14 @@ const CustomerOrderTransactionList = () => {
                         ) : shopOrderTransaction.payment.map((payment) => (
                             <div className="customer-report-payment-row" key={payment.id}>
                                 <div>
-                                    <strong>{payment.payment_type}</strong>
-                                    <span>{payment.payment_type_description}</span>
+                                    <strong>{formatPaymentLabel(payment)}</strong>
                                 </div>
                                 <div className="customer-report-payment-actions">
-                                    <Link to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + customerOrderDate.date}>
+                                    <Link to={"../shopOrderTransaction/paymentTypeSales/" + (payment.payment_type_po_id || payment.id) + "+" + customerOrderDate.date}>
                                         <PageviewIcon color="primary" />
                                     </Link>
                                     {payment.total_paid_count != payment.total_count ?
-                                        <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
+                                        <Tooltip title={"Need to double-check all transactions in " + formatPaymentLabel(payment)}>
                                             <span><CloseIcon className="customer-report-icon-danger" /></span>
                                         </Tooltip> : <CheckIcon className="customer-report-icon-success" />}
                                     <strong>{money(payment.total_amount)}</strong>
@@ -1125,16 +1125,14 @@ const CustomerOrderTransactionList = () => {
                 </div>
 
                 <div className="customer-report-table-wrap">
-                    <table className="customer-report-table">
+                    <table className="customer-report-table customer-report-online-orders-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
                                 <th>Shop</th>
                                 <th>Customer</th>
                                 <th>Qty</th>
-                                <th>Cash</th>
-                                <th>Online</th>
-                                <th>Bank</th>
+                                <th>Account</th>
                                 <th>Total</th>
                                 {role == 2 && <th>Profit</th>}
                                 <th>Date</th>
@@ -1210,14 +1208,15 @@ const CustomerOrderTransactionList = () => {
                                             }
                                         </td>
                                         <td>{transaction.shop_order_transaction_total_quantity != 0 ? transaction.shop_order_transaction_total_quantity : "-"}</td>
-                                        <td>{transaction.total_cash != 0 ? money(transaction.total_cash) : "-"}</td>
-                                        <td>{transaction.total_online != 0 ? money(transaction.total_online) : "-"}</td>
                                         <td>
                                             <div className="customer-report-bank-list">
                                                 {transaction.mode_of_payment.map((sot, index) => (
-                                                    <span key={`${transaction.id}-${sot.payment_type}-${index}`}>
-                                                        {money(sot.amount)} <small>{sot.payment_type}</small>
-                                                    </span>
+                                                    <div className="customer-report-payment-account" key={`${transaction.id}-${sot.id || index}-${index}`}>
+                                                        <strong>{money(sot.amount)}</strong>
+                                                        {getPaymentLabelParts(sot).map((detail, detailIndex) => (
+                                                            <small key={`${detail}-${detailIndex}`}>{detail}</small>
+                                                        ))}
+                                                    </div>
                                                 ))}
                                             </div>
                                         </td>
@@ -1235,7 +1234,7 @@ const CustomerOrderTransactionList = () => {
                                         </td>
                                         <td><span className={paymentStatusClass(transaction.status)}>{paymentStatusLabel(transaction.status)}</span></td>
                                         <td>
-                                            <div className="customer-report-status-action">
+                                            <div className="customer-report-status-action customer-report-delivery-action">
                                                 {transaction.delivery_customer_id != 0 && transaction.delivery_status == 1 &&
                                                     <span className="status-pill status-success">Delivered</span>
                                                 }

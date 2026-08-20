@@ -18,6 +18,8 @@ import LinearProgress from '@mui/material/LinearProgress';
 
 const AddPoPaymentType = (props) => {
 
+    const CASH_PAYMENT_TERM_ID = 1;
+
     const paymentTermList = props.paymenTermList;
     const bankList = props.bankList;
 
@@ -46,6 +48,8 @@ const AddPoPaymentType = (props) => {
         total_balance_due: 0,
         statement_date: 0,
         status: 0,
+        is_supplier: 0,
+        is_customer: 0,
         created_at: '',
         updated_at: ''
     });
@@ -56,54 +60,65 @@ const AddPoPaymentType = (props) => {
         setPaymentType({ ...paymentType, [e.target.name]: e.target.value });
     }
 
-    const handlePaymentTermChange = (e, value) => {
-        e.persist();
-        console.log(value)
-
+    const onChangeAccountUsage = (e) => {
         setPaymentType({
             ...paymentType,
-            payment_term_id: value.id
+            [e.target.name]: e.target.checked ? 1 : 0
         });
     }
 
-    const handleBankChange = (e, value) => {
-        e.persist();
-        console.log(value)
+    const handlePaymentTermChange = (e, value) => {
+        const paymentTermId = value ? value.id : 0;
 
+        setPaymentType((currentPaymentType) => ({
+            ...currentPaymentType,
+            payment_term_id: paymentTermId,
+            bank_id: paymentTermId === CASH_PAYMENT_TERM_ID ? 1 : 0,
+            ...(paymentTermId === CASH_PAYMENT_TERM_ID && {
+                account_number: 0,
+                account_description: ''
+            })
+        }));
+        setFormErrors({});
+    }
+
+    const handleBankChange = (e, value) => {
         setPaymentType({
             ...paymentType,
-            bank_id: value.id
+            bank_id: value ? value.id : 0
         });
     }
 
     const validate = (values) => {
         const errors = {};
-        if (paymentType.bank_id == 0) {
+        const isCash = Number(values.payment_term_id) === CASH_PAYMENT_TERM_ID;
+
+        if (!isCash && values.bank_id == 0) {
             errors.bank_id = "Bank is Required!";
         }
-        if (paymentType.account_name.length == 0) {
+        if (!values.account_name.trim()) {
             errors.account_name = "Account Name is Required!";
         }
 
-        if (paymentType.account_number == 0) {
+        if (!isCash && values.account_number == 0) {
             errors.account_number = "Account Number is Required!";
         }
 
-        if (paymentType.payment_term_id == 0) {
+        if (values.payment_term_id == 0) {
             errors.payment_term_id = "Type is Required!";
         }
 
-        if (paymentType.payment_term_id == 4) {
-            if (paymentType.due_date == 0) {
+        if (values.payment_term_id == 4) {
+            if (values.due_date == 0) {
                 errors.due_date = "Due Date is Required!";
             }
             // if (paymentType.buffer_days == 0) {
             //     errors.buffer_days = "Buffer Days is Required!";
             // }
-            if (paymentType.credit_limit == 0) {
+            if (values.credit_limit == 0) {
                 errors.credit_limit = "Credit Limit is Required!";
             }
-            if (paymentType.statement_date == 0) {
+            if (values.statement_date == 0) {
                 errors.statement_date = "Statement Date is Required!";
             }
 
@@ -126,7 +141,22 @@ const AddPoPaymentType = (props) => {
                         props.onSavePaymentTypeData(response.data);
                         setMessage(true);
                         setPaymentType({
-                            payment_type: ''
+                            id: 0,
+                            payment_term_id: 0,
+                            bank_id: 0,
+                            account_number: 0,
+                            account_name: '',
+                            account_description: '',
+                            due_date: 0,
+                            buffer_days: 0,
+                            credit_limit: 0,
+                            total_balance_due: 0,
+                            statement_date: 0,
+                            status: 0,
+                            is_supplier: 0,
+                            is_customer: 0,
+                            created_at: '',
+                            updated_at: ''
                         });
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
@@ -146,7 +176,7 @@ const AddPoPaymentType = (props) => {
     }
 
     return (
-        <div>
+        <div className="po-payment-form">
             <Stack sx={{ width: '100%' }} spacing={2}>
                 {validator.isShow &&
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
@@ -180,56 +210,58 @@ const AddPoPaymentType = (props) => {
                     <br></br>
                 </Box>
 
-                <Box
-                    sx={{
-                        '& .MuiTextField-root': { m: 1, width: '25ch' },
-                    }}
-                    noValidate
-                    autoComplete="off"
-                // onSubmit={saveOrderSupplier}
-                >
-                    {formErrors.bank_id && <p style={{ color: "red" }}>{formErrors.bank_id}</p>}
-                    <FormControl variant="standard" >
-                        <Autocomplete
-                            // {...defaultProps}
-                            options={bankList}
-                            className="mb-3"
-                            id="disable-close-on-select"
-                            onChange={handleBankChange}
-                            getOptionLabel={(bankList) => bankList.bank_name}
-                            renderInput={(params) => (
-                                <TextField {...params} label="Choose Bank *" variant="standard" />
-                            )}
-                        />
-                    </FormControl>
-                    <br></br>
-                </Box>
+                {Number(paymentType.payment_term_id) !== CASH_PAYMENT_TERM_ID && (
+                    <Box
+                        sx={{
+                            '& .MuiTextField-root': { m: 1, width: '25ch' },
+                        }}
+                        noValidate
+                        autoComplete="off"
+                    >
+                        {formErrors.bank_id && <p style={{ color: "red" }}>{formErrors.bank_id}</p>}
+                        <FormControl variant="standard" >
+                            <Autocomplete
+                                options={bankList}
+                                className="mb-3"
+                                id="po-payment-bank"
+                                onChange={handleBankChange}
+                                getOptionLabel={(bank) => bank.bank_name}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Choose Bank *" variant="standard" />
+                                )}
+                            />
+                        </FormControl>
+                        <br></br>
+                    </Box>
+                )}
 
                 {formErrors.account_name && <p style={{ color: "red" }}>{formErrors.account_name}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Acoount Name *</Form.Label>
+                    <Form.Label>Account Name *</Form.Label>
                     <Form.Control type="text" value={paymentType.account_name} name="account_name" placeholder="Enter Account Name" onChange={onChangePaymentType} />
                 </Form.Group>
 
 
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Acoount Description</Form.Label>
-                    <Form.Control type="text" value={paymentType.account_description} name="account_description" placeholder="Enter Account Description" onChange={onChangePaymentType} />
-                    <Form.Text className="text-muted"  >
-                        Ex. Platinum
-                    </Form.Text>
-                </Form.Group>
+                {Number(paymentType.payment_term_id) !== CASH_PAYMENT_TERM_ID && (
+                    <>
+                        <Form.Group className="mb-3" controlId="poPaymentAccountDescription">
+                            <Form.Label>Account Description</Form.Label>
+                            <Form.Control type="text" value={paymentType.account_description} name="account_description" placeholder="Enter Account Description" onChange={onChangePaymentType} />
+                            <Form.Text className="text-muted">Ex. Platinum</Form.Text>
+                        </Form.Group>
 
-                {formErrors.account_number && <p style={{ color: "red" }}>{formErrors.account_number}</p>}
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Account Number *</Form.Label>
-                    <Form.Control type="text" value={paymentType.account_number} name="account_number" placeholder="Enter Account Last 4 Digit Number" onChange={onChangePaymentType} />
-                    {paymentType.payment_term_id == 4 &&
+                        {formErrors.account_number && <p style={{ color: "red" }}>{formErrors.account_number}</p>}
+                        <Form.Group className="mb-3" controlId="poPaymentAccountNumber">
+                            <Form.Label>Account Number *</Form.Label>
+                            <Form.Control type="text" value={paymentType.account_number} name="account_number" placeholder="Enter Account Last 4 Digit Number" onChange={onChangePaymentType} />
+                            {paymentType.payment_term_id == 4 &&
                         <Form.Text className="text-muted"  >
                             Last 4 Digit Number
                         </Form.Text>
-                    }
-                </Form.Group>
+                            }
+                        </Form.Group>
+                    </>
+                )}
 
                 {paymentType.payment_term_id == 4 &&
 
@@ -300,6 +332,32 @@ const AddPoPaymentType = (props) => {
                         </Form.Group>
                     </Box>
                 }
+
+                <Form.Group className="mb-3 po-payment-usage-panel">
+                    <div>
+                        <Form.Label>Account Usage</Form.Label>
+                        <Form.Text>Choose all transaction types that can use this account.</Form.Text>
+                    </div>
+                    <div className="po-payment-usage-options">
+                        <Form.Check
+                            type="checkbox"
+                            id="po-payment-is-supplier"
+                            name="is_supplier"
+                            label="Supplier payments"
+                            checked={paymentType.is_supplier === 1}
+                            onChange={onChangeAccountUsage}
+                        />
+                        <Form.Check
+                            type="checkbox"
+                            id="po-payment-is-customer"
+                            name="is_customer"
+                            label="Customer payments"
+                            checked={paymentType.is_customer === 1}
+                            onChange={onChangeAccountUsage}
+                        />
+                    </div>
+                </Form.Group>
+
                 <Button variant="primary"
                     disabled={isAddDisabled}
                     onClick={savePaymentType}>

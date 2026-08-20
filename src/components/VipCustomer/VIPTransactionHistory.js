@@ -68,13 +68,15 @@ const styles = {
     metricValue: { display: "block", color: "#212529", fontSize: 15, fontWeight: 700 },
     label: { color: "#6c757d", fontSize: 13, marginBottom: 5 },
     value: { fontSize: 23, fontWeight: 700, margin: 0 },
-    tableCard: { background: "white", border: "1px solid #e5e7eb", borderRadius: 9, overflow: "hidden" },
+    tableCard: { background: "white", border: "1px solid #e5e7eb", borderRadius: 9, overflowX: "auto", overflowY: "hidden" },
     chartCard: { background: "white", border: "1px solid #e5e7eb", borderRadius: 9, padding: 18, overflow: "hidden" },
     chartHeader: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 8 },
     chartInsights: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 10, margin: "16px 0 4px" },
     chartInsight: { borderRadius: 9, padding: "12px 14px", background: "#f8fafc", border: "1px solid #e2e8f0" },
     tableHeader: { backgroundColor: "#212529", color: "#ffffff" },
     tableHeaderCell: { backgroundColor: "#212529", color: "#ffffff", borderColor: "#495057" },
+    actionHeader: { position: "sticky", right: 0, zIndex: 3, width: 52, minWidth: 52, textAlign: "center", backgroundColor: "#212529", color: "#ffffff", borderColor: "#495057", boxShadow: "-3px 0 6px rgba(15, 23, 42, .12)" },
+    actionCell: { position: "sticky", right: 0, zIndex: 2, width: 52, minWidth: 52, textAlign: "center", background: "#ffffff", boxShadow: "-3px 0 6px rgba(15, 23, 42, .1)" },
     totalRow: { background: "#dce5ec" },
     totalCell: { background: "#dce5ec", color: "#26313d", borderColor: "#aebdca", borderTop: "3px solid #647789", padding: "14px 10px", fontWeight: 800 },
     totalLabel: { display: "block", color: "#1f2933", fontSize: 15, fontWeight: 900 },
@@ -237,6 +239,47 @@ const VIPTransactionHistory = () => {
         >
             {exceeded ? `+${money(difference)}` : `-${money(Math.abs(difference))}`}
         </span>;
+    };
+
+    const renderSalesTrend = (current, average, lastMonth) => {
+        const currentSales = Number(current || 0);
+        const averageSales = Number(average || 0);
+        const lastMonthSales = Number(lastMonth || 0);
+        const reportMonth = report?.report_month?.month || selectedMonth;
+        const now = new Date();
+        const thisMonth = currentMonth();
+        const [year, monthNumber] = String(reportMonth).split("-").map(Number);
+        const daysInMonth = new Date(year, monthNumber, 0).getDate();
+        const elapsedDays = reportMonth < thisMonth ? daysInMonth : reportMonth === thisMonth ? Math.min(now.getDate(), daysInMonth) : 0;
+        const projected = elapsedDays > 0 ? (currentSales / elapsedDays) * daysInMonth : 0;
+        const averageChange = averageSales > 0 ? ((currentSales - averageSales) / averageSales) * 100 : currentSales > 0 ? 100 : 0;
+        const lastMonthChange = lastMonthSales > 0 ? ((currentSales - lastMonthSales) / lastMonthSales) * 100 : currentSales > 0 ? 100 : 0;
+        const attainment = averageSales > 0 ? (projected / averageSales) * 100 : projected > 0 ? 100 : 0;
+        const projectionStatus = attainment >= 100
+            ? { label: "On Track", color: "#146c43", background: "#d1e7dd" }
+            : attainment >= 80
+                ? { label: "At Risk", color: "#92400e", background: "#fef3c7" }
+                : { label: "Unlikely", color: "#b42318", background: "#fee2e2" };
+        const comparisonColor = value => value >= 0 ? "#146c43" : "#dc3545";
+
+        return <div style={{ minWidth: 180 }}>
+            <div>
+                <span style={{ ...styles.cellSalesLabel, marginBottom: 3 }}>Vs 3-month average</span>
+                <strong style={{ color: comparisonColor(averageChange) }}>{averageChange >= 0 ? "+" : ""}{averageChange.toFixed(1)}%</strong>
+            </div>
+            <div style={{ marginTop: 7, paddingTop: 6, borderTop: "1px solid #cbd5e1" }}>
+                <span style={{ ...styles.cellSalesLabel, marginBottom: 3 }}>Vs last month</span>
+                <strong style={{ color: comparisonColor(lastMonthChange) }}>{lastMonthChange >= 0 ? "+" : ""}{lastMonthChange.toFixed(1)}%</strong>
+            </div>
+            {elapsedDays > 0 && <div style={{ marginTop: 7, paddingTop: 6, borderTop: "2px solid #cbd5e1" }}>
+                <span style={{ ...styles.cellSalesLabel, marginBottom: 3 }}>{reportMonth === thisMonth ? "Projected month-end sales" : "Final sales"}</span>
+                <strong style={{ display: "block", color: "#1d4ed8" }}>{money(projected)}</strong>
+                {reportMonth === thisMonth && <>
+                    <span style={{ display: "inline-flex", marginTop: 5, padding: "4px 8px", borderRadius: 999, color: projectionStatus.color, background: projectionStatus.background, fontSize: 10, fontWeight: 900 }}>{projectionStatus.label}</span>
+                    <span style={{ display: "block", marginTop: 3, color: projectionStatus.color, fontSize: 10, fontWeight: 800 }}>{attainment.toFixed(1)}% of 3-month average</span>
+                </>}
+            </div>}
+        </div>;
     };
 
     const saveMonthlyQuota = value => {
@@ -490,7 +533,7 @@ const VIPTransactionHistory = () => {
                         </Box>
                     </div> : <div className="text-center text-muted py-5">No graph data available for this month.</div>}
                 </div> : <div style={styles.tableCard} className="table-responsive">
-                    <table className="table table-bordered table-hover align-middle mb-0">
+                    <table className="table table-bordered table-hover align-middle mb-0" style={{ minWidth: 1250 }}>
                         <thead style={styles.tableHeader}>
                             <tr>
                                 <th style={styles.tableHeaderCell}>VIP Customer</th>
@@ -499,13 +542,14 @@ const VIPTransactionHistory = () => {
                                 <th style={styles.tableHeaderCell}>Last 3-month average</th>
                                 <th style={styles.tableHeaderCell}>3-month average gap</th>
                                 <th style={styles.tableHeaderCell}>Last month gap</th>
+                                <th style={{ ...styles.tableHeaderCell, minWidth: 210 }}>Status / Sales Trend</th>
                                 </>}
                                 {showProfit && <>
                                 <th style={styles.tableHeaderCell}>Average profit</th>
                                 <th style={styles.tableHeaderCell}>Profit gap</th>
                                 <th style={styles.tableHeaderCell}>Last month profit gap</th>
                                 </>}
-                                <th style={{ ...styles.tableHeaderCell, width: 52, textAlign: "center" }} aria-label="View graph" />
+                                <th style={styles.actionHeader} aria-label="View graph" />
                             </tr>
                         </thead>
                         <tbody>
@@ -539,13 +583,14 @@ const VIPTransactionHistory = () => {
                                     <td>{money(customerThreeMonthAverage)}</td>
                                     <td>{renderTargetGap(customer.current_paid, customerThreeMonthAverage)}</td>
                                     <td>{renderTargetGap(customer.current_paid, customerLastMonthPaid)}</td>
+                                    <td>{renderSalesTrend(customer.current_paid, customerThreeMonthAverage, customerLastMonthPaid)}</td>
                                     </>}
                                     {showProfit && <>
                                     <td style={{ color: "#6f42c1", fontWeight: 700 }}>{money(customer.average_monthly_profit)}</td>
                                     <td>{renderTargetGap(customer.current_profit, customer.average_monthly_profit)}</td>
                                     <td>{renderTargetGap(customer.current_profit, customerLastMonthProfit)}</td>
                                     </>}
-                                    <td className="text-center">
+                                    <td style={styles.actionCell}>
                                         <Button
                                             variant="outline-primary"
                                             size="sm"
@@ -559,7 +604,7 @@ const VIPTransactionHistory = () => {
                                     </td>
                                 </tr>;
                             })}
-                            {!loading && customers.length === 0 && <tr><td colSpan={months.length + 2 + (showSales ? 3 : 0) + (showProfit ? 3 : 0)} className="text-center text-muted py-4">No VIP customers found for this template.</td></tr>}
+                            {!loading && customers.length === 0 && <tr><td colSpan={months.length + 2 + (showSales ? 4 : 0) + (showProfit ? 3 : 0)} className="text-center text-muted py-4">No VIP customers found for this template.</td></tr>}
                         </tbody>
                         <tfoot>
                             <tr style={styles.totalRow}>
@@ -579,13 +624,14 @@ const VIPTransactionHistory = () => {
                                 <td style={styles.totalCell}>{money(lastThreeMonthAverage)}</td>
                                 <td style={styles.totalCell}>{renderTargetGap(report.current_month_paid, lastThreeMonthAverage)}</td>
                                 <td style={styles.totalCell}>{renderTargetGap(report.current_month_paid, lastMonthPaid)}</td>
+                                <td style={styles.totalCell}>{renderSalesTrend(report.current_month_paid, lastThreeMonthAverage, lastMonthPaid)}</td>
                                 </>}
                                 {showProfit && <>
                                 <td style={{ ...styles.totalCell, color: "#6f42c1" }}>{money(averageMonthlyProfit)}</td>
                                 <td style={styles.totalCell}>{renderTargetGap(currentMonthProfit, averageMonthlyProfit)}</td>
                                 <td style={styles.totalCell}>{renderTargetGap(currentMonthProfit, lastMonthProfit)}</td>
                                 </>}
-                                <td style={styles.totalCell} />
+                                <td style={{ ...styles.totalCell, ...styles.actionCell, background: "#dce5ec" }} />
                             </tr>
                         </tfoot>
                     </table>

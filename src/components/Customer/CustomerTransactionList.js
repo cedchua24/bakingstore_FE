@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Tooltip from '@mui/material/Tooltip';
+import { formatPaymentLabel } from "../ShopOrderTransaction/shopOrderPaymentHelpers";
 import "./CustomerReportLists.css";
 
 const CustomerTransactionList = () => {
@@ -129,9 +130,9 @@ const CustomerTransactionList = () => {
                     customerTransactionList.payment.map((payment, index) => (
                         <article className="customer-list-metric" key={payment.id || index}>
                             <div>
-                                <span>{payment.payment_type} {payment.payment_type_description}</span>
+                                <span>{formatPaymentLabel(payment)}</span>
                             {payment.total_paid_count != payment.total_count ?
-                                <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
+                                <Tooltip title={"Need to double-check all transactions in " + formatPaymentLabel(payment)}>
                                         <span className="customer-list-metric__check">
                                         <CloseIcon style={{ color: 'red', }} />
                                     </span>
@@ -157,9 +158,7 @@ const CustomerTransactionList = () => {
                         <th>Customer Type</th>
                         <th>Customer</th>
                         <th>Total Quantity</th>
-                        <th>Total Cash</th>
-                        <th>Total Online</th>
-                        <th>Bank</th>
+                        <th>Account</th>
                         <th>Total Amount</th>
                         <th>Profit</th>
                         <th>Date</th>
@@ -181,13 +180,11 @@ const CustomerTransactionList = () => {
                                         <td>{customerTransactionList.customer_type}</td>
                                         <td>{customerTransactionList.requestor_name}</td>
                                         <td>{customerTransactionList.shop_order_transaction_total_quantity != 0 ? customerTransactionList.shop_order_transaction_total_quantity : ""}</td>
-                                        <td>{customerTransactionList.total_cash != 0 ? numberFormat(customerTransactionList.total_cash) : ""}</td>
-                                        <td>{customerTransactionList.total_online != 0 ? numberFormat(customerTransactionList.total_online) : ""}</td>
                                         <td>
                                             {Array.isArray(customerTransactionList.mode_of_payment) && customerTransactionList.mode_of_payment.length > 0 &&
                                                 <div className="customer-list-payment-list">
                                                 {customerTransactionList.mode_of_payment.map((sot, index) => (
-                                                    <span key={sot.id || index}><small>{sot.payment_type}</small>{numberFormat(sot.amount)}</span>
+                                                    <span key={sot.id || index}><small>{formatPaymentLabel(sot)}</small>{numberFormat(sot.amount)}</span>
                                                 ))}
                                                 </div>
                                             }

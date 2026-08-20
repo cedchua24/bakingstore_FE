@@ -11,18 +11,19 @@ const money = value => Number(value || 0).toLocaleString("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2,
 });
 const number = value => Number(value || 0).toLocaleString("en-PH", { maximumFractionDigits: 2 });
-const totalSold = (quantity, pieces, emphasized = false) => {
+const totalSold = (quantity, pieces, emphasized = false, piecesPerBox = 1) => {
     if (Number(quantity || 0) === 0 && Number(pieces || 0) === 0) return null;
-    return <div style={{ whiteSpace: "nowrap", fontSize: emphasized ? 15 : 12.5, fontWeight: emphasized ? 900 : 750 }}><span>{number(quantity)} Box</span><span style={{ margin: "0 4px", color: "#94a3b8", fontWeight: 600 }}>/</span><span>{number(pieces)} Pc</span></div>;
+    return <div style={{ fontSize: emphasized ? 15 : 12.5, fontWeight: emphasized ? 900 : 750, lineHeight: 1.35 }}>
+        {Number(pieces || 0) > Number(piecesPerBox || 1)
+            ? <span style={{ display: "block", whiteSpace: "nowrap" }}>{number(quantity)} Box</span>
+            : <span style={{ display: "block", whiteSpace: "nowrap" }}>{number(pieces)} Pc</span>}
+    </div>;
 };
 const stockDisplay = product => {
     const boxes = Number(product.stock || 0);
     const pieces = Number(product.stock_pc || 0);
     if (boxes <= 0 && pieces <= 0) return <span style={{ display: "inline-flex", padding: "2px 6px", borderRadius: 999, color: "#b42318", background: "#fff1f0", border: "1px solid #fecaca", fontSize: 9, fontWeight: 700, whiteSpace: "nowrap" }}>Out of stock</span>;
     return <span style={{ color: "#64748b", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }}>{boxes > 0 ? `${number(boxes)} Box` : `${number(pieces)} Pc`}</span>;
-};
-const selectedMonthClass = () => {
-    return "table-info";
 };
 const thisMonth = () => {
     const date = new Date();
@@ -32,6 +33,31 @@ const moveMonth = (month, offset) => {
     const [year, monthNumber] = month.split("-").map(Number);
     const date = new Date(year, monthNumber - 1 + offset, 1);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+};
+const projectedOutput = (month, boxes, pieces) => {
+    if (!/^\d{4}-\d{2}$/.test(month || "")) return null;
+    const now = new Date();
+    const [year, monthNumber] = month.split("-").map(Number);
+    const daysInMonth = new Date(year, monthNumber, 0).getDate();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    if (month > currentMonth) return null;
+    const elapsedDays = month === currentMonth ? Math.min(now.getDate(), daysInMonth) : daysInMonth;
+    const runRate = daysInMonth / elapsedDays;
+    return {
+        boxes: Math.round(Number(boxes || 0) * runRate),
+        pieces: Math.round(Number(pieces || 0) * runRate),
+        projected: month === currentMonth,
+    };
+};
+const projectionAssessment = (projection, targetBoxes, targetPieces) => {
+    if (!projection?.projected) return null;
+    const useBoxes = Number(targetBoxes || 0) > 0;
+    const target = useBoxes ? Number(targetBoxes) : Number(targetPieces || 0);
+    const projected = useBoxes ? projection.boxes : projection.pieces;
+    const attainment = target > 0 ? (projected / target) * 100 : projected > 0 ? 100 : 0;
+    if (attainment >= 100) return { label: "On Track", color: "#146c43", background: "#d1e7dd", attainment };
+    if (attainment >= 80) return { label: "At risk", color: "#92400e", background: "#fef3c7", attainment };
+    return { label: "Unlikely", color: "#b42318", background: "#fee2e2", attainment };
 };
 const quantityDifference = product => {
     const comparison = product.previous_months?.[0];
@@ -66,8 +92,8 @@ const styles = {
     tableWrap: { overflowX: "auto", background: "#fff", border: "1px solid #e1e6ec", borderTop: 0, borderRadius: "0 0 10px 10px" },
     table: { minWidth: 1247, margin: 0, tableLayout: "fixed" },
     th: { color: "#fff", background: "#60758a", borderColor: "#8193a5", verticalAlign: "middle", padding: "12px 9px", fontSize: 14 },
-    selectedTh: { color: "#fff", background: "#356fa8", borderColor: "#78a8d5", borderBottom: "4px solid #8ec5ff", verticalAlign: "middle", padding: "10px 9px", fontSize: 17 },
-    selectedBadge: { display: "inline-flex", marginTop: 5, padding: "2px 6px", borderRadius: 999, color: "#fff", background: "#2563eb", fontSize: 8, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase" },
+    selectedTh: { color: "#fff", background: "#60758a", borderColor: "#8193a5", borderBottom: "3px solid #cbd5e1", verticalAlign: "middle", padding: "10px 9px", fontSize: 17 },
+    selectedBadge: { display: "inline-flex", marginTop: 5, padding: "2px 6px", borderRadius: 999, color: "#334155", background: "#e2e8f0", fontSize: 8, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase" },
     thHint: { display: "block", marginTop: 4, color: "#e2e8f0", fontSize: 8, fontWeight: 700, letterSpacing: ".05em", textTransform: "uppercase" },
     averageTh: { color: "#fff", background: "#6b7280", borderColor: "#8c929d", verticalAlign: "middle", padding: "12px 9px" },
     averageCell: { background: "#f8fafc" },
@@ -172,10 +198,8 @@ const VipProductSoldHistory = () => {
         {report && <>
             <section style={styles.summary}>
                 <div style={{ ...styles.card, border: "2px solid #198754", background: "#f0fff4" }}><p style={styles.label}>{report.report_month?.label} sales</p><p style={{ ...styles.value, color: "#146c43" }}>{money(report.current_month?.sales_amount)}</p></div>
-                <div style={styles.card}><p style={styles.label}>Pieces sold</p><p style={styles.value}>{number(report.current_month?.pieces_sold)}</p></div>
                 <div style={styles.card}><p style={styles.label}>Current profit</p><p style={{ ...styles.value, color: "#6f42c1" }}>{money(report.current_month?.profit_amount)}</p></div>
                 <div style={styles.card}><p style={styles.label}>3-month average sales</p><p style={styles.value}>{money(report.average_sales)}</p></div>
-                <div style={{ ...styles.card, background: dormantProducts.length ? "#fff5f5" : "#f0fff4", borderColor: dormantProducts.length ? "#f1aeb5" : "#a3cfbb" }}><p style={styles.label}>Sold before, not this month</p><p style={{ ...styles.value, color: dormantProducts.length ? "#dc3545" : "#146c43" }}>{dormantProducts.length}</p></div>
                 <div style={styles.card}><p style={styles.label}>Sales vs last month</p><p style={{ ...styles.value, color: change >= 0 ? "#146c43" : "#dc3545" }}>{change >= 0 ? "+" : "-"}{money(Math.abs(change))}</p></div>
             </section>
 
@@ -245,15 +269,31 @@ const VipProductSoldHistory = () => {
                                     : { label: "Unchanged", color: "#6c757d", background: "#e2e3e5" };
                             const averageVerdict = verdict(averageDifference);
                             const comparisonVerdict = verdict(compareDifference);
+                            const selectedMonthStyle = compareDifference > 0
+                                ? { background: "#edf9f2", borderColor: "#b9e3cc" }
+                                : compareDifference < 0
+                                    ? { background: "#fff3f3", borderColor: "#f1c2c2" }
+                                    : { background: "#f5f6f8", borderColor: "#d7dce5" };
+                            const projection = projectedOutput(selectedMonth, currentBoxes, currentPieces);
+                            const projectionStatus = projectionAssessment(projection, averageBoxes, averagePieces);
                             return <tr key={product.product_id}>
                             <td><div style={styles.product}>{product.product_name}</div><div style={styles.meta}>{product.brand_name} · {product.category_name}</div></td>
                             <td>{stockDisplay(product)}</td>
-                            <td className={selectedMonthClass(product)}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true)}{visibleMetrics.sales && <span>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{Number(product.current_month?.pieces_sold) === 0 && <span style={styles.dormant}>NOT SOLD</span>}</div></td>
-                            {(product.previous_months || []).map(month => <td key={month.month}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(month.quantity_sold, month.pieces_sold)}{visibleMetrics.sales && <span>{money(month.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(month.profit_amount)}</span>}</div></td>)}
-                            <td style={styles.averageCell}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}</div></td>
+                            <td style={selectedMonthStyle}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && <span title={`${comparisonVerdict.label} versus last month`} style={{ display: "block", width: 64, height: 3, marginTop: 6, marginBottom: 3, borderRadius: 999, background: comparisonVerdict.color }} />}{visibleMetrics.sales && <span style={{ color: comparisonVerdict.color, fontWeight: 800 }}>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{Number(product.current_month?.pieces_sold) === 0 && <span style={styles.dormant}>NOT SOLD</span>}</div></td>
+                            {(product.previous_months || []).map(month => <td key={month.month}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(month.quantity_sold, month.pieces_sold, false, product.quantity)}{visibleMetrics.sales && <span>{money(month.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(month.profit_amount)}</span>}</div></td>)}
+                            <td style={styles.averageCell}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}</div></td>
                             <td style={{ padding: "12px 14px" }}>
                                 <div><span style={{ display: "block", marginBottom: 6, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>3-month average</span><span style={{ display: "inline-flex", padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: averageVerdict.color, background: averageVerdict.background }}>{averageVerdict.label}</span><span style={{ display: "block", marginTop: 5, color: averageVerdict.color, fontSize: 15, fontWeight: 800 }}>{averagePercentage >= 0 ? "+" : ""}{number(averagePercentage)}%</span></div>
                                 <div style={{ marginTop: 12, paddingTop: 10, borderTop: "2px solid #cbd5e1" }}><span style={{ display: "block", marginBottom: 5, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>Vs {showingTruePreviousMonth ? `last month (${comparisonReferenceLabel})` : comparisonReferenceLabel}</span><span style={{ display: "inline-flex", marginBottom: 5, padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: comparisonVerdict.color, background: comparisonVerdict.background }}>{comparisonVerdict.label}</span><span style={{ display: "block", color: comparisonVerdict.color, fontSize: 15, fontWeight: 800 }}>{comparePercentage >= 0 ? "+" : ""}{number(comparePercentage)}%</span></div>
+                                {projection && <div style={{ marginTop: 14, paddingTop: 12, borderTop: "4px double #94a3b8" }}>
+                                    <span style={{ display: "block", marginBottom: 5, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>{projection.projected ? "Projected month-end output" : "Final output"}</span>
+                                    <strong style={{ display: "block", color: "#1d4ed8", lineHeight: 1.4 }}>{number(projection.boxes)} Box<br/>{number(projection.pieces)} Pc</strong>
+                                    {projection.projected && <span style={{ display: "block", marginTop: 3, color: "#64748b", fontSize: 9 }}>Based on current daily sales</span>}
+                                    {projectionStatus && <div style={{ marginTop: 7 }}>
+                                        <span style={{ display: "inline-flex", padding: "4px 8px", borderRadius: 999, color: projectionStatus.color, background: projectionStatus.background, fontSize: 10, fontWeight: 900 }}>{projectionStatus.label}</span>
+                                        <span style={{ display: "block", marginTop: 4, color: projectionStatus.color, fontSize: 11, fontWeight: 800 }}>{number(projectionStatus.attainment)}% of 3-month average</span>
+                                    </div>}
+                                </div>}
                             </td>
                             <td style={styles.actionCell}><Button size="sm" variant="outline-primary" title="View graph" aria-label={`View graph for ${product.product_name}`} onClick={() => openProductGraph(product.product_id)} style={{ width: 34, height: 32, padding: 0 }}><BarChartIcon fontSize="small" /></Button></td>
                         </tr>;

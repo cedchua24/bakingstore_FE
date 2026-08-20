@@ -546,8 +546,8 @@ const VipProductTransactionReport = () => {
                     <thead>
                         <tr>
                             <th rowSpan="2" style={{ ...styles.groupHeader, width: "38px" }}>#</th>
-                            <th rowSpan="2" style={{ ...styles.groupHeader, width: "185px" }}>Product Details</th>
-                            <th colSpan="2" style={{ ...styles.groupHeader, width: "205px" }}>Current Inventory</th>
+                            <th rowSpan="2" style={{ ...styles.groupHeader, width: "210px" }}>Product Details</th>
+                            <th style={{ ...styles.groupHeader, width: "180px" }}>Current Inventory</th>
                             <th colSpan="2" style={{ ...styles.groupHeader, width: "170px" }}>Sold to Customers</th>
                             <th colSpan="3" style={{ ...styles.groupHeader, width: "300px" }}>Last Supplier Order</th>
                             <th rowSpan="2" style={{ ...styles.groupHeader, width: "250px" }}>Pending Supplier Orders</th>
@@ -555,7 +555,6 @@ const VipProductTransactionReport = () => {
                         </tr>
                         <tr>
                             <th style={styles.subHeader}>Current Stock</th>
-                            <th style={styles.subHeader}>Stock Warning</th>
                             <th style={styles.subHeader}>Total Sold</th>
                             <th style={styles.subHeader}>Last Sold</th>
                             <th style={styles.subHeader}>Supplier / Date</th>
@@ -577,6 +576,9 @@ const VipProductTransactionReport = () => {
                                         <div style={styles.muted}>
                                             Price: ₱{formatMoney(product.price)} / {product.packaging || "package"}
                                         </div>
+                                        <div style={styles.muted}>
+                                            {formatNumber(product.quantity)} {product.variation || "Pc"} per pack
+                                        </div>
                                         {Number(product.quantity || 0) > 1 &&
                                             <div style={styles.muted}>
                                                 Per {product.variation || "Pc"}: ₱{formatMoney(
@@ -592,13 +594,12 @@ const VipProductTransactionReport = () => {
                                         <strong>
                                             {formatNumber(product.stock)} {product.packaging || "Box"} / {formatNumber(product.stock_pc)} Pc
                                         </strong>
-                                        <div style={styles.muted}>{product.quantity || 0} {product.variation || ""} per pack</div>
-                                    </td>
-                                    <td>
                                         <div style={outOfStock ? styles.danger : (stockWarning ? styles.warning : styles.healthy)}>
                                             {outOfStock ? "Out of Stock" : (stockWarning ? "Low Stock" : "Healthy")}
                                         </div>
-                                        <div>{formatNumber(product.stock_warning)} {product.stock_warning_type}</div>
+                                        <div style={styles.muted}>
+                                            Warning at {formatNumber(product.stock_warning)} {product.stock_warning_type}
+                                        </div>
                                     </td>
                                     <td><strong>{formatSold(product)}</strong></td>
                                     <td>
@@ -647,7 +648,7 @@ const VipProductTransactionReport = () => {
                             );
                         }) : (
                             <tr>
-                                <td colSpan="11" style={styles.empty}>No VIP Product transactions found.</td>
+                                <td colSpan="10" style={styles.empty}>No VIP Product transactions found.</td>
                             </tr>
                         )}
                     </tbody>

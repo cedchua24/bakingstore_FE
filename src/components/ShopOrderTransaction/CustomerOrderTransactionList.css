@@ -1,6 +1,9 @@
 .customer-report-page {
     min-height: 100vh;
-    padding: 24px;
+    width: calc(100% + 32px);
+    max-width: none;
+    margin-left: -16px;
+    padding: 24px 12px;
     background: #f6f7fb;
     color: #172033;
 }
@@ -692,6 +695,67 @@
     background: #f8fafc;
 }
 
+.customer-report-online-orders-table {
+    width: 100%;
+    min-width: 1480px;
+    table-layout: auto;
+    font-size: 13px;
+}
+
+.customer-report-online-orders-table th,
+.customer-report-online-orders-table td {
+    box-sizing: border-box;
+    padding: 12px 10px;
+    overflow-wrap: normal;
+}
+
+.customer-report-online-orders-table th {
+    white-space: normal;
+    line-height: 1.15;
+}
+
+.customer-report-online-orders-table th:nth-last-child(2),
+.customer-report-online-orders-table th:nth-last-child(3),
+.customer-report-online-orders-table td:nth-last-child(2),
+.customer-report-online-orders-table td:nth-last-child(3) {
+    min-width: 0;
+}
+
+.customer-report-online-orders-table .customer-report-payment-account {
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
+.customer-report-payment-account {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.customer-report-payment-account strong {
+    color: #172033;
+    font-weight: 800;
+}
+
+.customer-report-payment-account small {
+    display: block;
+    color: #667085;
+    line-height: 1.25;
+}
+
+.customer-report-online-orders-table .customer-report-actions {
+    min-width: 136px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+}
+
+.customer-report-online-orders-table .customer-report-actions .btn {
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 12px;
+}
+
 .customer-report-id,
 .customer-report-amount {
     font-weight: 800;
@@ -809,10 +873,19 @@
 }
 
 .customer-report-rider-action,
-.customer-report-pickup-action {
+.customer-report-pickup-action,
+.customer-report-delivery-action {
     align-items: flex-start;
     flex-direction: column;
     min-width: 92px;
+}
+
+.customer-report-pickup-action,
+.customer-report-delivery-action {
+    width: 100%;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
 }
 
 .customer-report-rider-action {
@@ -826,6 +899,12 @@
 .customer-report-rider-action .MuiIconButton-root,
 .customer-report-pickup-action .MuiIconButton-root {
     margin-left: -6px;
+}
+
+.customer-report-pickup-action .MuiIconButton-root,
+.customer-report-delivery-action > .MuiIconButton-root {
+    display: block;
+    margin: 0 auto;
 }
 
 .customer-report-date-changed {
@@ -914,6 +993,8 @@
 
 @media (max-width: 720px) {
     .customer-report-page {
+        width: 100%;
+        margin-left: 0;
         padding: 14px;
     }
 

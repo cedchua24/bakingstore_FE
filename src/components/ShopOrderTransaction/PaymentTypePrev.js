@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService"
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 import { Form } from 'react-bootstrap';
 import IconButton from '@mui/material/IconButton';
 import UpdateIcon from '@mui/icons-material/Update';
@@ -102,7 +103,7 @@ const PaymentTypePrev = () => {
 
     const fetchShopOrderTransactionList = () => {
 
-        ShopOrderTransactionService.fetchPrev(id, today, type)
+        ShopOrderTransactionService.fetchPrevV2(id, today, type)
             .then(response => {
                 console.log('fetchOnlineShopOrderTransactionListByIdDate', response.data)
                 // setShopOrderTransactionList(response.data);
@@ -201,7 +202,7 @@ const PaymentTypePrev = () => {
                         <th>Shop Name</th>
                         <th>Customer Type</th>
                         <th>Customer</th>
-                        <th>Bank</th>
+                        <th>Account</th>
                         <th>Amount</th>
                         <th>Total Quantity</th>
                         <th>Total Cash</th>
@@ -225,7 +226,7 @@ const PaymentTypePrev = () => {
                                         <td>{shopOrderTransaction.shop_name}</td>
                                         <td>{shopOrderTransaction.customer_type}</td>
                                         <td>{shopOrderTransaction.requestor_name}</td>
-                                        <td>{shopOrderTransaction.payment_type + " " + shopOrderTransaction.payment_type_description}</td>
+                                        <td>{formatPaymentLabel(shopOrderTransaction)}</td>
                                         <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.amount)}</td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                         <td>{shopOrderTransaction.total_cash}</td>

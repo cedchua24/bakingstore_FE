@@ -13,6 +13,9 @@ class ModeOfPaymentPoService {
     fetchmodeOfPaymentPo(id) {
         return axios.get(`/api/modeOfPaymentPo/fetchmodeOfPaymentPo/${id}`);
     }
+    fetchSupplierPaymentTransactionListByDateRange(data) {
+        return axios.post('/api/modeOfPaymentPo/fetchSupplierPaymentTransactionListByDateRange', data);
+    }
     create(data) {
         return axios.post("/api/modeOfPaymentPo", data);
     }

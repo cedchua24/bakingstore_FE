@@ -135,7 +135,7 @@ const ReportSales = () => {
         if (Object.keys(errors).length) return;
 
         setSubmitLoadingAdd(true);
-        ShopOrderTransactionService.fetchSalesList(customerOrderDate)
+        ShopOrderTransactionService.fetchSalesListV2(customerOrderDate)
             .then((response) => {
                 setShopOrderTransaction({
                     ...response.data,

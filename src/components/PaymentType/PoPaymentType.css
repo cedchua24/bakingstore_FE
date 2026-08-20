@@ -1,0 +1,257 @@
+.po-payment-page {
+    min-height: 100vh;
+    padding: 28px;
+    background: #f5f7fb;
+    color: #172033;
+}
+
+.po-payment-page-header,
+.po-payment-section-heading,
+.po-payment-usage-panel,
+.po-payment-actions {
+    display: flex;
+}
+
+.po-payment-page-header {
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+}
+
+.po-payment-page-header span,
+.po-payment-section-heading > span {
+    color: #a65416;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.po-payment-page-header h1,
+.po-payment-section-heading h2 {
+    margin: 4px 0;
+    font-weight: 800;
+}
+
+.po-payment-page-header p,
+.po-payment-section-heading p {
+    margin: 0;
+    color: #667085;
+}
+
+.po-payment-record-count {
+    padding: 9px 14px;
+    border-radius: 999px;
+    background: #e9eef6;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.po-payment-card {
+    margin-bottom: 24px;
+    border: 1px solid #dde3ec;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(23, 32, 51, .06);
+    overflow: hidden;
+}
+
+.po-payment-add-card {
+    padding: 26px;
+}
+
+.po-payment-section-heading {
+    flex-direction: column;
+    margin-bottom: 22px;
+}
+
+.po-payment-section-heading h2 {
+    font-size: 22px;
+}
+
+.po-payment-form form {
+    max-width: 920px;
+}
+
+.po-payment-form .form-control {
+    min-height: 44px;
+    border-color: #cfd6e2;
+}
+
+.po-payment-usage-panel {
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px;
+    border: 1px solid #b9d1ff;
+    border-radius: 12px;
+    background: #f5f8ff;
+}
+
+.po-payment-usage-panel .form-label {
+    display: block;
+    margin: 0 0 3px;
+    font-weight: 800;
+}
+
+.po-payment-usage-panel .form-text {
+    display: block;
+}
+
+.po-payment-usage-options {
+    display: flex;
+    gap: 24px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.po-payment-list-heading {
+    padding: 24px 24px 0;
+}
+
+.po-payment-table-wrap {
+    overflow-x: auto;
+}
+
+.po-payment-table {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    table-layout: fixed;
+    vertical-align: middle;
+}
+
+.po-payment-table thead th {
+    padding: 11px 7px;
+    border: 0;
+    background: #172033;
+    color: #fff;
+    font-size: 11px;
+    text-transform: uppercase;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+.po-payment-table tbody td {
+    padding: 12px 7px;
+    border-color: #edf1f6;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.po-payment-table th:nth-child(1) { width: 4%; }
+.po-payment-table th:nth-child(2) { width: 7%; }
+.po-payment-table th:nth-child(3) { width: 7%; }
+.po-payment-table th:nth-child(4) { width: 13%; }
+.po-payment-table th:nth-child(5) { width: 10%; }
+.po-payment-table th:nth-child(6) { width: 10%; }
+.po-payment-table th:nth-child(7) { width: 6%; }
+.po-payment-table th:nth-child(8) { width: 8%; }
+.po-payment-table th:nth-child(9) { width: 8%; }
+.po-payment-table th:nth-child(10) { width: 8%; }
+.po-payment-table th:nth-child(11) { width: 6%; }
+.po-payment-table th:nth-child(12) { width: 13%; }
+
+.po-payment-table td strong,
+.po-payment-table td small {
+    display: block;
+}
+
+.po-payment-table td small {
+    margin-top: 2px;
+    color: #667085;
+}
+
+.po-payment-usage-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.po-payment-usage-badges span {
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.po-payment-usage-badges .is-supplier {
+    background: #fff0df;
+    color: #9a4d0a;
+}
+
+.po-payment-usage-badges .is-customer {
+    background: #e5f6ec;
+    color: #18733a;
+}
+
+.po-payment-usage-badges .is-unused {
+    background: #eef1f5;
+    color: #667085;
+}
+
+.po-payment-enabled {
+    text-align: center;
+}
+
+.po-payment-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    min-width: 0;
+}
+
+.po-payment-actions a,
+.po-payment-actions .btn {
+    width: 100%;
+    min-width: 0;
+}
+
+.payment-account-list-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 240px;
+    border: 1px solid #dde3ec;
+    border-radius: 16px;
+    background: #fff;
+    color: #667085;
+    font-weight: 700;
+}
+
+.po-payment-actions .po-payment-customer-link {
+    grid-column: 1 / -1;
+}
+
+.po-payment-actions .btn {
+    padding: 5px 4px;
+    font-size: 11px;
+}
+
+@media (max-width: 720px) {
+    .po-payment-page {
+        padding: 14px;
+    }
+
+    .po-payment-page-header,
+    .po-payment-usage-panel {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .po-payment-add-card {
+        padding: 18px;
+    }
+
+    .po-payment-usage-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .po-payment-table {
+        min-width: 1050px;
+    }
+}

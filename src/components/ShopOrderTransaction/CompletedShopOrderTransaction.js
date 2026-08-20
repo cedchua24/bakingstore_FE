@@ -26,6 +26,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import PaymentIcon from '@mui/icons-material/Payment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 
 const CompletedShopOrderTransaction = () => {
 
@@ -35,7 +36,7 @@ const CompletedShopOrderTransaction = () => {
     useEffect(() => {
         fetchShopOrderTransaction(id);
         fetchShopOrderDTO(id);
-        fetchPaymentTypeByShopTransactionId(id);
+        fetchPaymentTypeByShopTransactionIdV2(id);
     }, []);
 
     const [orderShop, setOrderShop] = useState({
@@ -107,10 +108,15 @@ const CompletedShopOrderTransaction = () => {
 
     const [message, setMessage] = useState(false);
 
-    const fetchPaymentTypeByShopTransactionId = async (id) => {
-        await ModeOfPaymentService.fetchPaymentTypeByShopTransactionId(id)
+    const fetchPaymentTypeByShopTransactionIdV2 = async (id) => {
+        await ModeOfPaymentService.fetchPaymentTypeByShopTransactionIdV2(id)
             .then(response => {
-                setModeOfPaymentDTO(response.data);
+                const paymentSummary = response.data || {};
+                setModeOfPaymentDTO({
+                    ...paymentSummary,
+                    data: Array.isArray(paymentSummary.data) ? paymentSummary.data : [],
+                    total_payment: Number(paymentSummary.total_payment || 0),
+                });
                 console.log('balance', response.data)
 
             })
@@ -167,7 +173,7 @@ const CompletedShopOrderTransaction = () => {
             status: 1,
         });
 
-        ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransaction.id, shopOrderTransaction)
+        ShopOrderTransactionService.updateShopOrderTransactionStatusV2(shopOrderTransaction.id, shopOrderTransaction)
             .then(response => {
                 setMessage(true);
             })
@@ -277,7 +283,7 @@ const CompletedShopOrderTransaction = () => {
                                     <Table sx={{ minWidth: 640 }} aria-label="payment table">
                                         <TableHead>
                                             <TableRow sx={{ bgcolor: '#fafafa' }}>
-                                                <TableCell sx={{ fontWeight: 800 }}>Mode of Payment</TableCell>
+                                                <TableCell sx={{ fontWeight: 800 }}>Account</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 800 }}>Date</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 800 }}>Amount</TableCell>
                                             </TableRow>
@@ -285,7 +291,7 @@ const CompletedShopOrderTransaction = () => {
                                         <TableBody>
                                             {modeOfPaymentDTO.data.map((row) => (
                                                 <TableRow key={row.id} hover>
-                                                    <TableCell>{row.payment_type}</TableCell>
+                                                    <TableCell>{formatPaymentLabel(row)}</TableCell>
                                                     <TableCell align="right">
                                                         <Typography
                                                             component="span"

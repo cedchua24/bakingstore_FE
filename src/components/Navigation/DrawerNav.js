@@ -557,6 +557,11 @@ export default function PersistentDrawerLeft() {
             "name": "Add Payment Type Supplier",
             "url": "/poPaymentType",
             "icon": <AddIcon />
+        },
+        {
+            "name": "Payment Account List",
+            "url": "/poPaymentTypeList",
+            "icon": <ListIcon />
         }
     ]);
 
@@ -967,6 +972,11 @@ export default function PersistentDrawerLeft() {
 
     const [productReportList, setProductReportList] = useState([
         {
+            "name": "Product Trend Comparison",
+            "url": "/reports/productTrendComparison",
+            "icon": <LeaderboardIcon />
+        },
+        {
             "name": "Product Sold Record List",
             "url": "/reports/reportProductSorted",
             "icon": <ListIcon />
@@ -1011,6 +1021,11 @@ export default function PersistentDrawerLeft() {
     ]);
 
     const [customerReportList, setCustomerReportList] = useState([
+        {
+            "name": "Customer Sales Impact",
+            "url": "/reports/customerSalesImpact",
+            "icon": <LeaderboardIcon />
+        },
         {
             "name": "Customer Record List",
             "url": "/reports/reportCustomerSorted",

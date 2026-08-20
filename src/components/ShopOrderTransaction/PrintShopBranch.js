@@ -28,7 +28,7 @@ const PrintShopBranch = () => {
     useEffect(() => {
         fetchShopOrderTransaction(id);
         fetchShopOrderDTO(id);
-        fetchPaymentTypeByShopTransactionId(id);
+        fetchPaymentTypeByShopTransactionIdV2(id);
     }, []);
 
     const [orderShop, setOrderShop] = useState({
@@ -87,10 +87,15 @@ const PrintShopBranch = () => {
 
     const [message, setMessage] = useState(false);
 
-    const fetchPaymentTypeByShopTransactionId = async (id) => {
-        await ModeOfPaymentService.fetchPaymentTypeByShopTransactionId(id)
+    const fetchPaymentTypeByShopTransactionIdV2 = async (id) => {
+        await ModeOfPaymentService.fetchPaymentTypeByShopTransactionIdV2(id)
             .then(response => {
-                setModeOfPaymentDTO(response.data);
+                const paymentSummary = response.data || {};
+                setModeOfPaymentDTO({
+                    ...paymentSummary,
+                    data: Array.isArray(paymentSummary.data) ? paymentSummary.data : [],
+                    total_payment: Number(paymentSummary.total_payment || 0),
+                });
                 console.log('balance', response.data)
 
             })

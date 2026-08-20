@@ -123,7 +123,7 @@ const CustomerSalesHistory = () => {
             <>
               <div className="customer-sales-totals">
                 <div><span>Total sales</span><strong>{money(history.total_sales)}</strong></div>
-                <div><span>Total profit</span><strong>{money(history.total_profit)}</strong></div>
+                {showProfit && <div><span>Total profit</span><strong>{money(history.total_profit)}</strong></div>}
                 <div className="customer-sales-highlight customer-sales-highlight--highest">
                   <span>Highest sales period</span>
                   <strong>{highestSalesPeriod ? money(highestSalesPeriod.total_sales) : "-"}</strong>

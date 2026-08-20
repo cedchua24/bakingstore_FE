@@ -19,6 +19,9 @@ class ModeOfPaymentService {
     fetchPaymentTypeByShopTransactionId(id) {
         return axios.get(`/api/modeOfPayment/fetchPaymentTypeByShopTransactionId/${id}`);
     }
+    fetchPaymentTypeByShopTransactionIdV2(id) {
+        return axios.get(`/api/modeOfPayment/fetchPaymentTypeByShopTransactionIdV2/${id}`);
+    }
     update(id, data) {
         return axios.put(`/api/modeOfPayment/${id}`, data);
     }

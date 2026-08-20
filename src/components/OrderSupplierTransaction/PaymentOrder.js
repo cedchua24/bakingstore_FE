@@ -44,6 +44,12 @@ import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import "./OrderSupplierTransaction.css";
 
+const SUPPLIER_PAYMENT_ACCOUNT_FILTER = {
+    is_customer: 0,
+    is_supplier: 1,
+    status: 0,
+};
+
 
 
 const PaymentOrder = () => {
@@ -298,8 +304,18 @@ const PaymentOrder = () => {
             setModeOfPaymentPo({
                 ...modeOfPaymentPo,
                 payment_term_id: value.id,
-                payment_type_po_id: 1
+                payment_type_po_id: 0
             });
+            PaymentTypePoService.findByCategoryV2(value.id, SUPPLIER_PAYMENT_ACCOUNT_FILTER)
+                .then(response => {
+                    const accounts = Array.isArray(response.data) ? response.data : [];
+                    setPaymentTypePoList(accounts);
+                })
+                .catch(e => {
+                    setPaymentTypePoList([]);
+                    console.log("error", e);
+                });
+            return;
         } else if (value.id == 5) {
             setModeOfPaymentPo({
                 ...modeOfPaymentPo,
@@ -416,9 +432,9 @@ const PaymentOrder = () => {
             errors.payment_term_id = "Payment Term is Required!";
         }
 
-        if (modeOfPaymentPo.payment_term_id == 2 || modeOfPaymentPo.payment_term_id == 3) {
+        if ([1, 2, 3].includes(Number(modeOfPaymentPo.payment_term_id))) {
             if (modeOfPaymentPo.payment_type_po_id == 0) {
-                errors.payment_type_po_id = "Bank is Required!";
+                errors.payment_type_po_id = "Account is Required!";
             }
         }
 
@@ -507,6 +523,16 @@ const PaymentOrder = () => {
 
     const dateOnly = (value) => value ? String(value).split('T')[0].split(' ')[0] : '';
 
+    const hasDisplayValue = (value) => {
+        const normalizedValue = String(value ?? '').trim();
+        return normalizedValue !== '' && normalizedValue !== '0';
+    };
+
+    const paymentAccountLabel = (payment) =>
+        [payment.bank_name, payment.account_name, payment.account_number]
+            .filter(hasDisplayValue)
+            .join(' · ') || 'Payment';
+
     const isFullyPaid = Number(orderSupplierTransaction.payment_status) === 1;
 
 
@@ -590,7 +616,7 @@ const PaymentOrder = () => {
                         />
                     </div>
 
-                    {[2, 3, 4].includes(Number(modeOfPaymentPo.payment_term_id)) && (
+                    {[1, 2, 3, 4].includes(Number(modeOfPaymentPo.payment_term_id)) && (
                         <div className="po-form-field po-form-field-full">
                             <Autocomplete
                                 options={paymentTypePoList}
@@ -604,7 +630,7 @@ const PaymentOrder = () => {
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
-                                        label="Bank or payment account"
+                                        label="Account"
                                         error={Boolean(formErrors.payment_type_po_id)}
                                         helperText={formErrors.payment_type_po_id}
                                     />
@@ -676,20 +702,19 @@ const PaymentOrder = () => {
                 <strong>{modeOfPaymentDTO.data.length} {modeOfPaymentDTO.data.length === 1 ? 'payment' : 'payments'}</strong>
             </div>
             <TableContainer component={Paper} className="po-items-table po-payment-history">
-                <Table sx={{ minWidth: 700 }} aria-label="Recorded supplier payments">
+                <Table sx={{ minWidth: 640 }} aria-label="Recorded supplier payments">
                     <TableHead>
                         <TableRow>
-                            <TableCell>Payment account</TableCell>
-                            <TableCell>Term</TableCell>
-                            <TableCell>Payment date</TableCell>
+                            <TableCell>Account</TableCell>
                             <TableCell align="right">Amount</TableCell>
-                            <TableCell align="right" colSpan={2}>Actions</TableCell>
+                            <TableCell align="right">Date</TableCell>
+                            <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {modeOfPaymentDTO.data.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={6}>
+                                <TableCell colSpan={4}>
                                     <div className="po-empty-state">
                                         <PaymentsOutlinedIcon />
                                         <strong>No payments recorded</strong>
@@ -708,17 +733,12 @@ const PaymentOrder = () => {
                             return (
                             <TableRow key={row.id} hover>
                                 <TableCell>
-                                    <strong>
-                                        {[row.bank_name, row.account_name, row.account_description, row.account_number]
-                                            .filter(Boolean)
-                                            .join(' · ') || 'Payment'}
-                                    </strong>
-                                </TableCell>
-                                <TableCell>{row.payment_term || '—'}</TableCell>
-                                <TableCell className={isDifferentFromOrderDate ? 'po-payment-date-mismatch' : undefined}>
-                                    {paymentDate || '—'}
+                                    <strong>{paymentAccountLabel(row)}</strong>
                                 </TableCell>
                                 <TableCell align="right"><strong>{numberFormat(row.amount || 0)}</strong></TableCell>
+                                <TableCell align="right" className={isDifferentFromOrderDate ? 'po-payment-date-mismatch' : undefined}>
+                                    {paymentDate || '—'}
+                                </TableCell>
                                 <TableCell align="right">
                                     <Tooltip title={isFullyPaid ? "Fully paid orders cannot be updated" : "Edit payment"}>
                                         <span>
@@ -727,8 +747,6 @@ const PaymentOrder = () => {
                                             </IconButton>
                                         </span>
                                     </Tooltip>
-                                </TableCell>
-                                <TableCell align="right">
                                     <Tooltip title={isFullyPaid ? "Fully paid orders cannot be deleted" : "Delete payment"}>
                                         <span>
                                             <IconButton color="error" disabled={isFullyPaid} onClick={() => openDelete(row.id)}>
@@ -742,7 +760,7 @@ const PaymentOrder = () => {
                             );
                         })}
                         <TableRow className="po-grand-total-row">
-                            <TableCell colSpan={3}>Total paid</TableCell>
+                            <TableCell>Total paid</TableCell>
                             <TableCell align="right">{numberFormat(modeOfPaymentDTO.total_payment || 0)}</TableCell>
                             <TableCell colSpan={2}></TableCell>
                         </TableRow>

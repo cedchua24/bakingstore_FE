@@ -128,7 +128,7 @@ const ReportDelivery = () => {
         } else {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
-            ShopOrderTransactionService.fetchDeliveryTransaction(transactionStatus)
+            ShopOrderTransactionService.fetchDeliveryTransactionV2(transactionStatus)
                 .then(response => {
                     setShopOrderTransaction(response.data);
                     setSubmitLoadingAdd(false);
@@ -146,7 +146,7 @@ const ReportDelivery = () => {
 
 
     const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.fetchDeliveryTransaction(transactionStatus)
+        ShopOrderTransactionService.fetchDeliveryTransactionV2(transactionStatus)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -213,7 +213,7 @@ const ReportDelivery = () => {
         event.preventDefault();
         setSubmitLoading(true);
 
-        ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
+        ShopOrderTransactionService.updateShopOrderTransactionStatusV2(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
             .then(response => {
                 setSubmitLoading(false);
                 setSubmitOpenModal(false);

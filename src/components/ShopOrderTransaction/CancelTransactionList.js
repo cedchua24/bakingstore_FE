@@ -3,6 +3,7 @@ import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import UserService from '../User/UserService.service'
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
@@ -94,7 +95,7 @@ const CancelTransactionList = () => {
 
 
     const fetchShopOrderTransactionList = () => {
-        ShopOrderTransactionService.fetchPendingTransactionList(transactionStatus)
+        ShopOrderTransactionService.fetchPendingTransactionListV2(transactionStatus)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -154,7 +155,7 @@ const CancelTransactionList = () => {
         event.preventDefault();
         setSubmitLoading(true);
 
-        ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
+        ShopOrderTransactionService.updateShopOrderTransactionStatusV2(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
             .then(response => {
                 setSubmitLoading(false);
                 setSubmitOpenModal(false);
@@ -179,7 +180,7 @@ const CancelTransactionList = () => {
 
     const saveOrderTransaction = () => {
         console.log('orderTransaction', customerOrderDate.date);
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDate(customerOrderDate.date)
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDateV2(customerOrderDate.date)
             .then(response => {
                 setShopOrderTransaction(response.data);
             })
@@ -287,9 +288,9 @@ const CancelTransactionList = () => {
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
+                            <Form.Label>{formatPaymentLabel(payment)}</Form.Label>
                             <Form.Control type="text" value={"₱ " + payment.total_amount} />
-                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
+                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + (payment.payment_type_po_id || payment.id) + "+" + date}   >
                                 <Button variant="primary" >
                                     View
                                 </Button>

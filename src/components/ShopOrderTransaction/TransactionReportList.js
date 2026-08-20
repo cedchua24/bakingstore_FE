@@ -33,6 +33,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useParams } from 'react-router-dom';
 
 import LinearProgress from '@mui/material/LinearProgress';
+import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 
 
 const TransactionReportList = () => {
@@ -195,7 +196,7 @@ const TransactionReportList = () => {
                 console.log("error", e)
             });
 
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionList(customerOrderDate)
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2(customerOrderDate)
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -359,7 +360,7 @@ const TransactionReportList = () => {
         event.preventDefault();
         setSubmitLoading(true);
 
-        ShopOrderTransactionService.updateShopOrderTransactionStatus(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
+        ShopOrderTransactionService.updateShopOrderTransactionStatusV2(shopOrderTransactionUpdate.id, shopOrderTransactionUpdate)
             .then(response => {
                 setSubmitLoading(false);
                 setSubmitOpenModal(false);
@@ -407,7 +408,7 @@ const TransactionReportList = () => {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
             fetchExpensesList(customerOrderDate.date);
-            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByDate(customerOrderDate.date)
+            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2({ date: customerOrderDate.date })
                 .then(response => {
                     setShopOrderTransaction(response.data);
                     setSubmitLoadingAdd(false);
@@ -604,12 +605,12 @@ const TransactionReportList = () => {
                 {
                     shopOrderTransaction.payment.map((payment, index) => (
                         <Form.Group className="mb-3" controlId="formBasicEmail" disabled>
-                            <Form.Label> {payment.payment_type} {payment.payment_type_description}</Form.Label>
-                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + payment.id + "+" + date}   >
+                            <Form.Label>{formatPaymentLabel(payment)}</Form.Label>
+                            <Link variant="primary" to={"../shopOrderTransaction/paymentTypeSales/" + (payment.payment_type_po_id || payment.id) + "+" + date}   >
                                 <PageviewIcon color="primary" />
                             </Link>
                             {payment.total_paid_count != payment.total_count ?
-                                <Tooltip title={"Need to Double Check all transaction in " + payment.payment_type}>
+                            <Tooltip title={"Need to double-check all transactions in " + formatPaymentLabel(payment)}>
                                     <span>
                                         <CloseIcon style={{ color: 'red', }} />
                                     </span>
@@ -681,9 +682,7 @@ const TransactionReportList = () => {
                         <th>Customer Type</th>
                         <th>Customer</th>
                         <th>Total Quantity</th>
-                        <th>Total Cash</th>
-                        <th>Total Online</th>
-                        <th>Bank</th>
+                        <th>Account</th>
                         <th>Total Amount</th>
                         {
                             role == 2 && (
@@ -718,15 +717,13 @@ const TransactionReportList = () => {
                                         <td>{shopOrderTransaction.customer_type}</td>
                                         <td>{shopOrderTransaction.requestor_name}</td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity != 0 ? shopOrderTransaction.shop_order_transaction_total_quantity : ""}</td>
-                                        <td>{shopOrderTransaction.total_cash != 0 ? numberFormat(shopOrderTransaction.total_cash) : ""}</td>
-                                        <td>{shopOrderTransaction.total_online != 0 ? numberFormat(shopOrderTransaction.total_online) : ""}</td>
                                         <td>{shopOrderTransaction.status == 1 ? (
 
                                             shopOrderTransaction.mode_of_payment.map((sot, index) => (
                                                 <>
                                                     <tr>
                                                         <td><p style={{ fontSize: 12 }}>{numberFormat(sot.amount)}</p></td>
-                                                        <td><p style={{ fontSize: 12 }}>{sot.payment_type}</p></td>
+                                                        <td><p style={{ fontSize: 12 }}>{formatPaymentLabel(sot)}</p></td>
                                                     </tr>
                                                 </>
                                             )
