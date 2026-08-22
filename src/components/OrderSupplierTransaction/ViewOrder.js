@@ -238,7 +238,7 @@ const ViewOrder = () => {
                                     <TableCell>Product</TableCell>
                                     <TableCell align="right">Quantity</TableCell>
                                     <TableCell align="right">Unit price</TableCell>
-                                    <TableCell>Unit</TableCell>
+                                    <TableCell align="right">Unit</TableCell>
                                     <TableCell>Expiration</TableCell>
                                     <TableCell align="right">Line total</TableCell>
                                 </TableRow>
@@ -260,7 +260,7 @@ const ViewOrder = () => {
                                         </TableCell>
                                         <TableCell align="right">{product.quantity}</TableCell>
                                         <TableCell align="right">{currency(product.price)}</TableCell>
-                                        <TableCell>{product.variation || '—'}</TableCell>
+                                        <TableCell align="right">{product.unit || '—'}</TableCell>
                                         <TableCell>{product.expiration ? formatDate(product.expiration) : '—'}</TableCell>
                                         <TableCell align="right" className="po-view-money">
                                             {currency(product.total_price)}

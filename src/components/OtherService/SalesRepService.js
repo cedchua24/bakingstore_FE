@@ -2,7 +2,7 @@
 import axios from "axios";
 class SalesRepervice {
     getAll() {
-        return axios.get("/api/salesRep");
+        return axios.get("http://localhost:8000/api/salesRepRequest");
     }
     get(id) {
         return axios.get(`/api/salesRep/${id}`);
