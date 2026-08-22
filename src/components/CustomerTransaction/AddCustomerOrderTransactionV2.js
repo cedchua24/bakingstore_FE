@@ -294,24 +294,27 @@ const AddCustomerOrderTransactionV2 = (props) => {
                                             }
                                         </FormControl>
 
-                                        <FormControl fullWidth error={Boolean(formErrors.sales_rep_id)}>
-                                            <InputLabel id="sales-rep-select-label">Sales Representative</InputLabel>
-                                            <Select
-                                                labelId="sales-rep-select-label"
-                                                id="sales-rep-select"
-                                                value={shopOrderTransaction.sales_rep_id}
-                                                label="Sales Representative"
-                                                name="sales_rep_id"
-                                                onChange={onChangeInput}
-                                            >
-                                                {salesRepList.map((salesRep) => (
-                                                    <MenuItem key={salesRep.id} value={salesRep.id}>{salesRep.first_name}</MenuItem>
-                                                ))}
-                                            </Select>
-                                            {formErrors.sales_rep_id &&
-                                                <Typography variant="caption" color="error" sx={{ mt: .5 }}>{formErrors.sales_rep_id}</Typography>
-                                            }
-                                        </FormControl>
+                                        <Autocomplete
+                                            fullWidth
+                                            options={salesRepList}
+                                            value={salesRepList.find(salesRep => salesRep.id === shopOrderTransaction.sales_rep_id) || null}
+                                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                                            getOptionLabel={(option) => `${option.first_name || ''} ${option.last_name || ''}`.trim()}
+                                            onChange={(event, value) => {
+                                                setShopOrderTransaction({
+                                                    ...shopOrderTransaction,
+                                                    sales_rep_id: value ? value.id : 0
+                                                });
+                                            }}
+                                            renderInput={(params) => (
+                                                <TextField
+                                                    {...params}
+                                                    label="Sales Representative"
+                                                    error={Boolean(formErrors.sales_rep_id)}
+                                                    helperText={formErrors.sales_rep_id}
+                                                />
+                                            )}
+                                        />
 
                                         <TextField
                                             fullWidth

@@ -499,9 +499,11 @@ const OrderSupplierApproval = () => {
         orderSupplierTransaction.requestor &&
         loginAccountName.toLowerCase() === orderSupplierTransaction.requestor.trim().toLowerCase()
     );
+    const canSelfApprove = Number(localStorage.getItem('role_as')) === 2;
+    const isSelfApprovalBlocked = isRequestorApprover && !canSelfApprove;
 
     const submitApproval = () => {
-        if (isRequestorApprover && orderSupplierTransaction.approval_status == 'APPROVED') {
+        if (isSelfApprovalBlocked && orderSupplierTransaction.approval_status == 'APPROVED') {
             window.scrollTo(0, 0);
             setValidator({
                 severity: 'error',
@@ -1030,9 +1032,15 @@ const OrderSupplierApproval = () => {
                     )}
                 </div>
 
-                {isRequestorApprover && orderSupplierTransaction.status != 'COMPLETED' && (
+                {isSelfApprovalBlocked && orderSupplierTransaction.status != 'COMPLETED' && (
                     <Alert severity="warning" className="po-self-approval-note">
                         <strong>Self-approval is not allowed.</strong> This purchase order was requested by {orderSupplierTransaction.requestor}. You may leave it Pending or Reject it with a note, but a different authorized account must approve it.
+                    </Alert>
+                )}
+
+                {isRequestorApprover && canSelfApprove && orderSupplierTransaction.status != 'COMPLETED' && (
+                    <Alert severity="info" className="po-self-approval-note">
+                        <strong>Administrator self-approval.</strong> You requested this purchase order, but you can approve it because your account has the administrator role.
                     </Alert>
                 )}
 
@@ -1083,9 +1091,9 @@ const OrderSupplierApproval = () => {
                                 <MenuItem
                                     value="APPROVED"
                                     sx={{ color: "success.main" }}
-                                    disabled={isRequestorApprover}
+                                    disabled={isSelfApprovalBlocked}
                                 >
-                                    Approved{isRequestorApprover ? ' — different approver required' : ''}
+                                    Approved{isSelfApprovalBlocked ? ' — different approver required' : ''}
                                 </MenuItem>
                                 <MenuItem value="REJECTED" sx={{ color: "error.main" }}>Rejected</MenuItem>
                             </Select>
@@ -1112,7 +1120,7 @@ const OrderSupplierApproval = () => {
                         ? 'Continue to the supplier sending step.'
                         : 'Your decision will be saved to this purchase order.'}</p>
                     <Button
-                        disabled={isAddDisabled || (isRequestorApprover && orderSupplierTransaction.approval_status == 'APPROVED')}
+                        disabled={isAddDisabled || (isSelfApprovalBlocked && orderSupplierTransaction.approval_status == 'APPROVED')}
                         variant="contained"
                         onClick={orderSupplierTransaction.status == 'COMPLETED' ? nextSubmit : submitApproval}
                         size="large"
