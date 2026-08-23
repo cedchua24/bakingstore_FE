@@ -223,6 +223,7 @@ import CustomerTransactionList from "./components/Customer/CustomerTransactionLi
 import CustomerListTransaction from "./components/Customer/CustomerListTransaction";
 import CustomerAds from "./components/Customer/CustomerAds";
 import CustomerHistory from "./components/Customer/CustomerHistory";
+import CustomerOrderActivity from "./components/Customer/CustomerOrderActivity";
 import CustomerBacklog from "./components/Customer/CustomerBacklog";
 import CustomerConvo from "./components/Customer/CustomerConvo";
 import CustomerReOrder from "./components/Customer/CustomerReOrder";
@@ -761,6 +762,7 @@ const App = () => {
           <Route exact path="/customerAds" element={<CustomerAds />} />
 
           <Route exact path="/customerHistory" element={<CustomerHistory />} />
+          <Route exact path="/customerOrderActivity" element={<CustomerOrderActivity />} />
           <Route exact path="/customerBacklog" element={<CustomerBacklog />} />
 
           <Route exact path="/customerConvo" element={<CustomerConvo />} />
