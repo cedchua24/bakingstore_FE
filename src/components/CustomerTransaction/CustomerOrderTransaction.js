@@ -34,7 +34,7 @@ const CustomerOrderTransaction = () => {
 
 
     const fetchSalesRep = () => {
-        SalesRepService.getAll()
+        SalesRepService.fetchRequests()
             .then(response => {
                 setSalesRepList(response.data);
             })
