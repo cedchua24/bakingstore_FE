@@ -1,8 +1,12 @@
 // import http from "../../http-common";
 import axios from "axios";
 class SalesRepervice {
+
     getAll() {
-        return axios.get("http://localhost:8000/api/salesRepRequest");
+        return axios.get("/api/salesRep");
+    }
+    fetchRequests() {
+        return axios.get("/api/salesRep/fetchRequests");
     }
     get(id) {
         return axios.get(`/api/salesRep/${id}`);
