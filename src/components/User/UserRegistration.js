@@ -4,6 +4,7 @@ import swal from "sweetalert";
 import UserService from "./UserService.service";
 import "./UserRegistration.css";
 import useActiveShopColor from "../Shop/useActiveShopColor";
+import { ACTIVE_SHOP_COLOR_KEY, getEnvironmentColor } from "../Shop/databaseEnvironment";
 
 const initialUser = {
     name: "",
@@ -76,6 +77,11 @@ const UserRegistration = () => {
             const registrationStatus = Number(response.data.status);
 
             if (registrationStatus >= 200 && registrationStatus < 300) {
+                const responseColor = getEnvironmentColor(response.data?.data || response.data);
+                if (responseColor) {
+                    localStorage.setItem(ACTIVE_SHOP_COLOR_KEY, responseColor);
+                }
+
                 setUser(initialUser);
                 setShowPassword(false);
                 setShowConfirmation(false);

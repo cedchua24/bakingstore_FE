@@ -6,7 +6,11 @@ import moment from "moment";
 import "./UserLogin.css";
 import { saveAuthSession } from "./authSession";
 import useActiveShopColor from "../Shop/useActiveShopColor";
-import { fetchLocalEnvironmentColor } from "../Shop/databaseEnvironment";
+import {
+    ACTIVE_SHOP_COLOR_KEY,
+    fetchLocalEnvironmentColor,
+    getEnvironmentColor,
+} from "../Shop/databaseEnvironment";
 
 const UserLogin = () => {
     const activeShopColor = useActiveShopColor();
@@ -62,6 +66,11 @@ const UserLogin = () => {
             const status = Number(response.data.status);
 
             if (status >= 200 && status < 300) {
+                const responseColor = getEnvironmentColor(response.data?.data || response.data);
+                if (responseColor) {
+                    localStorage.setItem(ACTIVE_SHOP_COLOR_KEY, responseColor);
+                }
+
                 if (!saveAuthSession(response.data)) {
                     setErrors({
                         form: "The server did not provide a valid session expiration. Please sign in again.",

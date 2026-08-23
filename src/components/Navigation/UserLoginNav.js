@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import ShopService from "../Shop/ShopService";
-import { normalizeShopColor } from "../Shop/shopBranding";
+import useActiveShopColor from "../Shop/useActiveShopColor";
 import "./UserLoginNav.css";
 
 const UserLoginNav = () => {
     const location = useLocation();
     const [shopName, setShopName] = useState("MDR Baking Supplies");
-    const [shopColor, setShopColor] = useState("#35221c");
+    const shopColor = useActiveShopColor();
 
     useEffect(() => {
         ShopService.fetchShopActive()
@@ -19,10 +19,6 @@ const UserLoginNav = () => {
                     setShopName(activeShop.shop_name);
                 }
 
-                const color = normalizeShopColor(activeShop?.color);
-                if (color) {
-                    setShopColor(color);
-                }
             })
             .catch((error) => {
                 console.error("Unable to load the active shop name.", error);
