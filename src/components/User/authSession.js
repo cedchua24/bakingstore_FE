@@ -10,6 +10,17 @@ const AUTH_KEYS = [
 
 const MAX_TIMEOUT = 2147483647;
 
+export const getAuthUserIdFromCookie = () => {
+    const cookie = document.cookie
+        .split(";")
+        .map((part) => part.trim())
+        .find((part) => part.startsWith("auth_user_id="));
+
+    if (!cookie) return null;
+    const value = decodeURIComponent(cookie.substring("auth_user_id=".length));
+    return value !== "" ? value : null;
+};
+
 const getExpirationTime = (expiresAt) => {
     if (expiresAt === null || expiresAt === undefined || expiresAt === "") {
         return NaN;
@@ -67,7 +78,12 @@ export const saveAuthSession = (data) => {
     localStorage.setItem("auth_expires_at", String(expirationTime));
     localStorage.setItem("auth_token", data.token);
 
-    if (data.id !== undefined) localStorage.setItem("auth_user_id", data.id);
+    if (data.id !== undefined) {
+        localStorage.setItem("auth_user_id", data.id);
+        const maxAge = Math.max(0, Math.floor((expirationTime - Date.now()) / 1000));
+        const secure = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `auth_user_id=${encodeURIComponent(data.id)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;
+    }
     if (data.name !== undefined) localStorage.setItem("name", data.name);
     if (data.role_as !== undefined) localStorage.setItem("role_as", data.role_as);
 
@@ -76,6 +92,7 @@ export const saveAuthSession = (data) => {
 
 export const clearAuthSession = () => {
     AUTH_KEYS.forEach((key) => localStorage.removeItem(key));
+    document.cookie = "auth_user_id=; Path=/; Max-Age=0; SameSite=Lax";
 };
 
 export const hasValidAuthSession = () => {
