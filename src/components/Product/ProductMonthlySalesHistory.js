@@ -11,12 +11,34 @@ const money = value => Number(value || 0).toLocaleString("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2,
 });
 const number = value => Number(value || 0).toLocaleString("en-PH", { maximumFractionDigits: 2 });
-const totalSold = (quantity, pieces, emphasized = false, piecesPerBox = 1) => {
-    if (Number(quantity || 0) === 0 && Number(pieces || 0) === 0) return null;
+// `quantity_sold` is a total piece count. Convert it into complete packages
+// plus the remaining loose pieces, matching ProductTrendComparison.
+const soldQuantity = (quantity, pieces) => {
+    const totalPieces = Number(pieces || 0);
+    return totalPieces !== 0 ? totalPieces : Number(quantity || 0);
+};
+const soldQuantityLabel = (totalPieces, piecesPerPackage = 1, packaging = "Box") => {
+    const total = Number(totalPieces || 0);
+    const size = Math.max(1, Number(piecesPerPackage || 1));
+    if (total < size) return `${number(total)} Pc`;
+    const packageEquivalent = total / size;
+    return `${number(packageEquivalent)} ${packaging}`;
+};
+const soldQuantityTitle = (totalPieces, piecesPerPackage = 1, packaging = "Box") => {
+    const total = Number(totalPieces || 0);
+    const size = Math.max(1, Number(piecesPerPackage || 1));
+    const packages = Math.floor(total / size);
+    const remainder = total % size;
+    const breakdown = packages > 0
+        ? `${number(packages)} ${packaging}${remainder ? ` + ${number(remainder)} Pc` : ""}`
+        : `${number(total)} Pc`;
+    return `${number(total)} pieces total · ${number(size)} pieces per ${packaging.toLowerCase()} · ${breakdown}`;
+};
+const totalSold = (quantity, pieces, emphasized = false, piecesPerPackage = 1, packaging = "Box") => {
+    const totalPieces = soldQuantity(quantity, pieces);
+    if (totalPieces === 0) return null;
     return <div style={{ fontSize: emphasized ? 15 : 12.5, fontWeight: emphasized ? 900 : 750, lineHeight: 1.35 }}>
-        {Number(pieces || 0) > Number(piecesPerBox || 1)
-            ? <span style={{ display: "block", whiteSpace: "nowrap" }}>{number(quantity)} Box</span>
-            : <span style={{ display: "block", whiteSpace: "nowrap" }}>{number(pieces)} Pc</span>}
+        <span title={soldQuantityTitle(totalPieces, piecesPerPackage, packaging)} style={{ display: "block", whiteSpace: "nowrap", cursor: "help" }}>{soldQuantityLabel(totalPieces, piecesPerPackage, packaging)}</span>
     </div>;
 };
 const stockDisplay = product => {
