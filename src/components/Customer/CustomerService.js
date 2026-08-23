@@ -13,6 +13,9 @@ class CustomerService {
   fetchCustomerTransaction(data) {
     return axios.post("/api/customers/fetchCustomerTransaction", data);
   }
+  fetchCustomerTransactionV2(data) {
+    return axios.post("/api/customers/fetchCustomerTransactionV2", data);
+  }
   fetchCustomerToDelete(id) {
     return axios.get(`/api/customers/fetchCustomerToDelete/${id}`);
   }
@@ -28,6 +31,9 @@ class CustomerService {
   }
   customerLastOrderListV2(data) {
     return axios.post("/api/v2/customers/customerLastOrderList", data);
+  }
+  customerLastOrderAllListV2(data) {
+    return axios.post("/api/customers/customerLastOrderAllListV2", data);
   }
   updateAndDeleteCustomer(data) {
     return axios.post("/api/customers/updateAndDeleteCustomer", data);
@@ -46,6 +52,9 @@ class CustomerService {
   customerReorder(id, data) {
     // return axios.post("/api/customers/customerLastOrderList", data);
     return axios.post(`/api/customers/customerReorder/${id}`, data);
+  }
+  customerReorderV2(data) {
+    return axios.post("/api/customers/customerReorderV2", data);
   }
   fetchCustomerByDate(data) {
     return axios.post("/api/customers/fetchCustomerByDate", data);

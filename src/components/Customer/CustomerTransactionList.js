@@ -46,7 +46,7 @@ const CustomerTransactionList = () => {
     }
 
     const fetchCustomerTransaction = useCallback((customerId, filters) => {
-        CustomerService.fetchCustomerTransaction(buildCustomerTransactionPayload(customerId, filters))
+        CustomerService.fetchCustomerTransactionV2(buildCustomerTransactionPayload(customerId, filters))
             .then(response => {
                 console.log('data', response.data)
                 setCustomerTransactionList(response.data);

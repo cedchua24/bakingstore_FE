@@ -82,6 +82,7 @@ import ChecklistIcon from '@mui/icons-material/Checklist';
 import moment from "moment";
 import ShopService from "../Shop/ShopService";
 import { normalizeShopColor } from "../Shop/shopBranding";
+import { fetchLocalEnvironmentColor } from "../Shop/databaseEnvironment";
 import "./DrawerNav.css";
 
 import { pink } from '@mui/material/colors';
@@ -162,8 +163,20 @@ export default function PersistentDrawerLeft() {
     });
 
     useEffect(() => {
-        ShopService.fetchShopActive()
-            .then((response) => {
+        const loadShopBrand = async () => {
+            let environmentColor = null;
+
+            try {
+                environmentColor = await fetchLocalEnvironmentColor();
+                if (environmentColor) {
+                    setShopBrand((current) => ({ ...current, color: environmentColor }));
+                }
+            } catch (error) {
+                console.error("Unable to load the database environment.", error);
+            }
+
+            try {
+                const response = await ShopService.fetchShopActive();
                 const payload = response.data?.data || response.data;
                 const activeShop = Array.isArray(payload) ? payload[0] : payload;
                 const nextBrand = {};
@@ -172,7 +185,7 @@ export default function PersistentDrawerLeft() {
                     nextBrand.name = activeShop.shop_name;
                 }
 
-                const color = normalizeShopColor(activeShop?.color);
+                const color = environmentColor ? null : normalizeShopColor(activeShop?.color);
                 if (color) {
                     nextBrand.color = color;
                 }
@@ -180,10 +193,12 @@ export default function PersistentDrawerLeft() {
                 if (Object.keys(nextBrand).length > 0) {
                     setShopBrand((current) => ({ ...current, ...nextBrand }));
                 }
-            })
-            .catch((error) => {
+            } catch (error) {
                 console.error("Unable to load the active shop branding.", error);
-            });
+            }
+        };
+
+        loadShopBrand();
     }, []);
 
     const [open1, setOpen1] = React.useState(false);
@@ -1027,6 +1042,11 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Customer Record List",
             "url": "/reports/reportCustomerSorted",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "All Customer Order Activity",
+            "url": "/customerOrderActivity",
             "icon": <ListIcon />
         },
     ]);

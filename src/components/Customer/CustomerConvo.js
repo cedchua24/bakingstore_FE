@@ -5,12 +5,14 @@ import { Box, Chip, CircularProgress, IconButton, LinearProgress, Pagination, St
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import UpdateIcon from "@mui/icons-material/Update";
+import CommentOutlinedIcon from "@mui/icons-material/CommentOutlined";
 import CustomerService from "./CustomerService";
+import CustomerCommentModal from "./CustomerCommentModal";
 import CustomerUpdateService from "../OtherService/CustomerUpdateService";
 import { getAuthUserIdFromCookie } from "../User/authSession";
 
 const PAGE_SIZE = 100;
-const emptyFilters = { followed_up_from: "", followed_up_to: "", amount_min: "", amount_max: "" };
+const emptyFilters = { search: "", followed_up_from: "", followed_up_to: "", amount_min: "", amount_max: "" };
 const money = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 });
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "2-digit" });
 
@@ -35,15 +37,16 @@ const CustomerConvo = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [modalOpen, setModalOpen] = useState(false);
+    const [viewComment, setViewComment] = useState(null);
     const [saving, setSaving] = useState(false);
-    const [support, setSupport] = useState({ customer_id: 0, first_name: "", last_name: "", chat: 0, promo: 0, status: 0 });
+    const [support, setSupport] = useState({ customer_id: 0, first_name: "", last_name: "", last_order_date: null, chat: 0, promo: 0, status: 0 });
 
     const fetchCustomers = useCallback(async (page, activeFilters) => {
         setLoading(true);
         setError("");
         const request = { page };
         Object.entries(activeFilters).forEach(([key, value]) => {
-            if (value !== "") request[key] = key.startsWith("followed_up_") ? value : Number(value);
+            if (value !== "") request[key] = key.startsWith("followed_up_") || key === "search" ? value : Number(value);
         });
         try {
             const result = normalizeResponse(await CustomerService.customerConvoListV2(request));
@@ -95,7 +98,7 @@ const CustomerConvo = () => {
         try {
             const { data } = await CustomerService.get(id);
             const row = customers.find((customer) => Number(customer.id) === Number(id));
-            setSupport((current) => ({ ...current, customer_id: data.id, first_name: data.first_name || "", last_name: data.last_name || "", chat: Number(row?.chat ?? 0), promo: Number(row?.promo ?? 0), status: 0 }));
+            setSupport((current) => ({ ...current, customer_id: data.id, first_name: data.first_name || "", last_name: data.last_name || "", last_order_date: row?.last_order_date ?? row?.date ?? row?.last_order_at ?? null, chat: Number(row?.chat ?? 0), promo: Number(row?.promo ?? 0), status: 0 }));
             setModalOpen(true);
         } catch (e) { setError(e?.response?.data?.message || "Unable to open this customer."); }
     };
@@ -141,10 +144,11 @@ const CustomerConvo = () => {
             </Stack>
             <Form onSubmit={applyFilters}>
                 <div className="row g-3 align-items-end">
+                    <Form.Group className="col-12"><Form.Label>Search customers</Form.Label><div className="d-flex gap-2"><Form.Control type="search" name="search" value={filters.search} onChange={changeFilter} placeholder="Search first name, last name, full name, or store name" /><Button type="submit" disabled={loading}>Search</Button></div></Form.Group>
                     <Form.Group className="col-12 col-sm-6 col-lg-3"><Form.Label>Followed up from</Form.Label><Form.Control type="date" name="followed_up_from" value={filters.followed_up_from} onChange={changeFilter} /></Form.Group>
                     <Form.Group className="col-12 col-sm-6 col-lg-3"><Form.Label>Followed up to</Form.Label><Form.Control type="date" name="followed_up_to" value={filters.followed_up_to} onChange={changeFilter} /></Form.Group>
-                    <Form.Group className="col-12 col-sm-6 col-lg-2"><Form.Label>Min. lifetime sales</Form.Label><Form.Control type="number" min="0" step="0.01" name="amount_min" value={filters.amount_min} onChange={changeFilter} placeholder="₱0" /></Form.Group>
-                    <Form.Group className="col-12 col-sm-6 col-lg-2"><Form.Label>Max. lifetime sales</Form.Label><Form.Control type="number" min="0" step="0.01" name="amount_max" value={filters.amount_max} onChange={changeFilter} placeholder="No maximum" /></Form.Group>
+                    <Form.Group className="col-12 col-sm-6 col-lg-2"><Form.Label>Min. sales before follow-up</Form.Label><Form.Control type="number" min="0" step="0.01" name="amount_min" value={filters.amount_min} onChange={changeFilter} placeholder="₱0" /></Form.Group>
+                    <Form.Group className="col-12 col-sm-6 col-lg-2"><Form.Label>Max. sales before follow-up</Form.Label><Form.Control type="number" min="0" step="0.01" name="amount_max" value={filters.amount_max} onChange={changeFilter} placeholder="No maximum" /></Form.Group>
                     <div className="col-12 col-lg-2 d-flex gap-2"><Button type="submit" className="flex-grow-1" disabled={loading || Boolean(filterError)}>Apply</Button><Button type="button" variant="outline-secondary" onClick={clearFilters} disabled={loading}>Clear</Button></div>
                 </div>
                 {filterError && <div className="text-danger small mt-2">{filterError}</div>}
@@ -155,20 +159,33 @@ const CustomerConvo = () => {
         {loading && <LinearProgress color="success" sx={{ mb: 1 }} />}
         <Box sx={{ border: "1px solid #e4e4e4", borderRadius: 2, overflow: "hidden", backgroundColor: "white" }}><Box sx={{ overflowX: "auto" }}>
             <table className="table table-hover align-middle mb-0">
-                <thead style={{ backgroundColor: "#212529", color: "#fff" }}><tr><th style={{ color: "#fff" }}>Customer</th><th style={{ color: "#fff" }}>Contact</th><th style={{ color: "#fff" }}>Followed up</th><th style={{ color: "#fff" }}>Last order</th><th style={{ color: "#fff" }}>Sales</th><th className="text-center" style={{ color: "#fff" }}>Chat</th><th className="text-center" style={{ color: "#fff" }}>Promo</th><th className="text-center" style={{ color: "#fff" }}>Actions</th></tr></thead>
+                <thead style={{ color: "#fff" }}>
+                    <tr>
+                        <th colSpan="3" style={{ color: "#fff", backgroundColor: "#263238", textAlign: "center", borderBottom: "1px solid #526069", letterSpacing: ".04em" }}>CUSTOMER</th>
+                        <th colSpan="3" style={{ color: "#fff", backgroundColor: "#1b5e20", textAlign: "center", borderBottom: "1px solid #4c8c4f", letterSpacing: ".04em" }}>FOLLOW-UP COMPLETED</th>
+                        <th colSpan="2" style={{ color: "#fff", backgroundColor: "#6d4c41", textAlign: "center", borderBottom: "1px solid #99776b", letterSpacing: ".04em" }}>PREVIOUS HISTORY</th>
+                        <th rowSpan="2" className="text-center" style={{ color: "#fff", backgroundColor: "#212529", verticalAlign: "middle" }}>Actions</th>
+                    </tr>
+                    <tr>
+                        <th style={{ color: "#fff", backgroundColor: "#212529" }}>ID</th><th style={{ color: "#fff", backgroundColor: "#212529" }}>Customer</th><th style={{ color: "#fff", backgroundColor: "#212529" }}>Contact</th>
+                        <th style={{ color: "#fff", backgroundColor: "#287a2e", borderLeft: "3px solid #81c784" }}>Followed up</th><th className="text-center" style={{ color: "#fff", backgroundColor: "#287a2e" }}>Chat</th><th className="text-center" style={{ color: "#fff", backgroundColor: "#287a2e" }}>Promo</th>
+                        <th style={{ color: "#fff", backgroundColor: "#795548", borderLeft: "3px solid #bcaaa4" }}>Last Order</th><th style={{ color: "#fff", backgroundColor: "#795548" }}>Sales Before</th>
+                    </tr>
+                </thead>
                 <tbody>
-                    {!loading && sortedCustomers.length === 0 && <tr><td colSpan="8" className="text-center text-muted py-5">No followed-up customers match these filters.</td></tr>}
+                    {!loading && sortedCustomers.length === 0 && <tr><td colSpan="9" className="text-center text-muted py-5">No followed-up customers match these filters.</td></tr>}
                     {sortedCustomers.map((customer) => {
                         const followUpDate = customer.followed_up_at ?? customer.follow_up_date ?? customer.customer_update_date ?? customer.updated_at;
                         const lastOrderDate = customer.last_order_date ?? customer.date ?? customer.last_order_at;
                         return <tr key={customer.id}>
-                            <td><div className="fw-semibold">{[customer.first_name, customer.last_name].filter(Boolean).join(" ") || "Unnamed customer"}</div><small className="text-muted">ID #{customer.id}{customer.address ? ` · ${customer.address}` : ""}</small></td>
+                            <td>{customer.id}</td>
+                            <td><div style={{ color: "#123a63", fontSize: 15, fontWeight: 800, lineHeight: 1.35 }}>{[customer.first_name, customer.last_name].filter(Boolean).join(" ") || "Unnamed customer"}</div>{customer.store_name && <div style={{ marginTop: 4, color: "#526b8a", fontSize: 11, fontWeight: 500, lineHeight: 1.45, letterSpacing: ".02em", textTransform: "uppercase" }}>{customer.store_name}</div>}<small className="text-muted">{customer.address || "No address"}</small></td>
                             <td><div>{customer.contact_number || "—"}</div><small className="text-muted">{customer.email || "No email"}</small></td>
-                            <td><div>{formatDate(followUpDate)}</div><small className="text-success">{elapsedLabel(customer.days_since_follow_up ?? customer.last_chat)}</small></td>
-                            <td><div>{formatDate(lastOrderDate)}</div><small className="text-muted">{elapsedLabel(customer.days_since_last_order ?? customer.last_order)}</small></td>
-                            <td><div className="fw-semibold">{money.format(Number(customer.total_sales ?? 0))}</div><small className="text-muted">{Number(customer.total_orders ?? 0).toLocaleString()} orders</small></td>
-                            <td className="text-center"><BooleanIcon value={customer.chat} label="Chat" /></td><td className="text-center"><BooleanIcon value={customer.promo} label="Promo" /></td>
-                            <td><Stack direction="row" spacing={1} justifyContent="center"><IconButton size="small" color="primary" onClick={() => openSupport(customer.id)} aria-label="Update follow-up"><UpdateIcon /></IconButton><Button as={Link} size="sm" variant="outline-primary" to={`/customers/customerTransactionList/${customer.id}`}>Transactions</Button><Button as={Link} size="sm" variant="outline-secondary" to={`/customers/customerProductList/${customer.id}`}>Products</Button></Stack></td>
+                            <td style={{ backgroundColor: "#f0f9f1", borderLeft: "3px solid #81c784" }}><div>{formatDate(followUpDate)}</div><small style={{ color: "#1b5e20", fontWeight: 600 }}>{elapsedLabel(customer.days_since_follow_up ?? customer.last_chat)}</small><div className="fw-semibold mt-1">{customer.follow_up_user_name ?? customer.user_name ?? "Unknown user"}</div></td>
+                            <td className="text-center" style={{ backgroundColor: "#f0f9f1" }}><BooleanIcon value={customer.chat} label="Chat" /></td><td className="text-center" style={{ backgroundColor: "#f0f9f1" }}><BooleanIcon value={customer.promo} label="Promo" /></td>
+                            <td style={{ backgroundColor: "#fff8f3", borderLeft: "3px solid #d7ccc8" }}><div>{formatDate(lastOrderDate)}</div><small className="text-danger">{elapsedLabel(customer.days_since_last_order ?? customer.last_order)}</small></td>
+                            <td style={{ backgroundColor: "#fff8f3" }}><div className="fw-semibold">{money.format(Number(customer.total_sales ?? 0))}</div><small className="text-muted">{Number(customer.total_orders ?? 0).toLocaleString()} orders before follow-up</small></td>
+                            <td><Stack direction="row" spacing={1} justifyContent="center"><IconButton size="small" color="primary" onClick={() => openSupport(customer.id)} aria-label="Update follow-up"><UpdateIcon /></IconButton><IconButton size="small" color="info" onClick={() => setViewComment({ customerName: [customer.first_name, customer.last_name].filter(Boolean).join(" "), comment: customer.comment ?? customer.follow_up_comment ?? customer.customer_update_comment ?? "" })} aria-label="View follow-up comment"><CommentOutlinedIcon /></IconButton><Button as={Link} size="sm" variant="outline-primary" to={`/customers/customerTransactionList/${customer.id}`}>Transactions</Button><Button as={Link} size="sm" variant="outline-secondary" to={`/customers/customerProductList/${customer.id}`}>Products</Button></Stack></td>
                         </tr>;
                     })}
                 </tbody>
@@ -178,9 +195,10 @@ const CustomerConvo = () => {
 
         <Modal show={modalOpen} onHide={() => setModalOpen(false)} centered>
             <Modal.Header closeButton><Modal.Title>Update follow-up</Modal.Title></Modal.Header>
-            <Modal.Body><p className="fw-semibold">{support.first_name} {support.last_name}</p><Form.Check className="mb-3" label="Customer contacted" checked={support.chat === 1} onChange={(event) => setSupport({ ...support, chat: event.target.checked ? 1 : 0 })} /><Form.Check label="Promotion offered" checked={support.promo === 1} onChange={(event) => setSupport({ ...support, promo: event.target.checked ? 1 : 0 })} /></Modal.Body>
+            <Modal.Body><div style={{ backgroundColor: "#f2f7fc", border: "1px solid #d9e6f2", borderLeft: "4px solid #1976d2", borderRadius: 8, padding: "12px 14px", marginBottom: 20 }}><div style={{ color: "#6b7d90", fontSize: 10, fontWeight: 700, letterSpacing: ".08em", textTransform: "uppercase" }}>Customer</div><div style={{ color: "#123a63", fontSize: 19, fontWeight: 800, lineHeight: 1.35 }}>{support.first_name} {support.last_name}</div></div><Form.Check className="mb-3" label="Customer contacted" checked={support.chat === 1} onChange={(event) => setSupport({ ...support, chat: event.target.checked ? 1 : 0 })} /><Form.Check label="Promotion offered" checked={support.promo === 1} onChange={(event) => setSupport({ ...support, promo: event.target.checked ? 1 : 0 })} /></Modal.Body>
             <Modal.Footer><Button variant="outline-secondary" onClick={() => setModalOpen(false)}>Cancel</Button><Button onClick={saveSupport} disabled={saving}>{saving && <CircularProgress size={15} color="inherit" sx={{ mr: 1 }} />}Save follow-up</Button></Modal.Footer>
         </Modal>
+        <CustomerCommentModal show={Boolean(viewComment)} onHide={() => setViewComment(null)} customerName={viewComment?.customerName} comment={viewComment?.comment} />
     </Box>;
 };
 

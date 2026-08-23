@@ -184,6 +184,7 @@ const NavBar = () => {
                             <NavDropdown.Item href="/shopOrderTransaction/pendingTransactionList">Pending Transaction List</NavDropdown.Item>
                             <NavDropdown.Item href="/shopOrderTransaction/cancelTransactionList">Cancel Transaction List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportCustomerSorted">Customer Record List</NavDropdown.Item>
+                            <NavDropdown.Item href="/customerOrderActivity">All Customer Order Activity</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportProductSorted">Product Sold Record List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/productValueReport">Product Capital Record List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportsList">Online Order Reports</NavDropdown.Item>

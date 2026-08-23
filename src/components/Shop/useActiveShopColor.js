@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import ShopService from "./ShopService";
 import { normalizeShopColor } from "./shopBranding";
-
-const ACTIVE_SHOP_COLOR_KEY = "active_shop_color";
+import { ACTIVE_SHOP_COLOR_KEY, fetchLocalEnvironmentColor } from "./databaseEnvironment";
 
 const useActiveShopColor = () => {
     const [shopColor, setShopColor] = useState(
@@ -10,8 +9,21 @@ const useActiveShopColor = () => {
     );
 
     useEffect(() => {
-        ShopService.fetchShopActive()
-            .then((response) => {
+        const loadColor = async () => {
+            if (localStorage.getItem("auth_token")) {
+                try {
+                    const environmentColor = await fetchLocalEnvironmentColor();
+                    if (environmentColor) {
+                        setShopColor(environmentColor);
+                        return;
+                    }
+                } catch (error) {
+                    console.error("Unable to load the database environment.", error);
+                }
+            }
+
+            try {
+                const response = await ShopService.fetchShopActive();
                 const payload = response.data?.data || response.data;
                 const activeShop = Array.isArray(payload) ? payload[0] : payload;
                 const color = normalizeShopColor(activeShop?.color);
@@ -20,10 +32,12 @@ const useActiveShopColor = () => {
                     localStorage.setItem(ACTIVE_SHOP_COLOR_KEY, color);
                     setShopColor(color);
                 }
-            })
-            .catch((error) => {
+            } catch (error) {
                 console.error("Unable to load the active shop color.", error);
-            });
+            }
+        };
+
+        loadColor();
     }, []);
 
     return shopColor;

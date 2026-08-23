@@ -9,6 +9,13 @@ export const normalizeShopColor = (value, fallback = null) => {
         return color;
     }
     if (/^(rgba?|hsla?)\([^)]+\)$/i.test(color)) return color;
+    if (/^[a-z]+$/i.test(color)) {
+        if (typeof CSS === "undefined" || typeof CSS.supports !== "function") {
+            return color.toLowerCase() === "pink" ? color : fallback;
+        }
+
+        return CSS.supports("color", color) ? color : fallback;
+    }
 
     return fallback;
 };

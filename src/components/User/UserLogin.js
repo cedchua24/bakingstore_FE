@@ -6,6 +6,7 @@ import moment from "moment";
 import "./UserLogin.css";
 import { saveAuthSession } from "./authSession";
 import useActiveShopColor from "../Shop/useActiveShopColor";
+import { fetchLocalEnvironmentColor } from "../Shop/databaseEnvironment";
 
 const UserLogin = () => {
     const activeShopColor = useActiveShopColor();
@@ -66,6 +67,12 @@ const UserLogin = () => {
                         form: "The server did not provide a valid session expiration. Please sign in again.",
                     });
                     return;
+                }
+
+                try {
+                    await fetchLocalEnvironmentColor();
+                } catch (environmentError) {
+                    console.error("Unable to load the database environment.", environmentError);
                 }
 
                 const destination =
