@@ -194,6 +194,7 @@ import ViewPendingProduct from "./components/ShopOrderTransaction/ViewPendingPro
 
 import CancelTransactionList from "./components/ShopOrderTransaction/CancelTransactionList";
 import ShorOrderTransactionList from "./components/ShopOrderTransaction/ShorOrderTransactionList";
+import SearchTransaction from "./components/ShopOrderTransaction/SearchTransaction";
 import CompletedShopOrderTransaction from "./components/ShopOrderTransaction/CompletedShopOrderTransaction";
 import PrintShopBranch from "./components/ShopOrderTransaction/PrintShopBranch";
 import PaymentTypeSales from "./components/ShopOrderTransaction/PaymentTypeSales";
@@ -309,6 +310,7 @@ import EditExpenses from "./components/Expenses/EditExpenses";
 
 import ReportList from "./components/Reports/ReportList";
 import ReportSales from "./components/Reports/ReportSales";
+import SalesImpactAnalysis from "./components/Reports/SalesImpactAnalysis";
 
 import ReportBar from "./components/Reports/ReportBar";
 import ReportPurchaseOrder from "./components/Reports/ReportPurchaseOrder";
@@ -623,6 +625,7 @@ const App = () => {
 
           <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
+          <Route exact path="/shopOrderTransaction/searchTransaction/" element={<SearchTransaction />} />
           <Route exact path="/shopOrderTransaction/quantitySortedList/" element={<QuantitySorted />} />
 
 
@@ -715,6 +718,7 @@ const App = () => {
 
           <Route exact path="/reports/reportsList" element={<ReportList />} />
           <Route exact path="/reports/reportSales" element={<ReportSales />} />
+          <Route exact path="/reports/salesImpactAnalysis" element={<SalesImpactAnalysis />} />
 
           <Route exact path="/reports/reportBar" element={<ReportBar />} />
           <Route exact path="/reports/reportPurchaseOrder" element={<ReportPurchaseOrder />} />

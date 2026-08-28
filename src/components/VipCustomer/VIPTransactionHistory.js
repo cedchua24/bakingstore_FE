@@ -11,6 +11,11 @@ import VipCustomerTransactionService from "./VipCustomerTransactionService";
 const money = value => Number(value || 0).toLocaleString("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2,
 });
+const profitMargin = (profit, sales) => {
+    const salesAmount = Number(sales || 0);
+    return salesAmount > 0 ? (Number(profit || 0) / salesAmount) * 100 : 0;
+};
+const profitMarginLabel = (profit, sales) => `${profitMargin(profit, sales).toFixed(2)}%`;
 
 const currentMonth = () => {
     const now = new Date();
@@ -52,6 +57,7 @@ const styles = {
     profitValue: { color: "#6f42c1", fontSize: 22, fontWeight: 800, margin: 0 },
     cellSalesLabel: { display: "block", color: "#6c757d", fontSize: 9, fontWeight: 700, textTransform: "uppercase" },
     cellProfit: { display: "block", color: "#6f42c1", fontSize: 12, fontWeight: 700, marginTop: 5 },
+    cellProfitMargin: { display: "block", color: "#0f766e", fontSize: 12, fontWeight: 700, marginTop: 5 },
     neededCard: {
         gridColumn: "1 / -1", background: "#fff5f5", border: "2px solid #dc3545",
         borderRadius: 10, padding: "20px 22px", display: "flex", alignItems: "center",
@@ -94,7 +100,7 @@ const VIPTransactionHistory = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [monthlyQuota, setMonthlyQuota] = useState("");
-    const [viewMode, setViewMode] = useState("sales");
+    const [visibleMetrics, setVisibleMetrics] = useState({ sales: true, profit: false, profitMargin: false });
     const [reportView, setReportView] = useState("table");
     const [sortBy, setSortBy] = useState("sales");
 
@@ -167,8 +173,10 @@ const VIPTransactionHistory = () => {
     const lastMonthPace = getPace(lastMonthPaid);
     const threeMonthPace = getPace(lastThreeMonthAverage);
     const quotaPace = getPace(quotaAmount);
-    const showSales = viewMode === "sales" || viewMode === "both";
-    const showProfit = viewMode === "profit" || viewMode === "both";
+    const showSales = visibleMetrics.sales;
+    const showProfit = visibleMetrics.profit;
+    const showProfitMargin = visibleMetrics.profitMargin;
+    const toggleMetric = metric => setVisibleMetrics(current => ({ ...current, [metric]: !current[metric] }));
     const chartData = report ? [
         ...(report.previous_months || []).map(month => ({
             month: month.label,
@@ -355,15 +363,19 @@ const VIPTransactionHistory = () => {
                         Graph
                     </Button>
                 </div>
-                <div className="btn-group" role="group" aria-label="Transaction data view">
-                    {[{ key: "sales", label: "Sales" }, { key: "profit", label: "Profit" }, { key: "both", label: "Sales & Profit" }].map(option => (
-                        <Button
-                            key={option.key}
-                            variant={viewMode === option.key ? "primary" : "outline-primary"}
-                            onClick={() => setViewMode(option.key)}
-                        >
-                            {option.label}
-                        </Button>
+                <div className="d-flex align-items-center gap-3 px-3 py-2 border rounded bg-light" role="group" aria-label="Transaction data view">
+                    <strong className="small text-muted">Show:</strong>
+                    {[['sales', 'Sales'], ['profit', 'Profit'], ['profitMargin', 'Profit margin']].map(([key, label]) => (
+                        <Form.Check
+                            key={key}
+                            inline
+                            className="mb-0"
+                            type="checkbox"
+                            id={`vip-metric-${key}`}
+                            label={label}
+                            checked={visibleMetrics[key]}
+                            onChange={() => toggleMetric(key)}
+                        />
                     ))}
                 </div>
                 <Form.Group style={{ minWidth: 210 }}>
@@ -549,6 +561,7 @@ const VIPTransactionHistory = () => {
                                 <th style={styles.tableHeaderCell}>Profit gap</th>
                                 <th style={styles.tableHeaderCell}>Last month profit gap</th>
                                 </>}
+                                {showProfitMargin && <th style={styles.tableHeaderCell}>Average margin</th>}
                                 <th style={styles.actionHeader} aria-label="View graph" />
                             </tr>
                         </thead>
@@ -577,6 +590,9 @@ const VIPTransactionHistory = () => {
                                             {showProfit && <span style={{ ...styles.cellProfit, marginTop: showSales ? 5 : 0, fontSize: showSales ? 12 : 14 }}>
                                                 {showSales ? "Profit: " : ""}{money(index === 0 ? customer.current_profit : monthHistory?.profit_amount)}
                                             </span>}
+                                            {showProfitMargin && <span style={{ ...styles.cellProfitMargin, marginTop: showSales || showProfit ? 5 : 0, fontSize: showSales || showProfit ? 12 : 14 }}>
+                                                Margin {profitMarginLabel(index === 0 ? customer.current_profit : monthHistory?.profit_amount, index === 0 ? customer.current_paid : monthHistory?.paid_amount)}
+                                            </span>}
                                         </td>;
                                     })}
                                     {showSales && <>
@@ -590,6 +606,7 @@ const VIPTransactionHistory = () => {
                                     <td>{renderTargetGap(customer.current_profit, customer.average_monthly_profit)}</td>
                                     <td>{renderTargetGap(customer.current_profit, customerLastMonthProfit)}</td>
                                     </>}
+                                    {showProfitMargin && <td style={{ color: "#0f766e", fontWeight: 700 }}>{profitMarginLabel(customer.average_monthly_profit, customerThreeMonthAverage)}</td>}
                                     <td style={styles.actionCell}>
                                         <Button
                                             variant="outline-primary"
@@ -604,7 +621,7 @@ const VIPTransactionHistory = () => {
                                     </td>
                                 </tr>;
                             })}
-                            {!loading && customers.length === 0 && <tr><td colSpan={months.length + 2 + (showSales ? 4 : 0) + (showProfit ? 3 : 0)} className="text-center text-muted py-4">No VIP customers found for this template.</td></tr>}
+                            {!loading && customers.length === 0 && <tr><td colSpan={months.length + 2 + (showSales ? 4 : 0) + (showProfit ? 3 : 0) + (showProfitMargin ? 1 : 0)} className="text-center text-muted py-4">No VIP customers found for this template.</td></tr>}
                         </tbody>
                         <tfoot>
                             <tr style={styles.totalRow}>
@@ -615,10 +632,12 @@ const VIPTransactionHistory = () => {
                                 <td style={styles.totalCell}>
                                     {showSales && <strong>{money(report.current_month_paid)}</strong>}
                                     {showProfit && <span style={{ ...styles.cellProfit, marginTop: showSales ? 5 : 0 }}>{showSales ? "Profit: " : ""}{money(currentMonthProfit)}</span>}
+                                    {showProfitMargin && <span style={{ ...styles.cellProfitMargin, marginTop: showSales || showProfit ? 5 : 0 }}>Margin {profitMarginLabel(currentMonthProfit, report.current_month_paid)}</span>}
                                 </td>
                                 {(report.previous_months || []).map(month => <td style={styles.totalCell} key={month.month}>
                                     {showSales && <strong>{money(month.paid_amount)}</strong>}
                                     {showProfit && <span style={{ ...styles.cellProfit, marginTop: showSales ? 5 : 0 }}>{showSales ? "Profit: " : ""}{money(month.profit_amount)}</span>}
+                                    {showProfitMargin && <span style={{ ...styles.cellProfitMargin, marginTop: showSales || showProfit ? 5 : 0 }}>Margin {profitMarginLabel(month.profit_amount, month.paid_amount)}</span>}
                                 </td>)}
                                 {showSales && <>
                                 <td style={styles.totalCell}>{money(lastThreeMonthAverage)}</td>
@@ -631,6 +650,7 @@ const VIPTransactionHistory = () => {
                                 <td style={styles.totalCell}>{renderTargetGap(currentMonthProfit, averageMonthlyProfit)}</td>
                                 <td style={styles.totalCell}>{renderTargetGap(currentMonthProfit, lastMonthProfit)}</td>
                                 </>}
+                                {showProfitMargin && <td style={{ ...styles.totalCell, color: "#0f766e" }}>{profitMarginLabel(averageMonthlyProfit, lastThreeMonthAverage)}</td>}
                                 <td style={{ ...styles.totalCell, ...styles.actionCell, background: "#dce5ec" }} />
                             </tr>
                         </tfoot>

@@ -11,6 +11,11 @@ const money = value => Number(value || 0).toLocaleString("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2,
 });
 const number = value => Number(value || 0).toLocaleString("en-PH", { maximumFractionDigits: 2 });
+const profitMargin = (profit, sales) => {
+    const salesAmount = Number(sales || 0);
+    return salesAmount > 0 ? (Number(profit || 0) / salesAmount) * 100 : 0;
+};
+const profitMarginLabel = (profit, sales) => `${number(profitMargin(profit, sales))}%`;
 const soldQuantity = (quantity, pieces) => {
     const totalPieces = Number(pieces || 0);
     return totalPieces !== 0 ? totalPieces : Number(quantity || 0);
@@ -117,6 +122,7 @@ const styles = {
     meta: { color: "#6b7280", fontSize: 11 },
     monthCell: { display: "flex", flexDirection: "column", gap: 3 },
     profit: { color: "#6f42c1", fontSize: 11, fontWeight: 700 },
+    profitMargin: { color: "#0f766e", fontSize: 11, fontWeight: 700 },
     dormant: { display: "inline-flex", padding: "4px 8px", color: "#842029", background: "#f8d7da", borderRadius: 999, fontSize: 10, fontWeight: 800 },
     actionTh: { position: "sticky", right: 0, zIndex: 3, width: 52, minWidth: 52, textAlign: "center", color: "#fff", background: "#455a6f", borderColor: "#8193a5" },
     actionCell: { position: "sticky", right: 0, zIndex: 2, width: 52, minWidth: 52, textAlign: "center", background: "#fff", boxShadow: "-3px 0 6px rgba(15, 23, 42, .08)" },
@@ -129,7 +135,7 @@ const VipProductSoldHistory = () => {
     const [comparisonPage, setComparisonPage] = useState(0);
     const [report, setReport] = useState(null);
     const [mode, setMode] = useState("all");
-    const [visibleMetrics, setVisibleMetrics] = useState({ quantity: true, sales: false, profit: false });
+    const [visibleMetrics, setVisibleMetrics] = useState({ quantity: true, sales: false, profit: false, profitMargin: false });
     const [query, setQuery] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -248,7 +254,7 @@ const VipProductSoldHistory = () => {
                 <div style={styles.modeRow}>
                     <div style={styles.metricControls}>
                         <strong className="small text-muted">Show:</strong>
-                        {[['quantity', 'Quantity'], ['sales', 'Sales'], ['profit', 'Profit']].map(([key, label]) =>
+                        {[['quantity', 'Quantity'], ['sales', 'Sales'], ['profit', 'Profit'], ['profitMargin', 'Profit margin']].map(([key, label]) =>
                             <Form.Check key={key} inline className="mb-0" type="checkbox" id={`vip-metric-${key}`} label={label} checked={visibleMetrics[key]} onChange={() => toggleMetric(key)} />
                         )}
                     </div>
@@ -295,9 +301,9 @@ const VipProductSoldHistory = () => {
                             return <tr key={product.product_id}>
                             <td><div style={styles.product}>{product.product_name}</div><div style={styles.meta}>{product.brand_name} · {product.category_name}</div></td>
                             <td>{stockDisplay(product)}</td>
-                            <td style={selectedMonthStyle}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && <span title={`${comparisonVerdict.label} versus last month`} style={{ display: "block", width: 64, height: 3, marginTop: 6, marginBottom: 3, borderRadius: 999, background: comparisonVerdict.color }} />}{visibleMetrics.sales && <span style={{ color: comparisonVerdict.color, fontWeight: 800 }}>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{Number(product.current_month?.pieces_sold) === 0 && <span style={styles.dormant}>NOT SOLD</span>}</div></td>
-                            {(product.previous_months || []).map(month => <td key={month.month}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(month.quantity_sold, month.pieces_sold, false, product.quantity)}{visibleMetrics.sales && <span>{money(month.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(month.profit_amount)}</span>}</div></td>)}
-                            <td style={styles.averageCell}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}</div></td>
+                            <td style={selectedMonthStyle}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && <span title={`${comparisonVerdict.label} versus last month`} style={{ display: "block", width: 64, height: 3, marginTop: 6, marginBottom: 3, borderRadius: 999, background: comparisonVerdict.color }} />}{visibleMetrics.sales && <span style={{ color: comparisonVerdict.color, fontWeight: 800 }}>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.current_month?.profit_amount, product.current_month?.sales_amount)}</span>}{Number(product.current_month?.pieces_sold) === 0 && <span style={styles.dormant}>NOT SOLD</span>}</div></td>
+                            {(product.previous_months || []).map(month => <td key={month.month}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(month.quantity_sold, month.pieces_sold, false, product.quantity)}{visibleMetrics.sales && <span>{money(month.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(month.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(month.profit_amount, month.sales_amount)}</span>}</div></td>)}
+                            <td style={styles.averageCell}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.average_profit, product.average_sales)}</span>}</div></td>
                             <td style={{ padding: "12px 14px" }}>
                                 <div><span style={{ display: "block", marginBottom: 6, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>3-month average</span><span style={{ display: "inline-flex", padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: averageVerdict.color, background: averageVerdict.background }}>{averageVerdict.label}</span><span style={{ display: "block", marginTop: 5, color: averageVerdict.color, fontSize: 15, fontWeight: 800 }}>{averagePercentage >= 0 ? "+" : ""}{number(averagePercentage)}%</span></div>
                                 <div style={{ marginTop: 12, paddingTop: 10, borderTop: "2px solid #cbd5e1" }}><span style={{ display: "block", marginBottom: 5, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>Vs {showingTruePreviousMonth ? `last month (${comparisonReferenceLabel})` : comparisonReferenceLabel}</span><span style={{ display: "inline-flex", marginBottom: 5, padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: comparisonVerdict.color, background: comparisonVerdict.background }}>{comparisonVerdict.label}</span><span style={{ display: "block", color: comparisonVerdict.color, fontSize: 15, fontWeight: 800 }}>{comparePercentage >= 0 ? "+" : ""}{number(comparePercentage)}%</span></div>

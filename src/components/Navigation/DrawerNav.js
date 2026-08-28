@@ -72,7 +72,6 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import CreditScoreIcon from '@mui/icons-material/CreditScore';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
-import TodayIcon from '@mui/icons-material/Today';
 import PersonIcon from '@mui/icons-material/Person';
 import DiscountIcon from '@mui/icons-material/Discount';
 import AddIcon from '@mui/icons-material/Add';
@@ -811,20 +810,8 @@ export default function PersistentDrawerLeft() {
 
     const [transactionReportList, setTransactionReportList] = useState([
         {
-            "name": "Transaction Daily",
-            "url": "/shopOrderTransaction/customerOrderTransactionList/" + moment().format("YYYY-MM-DD"),
-            "icon": <TodayIcon />,
-            "roles": [2, 3]
-        },
-        {
-            "name": "Transaction List",
-            "url": "/reports/reportsList",
-            "icon": <ListIcon />,
-            "roles": [2, 3]
-        },
-        {
-            "name": "Sales List",
-            "url": "/reports/reportSales",
+            "name": "Search Transaction",
+            "url": "/shopOrderTransaction/searchTransaction",
             "icon": <ListIcon />,
             "roles": [2, 3]
         },
@@ -844,6 +831,27 @@ export default function PersistentDrawerLeft() {
             "icon": <ListIcon />
         }
 
+    ]);
+
+    const [salesReportList, setSalesReportList] = useState([
+        {
+            "name": "Transaction List",
+            "url": "/reports/reportsList",
+            "icon": <ReceiptIcon />,
+            "roles": [2, 3]
+        },
+        {
+            "name": "Sales List",
+            "url": "/reports/reportSales",
+            "icon": <PriceCheckIcon />,
+            "roles": [2, 3]
+        },
+        {
+            "name": "Sales Impact Analysis",
+            "url": "/reports/salesImpactAnalysis",
+            "icon": <LeaderboardIcon />,
+            "roles": [2, 3]
+        }
     ]);
 
     const [purchaseOrderReportList, setPurchaseOrderReportList] = useState([
@@ -1178,6 +1186,12 @@ export default function PersistentDrawerLeft() {
     const [openTransactionReport, setOpenTransactionReport] = React.useState(false);
     const handleClickTransactionReport = () => {
         setOpenTransactionReport(!openTransactionReport);
+    };
+
+    // Sales Report
+    const [openSalesReport, setOpenSalesReport] = React.useState(false);
+    const handleClickSalesReport = () => {
+        setOpenSalesReport(!openSalesReport);
     };
 
     // Delivery Report
@@ -2282,6 +2296,29 @@ export default function PersistentDrawerLeft() {
 
                         <Collapse in={openTransactionReport} timeout="auto" unmountOnExit>
                             {transactionReportList
+                                .filter((nav) => !nav.roles || nav.roles.includes(currentRole))
+                                .map((nav) => (
+                                    <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                        <ListItemButton sx={{ pl: 6 }}>
+                                            <ListItemIcon>
+                                                {nav.icon}
+                                            </ListItemIcon>
+                                            <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                        </Collapse>
+
+                        <ListItemButton className="report-menu-item report-menu-sales" sx={{ pl: 4 }} onClick={handleClickSalesReport}>
+                            <ListItemIcon>
+                                <PointOfSaleIcon color="success" />
+                            </ListItemIcon>
+                            <ListItemText primary="Sales Report" />
+                            {openSalesReport ? <ExpandLess /> : <ExpandMore />}
+                        </ListItemButton>
+
+                        <Collapse in={openSalesReport} timeout="auto" unmountOnExit>
+                            {salesReportList
                                 .filter((nav) => !nav.roles || nav.roles.includes(currentRole))
                                 .map((nav) => (
                                     <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>

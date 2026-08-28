@@ -119,6 +119,62 @@
     padding-bottom: 4px;
 }
 
+.customer-report-search-hero {
+    align-items: center;
+    padding: 34px 36px;
+}
+
+.customer-report-id-search {
+    grid-template-columns: minmax(260px, 1fr) 140px;
+    min-width: min(100%, 540px);
+    padding: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    backdrop-filter: blur(8px);
+}
+
+.customer-report-id-search label {
+    display: block;
+    margin-bottom: 7px;
+    color: #fff;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+}
+
+.customer-report-id-search .form-control {
+    height: 46px;
+    padding: 10px 14px;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: 700;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+}
+
+.customer-report-id-search .form-control:focus {
+    border-color: #ffd166;
+    box-shadow: 0 0 0 4px rgba(255, 209, 102, 0.3);
+}
+
+.customer-report-id-search .btn {
+    height: 46px;
+    border: 0;
+    border-radius: 8px;
+    background: #ffd166;
+    color: #2b2118;
+    font-weight: 800;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.customer-report-id-search .btn:hover,
+.customer-report-id-search .btn:focus {
+    background: #ffdc83;
+    color: #2b2118;
+    transform: translateY(-1px);
+}
+
 .customer-report-status-select {
     background: #fff;
     border-radius: 6px;

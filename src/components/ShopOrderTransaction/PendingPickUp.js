@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import DeliveryCustomerService from "../OtherService/DeliveryCustomerService";
 import UserService from '../User/UserService.service'
+import CategoryService from "../Category/CategoryService.service";
 import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
@@ -37,15 +38,18 @@ const PendingPickUp = () => {
     useEffect(() => {
         fetchShopOrderTransactionList();
         fetchRequestor();
+        fetchCategories();
     }, []);
 
     const [requestorList, setRequestorList] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         is_pickup_status: 0,
         status: null,
         dateTo: null,
         dateFrom: null,
+        category_id: '',
     });
 
     const [transactionStatus, setTransactionStatus] = useState({
@@ -161,12 +165,22 @@ const PendingPickUp = () => {
         };
     };
 
-    const fetchPendingPickUpWithAccounts = () => Promise.all([
-        ShopOrderTransactionService.fetchPendingPickUpV2(customerOrderDate),
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2(customerOrderDate)
-    ]).then(([pendingResponse, dailyResponse]) => (
-        mergeMissingPaymentAccounts(pendingResponse.data, dailyResponse.data)
-    ));
+    const fetchPendingPickUpWithAccounts = () => {
+        const pendingFilters = { ...customerOrderDate };
+        const accountFilters = { ...customerOrderDate };
+        delete accountFilters.category_id;
+
+        if (!pendingFilters.category_id) {
+            delete pendingFilters.category_id;
+        }
+
+        return Promise.all([
+            ShopOrderTransactionService.fetchPendingPickUpV2(pendingFilters),
+            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2(accountFilters)
+        ]).then(([pendingResponse, dailyResponse]) => (
+            mergeMissingPaymentAccounts(pendingResponse.data, dailyResponse.data)
+        ));
+    };
 
 
 
@@ -190,6 +204,16 @@ const PendingPickUp = () => {
         UserService.fetchUserList()
             .then(response => {
                 setRequestorList(response.data);
+            })
+            .catch(e => {
+                console.log("error", e)
+            });
+    }
+
+    const fetchCategories = () => {
+        CategoryService.getAll()
+            .then(response => {
+                setCategories(response.data?.data || response.data || []);
             })
             .catch(e => {
                 console.log("error", e)
@@ -565,6 +589,21 @@ const PendingPickUp = () => {
                         <option value="null">All</option>
                         <option value="2">Pending Payment</option>
                         <option value="1">Completed Payment</option>
+                    </Form.Select>
+
+                    <Form.Select
+                        className="customer-report-form-select"
+                        name="category_id"
+                        value={customerOrderDate.category_id}
+                        onChange={onChangeInput}
+                        aria-label="Filter by category"
+                    >
+                        <option value="">All Categories</option>
+                        {categories.map(category => (
+                            <option key={category.id} value={category.id}>
+                                {category.category_name}
+                            </option>
+                        ))}
                     </Form.Select>
 
                     <Button variant="primary" onClick={saveOrderTransaction} disabled={isDeliveryDisabled}>
