@@ -86,6 +86,8 @@ const ReportSales = () => {
             requiredDailySales,
             progress,
             isOnTrack: target > 0 && projectedSales >= target,
+            isUnfinishedMonth: isCurrentMonth && elapsedDays < daysInMonth,
+            daysInMonth,
             hasCompleteStart:
                 customerOrderDate.dateFrom === `${monthKey}-01`,
         };
@@ -247,10 +249,20 @@ const ReportSales = () => {
                             <small>{totals.transactions.toLocaleString('en-US')} total transactions</small>
                         </article>
                         <article className="sales-metric sales-metric--average">
-                            <span>Avg. sales / day</span>
+                            <span>Avg. sales / reporting day</span>
                             <strong>{numberFormat(averageSales)}</strong>
-                            <small>Daily revenue average</small>
+                            <small>Based on {dailySales.length} days with sales records</small>
                         </article>
+                        {forecast.isUnfinishedMonth && (
+                            <article className="sales-metric sales-metric--forecast">
+                                <em>Forecast</em>
+                                <span>Projected month-end sales</span>
+                                <strong>{numberFormat(forecast.projectedSales)}</strong>
+                                <small>
+                                    {numberFormat(forecast.currentDailyPace)}/calendar day · Based on {forecast.elapsedDays} of {forecast.daysInMonth} days
+                                </small>
+                            </article>
+                        )}
                         </div>
 
                         {showPaymentBreakdown && (

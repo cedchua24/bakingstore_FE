@@ -11,6 +11,12 @@ const money = value => Number(value || 0).toLocaleString("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2,
 });
 const number = value => Number(value || 0).toLocaleString("en-PH", { maximumFractionDigits: 2 });
+const profitMargin = (profit, sales) => {
+    const salesAmount = Number(sales || 0);
+    if (salesAmount === 0) return 0;
+    return (Number(profit || 0) / salesAmount) * 100;
+};
+const profitMarginLabel = (profit, sales) => `${number(profitMargin(profit, sales))}%`;
 // `quantity_sold` is a total piece count. Convert it into complete packages
 // plus the remaining loose pieces, matching ProductTrendComparison.
 const soldQuantity = (quantity, pieces) => {
@@ -140,6 +146,7 @@ const styles = {
     meta: { color: "#6b7280", fontSize: 11 },
     month: { display: "flex", flexDirection: "column", gap: 3 },
     profit: { color: "#6f42c1", fontSize: 11, fontWeight: 700 },
+    profitMargin: { color: "#0f766e", fontSize: 11, fontWeight: 700 },
     notSold: { display: "inline-flex", width: "fit-content", padding: "3px 7px", borderRadius: 999, color: "#a61b1b", background: "#f8d7da", fontSize: 9, fontWeight: 800, letterSpacing: ".04em" },
     actionTh: { position: "sticky", right: 0, zIndex: 3, width: 52, minWidth: 52, textAlign: "center", color: "#fff", background: "#455a6f", borderColor: "#8193a5" },
     actionCell: { position: "sticky", right: 0, zIndex: 2, width: 52, minWidth: 52, textAlign: "center", background: "#fff", boxShadow: "-3px 0 6px rgba(15, 23, 42, .08)" },
@@ -158,7 +165,7 @@ const ProductMonthlySalesHistory = () => {
     const [report, setReport] = useState(null);
     const [mode, setMode] = useState("all");
     const [query, setQuery] = useState("");
-    const [visibleMetrics, setVisibleMetrics] = useState({ quantity: true, sales: false, profit: false });
+    const [visibleMetrics, setVisibleMetrics] = useState({ quantity: true, sales: false, profit: false, profitMargin: false });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -299,7 +306,7 @@ const ProductMonthlySalesHistory = () => {
                 <div style={styles.toolsRow}>
                     <div className="d-flex align-items-center gap-3 px-2 py-1 border rounded bg-light">
                         <strong className="small text-muted">Show:</strong>
-                        {[['quantity', 'Quantity'], ['sales', 'Sales'], ['profit', 'Profit']].map(([key, label]) =>
+                        {[['quantity', 'Quantity'], ['sales', 'Sales'], ['profit', 'Profit'], ['profitMargin', 'Profit margin']].map(([key, label]) =>
                             <Form.Check key={key} inline className="mb-0" type="checkbox" id={`metric-${key}`} label={label} checked={visibleMetrics[key]} onChange={() => toggleMetric(key)} />
                         )}
                     </div>
@@ -341,9 +348,9 @@ const ProductMonthlySalesHistory = () => {
                             return <tr key={product.product_id}>
                                 <td><div style={styles.product}>{product.product_name}</div><div style={styles.meta}>{product.brand_name} · {product.category_name}</div></td>
                                 <td>{stockDisplay(product)}</td>
-                                <td className={selectedMonthClass(product)}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && projectionStatus && <span style={{ display: "block", width: "100%", maxWidth: 90, height: 4, marginTop: 6, marginBottom: 3, borderRadius: 999, background: projectionStatus.color }} />}{visibleMetrics.sales && <span>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{Number(product.current_month?.sales_amount || 0) === 0 && <span style={styles.notSold}>NOT SOLD</span>}</div></td>
-                                {(product.previous_months || []).map(item => <td key={item.month}><div style={styles.month}>{visibleMetrics.quantity && totalSold(item.quantity_sold, item.pieces_sold, false, product.quantity)}{visibleMetrics.sales && <span>{money(item.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(item.profit_amount)}</span>}</div></td>)}
-                                <td style={styles.averageCell}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}</div></td>
+                                <td className={selectedMonthClass(product)}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && projectionStatus && <span style={{ display: "block", width: "100%", maxWidth: 90, height: 4, marginTop: 6, marginBottom: 3, borderRadius: 999, background: projectionStatus.color }} />}{visibleMetrics.sales && <span>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.current_month?.profit_amount, product.current_month?.sales_amount)}</span>}{Number(product.current_month?.sales_amount || 0) === 0 && <span style={styles.notSold}>NOT SOLD</span>}</div></td>
+                                {(product.previous_months || []).map(item => <td key={item.month}><div style={styles.month}>{visibleMetrics.quantity && totalSold(item.quantity_sold, item.pieces_sold, false, product.quantity)}{visibleMetrics.sales && <span>{money(item.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(item.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(item.profit_amount, item.sales_amount)}</span>}</div></td>)}
+                                <td style={styles.averageCell}><div style={styles.month}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.average_profit, product.average_sales)}</span>}</div></td>
                                 <td>
                                     <div>
                                         <span style={{ display: "block", marginBottom: 4, color: "#64748b", fontSize: 8, fontWeight: 800, letterSpacing: ".05em", textTransform: "uppercase" }}>3-month average</span>

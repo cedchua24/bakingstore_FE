@@ -43,19 +43,23 @@ import LinearProgress from '@mui/material/LinearProgress';
 import useActiveShopColor from "../Shop/useActiveShopColor";
 import "./CustomerOrderTransactionList.css";
 
-const CustomerOrderTransactionList = () => {
+const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
 
     const { id } = useParams();
     const activeShopColor = useActiveShopColor();
 
     useEffect(() => {
-        fetchOnlineShopOrderTransactionList();
-        fetchExpensesList();
+        if (!searchByTransactionId) {
+            fetchOnlineShopOrderTransactionList();
+            fetchExpensesList();
+        }
         fetchRequestor();
     }, []);
 
     const [requestorList, setRequestorList] = useState([]);
     const [search, setSearch] = useState('');
+    const [transactionId, setTransactionId] = useState('');
+    const [transactionIdError, setTransactionIdError] = useState('');
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
         date: id,
@@ -216,6 +220,38 @@ const CustomerOrderTransactionList = () => {
 
 
     const fetchOnlineShopOrderTransactionList = () => {
+
+        if (searchByTransactionId) {
+            if (!/^\d+$/.test(String(transactionId)) || Number(transactionId) < 1) {
+                setTransactionIdError('Enter a positive transaction ID.');
+                return;
+            }
+
+            setSubmitLoadingAdd(true);
+            setIsAddDisabled(true);
+            setTransactionIdError('');
+            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByIdV2(Number(transactionId))
+                .then(response => {
+                    setShopOrderTransaction(response.data);
+                    const transactionDate = response.data?.data?.[0]?.date;
+                    if (transactionDate) {
+                        setCustomerOrderDate(current => ({ ...current, date: moment(transactionDate).format('YYYY-MM-DD') }));
+                    }
+                })
+                .catch(error => {
+                    setShopOrderTransaction(current => ({ ...current, data: [], payment: [], total_count: 0 }));
+                    setTransactionIdError(
+                        error.response?.status === 404
+                            ? `Transaction #${transactionId} was not found.`
+                            : (error.response?.data?.message || 'Unable to search for this transaction.')
+                    );
+                })
+                .finally(() => {
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                });
+            return;
+        }
 
         let newDate = new Date().toLocaleDateString();
         let nDate = newDate.replaceAll("/", "-");
@@ -407,6 +443,10 @@ const CustomerOrderTransactionList = () => {
     }
 
     const saveOrderTransaction = () => {
+        if (searchByTransactionId) {
+            fetchOnlineShopOrderTransactionList();
+            return;
+        }
         console.log('status: ', customerOrderDate);
         console.log("count: ", Object.keys(validate(customerOrderDate)).length);
         console.log("validate: ", validate(customerOrderDate));
@@ -836,24 +876,48 @@ const CustomerOrderTransactionList = () => {
 
     return (
         <div className="customer-report-page" style={{ "--shop-color": activeShopColor }}>
-            <section className="customer-report-hero">
+            <section className={`customer-report-hero${searchByTransactionId ? ' customer-report-search-hero' : ''}`}>
                 <div>
-                    <p className="customer-report-eyebrow">Daily customer order report</p>
-                    <h1>Online Orders</h1>
-                    <p className="customer-report-date">{moment(customerOrderDate.date).format("MMMM D, YYYY")}</p>
+                    <p className="customer-report-eyebrow">{searchByTransactionId ? 'Transaction lookup' : 'Daily customer order report'}</p>
+                    <h1>{searchByTransactionId ? 'Search Transaction' : 'Online Orders'}</h1>
+                    {!searchByTransactionId && <p className="customer-report-date">{moment(customerOrderDate.date).format("MMMM D, YYYY")}</p>}
                 </div>
 
-                <label className="customer-report-amount-toggle is-secret">
+                {!searchByTransactionId && <label className="customer-report-amount-toggle is-secret">
                     <Checkbox
                         checked={showFinancialAmounts}
                         onChange={(event) => setShowFinancialAmounts(event.target.checked)}
                         inputProps={{ "aria-label": "Show financial amounts" }}
                     />
                     <span>{showFinancialAmounts ? "Financial report visible" : "Show financial report"}</span>
-                </label>
+                </label>}
 
-                <Form className="customer-report-filter">
-                    {formErrors.date && <p className="customer-report-error">{formErrors.date}</p>}
+                <Form className={`customer-report-filter${searchByTransactionId ? ' customer-report-id-search' : ''}`}>
+                    {(searchByTransactionId ? transactionIdError : formErrors.date) &&
+                        <p className="customer-report-error">{searchByTransactionId ? transactionIdError : formErrors.date}</p>}
+                    {searchByTransactionId ? (
+                        <Form.Group controlId="transactionIdSearch">
+                            <Form.Label>Transaction ID</Form.Label>
+                            <Form.Control
+                                type="number"
+                                min="1"
+                                step="1"
+                                inputMode="numeric"
+                                placeholder="Enter transaction ID"
+                                value={transactionId}
+                                onChange={(event) => {
+                                    setTransactionId(event.target.value);
+                                    setTransactionIdError('');
+                                }}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                        event.preventDefault();
+                                        saveOrderTransaction();
+                                    }
+                                }}
+                            />
+                        </Form.Group>
+                    ) : <>
                     <Form.Group controlId="customerOrderReportDate">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" name="date" value={customerOrderDate.date} onChange={onChangeInput} />
@@ -879,6 +943,7 @@ const CustomerOrderTransactionList = () => {
                             <MenuItem value="4">WAITING</MenuItem>
                         </Select>
                     </FormControl>
+                    </>}
                     <Button variant="light" onClick={saveOrderTransaction} disabled={isAddDisabled}>
                         Find
                     </Button>
@@ -1022,7 +1087,7 @@ const CustomerOrderTransactionList = () => {
                 </article>
             </section>}
 
-            <div className="customer-report-customer-grid">
+            {!searchByTransactionId && <div className="customer-report-customer-grid">
                 <section className="customer-report-table-card customer-report-new-customers">
                     <div className="customer-report-table-header">
                         <div>
@@ -1104,7 +1169,7 @@ const CustomerOrderTransactionList = () => {
                         </table>
                     </div>
                 </section>
-            </div>
+            </div>}
 
             <section className="customer-report-table-card">
                 <div className="customer-report-table-header">
@@ -1113,13 +1178,13 @@ const CustomerOrderTransactionList = () => {
                         <h2>Online Orders</h2>
                     </div>
                     <div className="customer-report-table-tools">
-                        <Form.Control
+                        {!searchByTransactionId && <Form.Control
                             type="search"
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                             placeholder="Search orders..."
                             aria-label="Search online orders"
-                        />
+                        />}
                         <span>{visibleTransactions.length} records</span>
                     </div>
                 </div>
