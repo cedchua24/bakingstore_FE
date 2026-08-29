@@ -5,12 +5,12 @@ import ExpensesCategoryV2Service from "./ExpensesCategoryV2Service";
 import ExpensesV2Service from "./ExpensesV2Service";
 import ChartOfAccountService from "./ChartOfAccountService";
 import LinearProgress from '@mui/material/LinearProgress';
-import { Link } from "react-router-dom";
 import Checkbox from '@mui/material/Checkbox';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import './AddExpenseV2.css';
 
 
 const AddExpenseV2 = () => {
@@ -58,14 +58,18 @@ const AddExpenseV2 = () => {
     }
 
     const onChangeType = (e) => {
-        setExpenseTransaction({ ...expenseTransaction, [e.target.name]: e.target.value });
-        console.log('type', e.target.value);
-        fetchCategoryExpenseList(e.target.value);
+        const typeId = e.target.value;
+        setExpenseTransaction({ ...expenseTransaction, expense_type_id: typeId, expense_category_id: 0 });
+        setExpenseCategoryList([]);
+        if (Number(typeId) !== 0) fetchCategoryExpenseList(typeId);
     }
 
     const onChangeChart = (e) => {
-        setExpenseTransaction({ ...expenseTransaction, [e.target.name]: e.target.value });
-        fetchExpenseType(e.target.value);
+        const chartId = e.target.value;
+        setExpenseTransaction({ ...expenseTransaction, chart_of_account_id: chartId, expense_type_id: 0, expense_category_id: 0 });
+        setExpenseTypeList([]);
+        setExpenseCategoryList([]);
+        if (Number(chartId) !== 0) fetchExpenseType(chartId);
     }
 
     const onChangePaymentTypedisabled = (e) => {
@@ -128,9 +132,11 @@ const AddExpenseV2 = () => {
 
     const validate = (values) => {
         const errors = {};
-        if (expenseTransaction.expense_type == 0) {
-            errors.expense_type = "Expense Type is Required!";
-        }
+        if (!Number(values.chart_of_account_id)) errors.chart_of_account_id = "Chart of Account is required.";
+        if (!Number(values.expense_type_id)) errors.expense_type_id = "Expense Type is required.";
+        if (!Number(values.expense_category_id)) errors.expense_category_id = "Expense Category is required.";
+        if (!String(values.expense_name || '').trim()) errors.expense_name = "Expense Name is required.";
+        if (!String(values.expense_code || '').trim() || Number(values.expense_code) === 0) errors.expense_code = "Expense Code is required.";
         return errors;
     }
 
@@ -153,6 +159,10 @@ const AddExpenseV2 = () => {
                 ExpensesV2Service.create(expenseTransaction)
                     .then(response => {
                         fetchExpenseList();
+                        setExpenseTransaction({ id: 0, chart_of_account_id: '', expense_category_id: 0, expense_code: 0, expense_type_id: 0, expense_name: '', details: 0, is_hidden: 0, status: 0, updated_at: '' });
+                        setExpenseTypeList([]);
+                        setExpenseCategoryList([]);
+                        setFormErrors({});
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
                         setValidator({
@@ -182,19 +192,24 @@ const AddExpenseV2 = () => {
 
 
     return (
-        <div>
-            <Form>
+        <main className="aev-page">
+            <div className="aev-shell">
+            <header className="aev-hero"><span>Expense setup</span><h1>Add Expense</h1><p>Create an expense under the correct account, type, and category.</p></header>
+            <Form className="aev-form-card">
                 <Stack sx={{ width: '100%' }} spacing={2}>
                     {validator.isShow &&
                         <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                     }
                 </Stack>
-                <br></br>
+                <header className="aev-card-heading"><div><strong>Expense information</strong><span>Fields marked with an asterisk are required.</span></div></header>
+                <div className="aev-form-grid">
                 {formErrors.chart_of_account_id && <p style={{ color: "red" }}>{formErrors.chart_of_account_id}</p>}
+                <Form.Label>Chart of Account <span style={{ color: 'red' }}>*</span></Form.Label>
                 <Form.Select
                     aria-label="Default select example"
                     className="mb-3"
                     name="chart_of_account_id"
+                    value={expenseTransaction.chart_of_account_id}
                     onChange={onChangeChart}
                 >
                     <option value="0">Select Type</option>
@@ -211,8 +226,9 @@ const AddExpenseV2 = () => {
                     }
                 </Form.Select>
                 {formErrors.expense_type_id && <p style={{ color: "red" }}>{formErrors.expense_type_id}</p>}
-                <Form.Select aria-label="Default select example" className="mb-3" name="expense_type_id" onChange={onChangeType} >
-                    <option>Select Expense Type</option>
+                <Form.Label>Expense Type <span style={{ color: 'red' }}>*</span></Form.Label>
+                <Form.Select aria-label="Default select example" className="mb-3" name="expense_type_id" value={expenseTransaction.expense_type_id} onChange={onChangeType} disabled={!Number(expenseTransaction.chart_of_account_id)}>
+                    <option value={0}>Select Expense Type</option>
                     {
                         expenseTypeList.map((data, index) => (
                             <option value={data.id}>{data.expense_type + " - "}{data.chart_of_account_code}{data.expense_type_code}</option>
@@ -221,8 +237,9 @@ const AddExpenseV2 = () => {
                 </Form.Select>
 
                 {formErrors.expense_category_id && <p style={{ color: "red" }}>{formErrors.expense_category_id}</p>}
-                <Form.Select aria-label="Default select example" className="mb-3" name="expense_category_id" onChange={onChangeExpenseCategory} >
-                    <option>Select Expense Category</option>
+                <Form.Label>Expense Category <span style={{ color: 'red' }}>*</span></Form.Label>
+                <Form.Select aria-label="Default select example" className="mb-3" name="expense_category_id" value={expenseTransaction.expense_category_id} onChange={onChangeExpenseCategory} disabled={!Number(expenseTransaction.expense_type_id)}>
+                    <option value={0}>Select Expense Category</option>
                     {
                         expenseCategoryList.map((data, index) => (
                             <option value={data.id}>{data.expense_category_name + " - "}{data.expense_category_code}</option>
@@ -230,7 +247,7 @@ const AddExpenseV2 = () => {
                     }
                 </Form.Select>
 
-                {formErrors.expense_type && <p style={{ color: "red" }}>{formErrors.expense_name}</p>}
+                {formErrors.expense_name && <p style={{ color: "red" }}>{formErrors.expense_name}</p>}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Expense *</Form.Label>
                     <Form.Control type="text" value={expenseTransaction.expense_name} name="expense_name" placeholder="Enter Expense" onChange={onChangeExpense} />
@@ -243,6 +260,7 @@ const AddExpenseV2 = () => {
                 <Form.Select
                     className="mb-3"
                     name="expense_code"
+                    value={expenseTransaction.expense_code || ''}
                     onChange={onChangeExpenseCategory}
                 >
                     <option value="">Select Expense Code</option>
@@ -268,7 +286,9 @@ const AddExpenseV2 = () => {
                     />
                 </Form.Group>
 
-                <Button variant="primary"
+                </div>
+
+                <Button className="aev-submit" variant="primary"
                     disabled={isAddDisabled}
                     onClick={saveExpense}>
                     Submit
@@ -281,8 +301,10 @@ const AddExpenseV2 = () => {
             </Form>
             <br></br>
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Expenses List </legend>
-            <table class="table table-bordered">
+            <section className="aev-table-card">
+            <header><div><span>Expense directory</span><h2>Expenses List</h2></div><strong>{expenseList.length} entries</strong></header>
+            <div className="aev-table-scroll">
+            <table className="table table-bordered">
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
@@ -332,8 +354,11 @@ const AddExpenseV2 = () => {
                     }
                 </tbody>
             </table>
+            </div>
+            </section>
 
-        </div>
+            </div>
+        </main>
     )
 }
 

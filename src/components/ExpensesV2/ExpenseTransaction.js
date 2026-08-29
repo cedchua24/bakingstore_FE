@@ -10,7 +10,7 @@ import PaymentTermService from "../OtherService/PaymentTermService";
 import ChartOfAccountService from "./ChartOfAccountService";
 import UserService from '../User/UserService.service'
 import LinearProgress from '@mui/material/LinearProgress';
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
@@ -21,21 +21,21 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
 import Checkbox from '@mui/material/Checkbox';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
+import './ExpenseTransaction.css';
 
 
 const ExpenseTransaction = () => {
+    const navigate = useNavigate();
+
+    const [paymentTermList, setPaymentTermList] = useState([]);
+    const [paymentTypePoList, setPaymentTypePoList] = useState([]);
 
     useEffect(() => {
         fetchChartOfAccount();
-        fetchExpenseTransactionList();
         fetchPaymentTerm();
         fetchRequestor();
     }, []);
 
-    const [paymentTermList, setPaymentTermList] = useState([]);
-    const [paymentTypePoList, setPaymentTypePoList] = useState([]);
     const [validator, setValidator] = useState({
         severity: '',
         message: '',
@@ -46,18 +46,19 @@ const ExpenseTransaction = () => {
     const [expenseTypeList, setExpenseTypeList] = useState([]);
     const [expenseCategoryList, setExpenseCategoryList] = useState([]);
     const [expenseList, setExpenseList] = useState([]);
-    const [expenseTransactionList, setExpenseTransactionList] = useState([]);
     const [requestorList, setRequestorList] = useState([]);
 
     const [expenseTransaction, setExpenseTransaction] = useState({
         id: 0,
         shop_id: 5,
+        chart_of_account_id: 0,
         expense_type_id: 0,
         expense_category_id: 0,
         expense_id: 0,
         user_id: 0,
         approver_id: 0,
-        approval_status: '',
+        approval_status: 'PENDING',
+        payment_term_id: 0,
         payment_type_po_id: 0,
         is_received: 0,
         amount: 0,
@@ -94,30 +95,10 @@ const ExpenseTransaction = () => {
             });
     }
 
-    const fetchPaymentTerm = () => {
-        PaymentTermService.getAll()
-            .then(response => {
-                setPaymentTermList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
     const fetchChartOfAccount = () => {
         ChartOfAccountService.getAll()
             .then(response => {
                 setChartOfAccountList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchExpenseTransactionList = () => {
-        ExpenseTransactionService.fetchExpenseTransactionList(1)
-            .then(response => {
-                setExpenseTransactionList(response.data);
             })
             .catch(e => {
                 console.log("error", e)
@@ -151,20 +132,6 @@ const ExpenseTransaction = () => {
     }
 
 
-    const onChangePaymentTypedisabled = (e) => {
-
-        console.log("error", e.target.checked)
-        if (e.target.type === 'checkbox') {
-            if (e.target.checked === true) {
-                setExpenseTransaction({ ...expenseTransaction, is_received: 1 });
-            } else {
-                setExpenseTransaction({ ...expenseTransaction, is_received: 0 });
-            }
-        } else {
-            setExpenseTransaction({ ...expenseTransaction, is_received: e.target.value });
-        }
-    }
-
     const onChangeExpense = (e) => {
         const selectedId = e.target.value;
 
@@ -181,6 +148,36 @@ const ExpenseTransaction = () => {
 
     const onChangeInput = (e) => {
         setExpenseTransaction({ ...expenseTransaction, [e.target.name]: e.target.value });
+    }
+
+    const fetchPaymentTerm = () => {
+        PaymentTermService.getAll()
+            .then(response => setPaymentTermList(Array.isArray(response.data) ? response.data : []))
+            .catch(e => console.log("error", e));
+    }
+
+    const onChangePaymentReceived = (e) => {
+        setExpenseTransaction((current) => ({ ...current, is_received: e.target.checked ? 1 : 0 }));
+    }
+
+    const handlePaymentTermChange = (e, value) => {
+        const paymentTermId = Number(value?.id || 0);
+        setExpenseTransaction((current) => ({
+            ...current,
+            payment_term_id: paymentTermId,
+            payment_type_po_id: paymentTermId === 1 ? 1 : paymentTermId === 5 ? 2 : 0,
+            is_received: paymentTermId === 0 ? 0 : current.is_received,
+        }));
+        setPaymentTypePoList([]);
+        if (paymentTermId) {
+            PaymentTypePoService.findByCategory(paymentTermId)
+                .then(response => setPaymentTypePoList(Array.isArray(response.data) ? response.data : []))
+                .catch(e => console.log("error", e));
+        }
+    }
+
+    const handlePaymentTypeChange = (e, value) => {
+        setExpenseTransaction((current) => ({ ...current, payment_type_po_id: Number(value?.id || 0) }));
     }
 
 
@@ -228,6 +225,13 @@ const ExpenseTransaction = () => {
         if (expenseTransaction.approver_id == 0) {
             errors.approver_id = "Approver is Required!";
         }
+        if (
+            Number(expenseTransaction.user_id) > 0 &&
+            Number(expenseTransaction.approver_id) > 0 &&
+            Number(expenseTransaction.user_id) === Number(expenseTransaction.approver_id)
+        ) {
+            errors.approver_id = "Requestor and Approver must be different users!";
+        }
         if (expenseTransaction.approval_status.length == 0) {
             errors.approval_status = "Approval Status is Required!";
         }
@@ -239,9 +243,18 @@ const ExpenseTransaction = () => {
         // if (expenseTransaction.payment_term_id == 0) {
         //     errors.payment_term_id = "Payment Term is Required!";
         // }
-        // if (expenseTransaction.payment_type_po_id == 0) {
-        //     errors.payment_type_po_id = "Payment Type is Required!";
-        // }
+        if (
+            Number(expenseTransaction.payment_term_id) !== 0 &&
+            Number(expenseTransaction.payment_type_po_id) === 0
+        ) {
+            errors.payment_type_po_id = "Choose Bank is required when a Payment Term is selected!";
+        }
+        if (
+            Number(expenseTransaction.payment_term_id) !== 0 &&
+            Number(expenseTransaction.is_received) !== 1
+        ) {
+            errors.is_received = "Amount Received must be checked when a Payment Term is selected!";
+        }
 
         return errors;
     }
@@ -264,7 +277,33 @@ const ExpenseTransaction = () => {
             ExpenseTransactionService.sanctum().then(response => {
                 ExpenseTransactionService.create(expenseTransaction)
                     .then(response => {
-                        fetchExpenseTransactionList();
+                        setExpenseTransaction({
+                            id: 0,
+                            shop_id: 5,
+                            chart_of_account_id: 0,
+                            expense_type_id: 0,
+                            expense_category_id: 0,
+                            expense_id: 0,
+                            user_id: 0,
+                            approver_id: 0,
+                            approval_status: 'PENDING',
+                            payment_term_id: 0,
+                            payment_type_po_id: 0,
+                            is_received: 0,
+                            amount: 0,
+                            balance_type_id: 3,
+                            transaction: '',
+                            name: 'Expense transaction',
+                            details: '',
+                            expense_date: '',
+                            status: 0,
+                            updated_at: ''
+                        });
+                        setExpenseTypeList([]);
+                        setExpenseCategoryList([]);
+                        setExpenseList([]);
+                        setPaymentTypePoList([]);
+                        setFormErrors({});
                         setSubmitLoadingAdd(false);
                         setIsAddDisabled(false);
                         setValidator({
@@ -272,6 +311,7 @@ const ExpenseTransaction = () => {
                             message: response.data.message,
                             isShow: true,
                         });
+                        navigate('/expensesV2/viewExpenseTransactionApproval');
                     })
                     .catch(e => {
                         setSubmitLoadingAdd(false);
@@ -287,92 +327,25 @@ const ExpenseTransaction = () => {
         }
     }
 
-    const handlePaymentTermChange = (e, value) => {
-        e.persist();
-        console.log(value)
-        if (value.id == 1) {
-            setExpenseTransaction({
-                ...expenseTransaction,
-                payment_term_id: value.id,
-                payment_type_po_id: 1
-            });
-        } else if (value.id == 5) {
-            setExpenseTransaction({
-                ...expenseTransaction,
-                payment_term_id: value.id,
-                payment_type_po_id: 2
-            });
-        }
-        else if (value.id == 4 || value.id == 3) {
-            setExpenseTransaction({
-                ...expenseTransaction,
-                payment_term_id: value.id,
-                status: 1
-            });
-        }
-        else {
-            setExpenseTransaction({
-                ...expenseTransaction,
-                payment_term_id: value.id
-            });
-        }
-        fetchPaymentTypePo(value.id);
-    }
-
-    const handlePaymentTypeChange = (e, value) => {
-        e.persist();
-        setExpenseTransaction({
-            ...expenseTransaction,
-            payment_type_po_id: value.id,
-        });
-
-
-    }
-
-
-
-
-    const fetchPaymentTypePo = ($id) => {
-        PaymentTypePoService.findByCategory($id)
-            .then(response => {
-                setPaymentTypePoList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
 
     const formatStatementDate = (date) => {
         var d = new Date(date);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
 
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
-
-    const statusColor = {
-        PENDING: 'warning.main',
-        APPROVED: 'success.main',
-        REJECTED: 'error.main',
-    };
-    const statusColorTd = {
-        PENDING: 'orange',
-        APPROVED: 'green',
-        REJECTED: 'red',
-    };
-
     return (
-        <div>
+        <div className="et-page">
             <Stack sx={{ width: '100%' }} spacing={2}>
                 {validator.isShow &&
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                 }
             </Stack>
             <br></br>
-            <Form>
+            <Form className="et-form">
+                <header className="et-form-header"><span>New transaction</span><h1>Add Expense Transaction</h1><p>Enter the expense details, assign approval, and optionally add payment information.</p></header>
+                <div className="et-form-grid">
+                <section className="et-form-column">
+                    <div className="et-section-heading"><span>01</span><div><strong>Expense details</strong><small>Classification, amount, and requestor</small></div></div>
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
                         <InputLabel id="chart-select-label">
@@ -384,6 +357,7 @@ const ExpenseTransaction = () => {
                             id="chart-select"
                             label="Chart of Account"
                             name="chart_of_account_id"
+                            value={expenseTransaction.chart_of_account_id}
                             onChange={onChangeChart}
                         >
                             <MenuItem value={0} disabled>
@@ -487,6 +461,7 @@ const ExpenseTransaction = () => {
                             variant="outlined"
                             name="amount"
                             placeholder="Enter Amount"
+                            value={expenseTransaction.amount || ''}
                             onChange={onChangeInput}
                             InputProps={{
                                 startAdornment: (
@@ -508,17 +483,22 @@ const ExpenseTransaction = () => {
                             id="demo-simple-select"
                             label="Requestor"
                             name="user_id"
+                            value={expenseTransaction.user_id}
                             onChange={onChangeInput}
                         >
+                            <MenuItem value={0} disabled>Select requestor</MenuItem>
                             {
-                                requestorList.map((requestor, index) => (
-                                    <MenuItem value={requestor.id}>{requestor.name}</MenuItem>
+                                requestorList.map((requestor) => (
+                                    <MenuItem key={requestor.id} value={requestor.id} disabled={Number(requestor.id) === Number(expenseTransaction.approver_id)}>{requestor.name}</MenuItem>
                                 ))
                             }
                         </Select>
                     </FormControl>
                 </Box>
 
+                </section>
+                <section className="et-form-column et-approval-column">
+                    <div className="et-section-heading"><span>02</span><div><strong>Approval & payment</strong><small>Status, date, and optional payment information</small></div></div>
                 {formErrors.approver_id && <p style={{ color: "red" }}>{formErrors.approver_id}</p>}
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
@@ -528,47 +508,34 @@ const ExpenseTransaction = () => {
                             id="demo-simple-select"
                             label="Approver"
                             name="approver_id"
+                            value={expenseTransaction.approver_id}
                             onChange={onChangeInput}
                         >
+                            <MenuItem value={0} disabled>Select approver</MenuItem>
                             {
-                                requestorList.map((requestor, index) => (
-                                    <MenuItem value={requestor.id}>{requestor.name}</MenuItem>
+                                requestorList.map((requestor) => (
+                                    <MenuItem key={requestor.id} value={requestor.id} disabled={Number(requestor.id) === Number(expenseTransaction.user_id)}>{requestor.name}</MenuItem>
                                 ))
                             }
                         </Select>
                     </FormControl>
                 </Box>
 
-                {formErrors.approval_status && <p style={{ color: "red" }}>{formErrors.approval_status}</p>}
-                <InputLabel id="demo-simple-select-label">Select Status <span style={{ color: 'red' }}>*</span></InputLabel>
-                <Select
-                    labelId="demo-simple-select-label"
-
-                    id="demo-simple-select"
-                    name="approval_status"
-                    label="Stock Warning Type"
-                    value={expenseTransaction.approval_status}
-                    sx={{
-                        color: statusColor[expenseTransaction.approval_status],
-                        '& .MuiSelect-icon': {
-                            color: statusColor[expenseTransaction.approval_status],
-                        },
-                    }}
-                    onChange={onChangeInput}
-                    displayEmpty
-                // disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                >
-                    <MenuItem value="PENDING" sx={{ color: "orange" }}>PENDING</MenuItem>
-                    <MenuItem value="APPROVED" sx={{ color: "green" }}>APPROVED</MenuItem>
-                    <MenuItem value="REJECTED" sx={{ color: "red" }}>REJECTED</MenuItem>
-                </Select>
+                <TextField
+                    fullWidth
+                    label="Approval Status"
+                    value="PENDING"
+                    InputProps={{ readOnly: true }}
+                    InputLabelProps={{ shrink: true }}
+                    sx={{ '& .MuiInputBase-input': { color: '#a86410', fontWeight: 800 } }}
+                />
                 <br></br>
                 <br></br>
 
                 {formErrors.expense_date && <p style={{ color: "red" }}>{formErrors.expense_date}</p>}
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
+                <Form.Group className="mb-3" controlId="expenseDate" style={{ width: '100%' }}>
                     <Form.Label>{expenseTransaction.payment_term_id == 3 ? "Due Date" : "Date"}<span style={{ color: 'red' }}> *</span></Form.Label>
-                    <Form.Control type="date" name="expense_date" onChange={onChangeInput} />
+                    <Form.Control type="date" name="expense_date" value={expenseTransaction.expense_date} onChange={onChangeInput} style={{ width: '100%', minHeight: 48, padding: '11px 13px' }} />
                 </Form.Group>
 
                 <Box sx={{ minWidth: 120 }}>
@@ -579,81 +546,58 @@ const ExpenseTransaction = () => {
                             variant="outlined"
                             name="details"
                             placeholder="Enter Details"
+                            value={expenseTransaction.details}
                             onChange={onChangeInput}
                         />
                     </FormControl>
                 </Box>
 
+                <>
+                    <FormControl variant="standard">
+                        <Autocomplete
+                            sx={{ width: 300 }}
+                            options={paymentTermList}
+                            value={paymentTermList.find((item) => Number(item.id) === Number(expenseTransaction.payment_term_id)) || null}
+                            onChange={handlePaymentTermChange}
+                            getOptionLabel={(option) => option.payment_term || ''}
+                            renderInput={(params) => <TextField {...params} label="Choose Payment Term (Optional)" variant="standard" />}
+                        />
+                    </FormControl>
+                    <br />
 
+                    {[2, 3, 4].includes(Number(expenseTransaction.payment_term_id)) && <>
+                    {formErrors.payment_type_po_id && <p style={{ color: 'red' }}>{formErrors.payment_type_po_id}</p>}
+                    <Box
+                        sx={{ '& .MuiTextField-root': { width: '65ch' } }}
+                        noValidate
+                        autoComplete="off"
+                    >
+                        <FormControl variant="standard">
+                            <Autocomplete
+                                options={paymentTypePoList}
+                                onChange={handlePaymentTypeChange}
+                                getOptionLabel={(option) => `${option.bank_name || ''} ${option.account_name || ''} ${option.account_description || ''} - ${option.account_number || ''}`.trim()}
+                                renderInput={(params) => <TextField {...params} required label="Choose Bank" variant="standard" />}
+                            />
+                        </FormControl>
+                    </Box>
+                    </>}
 
-
-
-                <FormControl variant="standard"  >
-                    <Autocomplete
-                        sx={{
-                            width: 300
-                        }}
-                        // {...defaultProps}
-                        options={paymentTermList}
-                        name="payment_term_id"
-                        className="mb-3"
-                        id="disable-close-on-select"
-                        onChange={handlePaymentTermChange}
-                        getOptionLabel={(paymentTermList) => paymentTermList.payment_term}
-                        renderInput={(params) => (
-                            <TextField {...params} label="Choose Payment Term" variant="standard" />
-                        )}
-                    />
-                </FormControl>
-                <br></br>
-
-
-
-
-                {expenseTransaction.payment_term_id != 0 ? (<>
-
-                    {expenseTransaction.payment_term_id == 2 || expenseTransaction.payment_term_id == 3 || expenseTransaction.payment_term_id == 4 ? (<>
-                        {formErrors.payment_type_po_id && <p style={{ color: "red" }}>{formErrors.payment_type_po_id}</p>}
-                        <Box
-                            sx={{
-                                '& .MuiTextField-root': { width: '65ch' },
-                            }}
-                            noValidate
-                            autoComplete="off"
-                        >
-                            <FormControl variant="standard" >
-                                <Autocomplete
-                                    // {...defaultProps}
-                                    options={paymentTypePoList}
-                                    className="mb-3"
-                                    id="disable-close-on-select"
-                                    onChange={handlePaymentTypeChange}
-                                    getOptionLabel={(paymentTypePoList) => paymentTypePoList.bank_name + " " + paymentTypePoList.account_name + "  " + paymentTypePoList.account_description + " - " + paymentTypePoList.account_number}
-                                    renderInput={(params) => (
-                                        <TextField {...params} label="Choose Bank" variant="standard" />
-                                    )}
-                                />
-                            </FormControl>
-                        </Box>
-                    </>) : ""}
-
-
-
-
-                </>) : ""}
-
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Amount Received ? </Form.Label>
-
-                    <Checkbox
-                        checked={expenseTransaction.is_received === 0 ? false : true}
-                        onChange={onChangePaymentTypedisabled}
-                        inputProps={{ 'aria-label': 'controlled' }}
-                        disabled={expenseTransaction.approval_status != 'APPROVED'}
-                    />
-                </Form.Group>
-
-
+                    <Form.Group className="mb-3" controlId="amountReceived">
+                        {formErrors.is_received && <p style={{ color: 'red', marginBottom: 4 }}>{formErrors.is_received}</p>}
+                        <Form.Label>
+                            Amount Received? {Number(expenseTransaction.payment_term_id) !== 0
+                                ? <span style={{ color: 'red' }}>*</span>
+                                : <small className="text-muted">(Optional)</small>}
+                        </Form.Label>
+                        <Checkbox
+                            checked={Number(expenseTransaction.is_received) === 1}
+                            onChange={onChangePaymentReceived}
+                            inputProps={{ 'aria-label': 'Amount received' }}
+                            disabled={Number(expenseTransaction.payment_term_id) === 0}
+                        />
+                    </Form.Group>
+                </>
 
                 <Button variant="primary"
                     disabled={isAddDisabled}
@@ -665,77 +609,9 @@ const ExpenseTransaction = () => {
                 {submitLoadingAdd &&
                     <LinearProgress color="warning" />
                 }
+                </section>
+                </div>
             </Form>
-            <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Expense Transaction </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Code</th>
-                        <th>Type</th>
-                        <th>Category</th>
-                        <th>Expense</th>
-                        <th>Requestor</th>
-                        <th>Approver</th>
-                        <th>Approval Status</th>
-                        <th>Amount</th>
-                        <th>Bank</th>
-                        <th>Details</th>
-                        <th>Amount Received</th>
-                        <th>Date</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-
-                    {
-                        expenseTransactionList.map((data, index) => (
-                            <tr key={data.id} >
-                                <td>{data.id}</td>
-                                <td>
-                                    <span style={{ color: 'black' }}>
-                                        {data.chart_of_account_code}
-                                    </span>
-                                    <span style={{ color: 'red' }}>
-                                        {data.expense_type_code}
-                                    </span>
-                                    <span style={{ color: 'green' }}>
-                                        {data.expense_category_code}
-                                    </span>
-                                    <span style={{ color: 'gray' }}>
-                                        {data.expense_code}
-                                    </span>
-                                </td>
-                                <td>{data.expense_type}</td>
-                                <td>{data.expense_category_name}</td>
-                                <td>{data.is_hidden == 1 ? "*****" : data.expense_name}</td>
-                                <td>{data.name}</td>
-                                <td>{data.approver_name}</td>
-                                <td style={{ color: statusColorTd[data.approval_status] }}>{data.approval_status}</td>
-                                <td>{numberFormat(data.amount)}</td>
-                                <td>{data.payment_type_po_id == 0 ? " " : data.payment_type_po_id == 1 ? data.bank_name : data.payment_term + " - " + data.bank_name + " " + data.account_name + " " + data.account_description + " " + data.account_number}</td>
-                                <td>{data.details}</td>
-                                <td>{data.is_received == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
-                                <td>{data.expense_date}</td>
-
-                                <td>
-                                    <Link to={"/expensesV2/editExpenseTransaction/" + data.id}>
-                                        <Button
-                                            variant={data.is_received ? "primary" : "success"}
-                                        >
-                                            {data.is_received ? "View" : "Update"}
-                                        </Button>
-                                    </Link>
-                                </td>
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-
         </div>
     )
 }

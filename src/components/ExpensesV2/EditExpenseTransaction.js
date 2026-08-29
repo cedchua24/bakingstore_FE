@@ -23,7 +23,12 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Checkbox from '@mui/material/Checkbox';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import './EditExpenseTransaction.css';
 
+const getCookieValue = (name) => {
+    const cookie = document.cookie.split('; ').find((item) => item.startsWith(`${name}=`));
+    return cookie ? decodeURIComponent(cookie.substring(name.length + 1)) : '';
+};
 
 const EditExpenseTransaction = () => {
 
@@ -52,6 +57,7 @@ const EditExpenseTransaction = () => {
     const [expenseTransactionList, setExpenseTransactionList] = useState([]);
     const [requestorList, setRequestorList] = useState([]);
     const [role] = useState(localStorage.getItem('role_as'));
+    const [authUserId] = useState(() => Number(getCookieValue('auth_user_id')));
 
     const [expenseTransaction, setExpenseTransaction] = useState({
         id: 0,
@@ -184,6 +190,16 @@ const EditExpenseTransaction = () => {
         setExpenseTransaction({ ...expenseTransaction, [e.target.name]: e.target.value });
     }
 
+    const onChangeApprovalStatus = (e) => {
+        const approvalStatus = e.target.value;
+        setExpenseTransaction((current) => ({
+            ...current,
+            approval_status: approvalStatus,
+            // Approval confirms receipt automatically; pending may be changed manually.
+            is_received: approvalStatus === 'APPROVED' ? 1 : current.is_received,
+        }));
+    }
+
 
     const fetchCategoryExpenseList = (typeId) => {
         ExpensesCategoryV2Service.fetchExpenseCategoryById(typeId)
@@ -212,11 +228,40 @@ const EditExpenseTransaction = () => {
 
     const saveExpenseType = () => {
 
+        if (!canManageTransaction) {
+            setValidator({
+                severity: 'error',
+                message: 'Only the assigned approver can update this transaction.',
+                isShow: true,
+            });
+            return;
+        }
+
+        const validationErrors = {};
+        const hasSavedPaymentDetails = Number(expenseTransactionFixed.payment_type_po_id) > 0;
+        if (Number(expenseTransaction.is_received) === 1 && !hasSavedPaymentDetails) {
+            if (!Number(expenseTransaction.payment_term_id)) {
+                validationErrors.payment_term_id = "Payment Term is required when Amount Received is checked!";
+            }
+            if (!Number(expenseTransaction.payment_type_po_id)) {
+                validationErrors.payment_type_po_id = "Choose Bank is required when Amount Received is checked!";
+            }
+        }
+
+        setFormErrors(validationErrors);
+        if (Object.keys(validationErrors).length > 0) return;
+
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
-        console.log(expenseTransaction);
+        const updatePayload = {
+            ...expenseTransaction,
+            is_received: expenseTransaction.approval_status === 'APPROVED'
+                ? 1
+                : Number(expenseTransaction.is_received),
+        };
+        console.log(updatePayload);
         ExpenseTransactionService.sanctum().then(response => {
-            ExpenseTransactionService.update(expenseTransaction.id, expenseTransaction)
+            ExpenseTransactionService.update(expenseTransaction.id, updatePayload)
                 .then(response => {
                     fetchExpenseTransactionList();
                     setSubmitLoadingAdd(false);
@@ -226,7 +271,7 @@ const EditExpenseTransaction = () => {
                         message: response.data.message,
                         isShow: true,
                     });
-                    navigate('/expensesV2/expenseTransaction');
+                    navigate('/expensesV2/viewExpenseTransaction');
                 })
                 .catch(e => {
                     setSubmitLoadingAdd(false);
@@ -243,43 +288,21 @@ const EditExpenseTransaction = () => {
     }
 
     const handlePaymentTermChange = (e, value) => {
-        e.persist();
-        console.log(value)
-        if (value.id == 1) {
-            setExpenseTransaction({
-                ...expenseTransaction,
-                payment_term_id: value.id,
-                payment_type_po_id: 1
-            });
-        } else if (value.id == 5) {
-            setExpenseTransaction({
-                ...expenseTransaction,
-                payment_term_id: value.id,
-                payment_type_po_id: 2
-            });
-        }
-        else if (value.id == 4 || value.id == 3) {
-            setExpenseTransaction({
-                ...expenseTransaction,
-                payment_term_id: value.id,
-                status: 1
-            });
-        }
-        else {
-            setExpenseTransaction({
-                ...expenseTransaction,
-                payment_term_id: value.id
-            });
-        }
-        fetchPaymentTypePo(value.id);
+        const paymentTermId = Number(value?.id || 0);
+        setExpenseTransaction((current) => ({
+            ...current,
+            payment_term_id: paymentTermId,
+            payment_type_po_id: paymentTermId === 1 ? 1 : paymentTermId === 5 ? 2 : 0,
+        }));
+        setPaymentTypePoList([]);
+        if (paymentTermId) fetchPaymentTypePo(paymentTermId);
     }
 
     const handlePaymentTypeChange = (e, value) => {
-        e.persist();
-        setExpenseTransaction({
-            ...expenseTransaction,
-            payment_type_po_id: value.id,
-        });
+        setExpenseTransaction((current) => ({
+            ...current,
+            payment_type_po_id: Number(value?.id || 0),
+        }));
 
 
     }
@@ -319,6 +342,19 @@ const EditExpenseTransaction = () => {
         REJECTED: 'red',
     };
 
+    // Approval status controls whether the transaction is editable.
+    const isFinalized = expenseTransactionFixed.approval_status === 'APPROVED';
+    const isAdmin = Number(role) === 2;
+    const canManageTransaction = isAdmin
+        || (Number(expenseTransactionFixed.id) > 0
+            && Number(expenseTransactionFixed.approver_id) === authUserId);
+    const isReadOnly = isFinalized || !canManageTransaction;
+    const hasPaymentDetails = Number(expenseTransaction.payment_term_id) > 0
+        || Number(expenseTransaction.payment_type_po_id) > 0;
+    const requiresPaymentReceipt = ['PENDING', 'REJECTED'].includes(expenseTransaction.approval_status)
+        && hasPaymentDetails;
+    const isPaymentReceiptMissing = requiresPaymentReceipt && Number(expenseTransaction.is_received) !== 1;
+
     return (
         <div>
             <Stack sx={{ width: '100%' }} spacing={2}>
@@ -326,12 +362,19 @@ const EditExpenseTransaction = () => {
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                 }
             </Stack>
+            {Number(expenseTransactionFixed.id) > 0 && !canManageTransaction &&
+                <Alert severity="warning" sx={{ width: 'min(100% - 32px, 1040px)', margin: '16px auto 0' }}>
+                    Read-only: only the assigned approver or an administrator can update this transaction.
+                </Alert>
+            }
             <br></br>
             <Form>
-                <legend align="center" style={{ fontWeight: 'bold' }} > {expenseTransactionFixed.is_received ? "View" : "Update"} Expense Transaction </legend>
+                <legend align="center" style={{ fontWeight: 'bold' }} > {isReadOnly ? "View" : "Update"} Expense Transaction </legend>
                 <br></br>
                 <br></br>
-                <div style={{ float: 'right', marginRight: 300 }}>
+                <div className="eet-form-grid">
+                <section className="eet-form-column eet-form-actions">
+                    <div className="eet-section-heading"><span>02</span><div><strong>Approval & payment</strong><small>Update the approval, amount, and optional payment details.</small></div></div>
 
                     {formErrors.approver_id && <p style={{ color: "red" }}>{formErrors.approver_id}</p>}
                     <Box sx={{ minWidth: 120 }}>
@@ -344,7 +387,7 @@ const EditExpenseTransaction = () => {
                                 name="approver_id"
                                 value={expenseTransaction.approver_id}
                                 onChange={onChangeInput}
-                                disabled={expenseTransaction.is_received}
+                                disabled={isReadOnly || !isAdmin}
                             >
                                 {
                                     requestorList.map((requestor, index) => (
@@ -370,9 +413,9 @@ const EditExpenseTransaction = () => {
                                 color: statusColor[expenseTransaction.approval_status],
                             },
                         }}
-                        onChange={onChangeInput}
+                        onChange={onChangeApprovalStatus}
                         displayEmpty
-                        disabled={expenseTransaction.is_received}
+                        disabled={isReadOnly}
                     // disabled={orderSupplierTransaction.status == 'COMPLETED'}
                     >
                         <MenuItem value="PENDING" sx={{ color: "orange" }}>PENDING</MenuItem>
@@ -392,7 +435,7 @@ const EditExpenseTransaction = () => {
                                 placeholder="Enter Details"
                                 InputLabelProps={{ shrink: true }}
                                 onChange={onChangeInput}
-                                disabled={expenseTransaction.is_received}
+                                disabled={isReadOnly}
                             />
                         </FormControl>
                     </Box>
@@ -515,18 +558,19 @@ const EditExpenseTransaction = () => {
 
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
-                        <Form.Label>Amount Received ? </Form.Label>
+                        <Form.Label>Amount Received? {requiresPaymentReceipt && <span style={{ color: 'red' }}>*</span>}</Form.Label>
                         <Checkbox
-                            checked={expenseTransaction.is_received === 0 ? false : true}
+                            checked={Number(expenseTransaction.is_received) === 1}
                             onChange={onChangePaymentTypedisabled}
                             inputProps={{ 'aria-label': 'controlled' }}
-                            disabled={expenseTransaction.approval_status != 'APPROVED'}
+                            disabled={Number(expenseTransactionFixed.is_received) === 1 || isReadOnly}
                         />
+                        {isPaymentReceiptMissing && <small style={{ display: 'block', color: '#a05d12' }}>Required because payment details are already provided.</small>}
                     </Form.Group>
-                    {!expenseTransactionFixed.is_received &&
+                    {!isFinalized && canManageTransaction &&
                         <>
                             <Button variant="primary"
-                                disabled={isAddDisabled}
+                                disabled={isAddDisabled || isPaymentReceiptMissing}
                                 onClick={saveExpenseType}>
                                 Submit
                             </Button>
@@ -537,7 +581,10 @@ const EditExpenseTransaction = () => {
                             }
                         </>
                     }
-                </div>
+                </section>
+
+                <section className="eet-form-column eet-form-summary">
+                    <div className="eet-section-heading"><span>01</span><div><strong>Expense information</strong><small>Review the transaction classification and request details.</small></div></div>
 
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
@@ -627,11 +674,8 @@ const EditExpenseTransaction = () => {
                         />
                     </FormControl>
                 </Box>
-
-
-
-
-
+                </section>
+                </div>
             </Form>
             <br></br>
 
