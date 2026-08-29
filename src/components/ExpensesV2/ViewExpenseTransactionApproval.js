@@ -23,6 +23,8 @@ import Checkbox from '@mui/material/Checkbox';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import moment from "moment";
+import './ViewExpenseTransactionApproval.css';
+import './CompactExpenseTransactionTable.css';
 
 
 const ViewExpenseTransactionApproval = () => {
@@ -54,7 +56,7 @@ const ViewExpenseTransactionApproval = () => {
         expense_category_id: 0,
         expense_id: 0,
         approval_status: 'PENDING',
-        is_received: 0,
+        // is_received: 0,
         dateTo: moment().format("YYYY-MM-DD"),
         dateFrom: moment().format("YYYY-MM-DD")
     });
@@ -110,7 +112,9 @@ const ViewExpenseTransactionApproval = () => {
             expense_id: 0,
             expense_category_id: 0
         });
-        fetchCategoryExpenseList(e.target.value);
+        setExpenseCategoryList([]);
+        setExpenseList([]);
+        if (Number(e.target.value) !== 0) fetchCategoryExpenseList(e.target.value);
     }
 
     const onChangePaymentTypedisabled = (e) => {
@@ -134,8 +138,8 @@ const ViewExpenseTransactionApproval = () => {
             expense_category_id: e.target.value,
             expense_id: 0
         });
-        console.log("error", expenseTransaction)
-        fetchExpenseList(e.target.value)
+        setExpenseList([]);
+        if (Number(e.target.value) !== 0) fetchExpenseList(e.target.value)
     }
 
 
@@ -261,250 +265,247 @@ const ViewExpenseTransactionApproval = () => {
         return acc;
     }, {});
 
+    const pendingCount = expenseTransactionList.filter((item) => item.approval_status === 'PENDING').length;
+    const approvedCount = expenseTransactionList.filter((item) => item.approval_status === 'APPROVED').length;
+    const totalAmount = expenseTransactionList.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
     return (
-        <div>
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
-            <Form>
-                <div style={{ float: 'right', marginRight: 500 }}>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Expenses: </Form.Label>
-                        <Form.Control type="text" value={totalSum(expenseTransactionList)} />
-                    </Form.Group>
-                </div>
-
-
-                {formErrors.expense_type_id && <p style={{ color: "red" }}>{formErrors.expense_type_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Expense Type</InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Expense Type"
-                            value={expenseTransaction.expense_type_id}
-                            name="expense_type_id"
-                            onChange={onChangeType}
-                        >
-                            <MenuItem value={0} disabled></MenuItem>
-                            {
-                                expenseTypeList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.expense_type}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-
-
-                {formErrors.expense_category_id && <p style={{ color: "red" }}>{formErrors.expense_category_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Expense Category </InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Expense Category"
-                            value={expenseTransaction.expense_category_id}
-                            name="expense_category_id"
-                            onChange={onChangeExpenseCategory}
-                        >
-                            <MenuItem value={0} disabled></MenuItem>
-                            {
-                                expenseCategoryList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.expense_category_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-
-
-                {formErrors.expense_id && <p style={{ color: "red" }}>{formErrors.expense_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Expense  </InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Expense"
-                            name="expense_id"
-                            value={expenseTransaction.expense_id}
-                            onChange={onChangeExpense}
-                        >
-                            <MenuItem value={0} disabled></MenuItem>
-                            {
-                                expenseList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.expense_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-
-                <Select
-                    labelId="demo-simple-select-label"
-
-                    id="demo-simple-select"
-                    name="approval_status"
-                    label="Stock Warning Type"
-                    value={expenseTransaction.approval_status}
-                    sx={{
-                        color: statusColor[expenseTransaction.approval_status],
-                        '& .MuiSelect-icon': {
-                            color: statusColor[expenseTransaction.approval_status],
-                        },
-                    }}
-                    onChange={onChangeInput}
-                    displayEmpty
-                // disabled={orderSupplierTransaction.status == 'COMPLETED'}
-                >
-                    <MenuItem value="ALL" sx={{ color: "black" }}>ALL</MenuItem>
-                    <MenuItem value="PENDING" sx={{ color: "orange" }}>PENDING</MenuItem>
-                    <MenuItem value="APPROVED" sx={{ color: "green" }}>APPROVED</MenuItem>
-                    <MenuItem value="REJECTED" sx={{ color: "red" }}>REJECTED</MenuItem>
-                </Select>
+        <main className="veta-page">
+            <div className="veta-shell">
+                <header className="veta-hero"><span>Expense management</span><h1>Transaction Approvals</h1><p>Review expense requests, payment details, and approval status in one place.</p></header>
+                <Stack sx={{ width: '100%' }} spacing={2}>
+                    {validator.isShow &&
+                        <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
+                    }
+                </Stack>
                 <br></br>
-                <br></br>
+                <section className="veta-summary">
+                    <article><span>Total amount</span><strong>{numberFormat(totalAmount)}</strong></article>
+                    <article><span>Transactions</span><strong>{expenseTransactionList.length}</strong></article>
+                    <article><span>Pending</span><strong>{pendingCount}</strong></article>
+                    <article><span>Approved</span><strong>{approvedCount}</strong></article>
+                </section>
+
+                <Form className="veta-filter-card">
+                    <header><strong>Filter approvals</strong><span>Narrow results by expense classification, status, and date.</span></header>
+                    <div className="veta-filter-grid">
+
+
+                        {formErrors.expense_type_id && <p style={{ color: "red" }}>{formErrors.expense_type_id}</p>}
+                        <Box sx={{ minWidth: 120 }}>
+                            <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                                <InputLabel id="demo-simple-select-label">Expense Type</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    label="Expense Type"
+                                    value={expenseTransaction.expense_type_id}
+                                    name="expense_type_id"
+                                    onChange={onChangeType}
+                                >
+                                    <MenuItem value={0}>All expense types</MenuItem>
+                                    {
+                                        expenseTypeList.map((data, index) => (
+                                            <MenuItem value={data.id}>{data.expense_type}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                            </FormControl>
+                        </Box>
+
+
+                        {formErrors.expense_category_id && <p style={{ color: "red" }}>{formErrors.expense_category_id}</p>}
+                        <Box sx={{ minWidth: 120 }}>
+                            <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                                <InputLabel id="demo-simple-select-label">Expense Category </InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    label="Expense Category"
+                                    value={expenseTransaction.expense_category_id}
+                                    name="expense_category_id"
+                                    onChange={onChangeExpenseCategory}
+                                >
+                                    <MenuItem value={0}>All categories</MenuItem>
+                                    {
+                                        expenseCategoryList.map((data, index) => (
+                                            <MenuItem value={data.id}>{data.expense_category_name}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                            </FormControl>
+                        </Box>
+
+
+                        {formErrors.expense_id && <p style={{ color: "red" }}>{formErrors.expense_id}</p>}
+                        <Box sx={{ minWidth: 120 }}>
+                            <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                                <InputLabel id="demo-simple-select-label">Expense  </InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    label="Expense"
+                                    name="expense_id"
+                                    value={expenseTransaction.expense_id}
+                                    onChange={onChangeExpense}
+                                >
+                                    <MenuItem value={0}>All expenses</MenuItem>
+                                    {
+                                        expenseList.map((data, index) => (
+                                            <MenuItem value={data.id}>{data.expense_name}</MenuItem>
+                                        ))
+                                    }
+                                </Select>
+                            </FormControl>
+                        </Box>
+
+                        <FormControl fullWidth>
+                            <InputLabel id="approval-status-filter-label">Approval Status</InputLabel>
+                            <Select
+                                labelId="approval-status-filter-label"
+                                id="approval-status-filter"
+                                name="approval_status"
+                                label="Approval Status"
+                                value={expenseTransaction.approval_status}
+                                sx={{
+                                    color: statusColor[expenseTransaction.approval_status],
+                                    '& .MuiSelect-icon': { color: statusColor[expenseTransaction.approval_status] },
+                                }}
+                                onChange={onChangeInput}
+                            >
+                                <MenuItem value="ALL" sx={{ color: "black" }}>ALL</MenuItem>
+                                <MenuItem value="PENDING" sx={{ color: "orange" }}>PENDING</MenuItem>
+                                <MenuItem value="APPROVED" sx={{ color: "green" }}>APPROVED</MenuItem>
+                                <MenuItem value="REJECTED" sx={{ color: "red" }}>REJECTED</MenuItem>
+                            </Select>
+                        </FormControl>
+                        <TextField type="date" name="dateFrom" label="Date From" value={expenseTransaction.dateFrom} onChange={onChangeInput} InputLabelProps={{ shrink: true }} fullWidth />
+
+                        <TextField type="date" name="dateTo" label="Date To" value={expenseTransaction.dateTo} onChange={onChangeInput} InputLabelProps={{ shrink: true }} fullWidth />
 
 
 
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date From:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" value={expenseTransaction.dateFrom} onChange={onChangeInput} />
-                </Form.Group>
+                        <Button variant="primary"
+                            disabled={isAddDisabled}
+                            style={{ height: 56 }}
+                            onClick={saveExpenseType}>
+                            Search
+                        </Button>
+                    </div>
+                    {submitLoadingAdd &&
+                        <LinearProgress color="warning" />
+                    }
+                </Form>
 
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date To:</Form.Label>
-                    <Form.Control type="date" name="dateTo" value={expenseTransaction.dateTo} onChange={onChangeInput} />
-                </Form.Group>
-
-
-
-                <Button variant="primary"
-                    disabled={isAddDisabled}
-                    onClick={saveExpenseType}>
-                    Search
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form>
-            <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > For Approval Expenses </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+                <section className="veta-table-card">
+                    <header><div><h2>Approval queue</h2><p>{expenseTransactionList.length} results across {Object.keys(groupedData).length} expense types</p></div></header>
+                    <div className="veta-table-scroll">
+                        <table className="table table-bordered">
+                            <thead className="table-dark">
+                                <tr className="table-secondary">
                         <th>ID</th>
                         <th>Code</th>
-                        <th>Type</th>
                         <th>Category</th>
                         <th>Expense</th>
                         <th>Requestor</th>
                         <th>Approver</th>
                         <th>Approval Status</th>
                         <th>Amount</th>
-                        <th>Bank</th>
+                        <th>Payment</th>
                         <th>Details</th>
-                        <th>Amount Received</th>
+                        <th>₱ Received</th>
                         <th>Date</th>
-                        <th></th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <br></br>
-                <tbody>
-                    {
-                        Object.keys(groupedData).map((type, index) => (
-                            <React.Fragment key={index}>
-
-                                {/* GROUP HEADER */}
-                                <tr style={{ backgroundColor: '#d3d3d3', fontWeight: 'bold' }}>
-                                    <td colSpan="14" style={{ textAlign: 'center' }}>
-                                        {type.toUpperCase()}
-                                    </td>
+                        <th>Action</th>
                                 </tr>
-
-                                {/* ROWS */}
+                            </thead>
+                            <tbody>
                                 {
-                                    groupedData[type].items.map((data) => (
-                                        <tr key={data.id}>
-                                            <td>{data.id}</td>
+                                    Object.keys(groupedData).map((type, index) => (
+                                        <React.Fragment key={index}>
+
+                                            {/* GROUP HEADER */}
+                                            <tr className="veta-group-row">
+                                    <td colSpan="13" style={{ textAlign: 'center' }}>
+                                                    <strong>{type.toUpperCase()}</strong><span>{groupedData[type].items.length} {groupedData[type].items.length === 1 ? 'transaction' : 'transactions'}</span><b>{numberFormat(groupedData[type].total)}</b>
+                                                </td>
+                                            </tr>
+
+                                            {/* ROWS */}
+                                            {
+                                                groupedData[type].items.map((data) => (
+                                                    <tr key={data.id}>
+                                            <td>
+                                                {data.id}
+                                            </td>
                                             <td>
                                                 <span style={{ color: 'black' }}>
-                                                    {data.chart_of_account_code}
-                                                </span>
-                                                <span style={{ color: 'red' }}>
-                                                    {data.expense_type_code}
-                                                </span>
-                                                <span style={{ color: 'green' }}>
-                                                    {data.expense_category_code}
-                                                </span>
-                                                <span style={{ color: 'gray' }}>
-                                                    {data.expense_code}
-                                                </span>
-                                            </td>
-                                            <td>{data.expense_type}</td>
+                                                                {data.chart_of_account_code}
+                                                            </span>
+                                                            <span style={{ color: 'red' }}>
+                                                                {data.expense_type_code}
+                                                            </span>
+                                                            <span style={{ color: 'green' }}>
+                                                                {data.expense_category_code}
+                                                            </span>
+                                                            <span style={{ color: 'gray' }}>
+                                                                {data.expense_code}
+                                                            </span>
+                                                        </td>
                                             <td>{data.expense_category_name}</td>
                                             <td>{data.is_hidden == 1 ? "*****" : data.expense_name}</td>
                                             <td>{data.name}</td>
                                             <td>{data.approver_name}</td>
-                                            <td style={{ color: statusColorTd[data.approval_status] }}>
-                                                {data.approval_status}
-                                            </td>
-                                            <td>{numberFormat(data.amount)}</td>
-                                            <td>
-                                                {
-                                                    data.payment_type_po_id == 0 ? " " :
-                                                        data.payment_type_po_id == 1 ? data.bank_name :
-                                                            data.payment_term + " - " + data.bank_name + " " +
-                                                            data.account_name + " " + data.account_description + " " +
-                                                            data.account_number
-                                                }
-                                            </td>
-                                            <td>{data.details}</td>
-                                            <td>
-                                                {
+                                                        <td>
+                                                            <span className={`veta-status veta-status-${String(data.approval_status).toLowerCase()}`}>{data.approval_status}</span>
+                                                        </td>
+                                                        <td>{numberFormat(data.amount)}</td>
+                                                        <td>
+                                                            {
+                                                    data.payment_type_po_id == 0 ? "—" :
+                                                        data.payment_type_po_id == 1 ? data.bank_name : <>
+                                                            <strong>{data.payment_term || 'Payment'}</strong>
+                                                            <small>{[data.bank_name, data.account_name, data.account_description, data.account_number].filter(Boolean).join(' · ')}</small>
+                                                        </>
+                                                            }
+                                                        </td>
+                                                        <td>{data.details}</td>
+                                                        <td>
+                                                            {
                                                     data.is_received == 1
                                                         ? <CheckIcon style={{ color: 'green' }} />
                                                         : <CloseIcon style={{ color: 'red' }} />
-                                                }
-                                            </td>
-                                            <td>{data.expense_date}</td>
-                                            <td>
-                                                <Link to={"/expensesV2/editExpenseTransaction/" + data.id}>
-                                                    <Button variant={data.is_received ? "primary" : "success"}>
-                                                        {data.is_received ? "View" : "Update"}
-                                                    </Button>
-                                                </Link>
-                                            </td>
-                                        </tr>
+                                                            }
+                                                        </td>
+                                                        <td>{data.expense_date}</td>
+                                                        <td>
+                                                            <Link to={"/expensesV2/editExpenseTransaction/" + data.id}>
+                                                    <Button variant={data.approval_status === 'APPROVED' ? "primary" : "success"}>
+                                                        {data.approval_status === 'APPROVED'
+                                                            ? "View"
+                                                            : data.approval_status === 'PENDING' ? "Approve" : "Review"}
+                                                                </Button>
+                                                            </Link>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            }
+
+                                            {/* GROUP TOTAL */}
+                                            <tr className="veta-total-row">
+                                    <td colSpan="7" align="right">{type} total:</td>
+                                    <td>{numberFormat(groupedData[type].total)}</td>
+                                    <td colSpan="5"></td>
+                                            </tr>
+
+                                        </React.Fragment>
                                     ))
                                 }
-
-                                {/* GROUP TOTAL */}
-                                <tr style={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
-                                    <td colSpan="8" align="right">Total:</td>
-                                    <td>{numberFormat(groupedData[type].total)}</td>
-                                    <td colSpan="6"></td>
-                                </tr>
-
-                            </React.Fragment>
-                        ))
-                    }
-                </tbody>
-            </table>
-            <br></br>
-            <br></br>
-
-        </div>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
     )
 }
 

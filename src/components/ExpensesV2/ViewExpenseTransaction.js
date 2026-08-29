@@ -23,6 +23,9 @@ import Checkbox from '@mui/material/Checkbox';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import moment from "moment";
+import './ViewExpenseTransactionApproval.css';
+import './ViewExpenseTransaction.css';
+import './CompactExpenseTransactionTable.css';
 
 
 const ViewExpenseTransaction = () => {
@@ -53,7 +56,7 @@ const ViewExpenseTransaction = () => {
         expense_type_id: 0,
         expense_category_id: 0,
         expense_id: 0,
-        approval_status: '',
+        approval_status: 'ALL',
         is_received: null,
         dateTo: moment().format("YYYY-MM-DD"),
         dateFrom: moment().format("YYYY-MM-DD")
@@ -110,7 +113,9 @@ const ViewExpenseTransaction = () => {
             expense_id: 0,
             expense_category_id: 0
         });
-        fetchCategoryExpenseList(e.target.value);
+        setExpenseCategoryList([]);
+        setExpenseList([]);
+        if (Number(e.target.value) !== 0) fetchCategoryExpenseList(e.target.value);
     }
 
     const onChangePaymentTypedisabled = (e) => {
@@ -134,8 +139,8 @@ const ViewExpenseTransaction = () => {
             expense_category_id: e.target.value,
             expense_id: 0
         });
-        console.log("error", expenseTransaction)
-        fetchExpenseList(e.target.value)
+        setExpenseList([]);
+        if (Number(e.target.value) !== 0) fetchExpenseList(e.target.value)
     }
 
 
@@ -261,21 +266,30 @@ const ViewExpenseTransaction = () => {
         return acc;
     }, {});
 
+    const totalAmount = expenseTransactionList.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const receivedCount = expenseTransactionList.filter((item) => Number(item.is_received) === 1).length;
+    const pendingCount = expenseTransactionList.filter((item) => item.approval_status === 'PENDING').length;
+
     return (
-        <div>
+        <main className="veta-page vet-page">
+            <div className="veta-shell">
+            <header className="veta-hero"><span>Expense management</span><h1>Expense Transactions</h1><p>Search and review transaction status, recipients, and payment information.</p></header>
             <Stack sx={{ width: '100%' }} spacing={2}>
                 {validator.isShow &&
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
                 }
             </Stack>
             <br></br>
-            <Form>
-                <div style={{ float: 'right', marginRight: 500 }}>
-                    <Form.Group controlId="formBasicEmail" disabled>
-                        <Form.Label>Total Expenses: </Form.Label>
-                        <Form.Control type="text" value={totalSum(expenseTransactionList)} />
-                    </Form.Group>
-                </div>
+            <section className="veta-summary">
+                <article><span>Total amount</span><strong>{numberFormat(totalAmount)}</strong></article>
+                <article><span>Transactions</span><strong>{expenseTransactionList.length}</strong></article>
+                <article><span>Pending approval</span><strong>{pendingCount}</strong></article>
+                <article><span>Received</span><strong>{receivedCount}</strong></article>
+            </section>
+
+            <Form className="veta-filter-card">
+                <header><strong>Filter transactions</strong><span>Narrow results by classification, status, received state, and date.</span></header>
+                <div className="veta-filter-grid vet-filter-grid">
 
 
                 {formErrors.expense_type_id && <p style={{ color: "red" }}>{formErrors.expense_type_id}</p>}
@@ -290,7 +304,7 @@ const ViewExpenseTransaction = () => {
                             name="expense_type_id"
                             onChange={onChangeType}
                         >
-                            <MenuItem value={0} disabled></MenuItem>
+                            <MenuItem value={0}>All expense types</MenuItem>
                             {
                                 expenseTypeList.map((data, index) => (
                                     <MenuItem value={data.id}>{data.expense_type}</MenuItem>
@@ -313,7 +327,7 @@ const ViewExpenseTransaction = () => {
                             name="expense_category_id"
                             onChange={onChangeExpenseCategory}
                         >
-                            <MenuItem value={0} disabled></MenuItem>
+                            <MenuItem value={0}>All categories</MenuItem>
                             {
                                 expenseCategoryList.map((data, index) => (
                                     <MenuItem value={data.id}>{data.expense_category_name}</MenuItem>
@@ -336,7 +350,7 @@ const ViewExpenseTransaction = () => {
                             value={expenseTransaction.expense_id}
                             onChange={onChangeExpense}
                         >
-                            <MenuItem value={0} disabled></MenuItem>
+                            <MenuItem value={0}>All expenses</MenuItem>
                             {
                                 expenseList.map((data, index) => (
                                     <MenuItem value={data.id}>{data.is_hidden == 1 ? "*****" : data.expense_name}</MenuItem>
@@ -346,12 +360,13 @@ const ViewExpenseTransaction = () => {
                     </FormControl>
                 </Box>
 
+                <FormControl fullWidth>
+                <InputLabel id="transaction-status-filter-label">Approval Status</InputLabel>
                 <Select
-                    labelId="demo-simple-select-label"
-
-                    id="demo-simple-select"
+                    labelId="transaction-status-filter-label"
+                    id="transaction-status-filter"
                     name="approval_status"
-                    label="Stock Warning Type"
+                    label="Approval Status"
                     value={expenseTransaction.approval_status}
                     sx={{
                         color: statusColor[expenseTransaction.approval_status],
@@ -368,11 +383,10 @@ const ViewExpenseTransaction = () => {
                     <MenuItem value="APPROVED" sx={{ color: "green" }}>APPROVED</MenuItem>
                     <MenuItem value="REJECTED" sx={{ color: "red" }}>REJECTED</MenuItem>
                 </Select>
-                <br></br>
-                <br></br>
+                </FormControl>
 
-                <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Amount Received ? </Form.Label>
+                <Form.Group className="vet-received-filter" controlId="receivedFilter">
+                    <Form.Label>Received only</Form.Label>
 
                     <Checkbox
                         onChange={onChangePaymentTypedisabled}
@@ -381,62 +395,53 @@ const ViewExpenseTransaction = () => {
                 </Form.Group>
 
 
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date From:</Form.Label>
-                    <Form.Control type="date" name="dateFrom" value={expenseTransaction.dateFrom} onChange={onChangeInput} />
-                </Form.Group>
+                <TextField type="date" name="dateFrom" label="Date From" value={expenseTransaction.dateFrom} onChange={onChangeInput} InputLabelProps={{ shrink: true }} fullWidth />
 
-                <Form.Group className="w-25 mb-3" controlId="formBasicEmail">
-                    <Form.Label>Date To:</Form.Label>
-                    <Form.Control type="date" name="dateTo" value={expenseTransaction.dateTo} onChange={onChangeInput} />
-                </Form.Group>
+                <TextField type="date" name="dateTo" label="Date To" value={expenseTransaction.dateTo} onChange={onChangeInput} InputLabelProps={{ shrink: true }} fullWidth />
 
 
 
                 <Button variant="primary"
                     disabled={isAddDisabled}
+                    style={{ height: 56 }}
                     onClick={saveExpenseType}>
                     Search
                 </Button>
-                <br></br>
-                <br></br>
+                </div>
                 {submitLoadingAdd &&
                     <LinearProgress color="warning" />
                 }
             </Form>
-            <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Expense Transaction </legend>
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
+            <section className="veta-table-card">
+            <header><div><h2>Transaction history</h2><p>{expenseTransactionList.length} results across {Object.keys(groupedData).length} expense types</p></div></header>
+            <div className="veta-table-scroll">
+            <table className="table table-bordered">
+                <thead className="table-dark">
+                    <tr className="table-secondary">
                         <th>ID</th>
                         <th>Code</th>
-                        <th>Type</th>
                         <th>Category</th>
                         <th>Expense</th>
                         <th>Requestor</th>
                         <th>Approver</th>
                         <th>Approval Status</th>
                         <th>Amount</th>
-                        <th>Bank</th>
+                        <th>Payment</th>
                         <th>Details</th>
-                        <th>Amount Received</th>
+                        <th>₱ Received</th>
                         <th>Date</th>
-                        <th></th>
-                        <th></th>
+                        <th>Action</th>
                     </tr>
                 </thead>
-                <br></br>
                 <tbody>
                     {
                         Object.keys(groupedData).map((type, index) => (
                             <React.Fragment key={index}>
 
                                 {/* GROUP HEADER */}
-                                <tr style={{ backgroundColor: '#d3d3d3', fontWeight: 'bold' }}>
-                                    <td colSpan="14" style={{ textAlign: 'center' }}>
-                                        {type.toUpperCase()}
+                                <tr className="veta-group-row">
+                                    <td colSpan="13" style={{ textAlign: 'center' }}>
+                                        <strong>{type.toUpperCase()}</strong><span>{groupedData[type].items.length} {groupedData[type].items.length === 1 ? 'transaction' : 'transactions'}</span><b>{numberFormat(groupedData[type].total)}</b>
                                     </td>
                                 </tr>
 
@@ -444,7 +449,9 @@ const ViewExpenseTransaction = () => {
                                 {
                                     groupedData[type].items.map((data) => (
                                         <tr key={data.id}>
-                                            <td>{data.id}</td>
+                                            <td>
+                                                {data.id}
+                                            </td>
                                             <td>
                                                 <span style={{ color: 'black' }}>
                                                     {data.chart_of_account_code}
@@ -459,22 +466,21 @@ const ViewExpenseTransaction = () => {
                                                     {data.expense_code}
                                                 </span>
                                             </td>
-                                            <td>{data.expense_type}</td>
                                             <td>{data.expense_category_name}</td>
                                             <td>{data.is_hidden == 1 ? "*****" : data.expense_name}</td>
                                             <td>{data.name}</td>
                                             <td>{data.approver_name}</td>
-                                            <td style={{ color: statusColorTd[data.approval_status] }}>
-                                                {data.approval_status}
+                                            <td>
+                                                <span className={`veta-status veta-status-${String(data.approval_status).toLowerCase()}`}>{data.approval_status}</span>
                                             </td>
                                             <td>{numberFormat(data.amount)}</td>
                                             <td>
                                                 {
-                                                    data.payment_type_po_id == 0 ? " " :
-                                                        data.payment_type_po_id == 1 ? data.bank_name :
-                                                            data.payment_term + " - " + data.bank_name + " " +
-                                                            data.account_name + " " + data.account_description + " " +
-                                                            data.account_number
+                                                    data.payment_type_po_id == 0 ? "—" :
+                                                        data.payment_type_po_id == 1 ? data.bank_name : <>
+                                                            <strong>{data.payment_term || 'Payment'}</strong>
+                                                            <small>{[data.bank_name, data.account_name, data.account_description, data.account_number].filter(Boolean).join(' · ')}</small>
+                                                        </>
                                                 }
                                             </td>
                                             <td>{data.details}</td>
@@ -488,8 +494,8 @@ const ViewExpenseTransaction = () => {
                                             <td>{data.expense_date}</td>
                                             <td>
                                                 <Link to={"/expensesV2/editExpenseTransaction/" + data.id}>
-                                                    <Button variant={data.is_received ? "primary" : "success"}>
-                                                        {data.is_received ? "View" : "Update"}
+                                                    <Button variant={data.approval_status === 'APPROVED' ? "primary" : "success"}>
+                                                        {data.approval_status === 'APPROVED' ? "View" : "Update"}
                                                     </Button>
                                                 </Link>
                                             </td>
@@ -498,10 +504,10 @@ const ViewExpenseTransaction = () => {
                                 }
 
                                 {/* GROUP TOTAL */}
-                                <tr style={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
-                                    <td colSpan="8" align="right">Total:</td>
+                                <tr className="veta-total-row">
+                                    <td colSpan="7" align="right">{type} total:</td>
                                     <td>{numberFormat(groupedData[type].total)}</td>
-                                    <td colSpan="6"></td>
+                                    <td colSpan="5"></td>
                                 </tr>
 
                             </React.Fragment>
@@ -509,10 +515,10 @@ const ViewExpenseTransaction = () => {
                     }
                 </tbody>
             </table>
-            <br></br>
-            <br></br>
-
-        </div>
+            </div>
+            </section>
+            </div>
+        </main>
     )
 }
 

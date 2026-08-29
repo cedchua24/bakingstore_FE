@@ -1,215 +1,66 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Form } from 'react-bootstrap';
-import ExpensesCategoryV2Service from "./ExpensesCategoryV2Service";
-import ExpensesTypeV2Service from "./ExpensesTypeV2Service";
-import LinearProgress from '@mui/material/LinearProgress';
-import { Link } from "react-router-dom";
-import Stack from '@mui/material/Stack';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
-import Box from '@mui/material/Box';
+import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
+import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import ExpensesCategoryV2Service from './ExpensesCategoryV2Service';
+import ExpensesTypeV2Service from './ExpensesTypeV2Service';
+import './ExpenseType.css';
 
 const ViewExpenseCategory = () => {
+    const [types, setTypes] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [typeId, setTypeId] = useState('');
+    const [query, setQuery] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchExpenseCategory(0);
-        fetchExpenseType();
+        Promise.all([ExpensesTypeV2Service.getAll(), ExpensesCategoryV2Service.fetchExpenseCategoryById(0)])
+            .then(([typeResponse, categoryResponse]) => {
+                setTypes(Array.isArray(typeResponse.data) ? typeResponse.data : []);
+                setCategories(Array.isArray(categoryResponse.data) ? categoryResponse.data : []);
+            })
+            .catch(() => setError('Expense categories could not be loaded.'))
+            .finally(() => setLoading(false));
     }, []);
 
-    const [validator, setValidator] = useState({
-        severity: '',
-        message: '',
-        isShow: false
-    });
+    const filterByType = (event) => {
+        const value = event.target.value;
+        setTypeId(value);
+        setLoading(true);
+        setError('');
+        ExpensesCategoryV2Service.fetchExpenseCategoryById(value || 0)
+            .then((response) => setCategories(Array.isArray(response.data) ? response.data : []))
+            .catch(() => setError('Expense categories could not be loaded.'))
+            .finally(() => setLoading(false));
+    };
 
-    const [expenseCategoryList, setExpenseCategoryList] = useState([]);
-    const [expenseTypeList, setExpenseTypeList] = useState([]);
+    const visibleCategories = useMemo(() => {
+        const term = query.trim().toLowerCase();
+        return term ? categories.filter((item) => [item.id, item.expense_type, item.expense_category_name, item.chart_of_account_code, item.expense_type_code, item.expense_category_code].some((value) => String(value || '').toLowerCase().includes(term))) : categories;
+    }, [categories, query]);
 
+    return <main className="et-page"><div className="et-shell">
+        <header className="et-hero et-hero-actions"><div className="et-hero-main"><div className="et-hero-icon"><CategoryOutlinedIcon /></div><div><span>Expense setup</span><h1>Expense Categories</h1><p>Browse categories across every expense type or narrow the directory by type.</p></div></div></header>
+        {error && <Alert severity="error" className="et-alert">{error}</Alert>}
+        <section className="et-stat"><CategoryOutlinedIcon /><div><span>Visible categories</span><strong>{visibleCategories.length}</strong></div></section>
+        <section className="et-table-card"><header><div><h2>Category directory</h2><p>{typeId ? 'Filtered by expense type' : 'Showing all categories'}</p></div><div className="et-directory-filters"><FormControl size="small"><InputLabel>Expense type</InputLabel><Select value={typeId} label="Expense type" onChange={filterByType}><MenuItem value="">All expense types</MenuItem>{types.map((item) => <MenuItem key={item.id} value={item.id}>{item.expense_type}</MenuItem>)}</Select></FormControl><TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search categories..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></div></header>
+            <div className="et-table-scroll"><table className="et-table"><thead><tr><th>ID</th><th>Full code</th><th>Expense type</th><th>Category</th><th>Action</th></tr></thead><tbody>
+                {visibleCategories.map((item) => <tr key={item.id}><td>#{item.id}</td><td><span className="et-code"><b>{item.chart_of_account_code}</b><i>{item.expense_type_code}</i><em>{item.expense_category_code}</em></span></td><td>{item.expense_type}</td><td><strong>{item.expense_category_name}</strong></td><td><Button component={Link} to={`/expensesV2/viewExpenseTypeCategoryList/${item.expense_type_id}/${item.id}`} size="small" variant="outlined" startIcon={<VisibilityOutlinedIcon />}>View</Button></td></tr>)}
+                {!loading && !visibleCategories.length && <tr><td colSpan="5"><div className="et-empty"><CategoryOutlinedIcon /><strong>No categories found</strong><span>Change the selected type or search term.</span></div></td></tr>}
+            </tbody></table></div>{loading && <LinearProgress className="et-progress" />}
+        </section>
+    </div></main>;
+};
 
-    const [expenseType, setExpenseType] = useState({
-        id: 0
-    });
-
-    const [formErrors, setFormErrors] = useState({});
-    const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
-    const [isAddDisabled, setIsAddDisabled] = useState(false);
-
-    const onChangeExpenseType = (e) => {
-        setExpenseType({ ...expenseType, [e.target.name]: e.target.value });
-    }
-
-    const fetchExpenseCategory = ($id) => {
-        ExpensesCategoryV2Service.fetchExpenseCategoryById($id)
-            .then(response => {
-                setExpenseCategoryList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-    const fetchExpenseType = () => {
-        ExpensesTypeV2Service.getAll()
-            .then(response => {
-                setExpenseTypeList(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
-
-
-
-
-    const validate = (values) => {
-        const errors = {};
-        if (expenseType.expense_type == 0) {
-            errors.expense_type = "Expense Type is Required!";
-        }
-        return errors;
-    }
-
-
-    const saveExpenseType = () => {
-
-        console.log('expenseType', expenseType);
-
-        console.log("count: ", Object.keys(validate(expenseType)).length);
-        console.log("validate: ", validate(expenseType));
-        setFormErrors(validate(expenseType));
-        if (Object.keys(validate(expenseType)).length > 0) {
-            console.log("Has Validation: ");
-
-        } else {
-            setSubmitLoadingAdd(true);
-            setIsAddDisabled(true);
-            console.log(expenseType);
-            ExpensesCategoryV2Service.sanctum().then(response => {
-                ExpensesCategoryV2Service.fetchExpenseCategoryById(expenseType.id)
-                    .then(response => {
-                        setExpenseCategoryList(response.data);
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        setValidator({
-                            severity: 'success',
-                            message: response.data.message,
-                            isShow: true,
-                        });
-                    })
-                    .catch(e => {
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        console.log(e);
-                        setValidator({
-                            severity: 'error',
-                            message: "expenseType Already Exists",
-                            isShow: true,
-                        });
-                    });
-            });
-        }
-    }
-
-    const formatStatementDate = (date) => {
-        var d = new Date(date);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
-    }
-
-
-    return (
-        <div>
-            <Stack sx={{ width: '100%' }} spacing={2}>
-                {validator.isShow &&
-                    <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
-                }
-            </Stack>
-            <br></br>
-            <Form>
-                {formErrors.expense_type_id && <p style={{ color: "red" }}>{formErrors.expense_type_id}</p>}
-                <Box sx={{ minWidth: 120 }}>
-                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                        <InputLabel id="demo-simple-select-label">Expense Type </InputLabel>
-                        <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            label="Expense Type"
-                            name="id"
-                            onChange={onChangeExpenseType}
-                        >
-                            <MenuItem value={0} disabled></MenuItem>
-                            {
-                                expenseTypeList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.expense_type}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
-                </Box>
-                <Button variant="primary"
-                    disabled={isAddDisabled}
-                    onClick={saveExpenseType}>
-                    Submit
-                </Button>
-                <br></br>
-                <br></br>
-                {submitLoadingAdd &&
-                    <LinearProgress color="warning" />
-                }
-            </Form>
-            <br></br>
-
-            <legend align="center" style={{ fontWeight: 'bold' }} > Expenses Category</legend>
-            {/* <p align="center" >{expenseCategoryList.name}</p> */}
-            <table class="table table-bordered">
-                <thead class="table-dark">
-                    <tr class="table-secondary">
-                        <th>ID</th>
-                        <th>Code</th>
-                        <th>Type</th>
-                        <th>Category Name</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-
-                    {
-                        expenseCategoryList.map((expenseType, index) => (
-                            <tr key={expenseType.id} >
-                                <td>{expenseType.id}</td>
-                                <td>
-                                    <span style={{ color: 'black' }}>
-                                        {expenseType.chart_of_account_code}
-                                    </span>
-                                    <span style={{ color: 'red' }}>
-                                        {expenseType.expense_type_code}
-                                    </span>
-                                    <span style={{ color: 'green' }}>
-                                        {expenseType.expense_category_code}
-                                    </span>
-                                </td>
-                                <td>{expenseType.expense_type}</td>
-                                <td>{expenseType.expense_category_name}</td>
-                                <td>
-
-                                    <Link variant="primary" to={"/expensesV2/viewExpenseTypeCategoryList/" + expenseType.expense_type_id + "/" + expenseType.id}   >
-                                        <Button variant="primary" >
-                                            View
-                                        </Button>
-                                    </Link>
-                                </td>
-                            </tr>
-                        )
-                        )
-                    }
-                </tbody>
-            </table>
-
-        </div>
-    )
-}
-
-export default ViewExpenseCategory
+export default ViewExpenseCategory;

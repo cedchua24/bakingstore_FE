@@ -561,11 +561,6 @@ export default function PersistentDrawerLeft() {
 
     const [paymentType, setPaymentType] = useState([
         {
-            "name": "Add Payment Type Customer",
-            "url": "/paymentType",
-            "icon": <AddIcon />
-        },
-        {
             "name": "Add Payment Type Supplier",
             "url": "/poPaymentType",
             "icon": <AddIcon />
@@ -917,6 +912,16 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Expenses Transaction",
             "url": "/reports/reportExpenseTransaction",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Monthly Expense Comparison",
+            "url": "/reports/monthlyExpenseComparison",
+            "icon": <ListIcon />
+        },
+        {
+            "name": "Expense Movement Watch",
+            "url": "/reports/expenseMovementWatch",
             "icon": <ListIcon />
         },
     ]);
@@ -1745,34 +1750,6 @@ export default function PersistentDrawerLeft() {
                                 <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
                                     <ListItemButton sx={{ pl: 6 }}>
                                         <ListItemIcon>{nav.icon}</ListItemIcon>
-                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
-                        </List>
-                    </Collapse>
-                </List>
-
-                <List
-                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
-                    component="nav"
-                    aria-labelledby="nested-list-subheader"
-                >
-                    <ListItemButton onClick={handleClick66}>
-                        <ListItemIcon>
-                            <WarehouseIcon color="primary" />
-                        </ListItemIcon>
-                        <ListItemText primary="Warehouse" />
-                        {open66 ? <ExpandLess /> : <ExpandMore />}
-                    </ListItemButton>
-                    <Collapse in={open66} timeout="auto" unmountOnExit>
-                        <List component="div" disablePadding>
-                            {warehouseList.map((nav, index) => (
-                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
-                                    <ListItemButton sx={{ pl: 6 }}>
-                                        <ListItemIcon>
-                                            {nav.icon}
-                                        </ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
                                 </ListItem>

@@ -337,6 +337,8 @@ import ViewSpoilageReport from "./components/Reports/ViewSpoilageReport";
 import ReportExpenses from "./components/Reports/ReportExpenses";
 import ReportExpensesView from "./components/Reports/ReportExpensesView";
 import ReportExpenseTransaction from "./components/Reports/ReportExpenseTransaction";
+import MonthlyExpenseComparison from "./components/Reports/MonthlyExpenseComparison";
+import ExpenseMovementWatch from "./components/Reports/ExpenseMovementWatch";
 
 
 
@@ -752,6 +754,8 @@ const App = () => {
 
           <Route exact path="/reports/reportCategorySales/" element={<ReportCategorySales />} />
           <Route exact path="/reports/reportExpenseTransaction/" element={<ReportExpenseTransaction />} />
+          <Route exact path="/reports/monthlyExpenseComparison/" element={<MonthlyExpenseComparison />} />
+          <Route exact path="/reports/expenseMovementWatch/" element={<ExpenseMovementWatch />} />
 
 
           <Route exact path="/reports/productValueReport/" element={<ProductValueReport />} />

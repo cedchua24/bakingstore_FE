@@ -23,6 +23,12 @@ class ExpenseTransactionService {
     searchExpenseTransactionList(data) {
         return axios.post("/api/expenseTransaction/searchExpenseTransactionList", data);
     }
+    searchExpenseTransactionListV2(data) {
+        return axios.post("/api/expenseTransaction/searchExpenseTransactionListV2", data);
+    }
+    getMonthlyExpenseComparisonV2(data) {
+        return axios.post("/api/expenseTransaction/getMonthlyExpenseComparisonV2", data);
+    }
     searchAllExpenseTransactionList(data) {
         return axios.post("/api/expenseTransaction/searchAllExpenseTransactionList", data);
     }
