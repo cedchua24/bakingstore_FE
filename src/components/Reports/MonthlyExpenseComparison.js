@@ -17,6 +17,7 @@ import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import FiberNewRoundedIcon from '@mui/icons-material/FiberNewRounded';
+import RemoveCircleOutlineRoundedIcon from '@mui/icons-material/RemoveCircleOutlineRounded';
 import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
 import ExpensesTypeService from '../ExpensesV2/ExpensesTypeV2Service';
@@ -42,6 +43,7 @@ const categoryMeta = {
     INCREASED: { label: 'Increased', icon: <TrendingUpRoundedIcon />, className: 'increased' },
     DECREASED: { label: 'Decreased', icon: <TrendingDownRoundedIcon />, className: 'decreased' },
     NEW: { label: 'New expense', icon: <FiberNewRoundedIcon />, className: 'new' },
+    MISSING: { label: 'Missing expense', icon: <RemoveCircleOutlineRoundedIcon />, className: 'missing' },
 };
 
 const expenseTypePalettes = [
@@ -87,6 +89,7 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
                     const defaultRows = [
                         ...(Array.isArray(loadedReport.increased_expenses) ? loadedReport.increased_expenses : []),
                         ...(Array.isArray(loadedReport.new_expenses) ? loadedReport.new_expenses : []),
+                        ...(filters.month < currentMonth() && Array.isArray(loadedReport.missing_expenses) ? loadedReport.missing_expenses : []),
                     ];
                     const defaultTypeIds = Array.from(new Set(defaultRows.map((item) => {
                         const directId = Number(item.expense_type_id);
@@ -104,7 +107,7 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
     }, []);
 
     useEffect(() => {
-        if (movementOnly && filters.month >= currentMonth() && activeGroup === 'DECREASED') setActiveGroup('ALL');
+        if (movementOnly && filters.month >= currentMonth() && (activeGroup === 'DECREASED' || activeGroup === 'MISSING')) setActiveGroup('ALL');
     }, [activeGroup, filters.month, movementOnly]);
 
     const multiValue = (event) => typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value;
@@ -121,14 +124,18 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
         INCREASED: Array.isArray(report.increased_expenses) ? report.increased_expenses : [],
         DECREASED: Array.isArray(report.decreased_expenses) ? report.decreased_expenses : [],
         NEW: Array.isArray(report.new_expenses) ? report.new_expenses : [],
+        MISSING: Array.isArray(report.missing_expenses) ? report.missing_expenses : [],
     }), [report]);
     const selectedMonthIsComplete = filters.month < currentMonth();
     const availableGroups = useMemo(() => movementOnly ? {
         INCREASED: groups.INCREASED,
         ...(selectedMonthIsComplete ? { DECREASED: groups.DECREASED } : {}),
         NEW: groups.NEW,
+        ...(selectedMonthIsComplete ? { MISSING: groups.MISSING } : {}),
     } : groups, [groups, movementOnly, selectedMonthIsComplete]);
-    const displayedCategoryMeta = useMemo(() => movementOnly ? Object.fromEntries(Object.entries(categoryMeta).filter(([key]) => key === 'NEW' || key === 'INCREASED' || key === 'DECREASED')) : categoryMeta, [movementOnly]);
+    const displayedCategoryMeta = useMemo(() => movementOnly
+        ? Object.fromEntries(Object.entries(categoryMeta).filter(([key]) => key === 'NEW' || key === 'INCREASED' || key === 'DECREASED' || key === 'MISSING'))
+        : Object.fromEntries(Object.entries(categoryMeta).filter(([key]) => key !== 'MISSING')), [movementOnly]);
     const allRows = useMemo(() => movementOnly
         ? Object.entries(availableGroups).flatMap(([classification, rows]) => rows.map((row) => ({ ...row, classification: row.classification || classification })))
         : Array.isArray(report.data) && report.data.length ? report.data : Object.entries(groups).flatMap(([classification, rows]) => rows.map((row) => ({ ...row, classification: row.classification || classification }))), [availableGroups, report.data, groups, movementOnly]);
@@ -175,14 +182,14 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
         <section className="mec-filters"><header><div><strong>Comparison filters</strong><span>Select the current comparison month. Previous periods are calculated automatically.</span></div></header><div className="mec-filter-grid">
             <TextField size="small" type="month" label="Comparison month" value={filters.month} onChange={(event) => setFilters((current) => ({ ...current, month: event.target.value }))} InputLabelProps={{ shrink: true }} />
             <FormControl size="small"><InputLabel>Expense type</InputLabel><Select multiple value={filters.expense_type_ids} label="Expense type" onChange={changeType} renderValue={(selected) => label(selected, types, 'expense_type', 'All expense types')}><MenuItem value="__all__"><Checkbox checked={!filters.expense_type_ids.length} /><ListItemText primary="All expense types" /></MenuItem>{types.map((item) => <MenuItem key={item.id} value={item.id}><Checkbox checked={filters.expense_type_ids.includes(Number(item.id))} /><ListItemText primary={item.expense_type} /></MenuItem>)}</Select></FormControl>
-            {movementOnly && <FormControl size="small"><InputLabel>Movement</InputLabel><Select value={activeGroup} label="Movement" onChange={(event) => setActiveGroup(event.target.value)}><MenuItem value="ALL">New and increased</MenuItem><MenuItem value="NEW">New expense</MenuItem><MenuItem value="INCREASED">Increased</MenuItem><MenuItem value="DECREASED" disabled={!selectedMonthIsComplete}>Decreased {!selectedMonthIsComplete ? '(month incomplete)' : ''}</MenuItem></Select></FormControl>}
+            {movementOnly && <FormControl size="small"><InputLabel>Movement</InputLabel><Select value={activeGroup} label="Movement" onChange={(event) => setActiveGroup(event.target.value)}><MenuItem value="ALL">All available movements</MenuItem><MenuItem value="NEW">New expense</MenuItem><MenuItem value="INCREASED">Increased</MenuItem><MenuItem value="DECREASED" disabled={!selectedMonthIsComplete}>Decreased {!selectedMonthIsComplete ? '(month incomplete)' : ''}</MenuItem><MenuItem value="MISSING" disabled={!selectedMonthIsComplete}>Missing expense {!selectedMonthIsComplete ? '(month incomplete)' : ''}</MenuItem></Select></FormControl>}
             <Button variant="contained" onClick={() => loadReport()} disabled={loading}>Run comparison</Button>
         </div>{loading && <LinearProgress />}</section>
 
-        {movementOnly && !selectedMonthIsComplete && <Alert severity="info" className="mec-movement-note"><strong>Decreased expenses are not shown yet.</strong> The selected month is still in progress. Decreases will appear after the month is complete so partial-month spending is not treated as a decrease.</Alert>}
+        {movementOnly && !selectedMonthIsComplete && <Alert severity="info" className="mec-movement-note"><strong>Decreased and missing expenses are not shown yet.</strong> The selected month is still in progress. Both will appear after the month is complete so partial-month activity is not treated as a decrease or a missing expense.</Alert>}
 
         <section className="mec-totals"><article><span>{currentLabel}</span><strong>{money(movementOnly ? movementTotals.current : pick(summary, ['current_month_total']))}</strong><small>{movementOnly && activeGroup !== 'ALL' ? categoryMeta[activeGroup]?.label : 'Current month'}</small></article><article><span>{previousLabel}</span><strong>{money(movementOnly ? movementTotals.previous : pick(summary, ['previous_month_total']))}</strong><small>{money(movementOnly ? movementTotals.current - movementTotals.previous : pick(summary, ['difference_from_previous_month']))} difference</small></article><article><span>Previous 3 months</span><strong>{money(movementOnly ? movementTotals.average : pick(summary, ['previous_three_month_average_total', 'three_month_average_total']))}</strong><small>{money(movementOnly ? movementTotals.current - movementTotals.average : pick(summary, ['difference_from_three_month_average']))} difference</small></article></section>
-        <section className={`mec-signals ${movementOnly ? 'movement-only' : ''}`}>{Object.entries(displayedCategoryMeta).map(([key, meta]) => { const disabled = movementOnly && key === 'DECREASED' && !selectedMonthIsComplete; return <button key={key} type="button" disabled={disabled} className={`${meta.className} ${activeGroup === key ? 'active' : ''}`} onClick={() => setActiveGroup(activeGroup === key ? 'ALL' : key)}><i>{meta.icon}</i><span>{meta.label}</span><strong>{disabled ? '—' : number(pick(summary, [`${key.toLowerCase()}_expense_count`], groups[key].length))}</strong></button>; })}</section>
+        <section className={`mec-signals ${movementOnly ? 'movement-only' : ''}`}>{Object.entries(displayedCategoryMeta).map(([key, meta]) => { const disabled = movementOnly && (key === 'DECREASED' || key === 'MISSING') && !selectedMonthIsComplete; return <button key={key} type="button" disabled={disabled} className={`${meta.className} ${activeGroup === key ? 'active' : ''}`} onClick={() => setActiveGroup(activeGroup === key ? 'ALL' : key)}><i>{meta.icon}</i><span>{meta.label}</span><strong>{disabled ? '—' : number(pick(summary, [`${key.toLowerCase()}_expense_count`], groups[key].length))}</strong></button>; })}</section>
 
         <section className="mec-table-card"><header><div><span>{activeGroup === 'ALL' ? (movementOnly ? 'New and changing expenses' : 'All classifications') : categoryMeta[activeGroup].label}</span><h2>{movementOnly ? 'Expense movement details' : 'Expense comparison details'}</h2><p>Expand an expense type, then a category, to review its expenses.</p></div><div className="mec-table-actions"><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showHiddenExpenses} disabled={!isAdmin} onChange={(event) => setShowHiddenExpenses(event.target.checked)} />} label="Confidential" /><TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expenses..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></div></header><div className="mec-table-scroll"><table><thead><tr><th>Expense hierarchy</th><th>Classification</th><th>{currentLabel}</th><th>{previousLabel}</th><th>Previous 3-month average</th><th>vs {previousLabel}</th><th>vs 3-month average</th></tr></thead><tbody>
             {Object.entries(groupedRows).map(([typeName, type], typeIndex) => {

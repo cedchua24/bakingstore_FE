@@ -47,6 +47,7 @@
 .eet-section-heading small { display: block; }
 .eet-section-heading strong { color: #2d333a; }
 .eet-section-heading small { margin-top: 2px; color: #858c95; font-size: .68rem; }
+.eet-section-heading > div{flex:1;min-width:0}.eet-confidential{flex:0 0 auto;margin:0!important}.eet-confidential .MuiFormControlLabel-label{color:#737b85;font-size:.65rem;white-space:nowrap}.eet-confidential .MuiCheckbox-root{padding:5px;color:#a18aae}.eet-confidential .MuiCheckbox-root.Mui-checked{color:#704399}.eet-confidential .Mui-disabled+.MuiFormControlLabel-label{color:#a1a7ae}
 
 .eet-form-column > .MuiBox-root,
 .eet-form-column > .MuiFormControl-root,

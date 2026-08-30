@@ -249,13 +249,6 @@ const ExpenseTransaction = () => {
         ) {
             errors.payment_type_po_id = "Choose Bank is required when a Payment Term is selected!";
         }
-        if (
-            Number(expenseTransaction.payment_term_id) !== 0 &&
-            Number(expenseTransaction.is_received) !== 1
-        ) {
-            errors.is_received = "Amount Received must be checked when a Payment Term is selected!";
-        }
-
         return errors;
     }
 
@@ -584,11 +577,8 @@ const ExpenseTransaction = () => {
                     </>}
 
                     <Form.Group className="mb-3" controlId="amountReceived">
-                        {formErrors.is_received && <p style={{ color: 'red', marginBottom: 4 }}>{formErrors.is_received}</p>}
                         <Form.Label>
-                            Amount Received? {Number(expenseTransaction.payment_term_id) !== 0
-                                ? <span style={{ color: 'red' }}>*</span>
-                                : <small className="text-muted">(Optional)</small>}
+                            Amount Received? <small className="text-muted">(Optional)</small>
                         </Form.Label>
                         <Checkbox
                             checked={Number(expenseTransaction.is_received) === 1}

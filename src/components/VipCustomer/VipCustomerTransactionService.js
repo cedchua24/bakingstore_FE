@@ -37,8 +37,8 @@ class VipCustomerTransactionService {
         });
     }
 
-    fetchVipCustomerMonthlyPaid(id, month, nextMonths) {
-        const params = {};
+    fetchVipCustomerMonthlyPaid(id, month, nextMonths, filters = {}) {
+        const params = { ...filters };
         if (month) {
             params.month = month;
         } else if (nextMonths !== undefined && nextMonths !== null) {

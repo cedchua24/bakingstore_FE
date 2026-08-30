@@ -1,11 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import LinearProgress from "@mui/material/LinearProgress";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import MuiButton from "@mui/material/Button";
+import FormControl from "@mui/material/FormControl";
+import InputAdornment from "@mui/material/InputAdornment";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
 import BarChartIcon from "@mui/icons-material/BarChart";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
+import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
 import { useNavigate, useParams } from "react-router-dom";
 import VipProductTransactionService from "./VipProductTransactionService";
+import "../Reports/ProductReport.css";
+import "../VipCustomer/VIPTransactionHistory.css";
+import "./VipProductSoldHistory.css";
 
 const money = value => Number(value || 0).toLocaleString("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2,
@@ -50,11 +62,7 @@ const thisMonth = () => {
     const date = new Date();
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 };
-const moveMonth = (month, offset) => {
-    const [year, monthNumber] = month.split("-").map(Number);
-    const date = new Date(year, monthNumber - 1 + offset, 1);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-};
+const impactGroupLabels = { all: "All results", winning: "Winning products", declining: "Declining products", missing: "Missing products", highest_sales: "Highest sales products" };
 const projectedOutput = (month, boxes, pieces) => {
     if (!/^\d{4}-\d{2}$/.test(month || "")) return null;
     const now = new Date();
@@ -80,22 +88,6 @@ const projectionAssessment = (projection, targetBoxes, targetPieces) => {
     if (attainment >= 80) return { label: "At risk", color: "#92400e", background: "#fef3c7", attainment };
     return { label: "Unlikely", color: "#b42318", background: "#fee2e2", attainment };
 };
-const quantityDifference = product => {
-    const comparison = product.previous_months?.[0];
-    const currentBoxes = Number(product.current_month?.quantity_sold || 0);
-    const comparisonBoxes = Number(comparison?.quantity_sold || 0);
-    return currentBoxes !== comparisonBoxes
-        ? currentBoxes - comparisonBoxes
-        : Number(product.current_month?.pieces_sold || 0) - Number(comparison?.pieces_sold || 0);
-};
-const averageQuantityDifference = product => {
-    const currentBoxes = Number(product.current_month?.quantity_sold || 0);
-    const averageBoxes = Number(product.average_quantity || 0);
-    return currentBoxes !== averageBoxes
-        ? currentBoxes - averageBoxes
-        : Number(product.current_month?.pieces_sold || 0) - Number(product.average_pieces || 0);
-};
-
 const styles = {
     page: { minHeight: "100vh", padding: "22px", background: "#f6f8fb" },
     header: { marginBottom: 18, textAlign: "center" },
@@ -134,17 +126,20 @@ const VipProductSoldHistory = () => {
     const [selectedMonth, setSelectedMonth] = useState(thisMonth());
     const [comparisonPage, setComparisonPage] = useState(0);
     const [report, setReport] = useState(null);
-    const [mode, setMode] = useState("all");
-    const [visibleMetrics, setVisibleMetrics] = useState({ quantity: true, sales: false, profit: false, profitMargin: false });
+    const [impactGroup, setImpactGroup] = useState("all");
+    const [appliedGroup, setAppliedGroup] = useState("all");
+    const [visibleMetrics, setVisibleMetrics] = useState({ quantity: true, sales: true, profit: false, profitMargin: false });
     const [query, setQuery] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const load = useCallback((month, page = 0) => {
+    const load = useCallback((month, page = 0, request = {}) => {
+        const requestedGroup = request.impactGroup || "all";
+        const requestedSearch = String(request.search || "").trim();
         setLoading(true);
         setError("");
-        return VipProductTransactionService.fetchVipProductMonthlySold(id, month, { comparison_page: page })
-            .then(response => setReport(response.data))
+        return VipProductTransactionService.fetchVipProductMonthlySold(id, month, { comparison_page: page, impact_group: requestedGroup, limit: 100, ...(requestedSearch ? { search: requestedSearch } : {}) })
+            .then(response => { setReport(response.data); setAppliedGroup(requestedGroup); })
             .catch(requestError => {
                 setReport(null);
                 setError(requestError.response?.data?.message || "Unable to load product sales history.");
@@ -152,72 +147,78 @@ const VipProductSoldHistory = () => {
             .finally(() => setLoading(false));
     }, [id]);
 
-    useEffect(() => { load(thisMonth(), 0); }, [load]);
+    useEffect(() => { load(thisMonth(), 0, { impactGroup: "all" }); }, [load]);
 
     const products = Array.isArray(report?.data) ? report.data : [];
-    const dormantProducts = products.filter(product =>
-        Number(product.current_month?.quantity_sold || 0) === 0
-        && Number(product.current_month?.pieces_sold || 0) === 0
-        && (product.previous_months || []).some(month => Number(month.quantity_sold || 0) > 0 || Number(month.pieces_sold || 0) > 0)
-    );
-    const activeProducts = products.filter(product => Number(product.current_month?.quantity_sold || 0) > 0 || Number(product.current_month?.pieces_sold || 0) > 0);
-    const visibleProducts = useMemo(() => {
-        const search = query.trim().toLowerCase();
-        const matched = products.filter(product => !search || [product.product_name, product.brand_name, product.category_name]
-            .some(value => String(value || "").toLowerCase().includes(search)));
-        if (mode === "dormant") return matched.filter(product => dormantProducts.includes(product)).sort((a, b) => Number(b.average_sales) - Number(a.average_sales));
-        if (mode === "comparison_higher") return matched.filter(product => quantityDifference(product) > 0).sort((a, b) => quantityDifference(b) - quantityDifference(a));
-        if (mode === "comparison_lower") return matched.filter(product => quantityDifference(product) < 0).sort((a, b) => quantityDifference(a) - quantityDifference(b));
-        if (mode === "average_higher") return matched.filter(product => averageQuantityDifference(product) > 0).sort((a, b) => averageQuantityDifference(b) - averageQuantityDifference(a));
-        if (mode === "average_lower") return matched.filter(product => averageQuantityDifference(product) < 0).sort((a, b) => averageQuantityDifference(a) - averageQuantityDifference(b));
-        if (mode === "current_highest") return matched.filter(product => activeProducts.includes(product)).sort((a, b) => Number(b.current_month?.sales_amount || 0) - Number(a.current_month?.sales_amount || 0));
-        if (mode === "current_lowest") return matched.filter(product => activeProducts.includes(product)).sort((a, b) => Number(a.current_month?.sales_amount || 0) - Number(b.current_month?.sales_amount || 0));
-        return matched.sort((a, b) => Number(b.average_sales || 0) - Number(a.average_sales || 0));
-    }, [mode, products, dormantProducts, activeProducts, query]);
+    const impactStatus = product => {
+        const supplied = String(product.impact_status || product.status || "").toLowerCase();
+        if (["winning", "growing", "positive", "above_usual", "new_or_returning"].includes(supplied)) return "winning";
+        if (["declining", "losing", "negative", "below_usual"].includes(supplied)) return "declining";
+        if (supplied === "missing") return "missing";
+        const currentSales = Number(product.current_month?.sales_amount || 0);
+        const averageSales = Number(product.average_sales || 0);
+        if (currentSales === 0 && averageSales > 0) return "missing";
+        if (currentSales > averageSales) return "winning";
+        if (currentSales < averageSales) return "declining";
+        return "other";
+    };
+    const groupDetails = {
+        winning: { label: "Winning products", description: "Current sales exceed the previous three-month average." },
+        declining: { label: "Declining products", description: "Current sales are below the previous three-month average." },
+        missing: { label: "Missing products", description: "Previously selling products with no sales this month." },
+        highest_sales: { label: "Highest sales products", description: "Products ranked by selected-month sales, highest first. Their impact verdict may still be winning or declining." },
+        other: { label: "Other products", description: "Products without a winning, declining, or missing verdict." },
+    };
+    const impactProductGroups = ["winning", "declining", "missing", "other"]
+        .map(key => ({ key, ...groupDetails[key], products: products.filter(product => impactStatus(product) === key) }))
+        .filter(group => group.products.length > 0);
+    const productGroups = appliedGroup === "highest_sales"
+        ? [{ key: "highest_sales", ...groupDetails.highest_sales, products }]
+        : impactProductGroups;
+    const visibleProducts = products;
+    const impactCounts = report?.impact_counts || {};
+    const winningCount = Number(impactCounts.winning ?? impactProductGroups.find(group => group.key === "winning")?.products.length ?? 0);
+    const decliningCount = Number(impactCounts.declining ?? impactCounts.losing ?? impactProductGroups.find(group => group.key === "declining")?.products.length ?? 0);
+    const missingCount = Number(impactCounts.missing ?? impactProductGroups.find(group => group.key === "missing")?.products.length ?? 0);
+    const filteredTotal = Number(report?.filtered_total ?? products.length);
+    const showImpactGrouping = productGroups.length > 1 || appliedGroup === "highest_sales";
+    const tableColumnCount = (report?.previous_months || []).length + 7;
+    const productKey = product => product.product_id ?? product.id ?? product.mark_up_product_id;
+    const rankMap = salesFor => new Map([...products].sort((a, b) => Number(salesFor(b) || 0) - Number(salesFor(a) || 0)).map((product, index) => [productKey(product), index + 1]));
+    const calculatedCurrentRanks = rankMap(product => product.current_month?.sales_amount);
+    const calculatedPreviousRanks = rankMap(product => product.previous_months?.[0]?.sales_amount);
 
     const templateName = products[0]?.vip_product_name || "VIP Product";
     const change = Number(report?.sales_last_month_gap || 0);
-    const setAndLoadMonth = month => { setSelectedMonth(month); setComparisonPage(0); load(month, 0); };
-    const shift = offset => setAndLoadMonth(moveMonth(selectedMonth, offset));
     const toggleMetric = metric => setVisibleMetrics(current => ({ ...current, [metric]: !current[metric] }));
-    const changeComparisonPage = page => {
-        if (page === null || page === undefined || page < 0) return;
-        setComparisonPage(page);
-        load(selectedMonth, page);
-    };
     const showingTruePreviousMonth = Number(report?.comparison?.page ?? comparisonPage) === 0;
     const comparisonReferenceLabel = report?.previous_months?.[0]?.label || "comparison month";
-    const shortComparisonLabel = showingTruePreviousMonth ? "last month" : comparisonReferenceLabel;
-    const comparisonHigherCount = products.filter(product => quantityDifference(product) > 0).length;
-    const comparisonLowerCount = products.filter(product => quantityDifference(product) < 0).length;
-    const averageHigherCount = products.filter(product => averageQuantityDifference(product) > 0).length;
-    const averageLowerCount = products.filter(product => averageQuantityDifference(product) < 0).length;
     const openProductGraph = productId => navigate(`/vipProductSoldHistory/${id}/product/${productId}?month=${selectedMonth}&comparison_page=${comparisonPage}`);
 
-    return <div style={styles.page}>
+    return <div className="pr-page" style={styles.page}>
         {loading && <LinearProgress color="primary" />}
         <header style={styles.header}>
             <h2 style={styles.title}>{templateName} Product Sold History</h2>
             <p style={styles.subtitle}>Find products losing momentum and compare best and low performers across recent months.</p>
         </header>
 
-        <div style={styles.filter}>
-            <Form onSubmit={event => { event.preventDefault(); setComparisonPage(0); load(selectedMonth, 0); }}>
-                <div style={styles.filterRow}>
-                    <Button type="button" variant="outline-secondary" onClick={() => shift(-1)} disabled={loading}>Previous month</Button>
-                    <Form.Group>
-                        <Form.Label>Report month</Form.Label>
-                        <Form.Control type="month" value={selectedMonth} onChange={event => setSelectedMonth(event.target.value)} required />
-                    </Form.Group>
-                    <Button type="submit" disabled={loading}>View month</Button>
-                    <Button type="button" variant="outline-primary" onClick={() => shift(1)} disabled={loading}>Next month</Button>
-                    <Button type="button" variant="outline-secondary" onClick={() => setAndLoadMonth(thisMonth())} disabled={loading}>Current month</Button>
-                </div>
-            </Form>
-        </div>
+        <section className="pr-filter"><Form onSubmit={event => { event.preventDefault(); setComparisonPage(0); load(selectedMonth, 0, { impactGroup, search: query }); }}>
+            <div className="pr-filter__header"><strong>VIP product impact filters</strong><span>Impact status compares selected-month product sales with the previous three-month average.</span></div>
+            <div className="ct-filter-grid vip-impact-filter-grid">
+                <TextField fullWidth size="small" type="month" value={selectedMonth} onChange={event => setSelectedMonth(event.target.value)} label="Report month" InputLabelProps={{ shrink: true }} required />
+                <FormControl fullWidth size="small"><InputLabel>Impact group</InputLabel><Select value={impactGroup} label="Impact group" onChange={event => setImpactGroup(event.target.value)}>{Object.entries(impactGroupLabels).map(([value, label]) => <MenuItem key={value} value={value}>{label}</MenuItem>)}</Select></FormControl>
+                <MuiButton variant="contained" type="submit" disabled={loading}>Compare products</MuiButton>
+            </div>
+        </Form>{loading && <LinearProgress className="pr-progress" />}</section>
 
         {error && <div className="alert alert-danger">{error}</div>}
         {report && <>
+            <section className="pr-summary ct-summary">
+                <div className="vip-impact-summary vip-impact-summary--winning"><TrendingUpRoundedIcon/><div><span>Winning products</span><strong>{winningCount.toLocaleString()}</strong></div></div>
+                <div className="vip-impact-summary vip-impact-summary--declining"><TrendingDownRoundedIcon/><div><span>Declining products</span><strong>{decliningCount.toLocaleString()}</strong></div></div>
+                <div className="vip-impact-summary vip-impact-summary--missing"><Inventory2OutlinedIcon/><div><span>Missing products</span><strong>{missingCount.toLocaleString()}</strong></div></div>
+            </section>
+            <div className="pci-benchmark-note"><strong>Primary impact benchmark</strong><span>Winning, declining, and missing VIP product verdicts use the selected month versus the previous 3-month average.</span></div>
             <section style={styles.summary}>
                 <div style={{ ...styles.card, border: "2px solid #198754", background: "#f0fff4" }}><p style={styles.label}>{report.report_month?.label} sales</p><p style={{ ...styles.value, color: "#146c43" }}>{money(report.current_month?.sales_amount)}</p></div>
                 <div style={styles.card}><p style={styles.label}>Current profit</p><p style={{ ...styles.value, color: "#6f42c1" }}>{money(report.current_month?.profit_amount)}</p></div>
@@ -225,32 +226,8 @@ const VipProductSoldHistory = () => {
                 <div style={styles.card}><p style={styles.label}>Sales vs last month</p><p style={{ ...styles.value, color: change >= 0 ? "#146c43" : "#dc3545" }}>{change >= 0 ? "+" : "-"}{money(Math.abs(change))}</p></div>
             </section>
 
-            <section style={{ ...styles.card, marginBottom: 12, padding: "10px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                <div><p style={{ ...styles.label, marginBottom: 2 }}>Comparison months</p><strong>{(report.comparison?.months || report.previous_months || []).map(item => item.label).join(" · ") || "No comparison months available"}</strong><span style={{ ...styles.meta, marginLeft: 8 }}>Block {Number(report.comparison?.page ?? comparisonPage) + 1}</span></div>
-                <div className="d-flex gap-2">
-                    <Button size="sm" variant="outline-primary" title="Show newer comparison months" aria-label="Show newer comparison months" disabled={loading || !report.comparison?.has_newer} onClick={() => changeComparisonPage(report.comparison?.newer_page)}><ChevronLeftIcon /></Button>
-                    <Button size="sm" variant="outline-primary" title="Show older comparison months" aria-label="Show older comparison months" disabled={loading || !report.comparison?.has_older} onClick={() => changeComparisonPage(report.comparison?.older_page)}><ChevronRightIcon /></Button>
-                </div>
-            </section>
-
             <div style={styles.modeBar}>
-                <div style={styles.modeRow}>
-                    <div className="btn-group flex-wrap w-100" role="group" aria-label="Product ranking view">
-                        {[['all', `All (${products.length})`], ['current_highest', 'Highest sales'], ['current_lowest', 'Lowest sales'], ['dormant', `No sales in ${report.report_month?.label} (${dormantProducts.length})`]].map(([key, label]) =>
-                            <Button key={key} size="sm" style={{ flex: "1 1 190px" }} variant={mode === key ? (key === 'dormant' ? 'danger' : 'primary') : 'outline-secondary'} onClick={() => setMode(key)}>{label}</Button>
-                        )}
-                    </div>
-                </div>
-                <div className="d-flex align-items-center gap-2 flex-wrap px-2 py-2 border rounded bg-light">
-                    <strong className="small text-muted me-1">Compare quantity with {shortComparisonLabel}:</strong>
-                    <Button size="sm" variant={mode === "comparison_higher" ? "success" : "outline-success"} onClick={() => setMode("comparison_higher")}>Higher ({comparisonHigherCount})</Button>
-                    <Button size="sm" variant={mode === "comparison_lower" ? "danger" : "outline-danger"} onClick={() => setMode("comparison_lower")}>Lower ({comparisonLowerCount})</Button>
-                </div>
-                <div className="d-flex align-items-center gap-2 flex-wrap px-2 py-2 border rounded bg-light">
-                    <strong className="small text-muted me-1">Compare quantity with 3-month average:</strong>
-                    <Button size="sm" variant={mode === "average_higher" ? "success" : "outline-success"} onClick={() => setMode("average_higher")}>Higher ({averageHigherCount})</Button>
-                    <Button size="sm" variant={mode === "average_lower" ? "danger" : "outline-danger"} onClick={() => setMode("average_lower")}>Lower ({averageLowerCount})</Button>
-                </div>
+                <div><strong>{impactGroupLabels[appliedGroup]}</strong><span style={{ ...styles.meta, display: "block", marginTop: 2 }}>{filteredTotal.toLocaleString()} products · selected month {report.report_month?.month || selectedMonth}</span></div>
                 <div style={styles.modeRow}>
                     <div style={styles.metricControls}>
                         <strong className="small text-muted">Show:</strong>
@@ -258,50 +235,70 @@ const VipProductSoldHistory = () => {
                             <Form.Check key={key} inline className="mb-0" type="checkbox" id={`vip-metric-${key}`} label={label} checked={visibleMetrics[key]} onChange={() => toggleMetric(key)} />
                         )}
                     </div>
-                    <Form.Control style={{ width: 300, maxWidth: "100%" }} placeholder="Search product, category, brand..." value={query} onChange={event => setQuery(event.target.value)} />
+                    <Form onSubmit={event => { event.preventDefault(); load(selectedMonth, 0, { impactGroup, search: query }); }}><TextField size="small" style={{ width: 300, maxWidth: "100%" }} placeholder="Search product, category, brand..." value={query} onChange={event => setQuery(event.target.value)} InputProps={{ startAdornment:<InputAdornment position="start"><SearchRoundedIcon/></InputAdornment> }}/></Form>
                 </div>
             </div>
 
             <div style={styles.tableWrap}>
-                <table className="table table-bordered table-hover align-middle" style={styles.table}>
-                    <colgroup><col style={{ width: 180 }} /><col style={{ width: 75 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 170 }} /><col style={{ width: 210 }} /><col style={{ width: 52 }} /></colgroup>
+                <table className="table table-bordered table-hover align-middle vip-product-impact-table" style={styles.table}>
+                    <colgroup><col style={{ width: 78 }} /><col style={{ width: 180 }} /><col style={{ width: 75 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 140 }} /><col style={{ width: 170 }} /><col style={{ width: 210 }} /><col style={{ width: 52 }} /></colgroup>
                     <thead><tr>
-                        <th style={styles.th}>Product<span style={styles.thHint}>Product details</span></th><th style={{ ...styles.th, textAlign: "center" }}>Stock<span style={styles.thHint}>Available</span></th><th style={styles.selectedTh}>{report.report_month?.label}<br/><span style={styles.selectedBadge}>Selected month</span></th>
+                        <th style={styles.th}>Rank<span style={styles.thHint}>Movement</span></th><th style={styles.th}>Product<span style={styles.thHint}>Product details</span></th><th style={{ ...styles.th, textAlign: "center" }}>Stock<span style={styles.thHint}>Available</span></th><th className="vip-current-sales-heading" style={styles.selectedTh}>{report.report_month?.label}<br/><span style={styles.selectedBadge}>Selected month</span></th>
                         {(report.previous_months || []).map((month, index) => <th style={styles.th} key={month.month}>{month.label}<span style={styles.thHint}>{index === 0 && showingTruePreviousMonth ? "Previous month" : "Comparison month"}</span></th>)}
-                        <th style={styles.averageTh}>3-month average<span style={styles.thHint}>Current comparison</span></th><th style={{ ...styles.th, textAlign: "left", padding: "12px 14px", fontSize: 15 }}>Status / Quantity Trend<span style={{ ...styles.thHint, fontSize: 9, marginTop: 6 }}>Boxes vs {showingTruePreviousMonth ? "previous month" : comparisonReferenceLabel}</span></th><th style={styles.actionTh} title="View graph"><BarChartIcon fontSize="small" /></th>
+                        <th style={styles.averageTh}>3-month average<span style={styles.thHint}>Current comparison</span></th><th style={{ ...styles.th, textAlign: "left", padding: "12px 14px", fontSize: 15 }}>Status / Sales Trend<span style={{ ...styles.thHint, fontSize: 9, marginTop: 6 }}>Sales vs {showingTruePreviousMonth ? "previous month" : comparisonReferenceLabel}</span></th><th style={styles.actionTh} title="View graph"><BarChartIcon fontSize="small" /></th>
                     </tr></thead>
                     <tbody>
-                        {visibleProducts.map(product => {
+                        {productGroups.map(group => <React.Fragment key={group.key}>
+                        {showImpactGrouping && <tr className={`vip-impact-group-row vip-impact-group-row--${group.key}`}><td colSpan={tableColumnCount}><div><strong>{group.label}</strong><span>{group.description}</span></div><b>{group.products.length}</b></td></tr>}
+                        {group.products.map(product => {
                             const comparisonMonth = product.previous_months?.[0];
                             const currentBoxes = Number(product.current_month?.quantity_sold || 0);
                             const currentPieces = Number(product.current_month?.pieces_sold || 0);
-                            const comparisonBoxes = Number(comparisonMonth?.quantity_sold || 0);
-                            const comparisonPieces = Number(comparisonMonth?.pieces_sold || 0);
                             const averageBoxes = Number(product.average_quantity || 0);
                             const averagePieces = Number(product.average_pieces || 0);
-                            const compareDifference = currentBoxes !== comparisonBoxes ? currentBoxes - comparisonBoxes : currentPieces - comparisonPieces;
-                            const compareBasis = currentBoxes !== comparisonBoxes ? comparisonBoxes : comparisonPieces;
+                            const currentSales = Number(product.current_month?.sales_amount || 0);
+                            const comparisonSales = Number(comparisonMonth?.sales_amount || 0);
+                            const averageSales = Number(product.average_sales || 0);
+                            const compareDifference = currentSales - comparisonSales;
+                            const compareBasis = comparisonSales;
                             const comparePercentage = compareBasis > 0 ? (compareDifference / compareBasis) * 100 : compareDifference > 0 ? 100 : 0;
-                            const averageDifference = currentBoxes !== averageBoxes ? currentBoxes - averageBoxes : currentPieces - averagePieces;
-                            const averageBasis = currentBoxes !== averageBoxes ? averageBoxes : averagePieces;
+                            const averageDifference = currentSales - averageSales;
+                            const averageBasis = averageSales;
                             const averagePercentage = averageBasis > 0 ? (averageDifference / averageBasis) * 100 : averageDifference > 0 ? 100 : 0;
                             const verdict = value => value > 0
                                 ? { label: "High sales", color: "#146c43", background: "#d1e7dd" }
                                 : value < 0 ? { label: "Low sales", color: "#dc3545", background: "#f8d7da" }
                                     : { label: "Unchanged", color: "#6c757d", background: "#e2e3e5" };
-                            const averageVerdict = verdict(averageDifference);
+                            const averageVerdict = group.key === "winning" ? { label: "Winning", color: "#146c43", background: "#d1e7dd" }
+                                : group.key === "declining" ? { label: "Declining", color: "#a65308", background: "#fff0dc" }
+                                    : group.key === "missing" ? { label: "Missing", color: "#b42318", background: "#fee2e2" }
+                                        : group.key === "highest_sales"
+                                            ? (impactStatus(product) === "winning" ? { label: "Winning", color: "#146c43", background: "#d1e7dd" }
+                                                : impactStatus(product) === "declining" ? { label: "Declining", color: "#a65308", background: "#fff0dc" }
+                                                    : impactStatus(product) === "missing" ? { label: "Missing", color: "#b42318", background: "#fee2e2" }
+                                                        : verdict(averageDifference))
+                                            : verdict(averageDifference);
                             const comparisonVerdict = verdict(compareDifference);
-                            const selectedMonthStyle = compareDifference > 0
-                                ? { background: "#edf9f2", borderColor: "#b9e3cc" }
-                                : compareDifference < 0
-                                    ? { background: "#fff3f3", borderColor: "#f1c2c2" }
-                                    : { background: "#f5f6f8", borderColor: "#d7dce5" };
+                            const selectedMonthStyle = group.key === "winning" ? { background: "#edf9f2", borderColor: "#b9e3cc" }
+                                : group.key === "declining" ? { background: "#fffaf2", borderColor: "#f3c982" }
+                                    : group.key === "missing" ? { background: "#fff3f3", borderColor: "#efb1b1" }
+                                        : group.key === "highest_sales" ? { background: "#eef6ff", borderColor: "#93c5fd" }
+                                            : { background: "#f5f6f8", borderColor: "#d7dce5" };
                             const projection = projectedOutput(selectedMonth, currentBoxes, currentPieces);
                             const projectionStatus = projectionAssessment(projection, averageBoxes, averagePieces);
-                            return <tr key={product.product_id}>
+                            const fallbackCurrentRank = calculatedCurrentRanks.get(productKey(product));
+                            const fallbackPreviousRank = calculatedPreviousRanks.get(productKey(product));
+                            const currentRank = product.current_rank ?? product.rank ?? product.current_month?.rank ?? fallbackCurrentRank ?? "—";
+                            const previousRank = product.previous_rank ?? product.last_month_rank ?? comparisonMonth?.rank ?? fallbackPreviousRank ?? "—";
+                            const fallbackMovement = Number(previousRank) - Number(currentRank);
+                            const movementValue = product.rank_change ?? product.rank_movement;
+                            const movement = Number(typeof movementValue === "object" ? movementValue?.movement ?? movementValue?.change ?? fallbackMovement : movementValue ?? fallbackMovement);
+                            const direction = String(product.rank_movement_direction || (movement > 0 ? "UP" : movement < 0 ? "DOWN" : "SAME")).toUpperCase();
+                            return <tr key={product.product_id} className={`vip-impact-customer-row vip-impact-customer-row--${group.key}`}>
+                            <td><div className="pt-rank-move"><span className="pr-rank">{currentRank}</span><div><small>{previousRank === "—" ? "No prior rank" : `was #${previousRank}`}</small><strong className={direction === "DOWN" ? "pr-negative" : direction === "UP" ? "pt-positive" : "pr-subtle"}>{direction === "UP" ? "▲ " : direction === "DOWN" ? "▼ " : ""}{Math.abs(movement) || "—"}</strong></div></div></td>
                             <td><div style={styles.product}>{product.product_name}</div><div style={styles.meta}>{product.brand_name} · {product.category_name}</div></td>
                             <td>{stockDisplay(product)}</td>
-                            <td style={selectedMonthStyle}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && <span title={`${comparisonVerdict.label} versus last month`} style={{ display: "block", width: 64, height: 3, marginTop: 6, marginBottom: 3, borderRadius: 999, background: comparisonVerdict.color }} />}{visibleMetrics.sales && <span style={{ color: comparisonVerdict.color, fontWeight: 800 }}>{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.current_month?.profit_amount, product.current_month?.sales_amount)}</span>}{Number(product.current_month?.pieces_sold) === 0 && <span style={styles.dormant}>NOT SOLD</span>}</div></td>
+                            <td className="vip-current-sales-cell" style={selectedMonthStyle}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && <span title={`${comparisonVerdict.label} versus last month`} style={{ display: "block", width: 64, height: 3, marginTop: 6, marginBottom: 3, borderRadius: 999, background: averageVerdict.color }} />}{visibleMetrics.sales && <span className="vip-current-sales-value">{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.current_month?.profit_amount, product.current_month?.sales_amount)}</span>}{Number(product.current_month?.pieces_sold) === 0 && <span style={styles.dormant}>NOT SOLD</span>}</div></td>
                             {(product.previous_months || []).map(month => <td key={month.month}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(month.quantity_sold, month.pieces_sold, false, product.quantity)}{visibleMetrics.sales && <span>{money(month.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(month.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(month.profit_amount, month.sales_amount)}</span>}</div></td>)}
                             <td style={styles.averageCell}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.average_profit, product.average_sales)}</span>}</div></td>
                             <td style={{ padding: "12px 14px" }}>
@@ -319,8 +316,8 @@ const VipProductSoldHistory = () => {
                             </td>
                             <td style={styles.actionCell}><Button size="sm" variant="outline-primary" title="View graph" aria-label={`View graph for ${product.product_name}`} onClick={() => openProductGraph(product.product_id)} style={{ width: 34, height: 32, padding: 0 }}><BarChartIcon fontSize="small" /></Button></td>
                         </tr>;
-                        })}
-                        {!loading && visibleProducts.length === 0 && <tr><td colSpan="9" className="text-center text-muted py-4">No products match this view.</td></tr>}
+                        })}</React.Fragment>)}
+                        {!loading && visibleProducts.length === 0 && <tr><td colSpan={tableColumnCount} className="text-center text-muted py-4">No products match this impact group.</td></tr>}
                     </tbody>
                 </table>
             </div>
