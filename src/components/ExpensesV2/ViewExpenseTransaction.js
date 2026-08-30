@@ -14,6 +14,7 @@ import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Autocomplete from '@mui/material/Autocomplete';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
@@ -26,9 +27,12 @@ import moment from "moment";
 import './ViewExpenseTransactionApproval.css';
 import './ViewExpenseTransaction.css';
 import './CompactExpenseTransactionTable.css';
+import '../Reports/MonthlyExpenseAdminPrivacy.css';
 
 
 const ViewExpenseTransaction = () => {
+    const isAdmin = Number(localStorage.getItem('role_as')) === 2;
+    const [showHiddenExpenses, setShowHiddenExpenses] = useState(false);
 
     useEffect(() => {
         fetchExpenseType();
@@ -353,7 +357,7 @@ const ViewExpenseTransaction = () => {
                             <MenuItem value={0}>All expenses</MenuItem>
                             {
                                 expenseList.map((data, index) => (
-                                    <MenuItem value={data.id}>{data.is_hidden == 1 ? "*****" : data.expense_name}</MenuItem>
+                                    <MenuItem value={data.id}>{data.is_hidden == 1 && !showHiddenExpenses ? "***" : data.expense_name}</MenuItem>
                                 ))
                             }
                         </Select>
@@ -413,7 +417,7 @@ const ViewExpenseTransaction = () => {
                 }
             </Form>
             <section className="veta-table-card">
-            <header><div><h2>Transaction history</h2><p>{expenseTransactionList.length} results across {Object.keys(groupedData).length} expense types</p></div></header>
+            <header><div><h2>Transaction history</h2><p>{expenseTransactionList.length} results across {Object.keys(groupedData).length} expense types</p></div><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showHiddenExpenses} disabled={!isAdmin} onChange={(event) => setShowHiddenExpenses(event.target.checked)} />} label="Confidential" /></header>
             <div className="veta-table-scroll">
             <table className="table table-bordered">
                 <thead className="table-dark">
@@ -467,7 +471,7 @@ const ViewExpenseTransaction = () => {
                                                 </span>
                                             </td>
                                             <td>{data.expense_category_name}</td>
-                                            <td>{data.is_hidden == 1 ? "*****" : data.expense_name}</td>
+                                            <td>{data.is_hidden == 1 && !showHiddenExpenses ? "***" : data.expense_name}</td>
                                             <td>{data.name}</td>
                                             <td>{data.approver_name}</td>
                                             <td>

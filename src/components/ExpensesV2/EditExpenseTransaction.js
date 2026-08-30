@@ -15,6 +15,7 @@ import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Autocomplete from '@mui/material/Autocomplete';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
@@ -58,6 +59,7 @@ const EditExpenseTransaction = () => {
     const [requestorList, setRequestorList] = useState([]);
     const [role] = useState(localStorage.getItem('role_as'));
     const [authUserId] = useState(() => Number(getCookieValue('auth_user_id')));
+    const [showHiddenExpenses, setShowHiddenExpenses] = useState(false);
 
     const [expenseTransaction, setExpenseTransaction] = useState({
         id: 0,
@@ -347,7 +349,7 @@ const EditExpenseTransaction = () => {
     const isAdmin = Number(role) === 2;
     const canManageTransaction = isAdmin
         || (Number(expenseTransactionFixed.id) > 0
-            && Number(expenseTransactionFixed.approver_id) === authUserId);
+            && Number(expenseTransaction.approver_id) === authUserId);
     const isReadOnly = isFinalized || !canManageTransaction;
     const hasPaymentDetails = Number(expenseTransaction.payment_term_id) > 0
         || Number(expenseTransaction.payment_type_po_id) > 0;
@@ -364,7 +366,7 @@ const EditExpenseTransaction = () => {
             </Stack>
             {Number(expenseTransactionFixed.id) > 0 && !canManageTransaction &&
                 <Alert severity="warning" sx={{ width: 'min(100% - 32px, 1040px)', margin: '16px auto 0' }}>
-                    Read-only: only the assigned approver or an administrator can update this transaction.
+                    Select the appropriate approver. Only the selected approver or an administrator can submit this transaction.
                 </Alert>
             }
             <br></br>
@@ -387,7 +389,7 @@ const EditExpenseTransaction = () => {
                                 name="approver_id"
                                 value={expenseTransaction.approver_id}
                                 onChange={onChangeInput}
-                                disabled={isReadOnly || !isAdmin}
+                                disabled={isFinalized}
                             >
                                 {
                                     requestorList.map((requestor, index) => (
@@ -584,7 +586,7 @@ const EditExpenseTransaction = () => {
                 </section>
 
                 <section className="eet-form-column eet-form-summary">
-                    <div className="eet-section-heading"><span>01</span><div><strong>Expense information</strong><small>Review the transaction classification and request details.</small></div></div>
+                    <div className="eet-section-heading"><span>01</span><div><strong>Expense information</strong><small>Review the transaction classification and request details.</small></div><FormControlLabel className="eet-confidential" control={<Checkbox checked={showHiddenExpenses} disabled={Number(role) !== 2} onChange={(event) => setShowHiddenExpenses(event.target.checked)} />} label="Confidential" /></div>
 
                 <Box sx={{ minWidth: 120 }}>
                     <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
@@ -613,36 +615,18 @@ const EditExpenseTransaction = () => {
                         />
                     </FormControl>
                 </Box>
-                {
-                    role == 2 ? <>
-                        <Box sx={{ minWidth: 120 }}>
-                            <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                                <TextField
-                                    id="outlined-basic"
-                                    label="Expense"
-                                    value={expenseTransaction.expense_name}
-                                    variant="outlined"
-                                    InputLabelProps={{ shrink: true }}
-                                    disabled
-                                />
-                            </FormControl>
-                        </Box>
-                    </> :
-                        <>
-                            <Box sx={{ minWidth: 120 }}>
-                                <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
-                                    <TextField
-                                        id="outlined-basic"
-                                        label="Expense"
-                                        value={expenseTransaction.is_hidden ? "********" : expenseTransaction.expense_name}
-                                        variant="outlined"
-                                        InputLabelProps={{ shrink: true }}
-                                        disabled
-                                    />
-                                </FormControl>
-                            </Box>
-                        </>
-                }
+                <Box sx={{ minWidth: 120 }}>
+                    <FormControl sx={{ m: 0, minWidth: 320, minHeight: 70 }}>
+                        <TextField
+                            id="outlined-basic"
+                            label="Expense"
+                            value={Number(expenseTransaction.is_hidden) === 1 && !showHiddenExpenses ? "***" : expenseTransaction.expense_name || ''}
+                            variant="outlined"
+                            InputLabelProps={{ shrink: true }}
+                            disabled
+                        />
+                    </FormControl>
+                </Box>
 
 
 

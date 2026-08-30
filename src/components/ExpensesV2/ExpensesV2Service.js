@@ -27,6 +27,9 @@ class ExpensesV2Service {
     update(id, data) {
         return axios.put(`/api/expensesV2/${id}`, data);
     }
+    patch(id, data) {
+        return axios.patch(`/api/expensesV2/${id}`, data);
+    }
     delete(customer) {
         return axios.delete(`/api/expensesV2/${customer}`);
     }

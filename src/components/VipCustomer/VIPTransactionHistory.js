@@ -4,28 +4,50 @@ import LinearProgress from "@mui/material/LinearProgress";
 import Box from "@mui/material/Box";
 import { BarChart } from "@mui/x-charts/BarChart";
 import BarChartIcon from "@mui/icons-material/BarChart";
+import MuiButton from "@mui/material/Button";
+import FormControl from "@mui/material/FormControl";
+import InputAdornment from "@mui/material/InputAdornment";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
+import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
+import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
+import PersonOffOutlinedIcon from "@mui/icons-material/PersonOffOutlined";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { useNavigate, useParams } from "react-router-dom";
 import VipCustomerService from "./VipCustomerService";
 import VipCustomerTransactionService from "./VipCustomerTransactionService";
+import "../Reports/ProductReport.css";
+import "./VIPTransactionHistory.css";
 
 const money = value => Number(value || 0).toLocaleString("en-PH", {
     style: "currency", currency: "PHP", minimumFractionDigits: 2, maximumFractionDigits: 2,
 });
+const signedMoney = value => `${Number(value || 0) > 0 ? "+" : Number(value || 0) < 0 ? "-" : ""}${money(Math.abs(Number(value || 0)))}`;
 const profitMargin = (profit, sales) => {
     const salesAmount = Number(sales || 0);
     return salesAmount > 0 ? (Number(profit || 0) / salesAmount) * 100 : 0;
 };
 const profitMarginLabel = (profit, sales) => `${profitMargin(profit, sales).toFixed(2)}%`;
+const impactGroupLabels = {
+    winning: "Winning customers",
+    declining: "Declining customers",
+    missing: "Missing customers",
+    highest_sales: "Highest sales",
+    all: "All results",
+};
+const comparisonAmount = (comparison, fallback) => {
+    if (comparison && typeof comparison === "object") {
+        return Number(comparison.amount ?? comparison.paid_difference ?? comparison.paid ?? comparison.difference ?? comparison.value ?? fallback ?? 0);
+    }
+    return Number(comparison ?? fallback ?? 0);
+};
 
 const currentMonth = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-};
-
-const shiftMonth = (month, amount) => {
-    const [year, monthNumber] = month.split("-").map(Number);
-    const date = new Date(year, monthNumber - 1 + amount, 1);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 };
 
 const styles = {
@@ -102,15 +124,24 @@ const VIPTransactionHistory = () => {
     const [monthlyQuota, setMonthlyQuota] = useState("");
     const [visibleMetrics, setVisibleMetrics] = useState({ sales: true, profit: false, profitMargin: false });
     const [reportView, setReportView] = useState("table");
-    const [sortBy, setSortBy] = useState("sales");
+    const [impactGroup, setImpactGroup] = useState("all");
+    const [search, setSearch] = useState("");
+    const [appliedFilters, setAppliedFilters] = useState({ month: currentMonth(), impactGroup: "all", search: "" });
 
-    const loadReport = useCallback(month => {
+    const loadReport = useCallback((month, request = {}) => {
+        const requestedImpactGroup = request.impactGroup || "all";
+        const requestedSearch = String(request.search || "").trim();
         setLoading(true);
         setError("");
-        return VipCustomerTransactionService.fetchVipCustomerMonthlyPaid(id, month)
+        return VipCustomerTransactionService.fetchVipCustomerMonthlyPaid(id, month, undefined, {
+            impact_group: requestedImpactGroup,
+            limit: 100,
+            ...(requestedSearch ? { search: requestedSearch } : {}),
+        })
             .then(response => {
                 setReport(response.data);
                 const reportMonth = response.data?.report_month?.month || month;
+                setAppliedFilters({ month: reportMonth, impactGroup: requestedImpactGroup, search: requestedSearch });
                 setMonthlyQuota(localStorage.getItem(`vip-monthly-quota-${id}-${reportMonth}`) || "");
             })
             .catch(requestError => {
@@ -121,21 +152,85 @@ const VIPTransactionHistory = () => {
     }, [id]);
 
     useEffect(() => {
-        loadReport(currentMonth());
+        loadReport(currentMonth(), { impactGroup: "all" });
         VipCustomerService.get(id).then(response => setTemplate(response.data)).catch(() => {});
     }, [id, loadReport]);
 
     const months = report ? [report.report_month, ...(report.previous_months || [])] : [];
     const customers = Array.isArray(report?.data) ? report.data : [];
-    const sortedCustomers = [...customers].sort((firstCustomer, secondCustomer) => {
-        if (sortBy === "profit") {
-            return Number(secondCustomer.current_profit || 0) - Number(firstCustomer.current_profit || 0);
+    const impactCounts = report?.impact_counts || {};
+    const winningCount = Number(impactCounts.winning ?? impactCounts.winning_customers ?? 0);
+    const decliningCount = Number(impactCounts.declining ?? impactCounts.losing ?? impactCounts.declining_customers ?? 0);
+    const missingCount = Number(impactCounts.missing ?? impactCounts.missing_customers ?? 0);
+    const filteredTotal = Number(report?.filtered_total ?? customers.length);
+    const impactGroupFor = customer => {
+        const status = String(customer.impact_status || customer.status || "unchanged").toLowerCase();
+        if (["winning", "growing", "positive", "above_usual", "new_or_returning"].includes(status)) return "winning";
+        if (["declining", "losing", "negative", "below_usual"].includes(status)) return "declining";
+        if (status === "missing") return "missing";
+        return "other";
+    };
+    const impactGroupDetails = {
+        winning: { label: "Winning customers", description: "Current paid sales exceed the previous three-month average." },
+        declining: { label: "Declining customers", description: "Current paid sales are below the previous three-month average." },
+        missing: { label: "Missing customers", description: "No current payment, but a previous three-month average exists." },
+        other: { label: "Other customers", description: "Customers without a winning, declining, or missing verdict." },
+    };
+    const customerGroups = ["winning", "declining", "missing", "other"]
+        .map(key => ({ key, ...impactGroupDetails[key], customers: customers.filter(customer => impactGroupFor(customer) === key) }))
+        .filter(group => group.customers.length > 0);
+    const showImpactGrouping = customerGroups.length > 1;
+    const customersInGroup = key => customerGroups.find(group => group.key === key)?.customers || [];
+    const winningSalesVsLastMonth = customersInGroup("winning").reduce((total, customer) => {
+        const lastMonth = Number(customer.previous_months?.[0]?.paid_amount || 0);
+        return total + comparisonAmount(customer.paid_vs_last_month, Number(customer.current_paid || 0) - lastMonth);
+    }, 0);
+    const decliningNeededForLastMonth = customersInGroup("declining").reduce((total, customer) => {
+        const lastMonth = Number(customer.previous_months?.[0]?.paid_amount || 0);
+        return total + Math.max(lastMonth - Number(customer.current_paid || 0), 0);
+    }, 0);
+    const missingExpectedFromLastMonth = customersInGroup("missing").reduce(
+        (total, customer) => total + Number(customer.previous_months?.[0]?.paid_amount || 0),
+        0
+    );
+    const netSalesVsLastMonth = customers.reduce((total, customer) => {
+        const lastMonth = Number(customer.previous_months?.[0]?.paid_amount || 0);
+        return total + comparisonAmount(customer.paid_vs_last_month, Number(customer.current_paid || 0) - lastMonth);
+    }, 0);
+    const hasMissingRisk = customersInGroup("missing").length > 0;
+    const hasDecliningRisk = customersInGroup("declining").length > 0;
+    const reportVerdict = netSalesVsLastMonth > 0
+        ? {
+            tone: hasMissingRisk || hasDecliningRisk ? "watch" : "positive",
+            label: "Sales ahead of last month",
+            message: hasMissingRisk || hasDecliningRisk
+                ? "Overall sales improved, but declining and missing customers still need follow-up."
+                : "The displayed customers are contributing more paid sales than last month.",
         }
-        if (sortBy === "name") {
-            return String(firstCustomer.customer_name || "").localeCompare(String(secondCustomer.customer_name || ""));
-        }
-        return Number(secondCustomer.current_paid || 0) - Number(firstCustomer.current_paid || 0);
-    });
+        : netSalesVsLastMonth < 0
+            ? {
+                tone: hasMissingRisk ? "critical" : "negative",
+                label: "Sales recovery needed",
+                message: hasMissingRisk
+                    ? "Sales are below last month, with missing customers creating the most urgent recovery opportunity."
+                    : "The displayed customers need additional sales to recover last month's performance.",
+            }
+            : { tone: "neutral", label: "Sales are level", message: "The displayed customers are matching last month's paid sales." };
+    const timingMonth = report?.report_month?.month || selectedMonth;
+    const timingToday = new Date();
+    const activeMonth = currentMonth();
+    const [timingYear, timingMonthNumber] = String(timingMonth).split("-").map(Number);
+    const timingDaysInMonth = new Date(timingYear, timingMonthNumber, 0).getDate();
+    const timingElapsedDays = timingMonth < activeMonth ? timingDaysInMonth : timingMonth === activeMonth ? Math.min(timingToday.getDate(), timingDaysInMonth) : 0;
+    const monthCompletion = timingDaysInMonth ? (timingElapsedDays / timingDaysInMonth) * 100 : 0;
+    const displayedCurrentSales = customers.reduce((total, customer) => total + Number(customer.current_paid || 0), 0);
+    const displayedLastMonthSales = customers.reduce((total, customer) => total + Number(customer.previous_months?.[0]?.paid_amount || 0), 0);
+    const projectedDisplayedSales = timingElapsedDays > 0 ? (displayedCurrentSales / timingElapsedDays) * timingDaysInMonth : 0;
+    const projectedNetVsLastMonth = projectedDisplayedSales - displayedLastMonthSales;
+    const isCurrentReportMonth = timingMonth === activeMonth;
+    const asOfLabel = isCurrentReportMonth
+        ? timingToday.toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" })
+        : report?.report_month?.label || timingMonth;
     const lastMonthPaid = Number(report?.previous_months?.[0]?.paid_amount || 0);
     const neededFromLastMonth = Math.max(lastMonthPaid - Number(report?.current_month_paid || 0), 0);
     const previousMonthTotals = report?.previous_months || [];
@@ -176,6 +271,7 @@ const VIPTransactionHistory = () => {
     const showSales = visibleMetrics.sales;
     const showProfit = visibleMetrics.profit;
     const showProfitMargin = visibleMetrics.profitMargin;
+    const tableColumnCount = months.length + 3 + (showSales ? 2 : 0) + (showProfit ? 3 : 0) + (showProfitMargin ? 1 : 0);
     const toggleMetric = metric => setVisibleMetrics(current => ({ ...current, [metric]: !current[metric] }));
     const chartData = report ? [
         ...(report.previous_months || []).map(month => ({
@@ -303,17 +399,16 @@ const VIPTransactionHistory = () => {
 
     const submit = event => {
         event.preventDefault();
-        loadReport(selectedMonth);
+        loadReport(selectedMonth, { impactGroup, search });
     };
 
-    const move = amount => {
-        const next = shiftMonth(selectedMonth, amount);
-        setSelectedMonth(next);
-        loadReport(next);
+    const applyImpactFilter = group => {
+        setImpactGroup(group);
+        loadReport(selectedMonth, { impactGroup: group, search });
     };
 
     return (
-        <div style={styles.page}>
+        <div className="pr-page" style={styles.page}>
             {loading && <LinearProgress color="success" />}
             <div style={styles.header}>
                 {template.vip_color && <div style={{ ...styles.accent, background: template.vip_color }} />}
@@ -321,34 +416,40 @@ const VIPTransactionHistory = () => {
                 <p className="text-muted mb-0">Monthly paid sales, recent history, and the exact amount needed to match last month</p>
             </div>
 
-            <div style={styles.filter}>
+            <section className="pr-filter">
                 <Form onSubmit={submit}>
-                    <div style={styles.filterRow}>
-                        <Button variant="outline-secondary" type="button" onClick={() => move(-1)} disabled={loading}>Previous month</Button>
-                        <Form.Group>
-                            <Form.Label>Report month</Form.Label>
-                            <Form.Control type="month" value={selectedMonth} onChange={event => setSelectedMonth(event.target.value)} required />
-                        </Form.Group>
-                        {showSales && <Form.Group>
-                            <Form.Label>Monthly sales quota</Form.Label>
-                            <Form.Control
-                                type="number" min="0" step="0.01" placeholder="Enter target amount"
-                                value={monthlyQuota} onChange={event => saveMonthlyQuota(event.target.value)}
-                                style={{ minWidth: 190 }}
-                            />
-                        </Form.Group>}
-                        <Button variant="primary" type="submit" disabled={loading}>View month</Button>
-                        <Button variant="outline-primary" type="button" onClick={() => move(1)} disabled={loading}>Next month</Button>
-                        <Button variant="outline-secondary" type="button" onClick={() => {
-                            const month = currentMonth();
-                            setSelectedMonth(month);
-                            loadReport(month);
-                        }} disabled={loading}>Current month</Button>
+                    <div className="pr-filter__header">
+                        <strong>Customer impact filters</strong>
+                        <span>Impact status is based on the selected month compared with the previous three-month average. Last month is secondary context.</span>
+                    </div>
+                    <div className="ct-filter-grid vip-impact-filter-grid">
+                        <TextField fullWidth size="small" type="month" value={selectedMonth} onChange={event => setSelectedMonth(event.target.value)} label="Report month" InputLabelProps={{ shrink: true }} required />
+                        <FormControl fullWidth size="small"><InputLabel>Impact group</InputLabel><Select value={impactGroup} label="Impact group" onChange={event => setImpactGroup(event.target.value)}>
+                            {Object.entries(impactGroupLabels).map(([value, label]) => <MenuItem key={value} value={value}>{label}</MenuItem>)}
+                        </Select></FormControl>
+                        <MuiButton variant="contained" type="submit" disabled={loading}>Compare customers</MuiButton>
                     </div>
                 </Form>
-            </div>
+                {loading && <LinearProgress className="pr-progress" />}
+            </section>
 
-            <div className="d-flex justify-content-center align-items-end gap-3 flex-wrap mb-3">
+            <section className="pr-summary ct-summary">
+                <div className="vip-impact-summary vip-impact-summary--winning" role="button" tabIndex="0" onClick={() => applyImpactFilter("winning")} onKeyDown={event => event.key === "Enter" && applyImpactFilter("winning")}><TrendingUpRoundedIcon/><div><span>Winning customers</span><strong>{winningCount.toLocaleString()}</strong><em><b>{signedMoney(winningSalesVsLastMonth)}</b> sales change vs last month</em><small>View winning customers →</small></div></div>
+                <div className="vip-impact-summary vip-impact-summary--declining" role="button" tabIndex="0" onClick={() => applyImpactFilter("declining")} onKeyDown={event => event.key === "Enter" && applyImpactFilter("declining")}><TrendingDownRoundedIcon/><div><span>Declining customers</span><strong>{decliningCount.toLocaleString()}</strong><em><b>-{money(decliningNeededForLastMonth)}</b> sales gap to match last month</em><small>View declining customers →</small></div></div>
+                <div className="vip-impact-summary vip-impact-summary--missing" role="button" tabIndex="0" onClick={() => applyImpactFilter("missing")} onKeyDown={event => event.key === "Enter" && applyImpactFilter("missing")}><PersonOffOutlinedIcon/><div><span>Missing customers</span><strong>{missingCount.toLocaleString()}</strong><em><b>-{money(missingExpectedFromLastMonth)}</b> expected lost sales vs last month</em><small>View missing customers →</small></div></div>
+            </section>
+            <section className={`vip-report-verdict vip-report-verdict--${reportVerdict.tone}`}>
+                <div className="vip-report-verdict__icon">{netSalesVsLastMonth >= 0 ? <TrendingUpRoundedIcon/> : <TrendingDownRoundedIcon/>}</div>
+                <div><span>Report verdict · versus last month · as of {asOfLabel}</span><h4>{reportVerdict.label}</h4><p>{reportVerdict.message}</p><p className="vip-report-verdict__action"><b>Recommended action:</b> Recover {money(decliningNeededForLastMonth)} from declining customers and contact {customersInGroup("missing").length} missing customers.</p></div>
+                <div className="vip-report-verdict__numbers"><strong>{signedMoney(netSalesVsLastMonth)}</strong>{isCurrentReportMonth && <><small>{monthCompletion.toFixed(0)}% of month elapsed</small><em><b>{signedMoney(projectedNetVsLastMonth)}</b> projected month-end vs last month</em></>}</div>
+            </section>
+            <div className="pci-benchmark-note"><strong>Primary impact benchmark</strong><span>Winning, declining, and missing verdicts are based on the selected month versus the previous 3-month average.</span><InfoOutlinedIcon className="vip-benchmark-info" titleAccess="Status uses the previous 3-month average. Summary amounts and the overall verdict compare paid sales with last month."/></div>
+
+            <div className="d-flex justify-content-center align-items-end gap-3 flex-wrap mb-3 vip-history-controls">
+                {showSales && <Form.Group className="vip-history-quota">
+                    <Form.Label className="mb-1">Monthly sales quota</Form.Label>
+                    <Form.Control type="number" min="0" step="0.01" placeholder="Enter target amount" value={monthlyQuota} onChange={event => saveMonthlyQuota(event.target.value)} />
+                </Form.Group>}
                 <div className="btn-group" role="group" aria-label="Report display">
                     <Button
                         variant={reportView === "table" ? "dark" : "outline-dark"}
@@ -378,14 +479,6 @@ const VIPTransactionHistory = () => {
                         />
                     ))}
                 </div>
-                <Form.Group style={{ minWidth: 210 }}>
-                    <Form.Label className="mb-1">Order customer list by</Form.Label>
-                    <Form.Select value={sortBy} onChange={event => setSortBy(event.target.value)}>
-                        <option value="sales">Current sales — highest first</option>
-                        <option value="profit">Current profit — highest first</option>
-                        <option value="name">Customer name — A to Z</option>
-                    </Form.Select>
-                </Form.Group>
             </div>
 
             {error && <div className="alert alert-danger">{error}</div>}
@@ -544,17 +637,23 @@ const VIPTransactionHistory = () => {
                             />
                         </Box>
                     </div> : <div className="text-center text-muted py-5">No graph data available for this month.</div>}
-                </div> : <div style={styles.tableCard} className="table-responsive">
-                    <table className="table table-bordered table-hover align-middle mb-0" style={{ minWidth: 1250 }}>
+                </div> : <section className="pr-card">
+                    <header>
+                        <div><h2>{impactGroupLabels[appliedFilters.impactGroup] || "VIP customers"}</h2><p>{filteredTotal.toLocaleString()} customers · selected month {appliedFilters.month}</p></div>
+                        <Form onSubmit={submit} className="ct-table-tools">
+                            <TextField className="pr-search" size="small" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search customer..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon/></InputAdornment> }}/>
+                        </Form>
+                    </header>
+                    <div className="table-responsive">
+                    <table className="table table-bordered table-hover align-middle mb-0 vip-history-table">
                         <thead style={styles.tableHeader}>
                             <tr>
-                                <th style={styles.tableHeaderCell}>VIP Customer</th>
-                                {months.map(month => <th style={styles.tableHeaderCell} key={month.month}>{month.label}</th>)}
+                                <th className="vip-rank-column" style={styles.tableHeaderCell}>Rank movement</th>
+                                <th className="vip-customer-column" style={styles.tableHeaderCell}>VIP Customer</th>
+                                {months.map((month, index) => <th className={index === 0 ? "vip-current-sales-heading" : ""} style={styles.tableHeaderCell} key={month.month}>{month.label}</th>)}
                                 {showSales && <>
                                 <th style={styles.tableHeaderCell}>Last 3-month average</th>
-                                <th style={styles.tableHeaderCell}>3-month average gap</th>
-                                <th style={styles.tableHeaderCell}>Last month gap</th>
-                                <th style={{ ...styles.tableHeaderCell, minWidth: 210 }}>Status / Sales Trend</th>
+                                <th className="vip-trend-column" style={styles.tableHeaderCell}>Status / Sales Trend</th>
                                 </>}
                                 {showProfit && <>
                                 <th style={styles.tableHeaderCell}>Average profit</th>
@@ -566,7 +665,9 @@ const VIPTransactionHistory = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {sortedCustomers.map(customer => {
+                            {customerGroups.map(group => <React.Fragment key={group.key}>
+                            {showImpactGrouping && <tr className={`vip-impact-group-row vip-impact-group-row--${group.key}`}><td colSpan={tableColumnCount}><div><strong>{group.label}</strong><span>{group.description}</span></div><b>{group.customers.length}</b></td></tr>}
+                            {group.customers.map(customer => {
                                 const history = new Map((customer.previous_months || []).map(month => [month.month, month]));
                                 const customerLastMonthPaid = Number(customer.previous_months?.[0]?.paid_amount || 0);
                                 const customerLastMonthProfit = Number(customer.previous_months?.[0]?.profit_amount || 0);
@@ -574,18 +675,29 @@ const VIPTransactionHistory = () => {
                                 const customerThreeMonthAverage = customerPreviousMonths.length
                                     ? customerPreviousMonths.reduce((total, month) => total + Number(month.paid_amount || 0), 0) / customerPreviousMonths.length
                                     : 0;
+                                const rankMovement = customer.rank_movement || {};
+                                const currentRank = rankMovement.current_rank ?? customer.current_rank ?? customer.rank ?? "—";
+                                const previousRank = rankMovement.previous_rank ?? customer.previous_rank ?? customer.last_month_rank ?? "—";
+                                const movement = Number(rankMovement.movement ?? rankMovement.change ?? customer.rank_change ?? 0);
+                                const impactStatus = String(customer.impact_status || customer.status || "unchanged").toLowerCase();
+                                const averageGap = comparisonAmount(customer.paid_vs_three_month_average, Number(customer.current_paid || 0) - customerThreeMonthAverage);
+                                const lastMonthGap = comparisonAmount(customer.paid_vs_last_month, Number(customer.current_paid || 0) - customerLastMonthPaid);
                                 const customerId = customer.customer_id || customer.vip_customer_transaction_id;
-                                return <tr key={customerId}>
+                                return <tr key={customerId} className={`vip-impact-customer-row vip-impact-customer-row--${group.key}`}>
+                                    <td><div className="pt-rank-move"><span className="pr-rank">{currentRank}</span><div><small>was #{previousRank}</small><strong className={movement < 0 ? "pr-negative" : "pt-positive"}>{movement > 0 ? "▲ " : movement < 0 ? "▼ " : ""}{Math.abs(movement) || "—"}</strong></div></div></td>
                                     <td>
                                         <div style={styles.customer}>{customer.customer_name || "Unnamed customer"}</div>
                                         <div style={styles.meta}>{customer.store_name || "No store name"}</div>
                                     </td>
                                     {months.map((month, index) => {
                                         const monthHistory = history.get(month.month);
-                                        return <td key={month.month} className={index === 0 ? "table-success" : ""}>
+                                        return <td key={month.month} className={index === 0 ? "table-success vip-current-sales-cell" : ""}>
                                             {showSales && <>
                                             <span style={styles.cellSalesLabel}>Sales</span>
-                                            <strong>{money(index === 0 ? customer.current_paid : monthHistory?.paid_amount)}</strong>
+                                            <strong className={index === 0 ? "vip-current-sales-value" : ""}>{money(index === 0 ? customer.current_paid : monthHistory?.paid_amount)}</strong>
+                                            {index === 1 && <span className={`vip-inline-gap ${lastMonthGap >= 0 ? "vip-inline-gap--up" : "vip-inline-gap--down"}`}>
+                                                <small>Vs current month</small>{lastMonthGap >= 0 ? "+" : "-"}{money(Math.abs(lastMonthGap))}
+                                            </span>}
                                             </>}
                                             {showProfit && <span style={{ ...styles.cellProfit, marginTop: showSales ? 5 : 0, fontSize: showSales ? 12 : 14 }}>
                                                 {showSales ? "Profit: " : ""}{money(index === 0 ? customer.current_profit : monthHistory?.profit_amount)}
@@ -596,10 +708,8 @@ const VIPTransactionHistory = () => {
                                         </td>;
                                     })}
                                     {showSales && <>
-                                    <td>{money(customerThreeMonthAverage)}</td>
-                                    <td>{renderTargetGap(customer.current_paid, customerThreeMonthAverage)}</td>
-                                    <td>{renderTargetGap(customer.current_paid, customerLastMonthPaid)}</td>
-                                    <td>{renderSalesTrend(customer.current_paid, customerThreeMonthAverage, customerLastMonthPaid)}</td>
+                                    <td><strong>{money(customerThreeMonthAverage)}</strong><span className={`vip-inline-gap ${averageGap >= 0 ? "vip-inline-gap--up" : "vip-inline-gap--down"}`}><small>Current month gap</small>{averageGap >= 0 ? "+" : "-"}{money(Math.abs(averageGap))}</span></td>
+                                    <td><span className={`pci-status vip-impact-status pci-status--${impactStatus}`}>{impactStatus.replaceAll("_", " ")}</span>{renderSalesTrend(customer.current_paid, customerThreeMonthAverage, customerLastMonthPaid)}</td>
                                     </>}
                                     {showProfit && <>
                                     <td style={{ color: "#6f42c1", fontWeight: 700 }}>{money(customer.average_monthly_profit)}</td>
@@ -620,29 +730,29 @@ const VIPTransactionHistory = () => {
                                         </Button>
                                     </td>
                                 </tr>;
-                            })}
-                            {!loading && customers.length === 0 && <tr><td colSpan={months.length + 2 + (showSales ? 4 : 0) + (showProfit ? 3 : 0) + (showProfitMargin ? 1 : 0)} className="text-center text-muted py-4">No VIP customers found for this template.</td></tr>}
+                            })}</React.Fragment>)}
+                            {!loading && customers.length === 0 && <tr><td colSpan={tableColumnCount} className="text-center text-muted py-4">No VIP customers found for this impact group.</td></tr>}
                         </tbody>
                         <tfoot>
                             <tr style={styles.totalRow}>
+                                <td style={styles.totalCell} />
                                 <td style={styles.totalCell}>
                                     <span style={styles.totalLabel}>All customers</span>
                                     <span style={styles.totalHint}>VIP totals</span>
                                 </td>
                                 <td style={styles.totalCell}>
-                                    {showSales && <strong>{money(report.current_month_paid)}</strong>}
+                                    {showSales && <strong className="vip-current-sales-value">{money(report.current_month_paid)}</strong>}
                                     {showProfit && <span style={{ ...styles.cellProfit, marginTop: showSales ? 5 : 0 }}>{showSales ? "Profit: " : ""}{money(currentMonthProfit)}</span>}
                                     {showProfitMargin && <span style={{ ...styles.cellProfitMargin, marginTop: showSales || showProfit ? 5 : 0 }}>Margin {profitMarginLabel(currentMonthProfit, report.current_month_paid)}</span>}
                                 </td>
                                 {(report.previous_months || []).map(month => <td style={styles.totalCell} key={month.month}>
                                     {showSales && <strong>{money(month.paid_amount)}</strong>}
+                                    {showSales && month.month === report.previous_months?.[0]?.month && <span className={`vip-inline-gap ${Number(report.current_month_paid || 0) - Number(month.paid_amount || 0) >= 0 ? "vip-inline-gap--up" : "vip-inline-gap--down"}`}><small>Vs current month</small>{renderTargetGap(report.current_month_paid, month.paid_amount)}</span>}
                                     {showProfit && <span style={{ ...styles.cellProfit, marginTop: showSales ? 5 : 0 }}>{showSales ? "Profit: " : ""}{money(month.profit_amount)}</span>}
                                     {showProfitMargin && <span style={{ ...styles.cellProfitMargin, marginTop: showSales || showProfit ? 5 : 0 }}>Margin {profitMarginLabel(month.profit_amount, month.paid_amount)}</span>}
                                 </td>)}
                                 {showSales && <>
-                                <td style={styles.totalCell}>{money(lastThreeMonthAverage)}</td>
-                                <td style={styles.totalCell}>{renderTargetGap(report.current_month_paid, lastThreeMonthAverage)}</td>
-                                <td style={styles.totalCell}>{renderTargetGap(report.current_month_paid, lastMonthPaid)}</td>
+                                <td style={styles.totalCell}><strong>{money(lastThreeMonthAverage)}</strong><span className="vip-inline-gap"><small>Current month gap</small>{renderTargetGap(report.current_month_paid, lastThreeMonthAverage)}</span></td>
                                 <td style={styles.totalCell}>{renderSalesTrend(report.current_month_paid, lastThreeMonthAverage, lastMonthPaid)}</td>
                                 </>}
                                 {showProfit && <>
@@ -655,7 +765,8 @@ const VIPTransactionHistory = () => {
                             </tr>
                         </tfoot>
                     </table>
-                </div>}
+                    </div>
+                </section>}
             </>}
         </div>
     );
