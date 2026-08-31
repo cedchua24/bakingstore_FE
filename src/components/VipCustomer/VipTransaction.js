@@ -4,7 +4,6 @@ import { Button, Form } from 'react-bootstrap';
 import LinearProgress from '@mui/material/LinearProgress';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-import QueryStatsOutlinedIcon from '@mui/icons-material/QueryStatsOutlined';
 import VipCustomerTransactionService from "./VipCustomerTransactionService";
 import VipCustomerService from "./VipCustomerService";
 
@@ -526,16 +525,6 @@ const VipTransaction = () => {
         return "/customers/customerProductList/" + customerId + "?" + params.toString();
     }
 
-    const buildCustomerProductSalesLink = (customerId, customerName) => {
-        var reportDate = dateFilter.dateTo || dateFilter.dateFrom || formatDateParam(new Date());
-        var params = new URLSearchParams({
-            customer_id: customerId,
-            month: reportDate.slice(0, 7),
-            customer_name: customerName || '',
-        });
-        return "/productMonthlySalesHistory?" + params.toString();
-    }
-
     return (
         <div style={styles.page}>
 
@@ -574,11 +563,8 @@ const VipTransaction = () => {
             </div>
 
             <div style={{ ...styles.analysisPanel, marginTop: '0', marginBottom: '16px' }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", marginBottom: "10px" }}>
+                <div style={{ marginBottom: "10px" }}>
                     <h5 style={{ ...styles.analysisTitle, marginBottom: 0 }}>Sales Analysis</h5>
-                    <Link to="/productMonthlySalesHistory">
-                        <Button variant="primary" size="sm">Products Sold History</Button>
-                    </Link>
                 </div>
                 <div style={styles.collectedPaymentsHero}>
                     <div>
@@ -678,9 +664,6 @@ const VipTransaction = () => {
                                             </Link>
                                             <Link to={buildCustomerProductLink(vipTransaction.customer_id)} title="View products" aria-label="View products">
                                                 <Button variant="outline-primary" size="sm" style={styles.iconButton}><Inventory2OutlinedIcon fontSize="small" /></Button>
-                                            </Link>
-                                            <Link to={buildCustomerProductSalesLink(vipTransaction.customer_id, vipTransaction.customer_name)} title="View product sales history" aria-label="View product sales history">
-                                                <Button variant="success" size="sm" style={styles.iconButton}><QueryStatsOutlinedIcon fontSize="small" /></Button>
                                             </Link>
                                         </div>}
                                     </td>

@@ -1,6 +1,20 @@
-.product-impact-table{width:100%;min-width:1080px!important;table-layout:fixed}
-.product-impact-table th{padding:9px 7px!important;font-size:.66rem!important;line-height:1.25;white-space:normal}
-.product-impact-table td{padding:9px 7px!important;font-size:.71rem;overflow-wrap:anywhere}
+.product-impact-table{width:100%;min-width:1044px!important;table-layout:fixed}
+.product-impact-table th{padding:8px 6px!important;font-size:.61rem!important;line-height:1.22;white-space:normal;overflow-wrap:anywhere}
+.product-impact-table td{padding:8px 6px!important;font-size:.69rem;overflow-wrap:anywhere}
+.product-impact-table td:nth-last-child(2){padding-left:8px!important;padding-right:8px!important}
+.product-impact-table td:nth-last-child(2) strong,.product-impact-table td:nth-last-child(2) span{max-width:100%;overflow-wrap:anywhere}
 .product-impact-table .vip-current-sales-value{font-size:.86rem!important}
 .product-impact-table .vip-impact-group-row td{padding:16px 70px 16px 20px!important}
-@media(max-width:700px){.product-impact-table{min-width:980px!important}}
+.product-primary-sales-row{grid-template-columns:repeat(3,minmax(0,1fr))!important;margin-top:14px!important;margin-bottom:14px!important}.product-secondary-summary{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))!important}
+.product-current-sales-kpi{position:relative;overflow:hidden;border:2px solid #3b82f6!important;border-left-width:5px!important;background:linear-gradient(135deg,#eef5ff 0%,#fff 82%)!important;box-shadow:0 5px 14px rgba(37,99,235,.13)!important}
+.product-current-sales-kpi:after{content:"";position:absolute;right:-24px;top:-32px;width:90px;height:90px;border-radius:50%;background:rgba(37,99,235,.07)}
+.product-current-sales-kpi__top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px}.product-current-sales-kpi__top p{margin:0;color:#1d4ed8;font-size:.68rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase}.product-current-sales-kpi__top span{padding:3px 7px;border-radius:999px;color:#fff;background:#2563eb;font-size:.52rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+.product-current-sales-kpi>strong{position:relative;z-index:1;display:block;margin:8px 0 4px;color:#102a56;font-size:1.48rem;font-weight:900;line-height:1.08;letter-spacing:-.025em}.product-current-sales-kpi>small{position:relative;z-index:1;color:#496281;font-size:.67rem;font-weight:700}
+.product-summary-comparison{margin-top:10px;padding-top:8px;border-top:1px solid #d8dee8}.product-summary-comparison>span{display:block;margin-bottom:2px;color:#64748b;font-size:.62rem;font-weight:800;letter-spacing:.045em;text-transform:uppercase}.product-summary-comparison>strong{font-size:.9rem;font-weight:900}
+.product-impact-table .vip-impact-group-row--highest_sales td{background:linear-gradient(90deg,#dbeafe,#f7fbff 72%)!important;box-shadow:inset 6px 0 #2563eb}
+.product-impact-table .vip-impact-group-row--highest_sales b{color:#1d4ed8;border-color:#93c5fd;background:#eff6ff}
+.product-impact-table .vip-impact-customer-row--highest_sales td{background-color:#f5f9ff!important}
+.product-impact-table .vip-impact-customer-row--highest_sales td:first-child{box-shadow:inset 3px 0 #60a5fa}
+.product-impact-table .vip-impact-customer-row--highest_sales:hover td{background-color:#eaf3ff!important}
+.product-impact-table .vip-impact-customer-row--highest_sales .vip-current-sales-value{color:#1d4ed8!important}
+@media(max-width:700px){.product-impact-table{min-width:940px!important}.product-primary-sales-row{grid-template-columns:1fr!important}}

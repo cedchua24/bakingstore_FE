@@ -38,8 +38,6 @@ const ReportList = () => {
     const totalProfit = Number(shopOrderTransaction.total_profit || 0);
     const totalExpenses = Number(shopOrderTransaction.total_expenses || 0);
     const totalTransactions = Number(shopOrderTransaction.total_count || 0);
-    const totalCash = Number(shopOrderTransaction.total_cash || 0);
-    const totalOnline = Number(shopOrderTransaction.total_online || 0);
     const netProfit = totalProfit - totalExpenses;
     const averageTransactions = dailyOrders.length
         ? Math.floor(totalTransactions / dailyOrders.length)
@@ -50,14 +48,72 @@ const ReportList = () => {
     const expenseMargin = totalSales ? (totalExpenses / totalSales) * 100 : 0;
     const netProfitMargin = totalSales ? (netProfit / totalSales) * 100 : 0;
 
-    const paymentMix = useMemo(() => {
-        const paymentTotal = totalCash + totalOnline;
+    const businessAnalysis = useMemo(() => {
+        const ownerCount = 2;
+        const marginRate = totalSales > 0 ? totalProfit / totalSales : 0;
+        const breakEvenSales = marginRate > 0 ? totalExpenses / marginRate : 0;
+        const profitPerOwner = netProfit / ownerCount;
+        const nextMillion = Math.ceil(totalSales / 1000000) * 1000000;
+        const levelSeeds = [
+            { label: "Break-even", sales: breakEvenSales, tone: "danger" },
+            {
+                label: "Survival",
+                sales: Math.ceil(breakEvenSales / 1000000) * 1000000,
+                tone: "danger",
+            },
+            { label: "Current", sales: totalSales, tone: "current", isCurrent: true },
+            { label: "Stable", sales: nextMillion, tone: "stable" },
+            { label: "Profitable", sales: nextMillion + 1000000, tone: "healthy" },
+            { label: "Strong", sales: nextMillion + 2000000, tone: "healthy" },
+            { label: "Growth-ready", sales: nextMillion + 3000000, tone: "growth" },
+            { label: "Expandable", sales: nextMillion + 4000000, tone: "growth" },
+            { label: "Excellent", sales: nextMillion + 7000000, tone: "excellent" },
+        ];
+        const levels = levelSeeds
+            .filter((level, index, allLevels) =>
+                level.isCurrent ||
+                allLevels.findIndex(
+                    (candidate) => Math.round(candidate.sales) === Math.round(level.sales)
+                ) === index
+            )
+            .sort((first, second) => first.sales - second.sales)
+            .map((level) => {
+                const grossProfit = level.sales * marginRate;
+                const projectedProfit = level.isCurrent
+                    ? netProfit
+                    : Math.max(grossProfit - totalExpenses, 0);
+
+                return {
+                    ...level,
+                    grossProfit,
+                    projectedProfit,
+                    profitPerOwner: projectedProfit / ownerCount,
+                };
+            });
+
+        let status = "Needs attention";
+        let summary = "The business is not yet covering the included expenses for this period.";
+
+        if (netProfitMargin >= 10) {
+            status = "Healthy";
+            summary = "Profitability has a useful operating buffer, but owner distributions should still preserve working cash.";
+        } else if (netProfitMargin >= 5) {
+            status = "Stable, with limited buffer";
+            summary = "The business is profitable, though a modest sales or cost change could materially affect both owners.";
+        } else if (netProfit > 0) {
+            status = "Profitable but vulnerable";
+            summary = "The margin is thin, so splitting all profit between the two owners would leave little cash in the business.";
+        }
 
         return {
-            cash: paymentTotal ? (totalCash / paymentTotal) * 100 : 0,
-            online: paymentTotal ? (totalOnline / paymentTotal) * 100 : 0,
+            ownerCount,
+            breakEvenSales,
+            profitPerOwner,
+            status,
+            summary,
+            levels,
         };
-    }, [totalCash, totalOnline]);
+    }, [netProfit, netProfitMargin, totalExpenses, totalProfit, totalSales]);
 
     useEffect(() => {
         setExpenseTypesLoading(true);
@@ -144,6 +200,13 @@ const ReportList = () => {
             style: "currency",
             currency: "PHP",
             maximumFractionDigits: 2,
+        }).format(Number(value || 0));
+
+    const wholeNumberFormat = (value) =>
+        new Intl.NumberFormat("en-US", {
+            style: "currency",
+            currency: "PHP",
+            maximumFractionDigits: 0,
         }).format(Number(value || 0));
 
     const formatDate = (date) =>
@@ -398,30 +461,86 @@ const ReportList = () => {
                             )}
                         </div>
 
-                        <div className="profit-report__payments">
-                            <article>
-                                <div className="profit-report__payment-heading">
-                                    <span className="sales-report__payment-dot sales-report__payment-dot--cash" />
-                                    <span>Cash payments</span>
-                                    <b>{paymentMix.cash.toFixed(1)}%</b>
+                        {isAdmin && (
+                            <section className="profit-report__analysis" aria-label="Business analysis">
+                                <div className="profit-report__analysis-heading">
+                                    <div>
+                                        <p className="sales-report__eyebrow">Owner outlook</p>
+                                        <h3>High-level business analysis</h3>
+                                    </div>
+                                    <span>{businessAnalysis.status}</span>
                                 </div>
-                                <strong>{numberFormat(totalCash)}</strong>
-                                <div className="profit-report__payment-track">
-                                    <span style={{ width: `${paymentMix.cash}%` }} />
+
+                                <p>{businessAnalysis.summary}</p>
+
+                                <div className="profit-report__owner-snapshot">
+                                    <article>
+                                        <span>Total net profit</span>
+                                        <strong>{wholeNumberFormat(netProfit)}</strong>
+                                        <small>
+                                            {wholeNumberFormat(businessAnalysis.profitPerOwner)} / owner
+                                            if split equally
+                                        </small>
+                                    </article>
+                                    <article>
+                                        <span>Current net margin</span>
+                                        <strong>{netProfitMargin.toFixed(2)}%</strong>
+                                        <small>After included expenses</small>
+                                    </article>
                                 </div>
-                            </article>
-                            <article>
-                                <div className="profit-report__payment-heading">
-                                    <span className="sales-report__payment-dot sales-report__payment-dot--online" />
-                                    <span>Online payments</span>
-                                    <b>{paymentMix.online.toFixed(1)}%</b>
-                                </div>
-                                <strong>{numberFormat(totalOnline)}</strong>
-                                <div className="profit-report__payment-track profit-report__payment-track--online">
-                                    <span style={{ width: `${paymentMix.online}%` }} />
-                                </div>
-                            </article>
-                        </div>
+
+                                <details className="profit-report__analysis-details">
+                                    <summary>View monthly sales levels and owner split</summary>
+                                    <p className="profit-report__levels-intro">
+                                        At the current {profitMargin.toFixed(2)}% gross margin and approximately{" "}
+                                        {wholeNumberFormat(totalExpenses)} in included expenses, the sales levels are:
+                                    </p>
+                                    <div className="profit-report__analysis-table-wrap">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Monthly sales</th>
+                                                    <th>Gross profit</th>
+                                                    <th>Est. net profit*</th>
+                                                    <th>Level</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {businessAnalysis.levels.map((level) => (
+                                                    <tr
+                                                        key={`${level.label}-${level.sales}`}
+                                                        className={level.isCurrent ? "is-current" : ""}
+                                                    >
+                                                        <td>{wholeNumberFormat(level.sales)}</td>
+                                                        <td>{wholeNumberFormat(level.grossProfit)}</td>
+                                                        <td className="profit-report__target-profit">
+                                                            <strong>{wholeNumberFormat(level.projectedProfit)}</strong>
+                                                            <small>
+                                                                {level.projectedProfit > 0
+                                                                    ? `${wholeNumberFormat(level.profitPerOwner)} / owner`
+                                                                    : "No owner profit to split"}
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            <span className={`profit-report__level profit-report__level--${level.tone}`}>
+                                                                <i />
+                                                                {level.isCurrent
+                                                                    ? `${level.label} / ${businessAnalysis.status}`
+                                                                    : level.label}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <small>
+                                        *Equal split before retaining cash. Estimates assume the current gross
+                                        margin and included expenses remain broadly unchanged.
+                                    </small>
+                                </details>
+                            </section>
+                        )}
                     </section>
 
                     {isAdmin && (

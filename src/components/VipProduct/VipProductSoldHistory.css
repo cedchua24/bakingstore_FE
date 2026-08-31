@@ -1,6 +1,8 @@
-.vip-product-impact-table{width:100%;min-width:1080px!important;table-layout:fixed}
-.vip-product-impact-table th{padding:9px 7px!important;font-size:.66rem!important;line-height:1.25;white-space:normal}
-.vip-product-impact-table td{padding:9px 7px!important;font-size:.71rem;overflow-wrap:anywhere}
+.vip-product-impact-table{width:100%;min-width:1044px!important;table-layout:fixed}
+.vip-product-impact-table th{padding:8px 6px!important;font-size:.61rem!important;line-height:1.22;white-space:normal;overflow-wrap:anywhere}
+.vip-product-impact-table td{padding:8px 6px!important;font-size:.69rem;overflow-wrap:anywhere}
+.vip-product-impact-table td:nth-last-child(2){padding-left:8px!important;padding-right:8px!important}
+.vip-product-impact-table td:nth-last-child(2) strong,.vip-product-impact-table td:nth-last-child(2) span{max-width:100%;overflow-wrap:anywhere}
 .vip-product-impact-table .vip-current-sales-value{font-size:.86rem!important}
 .vip-product-impact-table .vip-impact-group-row td{padding:16px 70px 16px 20px!important}
 .vip-product-impact-table .vip-impact-group-row--highest_sales td{background:linear-gradient(90deg,#dbeafe,#f7fbff 72%)!important;box-shadow:inset 6px 0 #2563eb}
@@ -9,4 +11,13 @@
 .vip-product-impact-table .vip-impact-customer-row--highest_sales td:first-child{box-shadow:inset 3px 0 #60a5fa}
 .vip-product-impact-table .vip-impact-customer-row--highest_sales:hover td{background-color:#eaf3ff!important}
 .vip-product-impact-table .vip-impact-customer-row--highest_sales .vip-current-sales-value{color:#1d4ed8!important}
-@media(max-width:700px){.vip-product-impact-table{min-width:980px!important}}
+.vip-current-sales-kpi{position:relative;overflow:hidden;border:2px solid #3b82f6!important;border-left-width:5px!important;background:linear-gradient(135deg,#eef5ff 0%,#fff 82%)!important;box-shadow:0 5px 14px rgba(37,99,235,.13)!important}
+.vip-current-sales-kpi:after{content:"";position:absolute;right:-24px;top:-32px;width:90px;height:90px;border-radius:50%;background:rgba(37,99,235,.07)}
+.vip-current-sales-kpi__top{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px}.vip-current-sales-kpi__top p{margin:0;color:#1d4ed8;font-size:.68rem;font-weight:900;letter-spacing:.05em;text-transform:uppercase}.vip-current-sales-kpi__top span{padding:3px 7px;border-radius:999px;color:#fff;background:#2563eb;font-size:.52rem;font-weight:900;letter-spacing:.07em;text-transform:uppercase}
+.vip-current-sales-kpi>strong{position:relative;z-index:1;display:block;margin:8px 0 4px;color:#102a56;font-size:1.48rem;font-weight:900;line-height:1.08;letter-spacing:-.025em}.vip-current-sales-kpi>small{position:relative;z-index:1;color:#496281;font-size:.67rem;font-weight:700}
+.vip-sales-analysis{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(280px,1.6fr) minmax(260px,1.2fr);align-items:center;gap:18px;margin:0 0 16px;padding:16px 18px;border:1px solid;border-left-width:6px;border-radius:10px;background:#fff}
+.vip-sales-analysis--critical{border-color:#efaaaa;border-left-color:#c81e1e;background:#fff7f7}.vip-sales-analysis--watch{border-color:#f2cb83;border-left-color:#e58b00;background:#fffaf1}.vip-sales-analysis--strong{border-color:#a9ddc1;border-left-color:#15945e;background:#f5fcf8}
+.vip-sales-analysis__heading{display:flex;flex-direction:column;gap:3px}.vip-sales-analysis__heading strong{font-size:1rem;color:#172033}.vip-sales-analysis__heading span,.vip-sales-analysis__recommendation span{font-size:.68rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;font-weight:800}
+.vip-sales-analysis p{margin:0;color:#475569;font-size:.78rem;line-height:1.55}.vip-sales-analysis__recommendation{display:flex;flex-direction:column;gap:4px;padding-left:16px;border-left:1px solid #d8dee8}.vip-sales-analysis__recommendation strong{color:#26364b;font-size:.76rem;line-height:1.45}
+@media(max-width:900px){.vip-sales-analysis{grid-template-columns:1fr}.vip-sales-analysis__recommendation{padding:12px 0 0;border-left:0;border-top:1px solid #d8dee8}}
+@media(max-width:700px){.vip-product-impact-table{min-width:940px!important}}

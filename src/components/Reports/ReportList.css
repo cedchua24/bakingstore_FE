@@ -132,6 +132,204 @@
     background: #4f46e5;
 }
 
+.profit-report__analysis {
+    margin-top: 20px;
+    padding: 22px 24px;
+    border: 1px solid #ddd9ff;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ffffff 0%, #f7f6ff 100%);
+}
+
+.profit-report__analysis-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.profit-report__analysis-heading h3 {
+    margin: 3px 0 0;
+    color: var(--report-ink);
+    font-size: 1.25rem;
+}
+
+.profit-report__analysis-heading > span {
+    padding: 7px 11px;
+    color: #4338ca;
+    border-radius: 999px;
+    background: #e9e7ff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.profit-report__analysis > p {
+    max-width: 780px;
+    margin: 12px 0 18px;
+    color: var(--report-muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+
+.profit-report__owner-snapshot {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: hidden;
+    border: 1px solid var(--report-border);
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.profit-report__owner-snapshot article {
+    padding: 15px 17px;
+    border-right: 1px solid var(--report-border);
+}
+
+.profit-report__owner-snapshot article:last-child {
+    border-right: 0;
+}
+
+.profit-report__owner-snapshot span,
+.profit-report__owner-snapshot strong,
+.profit-report__owner-snapshot small {
+    display: block;
+}
+
+.profit-report__owner-snapshot span {
+    color: var(--report-muted);
+    font-size: 0.69rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.profit-report__owner-snapshot strong {
+    margin-top: 5px;
+    color: var(--report-ink);
+    font-size: 1rem;
+}
+
+.profit-report__owner-snapshot small {
+    margin-top: 3px;
+    color: var(--report-muted);
+    font-size: 0.69rem;
+}
+
+.profit-report__analysis-details {
+    margin-top: 15px;
+}
+
+.profit-report__analysis-details summary {
+    width: fit-content;
+    color: #4f46e5;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.profit-report__analysis-table-wrap {
+    overflow-x: auto;
+    margin-top: 14px;
+    border: 1px solid var(--report-border);
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.profit-report__levels-intro {
+    margin: 13px 0 0;
+    color: var(--report-muted);
+    font-size: 0.84rem;
+    line-height: 1.5;
+}
+
+.profit-report__analysis-details table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+}
+
+.profit-report__analysis-details th,
+.profit-report__analysis-details td {
+    padding: 14px 15px;
+    border-bottom: 1px solid var(--report-border);
+    font-size: 0.83rem;
+    text-align: left;
+}
+
+.profit-report__analysis-details th {
+    color: var(--report-muted);
+    background: #f8f8fc;
+    font-size: 0.73rem;
+    text-transform: uppercase;
+}
+
+.profit-report__analysis-details tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.profit-report__analysis-details tbody tr.is-current {
+    background: #f1f0ff;
+}
+
+.profit-report__target-profit strong,
+.profit-report__target-profit small {
+    display: block;
+}
+
+.profit-report__level {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--report-ink);
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.profit-report__level i {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #ef476f;
+    box-shadow: inset 0 -2px 3px rgba(0, 0, 0, 0.14);
+}
+
+.profit-report__level--current i {
+    background: #ff7a59;
+}
+
+.profit-report__level--stable i {
+    background: #f6c453;
+}
+
+.profit-report__level--healthy i {
+    background: #4dd49a;
+}
+
+.profit-report__level--growth i {
+    background: #4488db;
+}
+
+.profit-report__level--excellent i {
+    background: #8356d8;
+}
+
+.profit-report__target-profit strong {
+    color: var(--report-ink);
+}
+
+.profit-report__target-profit small {
+    margin-top: 3px;
+    color: var(--report-muted);
+    font-size: 0.73rem;
+}
+
+.profit-report__analysis-details > small {
+    display: block;
+    margin-top: 10px;
+    color: var(--report-muted);
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
 .profit-report__table {
     min-width: 930px;
 }
@@ -193,7 +391,8 @@
 @media (max-width: 720px) {
     .profit-report__metrics,
     .profit-report__supporting-metrics,
-    .profit-report__payments {
+    .profit-report__payments,
+    .profit-report__owner-snapshot {
         grid-template-columns: 1fr;
     }
 
@@ -204,5 +403,24 @@
 
     .profit-report__supporting-metrics article:last-child {
         border-bottom: 0;
+    }
+
+    .profit-report__owner-snapshot article {
+        border-right: 0;
+        border-bottom: 1px solid var(--report-border);
+    }
+
+    .profit-report__owner-snapshot article:last-child {
+        border-bottom: 0;
+    }
+
+    .profit-report__analysis {
+        padding: 19px 17px;
+    }
+
+    .profit-report__analysis-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
     }
 }
