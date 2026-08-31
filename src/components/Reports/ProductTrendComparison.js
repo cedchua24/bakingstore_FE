@@ -20,6 +20,7 @@ import { useNavigate } from 'react-router-dom';
 import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransactionService';
 import SupplierService from '../Supplier/SupplierService.service';
 import CategoryService from '../Category/CategoryService.service';
+import ImpactGroupSelect from '../Common/ImpactGroupSelect';
 import './ProductReport.css';
 
 const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
@@ -118,7 +119,7 @@ const trendDetails = (item, history, month) => {
 
 const ProductTrendComparison = () => {
     const navigate = useNavigate();
-    const [filters, setFilters] = useState({ month: currentMonth(), limit: 10, sort: 'current_sales', direction: 'desc', type: 'ALL', category_id: '', supplier_id: '' });
+    const [filters, setFilters] = useState({ month: currentMonth(), limit: 10, product_group: 'all', type: 'ALL', category_id: '', supplier_id: '' });
     const [report, setReport] = useState({ data: [] });
     const [suppliers, setSuppliers] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -165,9 +166,7 @@ const ProductTrendComparison = () => {
         <section className="pr-filter"><div className="pr-filter__header"><strong>Comparison filters</strong><span>Select a month; the report automatically compares it with the prior month and a three-month window.</span></div><div className="pr-filter__grid pt-filter__grid">
             <TextField fullWidth size="small" type="month" name="month" value={filters.month} onChange={update} label="Report month" InputLabelProps={{ shrink: true }}/>
             <FormControl fullWidth size="small"><InputLabel>Show</InputLabel><Select name="limit" value={filters.limit} label="Show" onChange={update}>{[10, 50, 100, 250, 500, 1000, 5000].map(value => <MenuItem key={value} value={value}>Top {value}</MenuItem>)}</Select></FormControl>
-            <FormControl fullWidth size="small"><InputLabel>Sort by</InputLabel><Select name="sort" value={filters.sort} label="Sort by" onChange={update}><MenuItem value="current_sales">Current sales</MenuItem><MenuItem value="current_quantity">Current quantity</MenuItem><MenuItem value="biggest_drop">Biggest sales drop</MenuItem><MenuItem value="rank_drop">Biggest rank drop</MenuItem></Select></FormControl>
-            <FormControl fullWidth size="small"><InputLabel>Direction</InputLabel><Select name="direction" value={filters.direction} label="Direction" onChange={update}><MenuItem value="desc">Highest first</MenuItem><MenuItem value="asc">Lowest first</MenuItem></Select></FormControl>
-            <FormControl fullWidth size="small"><InputLabel>Type</InputLabel><Select name="type" value={filters.type} label="Type" onChange={update}><MenuItem value="ALL">All</MenuItem><MenuItem value="WHOLESALE">Wholesale</MenuItem><MenuItem value="RETAIL">Retail</MenuItem></Select></FormControl>
+            <ImpactGroupSelect name="product_group" label="Product group" value={filters.product_group} onChange={update} options={[{ value: 'all', label: 'All results' }, { value: 'winning', label: 'Winning products' }, { value: 'highest_sales', label: 'Highest sales products' }, { value: 'new_product', label: 'New products' }, { value: 'lowest_sales', label: 'Lowest sales products' }, { value: 'declining', label: 'Declining products' }, { value: 'missing', label: 'Missing products' }]}/>
             <FormControl fullWidth size="small"><InputLabel>Category</InputLabel><Select name="category_id" value={filters.category_id} label="Category" onChange={update}><MenuItem value="">All categories</MenuItem>{categories.map(item => <MenuItem key={item.id} value={item.id}>{item.category_name}</MenuItem>)}</Select></FormControl>
             <FormControl fullWidth size="small"><InputLabel>Supplier</InputLabel><Select name="supplier_id" value={filters.supplier_id} label="Supplier" onChange={update}><MenuItem value="">All suppliers</MenuItem>{suppliers.map(item => <MenuItem key={item.id} value={item.id}>{item.supplier_name}</MenuItem>)}</Select></FormControl>
             <Button variant="contained" onClick={() => load()} disabled={loading}>Compare products</Button>
