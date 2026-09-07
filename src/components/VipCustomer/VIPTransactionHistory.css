@@ -18,14 +18,32 @@
 .vip-impact-customer-row--declining td{background-color:#fffaf2!important}.vip-impact-customer-row--declining td:first-child{box-shadow:inset 3px 0 #f5c866}.vip-impact-customer-row--declining:hover td{background-color:#fff2df!important}
 .vip-impact-customer-row--missing td{background-color:#fff5f5!important}.vip-impact-customer-row--missing td:first-child{box-shadow:inset 3px 0 #e57373}.vip-impact-customer-row--missing:hover td{background-color:#ffe9e9!important}
 .vip-impact-customer-row--other td{background-color:#f9fafc!important}.vip-impact-customer-row--other td:first-child{box-shadow:inset 3px 0 #b8c2d0}.vip-impact-customer-row--other:hover td{background-color:#f1f4f8!important}
-.vip-impact-customer-row td.pci-current-cell,.vip-impact-customer-row td.table-success{background-image:linear-gradient(rgba(71,130,218,.055),rgba(71,130,218,.055))!important}
-.vip-history-table{width:100%;min-width:1080px!important;table-layout:fixed}
+.vip-impact-group-start td{border-top-width:3px!important;border-top-style:solid!important}
+.vip-impact-group-start.vip-impact-customer-row--winning td{border-top-color:#16a06a!important}
+.vip-impact-group-start.vip-impact-customer-row--declining td{border-top-color:#f59e0b!important}
+.vip-impact-group-start.vip-impact-customer-row--missing td{border-top-color:#dc3545!important}
+.vip-impact-group-start.vip-impact-customer-row--other td{border-top-color:#94a3b8!important}
+.vip-impact-customer-row td.pci-current-cell,.vip-impact-customer-row td.table-success,.vip-impact-customer-row td.vip-current-sales-cell{background-image:linear-gradient(rgba(59,130,246,.065),rgba(59,130,246,.065))!important}
+.vip-history-table{width:1080px;min-width:100%!important;table-layout:fixed}
 .vip-history-table th{padding:9px 7px!important;font-size:.62rem;line-height:1.25;white-space:normal}
 .vip-history-table td{padding:9px 7px!important;font-size:.71rem;overflow-wrap:anywhere}
-.vip-history-table .vip-rank-column{width:78px}.vip-history-table .vip-customer-column{width:140px}.vip-history-table .vip-trend-column{width:180px}
-.vip-current-sales-cell{box-shadow:inset 3px 0 #3578cf,inset -1px 0 #b8d2f0!important}
-.vip-current-sales-heading{color:#fff!important;background:#175fba!important;box-shadow:inset 3px 0 #6eb0ff,inset -1px 0 #6eb0ff}
+.vip-history-table .vip-rank-column{width:70px}.vip-history-table .vip-customer-column{width:130px}.vip-history-table .vip-trend-column{width:165px}
+.vip-history-table .vip-current-sales-heading,.vip-history-table .vip-current-sales-cell{width:145px}
+.vip-history-table .vip-comparison-month-column{width:112px}
+.vip-history-table .vip-average-column{width:145px}
+.vip-current-sales-cell{position:relative;text-align:center!important;box-shadow:inset 3px 0 #3578cf,inset -2px 0 #78aee8!important}
+.vip-current-sales-cell>div{align-items:center!important}
+.vip-current-sales-heading{color:#fff!important;background:linear-gradient(180deg,#216fc4 0%,#175fad 100%)!important;box-shadow:inset 3px 0 #79b7f5,inset -2px 0 #79b7f5!important}
 .vip-current-sales-value{display:block;color:#17233d!important;font-size:.9rem!important;font-weight:950!important;letter-spacing:-.015em;white-space:nowrap}
+.vip-no-sales-minimal{display:block;width:100%;color:#b42318;font-size:8px!important;font-weight:750;letter-spacing:.035em;text-align:center;text-transform:uppercase;white-space:nowrap}
+.vip-no-sales-current{font-size:10px!important;font-weight:800}
+.vip-compact-financial{display:flex!important;align-items:center;gap:5px;width:max-content;max-width:100%;margin-top:6px;padding:3px 6px;border-radius:6px;background:rgba(255,255,255,.68);white-space:nowrap}
+.vip-compact-financial b{color:#6f42c1;font-size:.62rem;font-weight:850}
+.vip-compact-financial em{padding-left:5px;border-left:1px solid #c4b5df;color:#6f42c1;font-size:.6rem;font-style:normal;font-weight:900}
+.vip-current-sales-cell .vip-compact-financial{margin-left:auto;margin-right:auto}
+.vip-metric-toggle .form-check-label{font-weight:750}
+.vip-metric-toggle--sales .form-check-label{color:#1d4ed8}
+.vip-metric-toggle--profit .form-check-label,.vip-metric-toggle--profitMargin .form-check-label{color:#6f42c1}
 .vip-impact-customer-row--winning .vip-current-sales-value{color:#08783f!important}
 .vip-impact-customer-row--declining .vip-current-sales-value{color:#a65308!important}
 .vip-impact-customer-row--missing .vip-current-sales-value{color:#b42318!important}
