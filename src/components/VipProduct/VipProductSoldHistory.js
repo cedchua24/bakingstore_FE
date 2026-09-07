@@ -9,7 +9,7 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import TrendingDownRoundedIcon from "@mui/icons-material/TrendingDownRounded";
 import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import VipProductTransactionService from "./VipProductTransactionService";
 import ImpactGroupSelect from "../Common/ImpactGroupSelect";
 import "../Reports/ProductReport.css";
@@ -112,7 +112,7 @@ const styles = {
     meta: { color: "#6b7280", fontSize: 11 },
     monthCell: { display: "flex", flexDirection: "column", gap: 3 },
     profit: { color: "#6f42c1", fontSize: 11, fontWeight: 700 },
-    profitMargin: { color: "#0f766e", fontSize: 11, fontWeight: 700 },
+    profitMargin: { color: "#6f42c1", fontSize: 11, fontWeight: 900 },
     dormant: { display: "inline-flex", padding: "4px 8px", color: "#842029", background: "#f8d7da", borderRadius: 999, fontSize: 10, fontWeight: 800 },
     actionTh: { position: "sticky", right: 0, zIndex: 3, width: 44, minWidth: 44, textAlign: "center", color: "#fff", background: "#455a6f", borderColor: "#8193a5" },
     actionCell: { position: "sticky", right: 0, zIndex: 2, width: 44, minWidth: 44, textAlign: "center", background: "#fff", boxShadow: "-3px 0 6px rgba(15, 23, 42, .08)" },
@@ -120,7 +120,6 @@ const styles = {
 
 const VipProductSoldHistory = () => {
     const { id } = useParams();
-    const navigate = useNavigate();
     const [selectedMonth, setSelectedMonth] = useState(thisMonth());
     const [comparisonPage, setComparisonPage] = useState(0);
     const [report, setReport] = useState(null);
@@ -137,7 +136,7 @@ const VipProductSoldHistory = () => {
         const requestedSearch = String(request.search || "").trim();
         setLoading(true);
         setError("");
-        return VipProductTransactionService.fetchVipProductMonthlySold(id, month, { comparison_page: page, impact_group: requestedGroup, limit: 100, ...(requestedSearch ? { search: requestedSearch } : {}) })
+        return VipProductTransactionService.fetchVipProductMonthlySold(id, month, { comparison_page: page, impact_group: "all", limit: 100, ...(requestedSearch ? { search: requestedSearch } : {}) })
             .then(response => { setReport(response.data); setAppliedGroup(requestedGroup); setSelectedRecoveryIds([]); })
             .catch(requestError => {
                 setReport(null);
@@ -150,21 +149,17 @@ const VipProductSoldHistory = () => {
 
     const products = Array.isArray(report?.data) ? report.data : [];
     const impactStatus = product => {
-        const supplied = String(product.impact_status || product.status || "").toLowerCase();
-        if (["winning", "growing", "positive", "above_usual", "new_or_returning"].includes(supplied)) return "winning";
-        if (["declining", "losing", "negative", "below_usual"].includes(supplied)) return "declining";
-        if (supplied === "missing") return "missing";
         const currentSales = Number(product.current_month?.sales_amount || 0);
-        const averageSales = Number(product.average_sales || 0);
-        if (currentSales === 0 && averageSales > 0) return "missing";
-        if (currentSales > averageSales) return "winning";
-        if (currentSales < averageSales) return "declining";
+        const previousSales = Number(product.previous_months?.[0]?.sales_amount || 0);
+        if (currentSales === 0 && previousSales > 0) return "missing";
+        if (currentSales > previousSales) return "winning";
+        if (currentSales < previousSales) return "declining";
         return "other";
     };
     const groupDetails = {
-        winning: { label: "Winning products", description: "Current sales exceed the previous three-month average." },
-        declining: { label: "Declining products", description: "Current sales are below the previous three-month average." },
-        missing: { label: "Missing products", description: "Previously selling products with no sales this month." },
+        winning: { label: "Winning products", description: "Current sales exceed last month." },
+        declining: { label: "Declining products", description: "Current sales are below last month." },
+        missing: { label: "Missing products", description: "No current sales, but the product sold last month." },
         highest_sales: { label: "Highest sales products", description: "Products ranked by selected-month sales, highest first. Their impact verdict may still be winning or declining." },
         other: { label: "Other products", description: "Products without a winning, declining, or missing verdict." },
     };
@@ -180,10 +175,9 @@ const VipProductSoldHistory = () => {
     const productGroups = appliedGroup === "highest_sales"
         ? [{ key: "highest_sales", ...groupDetails.highest_sales, products: visibleProducts }]
         : impactProductGroups;
-    const impactCounts = report?.impact_counts || {};
-    const winningCount = Number(impactCounts.winning ?? products.filter(product => impactStatus(product) === "winning").length);
-    const decliningCount = Number(impactCounts.declining ?? impactCounts.losing ?? products.filter(product => impactStatus(product) === "declining").length);
-    const missingCount = Number(impactCounts.missing ?? products.filter(product => impactStatus(product) === "missing").length);
+    const winningCount = products.filter(product => impactStatus(product) === "winning").length;
+    const decliningCount = products.filter(product => impactStatus(product) === "declining").length;
+    const missingCount = products.filter(product => impactStatus(product) === "missing").length;
     const productsInGroup = group => products.filter(product => impactStatus(product) === group);
     const winningSalesVsLastMonth = productsInGroup("winning").reduce((total, product) => total + Number(product.current_month?.sales_amount || 0) - Number(product.previous_months?.[0]?.sales_amount || 0), 0);
     const decliningNeededForLastMonth = productsInGroup("declining").reduce((total, product) => total + Math.max(Number(product.previous_months?.[0]?.sales_amount || 0) - Number(product.current_month?.sales_amount || 0), 0), 0);
@@ -231,9 +225,12 @@ const VipProductSoldHistory = () => {
     const performanceState = change < 0 && averageGap < 0 ? "critical" : change < 0 || averageGap < 0 ? "watch" : "strong";
     const performanceLabel = performanceState === "critical" ? "Sales recovery needed" : performanceState === "watch" ? "Mixed sales performance" : "Strong sales performance";
     const toggleMetric = metric => setVisibleMetrics(current => ({ ...current, [metric]: !current[metric] }));
+    const renderFinancialMetrics = (profit, sales) => visibleMetrics.profit && visibleMetrics.profitMargin
+        ? <span className="vip-compact-financial"><b>{money(profit)}</b><em>{profitMarginLabel(profit, sales)}</em></span>
+        : <>{visibleMetrics.profit && <span style={styles.profit}>Profit {money(profit)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(profit, sales)}</span>}</>;
     const showingTruePreviousMonth = Number(report?.comparison?.page ?? comparisonPage) === 0;
     const comparisonReferenceLabel = report?.previous_months?.[0]?.label || "comparison month";
-    const openProductGraph = productId => navigate(`/vipProductSoldHistory/${id}/product/${productId}?month=${selectedMonth}&comparison_page=${comparisonPage}`);
+    const productGraphHref = productId => `/vipProductSoldHistory/${id}/product/${productId}?month=${selectedMonth}&comparison_page=${comparisonPage}`;
 
     return <div className="pr-page" style={styles.page}>
         {loading && <LinearProgress color="primary" />}
@@ -243,7 +240,7 @@ const VipProductSoldHistory = () => {
         </header>
 
         <section className="pr-filter"><Form onSubmit={event => { event.preventDefault(); setComparisonPage(0); load(selectedMonth, 0, { impactGroup, search: query }); }}>
-            <div className="pr-filter__header"><strong>VIP product impact filters</strong><span>Impact status compares selected-month product sales with the previous three-month average.</span></div>
+            <div className="pr-filter__header"><strong>VIP product impact filters</strong><span>Impact status compares selected-month product sales with last month.</span></div>
             <div className="ct-filter-grid vip-impact-filter-grid">
                 <TextField fullWidth size="small" type="month" value={selectedMonth} onChange={event => setSelectedMonth(event.target.value)} label="Report month" InputLabelProps={{ shrink: true }} required />
                 <ImpactGroupSelect value={impactGroup} onChange={event => setImpactGroup(event.target.value)} options={Object.entries(impactGroupLabels).map(([value, label]) => ({ value, label }))}/>
@@ -290,7 +287,7 @@ const VipProductSoldHistory = () => {
                 <div><span>Potential recovered sales</span><strong className="vip-recovery-simulator__amount">+{money(potentialRecoverySales)}</strong></div>
                 <div><span>Projected selected-month sales</span><strong>{money(projectedSalesWithRecovery)}</strong><small className={projectedRecoveryVsLastMonth >= 0 ? "pt-positive" : "pr-negative"}>{projectedRecoveryVsLastMonth >= 0 ? "+" : "-"}{money(Math.abs(projectedRecoveryVsLastMonth))} vs last month</small></div>
             </section>
-            <div className="pci-benchmark-note"><strong>Primary impact benchmark</strong><span>Winning, declining, and missing VIP product verdicts use the selected month versus the previous 3-month average.</span></div>
+            <div className="pci-benchmark-note"><strong>Primary impact benchmark</strong><span>Winning, declining, and missing VIP product verdicts compare the selected month with last month.</span></div>
             <section className={`vip-sales-analysis vip-sales-analysis--${performanceState}`}>
                 <div className="vip-sales-analysis__heading"><strong>{performanceLabel}</strong><span>{report.report_month?.label || selectedMonth} performance verdict</span></div>
                 <p>
@@ -308,7 +305,7 @@ const VipProductSoldHistory = () => {
                     <div style={styles.metricControls}>
                         <strong className="small text-muted">Show:</strong>
                         {[['quantity', 'Quantity'], ['sales', 'Sales'], ['profit', 'Profit'], ['profitMargin', 'Profit margin']].map(([key, label]) =>
-                            <Form.Check key={key} inline className="mb-0" type="checkbox" id={`vip-metric-${key}`} label={label} checked={visibleMetrics[key]} onChange={() => toggleMetric(key)} />
+                            <Form.Check key={key} inline className={`mb-0 vip-metric-toggle vip-metric-toggle--${key}`} type="checkbox" id={`vip-metric-${key}`} label={label} checked={visibleMetrics[key]} onChange={() => toggleMetric(key)} />
                         )}
                     </div>
                     <Form onSubmit={event => { event.preventDefault(); load(selectedMonth, 0, { impactGroup, search: query }); }}><TextField size="small" style={{ width: 300, maxWidth: "100%" }} placeholder="Search product, category, brand..." value={query} onChange={event => setQuery(event.target.value)} InputProps={{ startAdornment:<InputAdornment position="start"><SearchRoundedIcon/></InputAdornment> }}/></Form>
@@ -326,7 +323,7 @@ const VipProductSoldHistory = () => {
                     <tbody>
                         {productGroups.map(group => <React.Fragment key={group.key}>
                         {showImpactGrouping && <tr className={`vip-impact-group-row vip-impact-group-row--${group.key}`}><td colSpan={tableColumnCount}><div><strong>{group.label}</strong><span>{group.description}</span></div><b>{group.products.length}</b></td></tr>}
-                        {group.products.map(product => {
+                        {group.products.map((product, productIndex) => {
                             const comparisonMonth = product.previous_months?.[0];
                             const currentBoxes = Number(product.current_month?.quantity_sold || 0);
                             const currentPieces = Number(product.current_month?.pieces_sold || 0);
@@ -335,6 +332,7 @@ const VipProductSoldHistory = () => {
                             const currentSales = Number(product.current_month?.sales_amount || 0);
                             const comparisonSales = Number(comparisonMonth?.sales_amount || 0);
                             const averageSales = Number(product.average_sales || 0);
+                            const hasSalesHistory = currentSales !== 0 || (product.previous_months || []).some(historyMonth => Number(historyMonth.sales_amount || 0) !== 0);
                             const compareDifference = currentSales - comparisonSales;
                             const compareBasis = comparisonSales;
                             const comparePercentage = compareBasis > 0 ? (compareDifference / compareBasis) * 100 : compareDifference > 0 ? 100 : 0;
@@ -370,16 +368,17 @@ const VipProductSoldHistory = () => {
                             const movementValue = product.rank_change ?? product.rank_movement;
                             const movement = Number(typeof movementValue === "object" ? movementValue?.movement ?? movementValue?.change ?? fallbackMovement : movementValue ?? fallbackMovement);
                             const direction = String(product.rank_movement_direction || (movement > 0 ? "UP" : movement < 0 ? "DOWN" : "SAME")).toUpperCase();
-                            return <tr key={product.product_id} className={`vip-impact-customer-row vip-impact-customer-row--${group.key}`}>
+                            return <tr key={product.product_id} className={`vip-impact-customer-row vip-impact-customer-row--${group.key}${productIndex === 0 ? " vip-impact-group-start" : ""}`}>
                             <td><div className="pt-rank-move"><span className="pr-rank">{currentRank}</span><div><small>{previousRank === "—" ? "No prior rank" : `was #${previousRank}`}</small><strong className={direction === "DOWN" ? "pr-negative" : direction === "UP" ? "pt-positive" : "pr-subtle"}>{direction === "UP" ? "▲ " : direction === "DOWN" ? "▼ " : ""}{Math.abs(movement) || "—"}</strong></div></div></td>
                             <td><div style={styles.product}>{product.product_name}</div><div style={styles.meta}>{product.brand_name} · {product.category_name}</div></td>
                             <td>{stockDisplay(product)}</td>
-                            <td className="vip-current-sales-cell" style={selectedMonthStyle}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.quantity && <span title={`${comparisonVerdict.label} versus last month`} style={{ display: "block", width: 64, height: 3, marginTop: 6, marginBottom: 3, borderRadius: 999, background: averageVerdict.color }} />}{visibleMetrics.sales && <span className="vip-current-sales-value">{money(product.current_month?.sales_amount)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.current_month?.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.current_month?.profit_amount, product.current_month?.sales_amount)}</span>}{Number(product.current_month?.pieces_sold) === 0 && <span style={styles.dormant}>NOT SOLD</span>}</div></td>
-                            {(product.previous_months || []).map((historyMonth, index) => <td key={historyMonth.month}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(historyMonth.quantity_sold, historyMonth.pieces_sold, false, product.quantity)}{visibleMetrics.sales && <span>{money(historyMonth.sales_amount)}</span>}{index === 0 && visibleMetrics.sales && <span className={`vip-inline-gap ${compareDifference >= 0 ? "vip-inline-gap--up" : "vip-inline-gap--down"}`}><small>Current month gap</small>{compareDifference >= 0 ? "+" : "-"}{money(Math.abs(compareDifference))}</span>}{index === 0 && ["declining", "missing"].includes(impactStatus(product)) && <Form.Check className="vip-recovery-checkbox vip-recovery-checkbox--inline" type="checkbox" id={`vip-product-recovery-${recoveryProductKey(product)}`} checked={selectedRecoveryIds.includes(recoveryProductKey(product))} disabled={recoveryTargetFor(product) <= 0} onChange={() => toggleRecoveryProduct(product)} label="Include in plan"/>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(historyMonth.profit_amount)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(historyMonth.profit_amount, historyMonth.sales_amount)}</span>}</div></td>)}
-                            <td style={styles.averageCell}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && <span>{money(product.average_sales)}</span>}{visibleMetrics.profit && <span style={styles.profit}>Profit {money(product.average_profit)}</span>}{visibleMetrics.profitMargin && <span style={styles.profitMargin}>Margin {profitMarginLabel(product.average_profit, product.average_sales)}</span>}</div></td>
+                            <td className="vip-current-sales-cell" style={selectedMonthStyle}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.current_month?.quantity_sold, product.current_month?.pieces_sold, true, product.quantity)}{visibleMetrics.sales && (currentSales !== 0 ? <span className="vip-current-sales-value">{money(currentSales)}</span> : <small className="vip-no-sales-minimal vip-no-sales-current">No sales</small>)}{currentSales !== 0 && renderFinancialMetrics(product.current_month?.profit_amount, product.current_month?.sales_amount)}</div></td>
+                            {(product.previous_months || []).map((historyMonth, index) => { const historicalSales = Number(historyMonth.sales_amount || 0); return <td key={historyMonth.month}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(historyMonth.quantity_sold, historyMonth.pieces_sold, false, product.quantity)}{visibleMetrics.sales && (historicalSales !== 0 ? <span>{money(historicalSales)}</span> : <small className="vip-no-sales-minimal">No sales</small>)}{index === 0 && ["declining", "missing"].includes(impactStatus(product)) && <Form.Check className="vip-recovery-checkbox vip-recovery-checkbox--inline" type="checkbox" id={`vip-product-recovery-${recoveryProductKey(product)}`} checked={selectedRecoveryIds.includes(recoveryProductKey(product))} disabled={recoveryTargetFor(product) <= 0} onChange={() => toggleRecoveryProduct(product)} label="Include in plan"/>}{historicalSales !== 0 && renderFinancialMetrics(historyMonth.profit_amount, historyMonth.sales_amount)}</div></td>; })}
+                            <td style={styles.averageCell}><div style={styles.monthCell}>{visibleMetrics.quantity && totalSold(product.average_quantity, product.average_pieces, false, product.quantity)}{visibleMetrics.sales && (averageSales !== 0 ? <span>{money(averageSales)}</span> : <small className="vip-no-sales-minimal">No sales</small>)}{averageSales !== 0 && renderFinancialMetrics(product.average_profit, product.average_sales)}</div></td>
                             <td style={{ padding: "12px 14px" }}>
-                                <div><span style={{ display: "block", marginBottom: 6, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>3-month average</span><span style={{ display: "inline-flex", padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: averageVerdict.color, background: averageVerdict.background }}>{averageVerdict.label}</span><span style={{ display: "block", marginTop: 5, color: averageVerdict.color, fontSize: 15, fontWeight: 800 }}>{averagePercentage >= 0 ? "+" : ""}{number(averagePercentage)}%</span></div>
-                                <div style={{ marginTop: 12, paddingTop: 10, borderTop: "2px solid #cbd5e1" }}><span style={{ display: "block", marginBottom: 5, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>Vs {showingTruePreviousMonth ? `last month (${comparisonReferenceLabel})` : comparisonReferenceLabel}</span><span style={{ display: "inline-flex", marginBottom: 5, padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: comparisonVerdict.color, background: comparisonVerdict.background }}>{comparisonVerdict.label}</span><span style={{ display: "block", color: comparisonVerdict.color, fontSize: 15, fontWeight: 800 }}>{comparePercentage >= 0 ? "+" : ""}{number(comparePercentage)}%</span></div>
+                                {!hasSalesHistory ? <span className="pci-status vip-impact-status pci-status--no_sales_history">No sales history</span> : <>
+                                <div><span style={{ display: "block", marginBottom: 5, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>Vs {showingTruePreviousMonth ? `last month (${comparisonReferenceLabel})` : comparisonReferenceLabel}</span><span style={{ display: "inline-flex", marginBottom: 5, padding: "5px 9px", borderRadius: 999, fontSize: 11, fontWeight: 800, color: comparisonVerdict.color, background: comparisonVerdict.background }}>{comparisonVerdict.label}</span><span style={{ display: "block", color: comparisonVerdict.color, fontSize: 15, fontWeight: 800 }}>{comparePercentage >= 0 ? "+" : ""}{number(comparePercentage)}%</span></div>
+                                <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px solid #cbd5e1" }}><span style={{ display: "block", marginBottom: 6, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>Vs 3-month average</span><span style={{ display: "block", color: averageDifference >= 0 ? "#146c43" : "#dc3545", fontSize: 15, fontWeight: 800 }}>{averagePercentage >= 0 ? "+" : ""}{number(averagePercentage)}%</span></div>
                                 {projection && <div style={{ marginTop: 14, paddingTop: 12, borderTop: "4px double #94a3b8" }}>
                                     <span style={{ display: "block", marginBottom: 5, color: "#64748b", fontSize: 9, fontWeight: 800, letterSpacing: ".04em", textTransform: "uppercase" }}>{projection.projected ? "Projected month-end output" : "Final output"}</span>
                                     <strong style={{ display: "block", color: "#1d4ed8", lineHeight: 1.4 }}>{number(projection.boxes)} Box<br/>{number(projection.pieces)} Pc</strong>
@@ -389,8 +388,9 @@ const VipProductSoldHistory = () => {
                                         <span style={{ display: "block", marginTop: 4, color: projectionStatus.color, fontSize: 11, fontWeight: 800 }}>{number(projectionStatus.attainment)}% of 3-month average</span>
                                     </div>}
                                 </div>}
+                                </>}
                             </td>
-                            <td style={styles.actionCell}><Button size="sm" variant="outline-primary" title="View graph" aria-label={`View graph for ${product.product_name}`} onClick={() => openProductGraph(product.product_id)} style={{ width: 30, height: 30, padding: 0 }}><BarChartIcon fontSize="small" /></Button></td>
+                            <td style={styles.actionCell}><Button as="a" href={productGraphHref(product.product_id)} target="_blank" rel="noopener noreferrer" size="sm" variant="outline-primary" title="View graph" aria-label={`View graph for ${product.product_name}`} style={{ width: 30, height: 30, padding: 0 }}><BarChartIcon fontSize="small" /></Button></td>
                         </tr>;
                         })}</React.Fragment>)}
                         {!loading && visibleProducts.length === 0 && <tr><td colSpan={tableColumnCount} className="text-center text-muted py-4">No products match this impact group.</td></tr>}
