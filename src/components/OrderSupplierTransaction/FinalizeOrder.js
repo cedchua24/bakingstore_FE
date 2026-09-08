@@ -6,6 +6,7 @@ import OrderSupplierService from "./OrderSupplierServiceService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import ModeOfPaymentPoService from "../OtherService/ModeOfPaymentPoService";
 import UserService from '../User/UserService.service'
+import { getAuthUserIdFromCookie } from '../User/authSession';
 import PaymentTermService from "../OtherService/PaymentTermService";
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -20,6 +21,7 @@ import Button from '@mui/material/Button';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 import Stepper from '@mui/material/Stepper';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -411,7 +413,12 @@ const FinalizeOrder = () => {
 
 
     const updateOrderTransaction = () => {
-        if (isReceivingRef.current) {
+        if (
+            isReceivingRef.current ||
+            orderSupplierTransaction.approval_status !== 'APPROVED' ||
+            !orderSupplierTransaction.checker ||
+            !orderSupplierTransaction.receiver
+        ) {
             return;
         }
 
@@ -419,7 +426,10 @@ const FinalizeOrder = () => {
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
 
-        OrderSupplierTransactionService.updateReceivedOrder(id, orderSupplierTransaction)
+        OrderSupplierTransactionService.updateReceivedOrder(id, {
+            ...orderSupplierTransaction,
+            receiver_user_id: getAuthUserIdFromCookie(),
+        })
             .then(response => {
                 if (response.data.code === 200) {
                     setValidator({
@@ -585,7 +595,17 @@ const FinalizeOrder = () => {
                     noValidate
                     autoComplete="off"
                 >
-                    <div className="purchase-order-progress">
+                <div className="purchase-order-progress">
+                    <Button
+                        type="button"
+                        variant="text"
+                        startIcon={<ArrowBackRoundedIcon />}
+                        onClick={() => navigate('/sendToSupplier/' + id)}
+                        disabled={isAddDisabled}
+                        className="purchase-order-back"
+                    >
+                        Back to send
+                    </Button>
                         <Stepper activeStep={4} alternativeLabel>
                             {steps.map((label) => (
                                 <Step key={label}>
@@ -689,6 +709,12 @@ const FinalizeOrder = () => {
 
                     {submitLoadingAdd && <LinearProgress color="warning" />}
 
+                    {orderSupplierTransaction.status !== 'COMPLETED' && orderSupplierTransaction.approval_status !== 'APPROVED' && (
+                        <Alert severity="info" sx={{ mx: 3, mt: 3 }}>
+                            Checked by and Received by are disabled because this purchase order has not yet been approved.
+                        </Alert>
+                    )}
+
                     <div className="po-finalize-form">
                         {orderSupplierTransaction.status == 'COMPLETED' ? (
                             <>
@@ -707,7 +733,7 @@ const FinalizeOrder = () => {
                             </>
                         ) : (
                             <>
-                                <FormControl fullWidth required>
+                                <FormControl fullWidth required disabled={orderSupplierTransaction.approval_status !== 'APPROVED'}>
                                     <InputLabel id="checker-label">Checked by</InputLabel>
                                     <Select
                                         labelId="checker-label"
@@ -724,7 +750,7 @@ const FinalizeOrder = () => {
                                     </Select>
                                 </FormControl>
 
-                                <FormControl fullWidth required>
+                                <FormControl fullWidth required disabled={orderSupplierTransaction.approval_status !== 'APPROVED'}>
                                     <InputLabel id="receiver-label">Received by</InputLabel>
                                     <Select
                                         labelId="receiver-label"
@@ -755,6 +781,7 @@ const FinalizeOrder = () => {
                             <Button
                                 disabled={
                                     isAddDisabled ||
+                                    orderSupplierTransaction.approval_status !== 'APPROVED' ||
                                     !orderSupplierTransaction.checker ||
                                     !orderSupplierTransaction.receiver
                                 }

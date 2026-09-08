@@ -66,6 +66,43 @@
     padding: 0 12px;
 }
 
+.purchase-order-back.MuiButton-root {
+    min-height: 40px;
+    margin-bottom: 24px;
+    padding: 8px 14px;
+    border: 1px solid #e6d7ca;
+    border-radius: 10px;
+    background: #fffaf5;
+    color: #92501e;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-transform: none;
+    box-shadow: 0 2px 4px rgba(89, 52, 23, 0.04);
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.purchase-order-back.MuiButton-root:hover {
+    background: #f9ecdf;
+    border-color: #cb9c77;
+}
+
+.purchase-order-back.MuiButton-root.Mui-focusVisible {
+    outline: 3px solid #dba777;
+    outline-offset: 3px;
+}
+
+.purchase-order-back.MuiButton-root.Mui-disabled {
+    background: #f4f3f1;
+    border-color: #e4e1dd;
+    color: #99938c;
+    box-shadow: none;
+}
+
+.purchase-order-back .MuiButton-startIcon svg {
+    font-size: 18px;
+}
+
 .purchase-order-progress .MuiStepLabel-label {
     color: #8a929e;
     font-size: 0.8rem;
@@ -218,6 +255,38 @@
     margin: 0;
     color: #777f8a;
     font-size: 0.84rem;
+}
+
+.purchase-order-submit.MuiButton-root {
+    min-width: 180px;
+    min-height: 48px;
+    padding: 12px 22px;
+    border: 1px solid #91400c;
+    border-radius: 10px;
+    background: #a94f12;
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: none;
+    white-space: nowrap;
+    box-shadow: 0 3px 7px rgba(120, 57, 14, 0.2);
+}
+
+.purchase-order-submit.MuiButton-root:hover {
+    background: #873b0b;
+    box-shadow: 0 4px 10px rgba(120, 57, 14, 0.26);
+}
+
+.purchase-order-submit.MuiButton-root.Mui-focusVisible {
+    outline: 3px solid #dba777;
+    outline-offset: 3px;
+}
+
+.purchase-order-submit.MuiButton-root.Mui-disabled {
+    background: #e5e2de;
+    border-color: #d5d0ca;
+    color: #79726b;
+    box-shadow: none;
 }
 
 .purchase-order-next.MuiButton-root {

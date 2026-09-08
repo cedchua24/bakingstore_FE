@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
@@ -18,6 +18,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 
 import Stepper from '@mui/material/Stepper';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -100,6 +101,8 @@ const SendToSupplier = () => {
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [savedDispatch, setSavedDispatch] = useState(null);
+    const isSubmittingDispatch = useRef(false);
 
     const [orderList, setOrderList] = useState([]);
 
@@ -361,6 +364,7 @@ const SendToSupplier = () => {
         await OrderSupplierTransactionService.findById(id)
             .then(response => {
                 setOrderSupplierTransaction(response.data);
+                setSavedDispatch(response.data);
 
                 if (response.data.withTax === 0) {
 
@@ -396,25 +400,42 @@ const SendToSupplier = () => {
     }
 
 
+    const hasDispatchChanges = savedDispatch !== null && (
+        orderSupplierTransaction.status !== savedDispatch.status ||
+        (orderSupplierTransaction.send_date || '') !== (savedDispatch.send_date || '')
+    );
+    const canSubmitDispatch = hasDispatchChanges && !isAddDisabled &&
+        orderSupplierTransaction.approval_status === 'APPROVED' &&
+        orderSupplierTransaction.status !== 'COMPLETED' && Boolean(orderSupplierTransaction.send_date);
+    const canContinue = savedDispatch?.approval_status === 'APPROVED' &&
+        (savedDispatch.status === 'SEND_TO_SUPPLIER' || savedDispatch.status === 'COMPLETED') &&
+        !hasDispatchChanges && !isAddDisabled;
+
     const updateOrderTransaction = () => {
+        if (!canSubmitDispatch || isSubmittingDispatch.current) return;
+        isSubmittingDispatch.current = true;
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
         OrderSupplierTransactionService.setSendtoSupplierStatus(orderSupplierTransaction)
             .then(response => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                if (response.data.status === 'SEND_TO_SUPPLIER') {
-                    navigate('/finalizeOrder/' + id);
+                if (response.data.code && Number(response.data.code) >= 400) {
+                    throw new Error(response.data.message || 'Unable to save the dispatch details.');
                 }
+                setSavedDispatch(orderSupplierTransaction);
+                setValidator({ severity: 'success', message: 'Dispatch details saved.', isShow: true });
             })
             .catch(e => {
+                setValidator({ severity: 'error', message: e.response?.data?.message || e.message || 'Unable to save the dispatch details.', isShow: true });
+            })
+            .finally(() => {
+                isSubmittingDispatch.current = false;
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-                console.log(e);
             });
     }
 
     const nextSubmit = () => {
+        if (!canContinue || isSubmittingDispatch.current) return;
         navigate('/finalizeOrder/' + id);
     }
 
@@ -554,6 +575,16 @@ const SendToSupplier = () => {
                 autoComplete="off"
             >
                 <div className="purchase-order-progress">
+                    <Button
+                        type="button"
+                        variant="text"
+                        startIcon={<ArrowBackRoundedIcon />}
+                        onClick={() => navigate('/orderSupplierApproval/' + id)}
+                        disabled={isAddDisabled}
+                        className="purchase-order-back"
+                    >
+                        Back to review
+                    </Button>
                 <Stepper activeStep={3} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
@@ -711,20 +742,31 @@ const SendToSupplier = () => {
                         <div className="po-approval-actions">
                             <p>{orderSupplierTransaction.status == 'COMPLETED'
                                 ? 'Continue to receive and finalize this order.'
-                                : 'The supplier dispatch date will be saved with the order.'}</p>
+                                : hasDispatchChanges
+                                    ? 'Submit your changes before selecting Next.'
+                                    : savedDispatch?.status !== 'SEND_TO_SUPPLIER'
+                                        ? 'Mark this order as sent and submit before selecting Next.'
+                                        : 'Next continues without submitting the dispatch again.'}</p>
+                            {orderSupplierTransaction.status !== 'COMPLETED' && (
+                                <Button
+                                    disabled={!canSubmitDispatch}
+                                    variant="contained"
+                                    className="purchase-order-submit"
+                                    size="large"
+                                    onClick={updateOrderTransaction}
+                                >
+                                    {submitLoadingAdd ? 'Submitting…' : 'Submit dispatch'}
+                                </Button>
+                            )}
                             <Button
-                                disabled={isAddDisabled}
+                                disabled={!canContinue}
                                 variant="contained"
                                 size="large"
-                                onClick={orderSupplierTransaction.status == 'COMPLETED' ? nextSubmit : updateOrderTransaction}
+                                onClick={nextSubmit}
                                 endIcon={<ArrowForwardRoundedIcon />}
                                 className="purchase-order-next"
                             >
-                                {submitLoadingAdd
-                                    ? 'Saving…'
-                                    : orderSupplierTransaction.status == 'COMPLETED'
-                                        ? 'Continue'
-                                        : 'Save and continue'}
+                                Next
                             </Button>
                         </div>
                     </>

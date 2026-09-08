@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 import { Form } from 'react-bootstrap';
 import Alert from '@mui/material/Alert';
@@ -21,6 +21,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 
 import Stepper from '@mui/material/Stepper';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -106,6 +107,8 @@ const OrderSupplierApproval = () => {
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [savedDecision, setSavedDecision] = useState(null);
+    const isSubmittingDecision = useRef(false);
 
 
 
@@ -381,6 +384,7 @@ const OrderSupplierApproval = () => {
         await OrderSupplierTransactionService.findById(id)
             .then(response => {
                 setOrderSupplierTransaction(response.data);
+                setSavedDecision(response.data);
 
                 if (response.data.withTax === 0) {
 
@@ -501,8 +505,16 @@ const OrderSupplierApproval = () => {
     );
     const canSelfApprove = Number(localStorage.getItem('role_as')) === 2;
     const isSelfApprovalBlocked = isRequestorApprover && !canSelfApprove;
+    const hasDecisionChanges = savedDecision !== null && (
+        orderSupplierTransaction.approval_status !== savedDecision.approval_status ||
+        (orderSupplierTransaction.note || '') !== (savedDecision.note || '')
+    );
+    const canContinue = savedDecision?.approval_status === 'APPROVED' && !hasDecisionChanges && !isAddDisabled;
 
     const submitApproval = () => {
+        if (isSubmittingDecision.current || !hasDecisionChanges || orderSupplierTransaction.status === 'COMPLETED') {
+            return;
+        }
         if (isSelfApprovalBlocked && orderSupplierTransaction.approval_status == 'APPROVED') {
             window.scrollTo(0, 0);
             setValidator({
@@ -522,24 +534,29 @@ const OrderSupplierApproval = () => {
             return;
         }
 
+        isSubmittingDecision.current = true;
         setSubmitLoadingAdd(true);
         setIsAddDisabled(true);
         OrderSupplierTransactionService.orderSupplierApproval(orderSupplierTransaction)
             .then(response => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
-                if (response.data.approval_status == 'APPROVED') {
-                    navigate('/sendToSupplier/' + id);
+                if (response.data.code && Number(response.data.code) >= 400) {
+                    throw new Error(response.data.message || 'Unable to save the approval decision.');
                 }
+                setSavedDecision(orderSupplierTransaction);
+                setValidator({ severity: 'success', message: 'Decision saved. Select Next to continue.', isShow: true });
             })
             .catch(e => {
+                setValidator({ severity: 'error', message: e.response?.data?.message || e.message || 'Unable to save the approval decision.', isShow: true });
+            })
+            .finally(() => {
+                isSubmittingDecision.current = false;
                 setSubmitLoadingAdd(false);
                 setIsAddDisabled(false);
-                console.log(e);
             });
     }
 
     const nextSubmit = () => {
+        if (!canContinue || isSubmittingDecision.current) return;
         navigate('/sendToSupplier/' + id);
 
     }
@@ -693,6 +710,16 @@ const OrderSupplierApproval = () => {
                 autoComplete="off"
             >
                 <div className="purchase-order-progress">
+                    <Button
+                        type="button"
+                        variant="text"
+                        startIcon={<ArrowBackRoundedIcon />}
+                        onClick={() => navigate('/addProductOrderSupplierTransaction/' + id)}
+                        disabled={isAddDisabled}
+                        className="purchase-order-back"
+                    >
+                        Back to products
+                    </Button>
                 <Stepper activeStep={2} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
@@ -1116,18 +1143,33 @@ const OrderSupplierApproval = () => {
                 </div>
 
                 <div className="po-approval-actions">
-                    <p>{orderSupplierTransaction.status == 'COMPLETED'
+                    <p>{orderSupplierTransaction.approval_status !== 'APPROVED'
+                        ? 'This purchase order must be approved before you can select Next.'
+                        : orderSupplierTransaction.status == 'COMPLETED'
                         ? 'Continue to the supplier sending step.'
-                        : 'Your decision will be saved to this purchase order.'}</p>
+                        : hasDecisionChanges
+                            ? 'Submit your changes before selecting Next.'
+                            : 'Next continues without submitting the decision again.'}</p>
+                    {orderSupplierTransaction.status !== 'COMPLETED' && (
+                        <Button
+                            disabled={isAddDisabled || !hasDecisionChanges || !orderSupplierTransaction.approval_status || !orderSupplierTransaction.note?.trim() || (isSelfApprovalBlocked && orderSupplierTransaction.approval_status === 'APPROVED')}
+                            variant="contained"
+                            className="purchase-order-submit"
+                            onClick={submitApproval}
+                            size="large"
+                        >
+                            {submitLoadingAdd ? 'Submitting…' : 'Submit decision'}
+                        </Button>
+                    )}
                     <Button
-                        disabled={isAddDisabled || (isSelfApprovalBlocked && orderSupplierTransaction.approval_status == 'APPROVED')}
+                        disabled={!canContinue}
                         variant="contained"
-                        onClick={orderSupplierTransaction.status == 'COMPLETED' ? nextSubmit : submitApproval}
+                        onClick={nextSubmit}
                         size="large"
                         endIcon={<ArrowForwardRoundedIcon />}
                         className="purchase-order-next"
                     >
-                        {orderSupplierTransaction.status == 'COMPLETED' ? 'Continue' : 'Save decision and continue'}
+                        Next
                     </Button>
                 </div>
             </section>
