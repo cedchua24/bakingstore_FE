@@ -17,6 +17,7 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Stepper from '@mui/material/Stepper';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Typography from '@mui/material/Typography'
@@ -48,6 +49,7 @@ import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import "./OrderSupplierTransaction.css";
 
 
@@ -71,6 +73,7 @@ const AddProductOrderSupplierTransaction = () => {
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [submitLoadingUpdate, setSubmitLoadingUpdate] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
+    const [adminEditingOrderId, setAdminEditingOrderId] = useState(null);
     const [formErrors, setFormErrors] = useState({});
 
 
@@ -110,7 +113,7 @@ const AddProductOrderSupplierTransaction = () => {
     const [open, setOpen] = React.useState(false);
 
     const handleOpen = (id, e) => {
-        if (Number(orderSupplierTransaction.payment_status) === 1) return;
+        if (isOrderLocked) return;
         console.log('e', id);
         fetchOrderBySupplierId(id);
         setOpen(true);
@@ -312,7 +315,7 @@ const AddProductOrderSupplierTransaction = () => {
 
     const saveOrderSupplier = (event) => {
         event.preventDefault();
-        if (Number(orderSupplierTransaction.payment_status) === 1) return;
+        if (isOrderLocked) return;
         console.log('orderSupplier', orderSupplier);
 
         console.log("count: ", Object.keys(validate(orderSupplier)).length);
@@ -359,7 +362,7 @@ const AddProductOrderSupplierTransaction = () => {
 
     const submitAutoPo = (event) => {
         event.preventDefault();
-        if (Number(orderSupplierTransaction.payment_status) === 1) return;
+        if (isOrderLocked) return;
         console.log('autoPo', autoPo);
 
         setSubmitLoadingAdd(true);
@@ -483,7 +486,7 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
     const openDelete = (id) => {
-        if (Number(orderSupplierTransaction.payment_status) === 1) return;
+        if (isOrderLocked) return;
         console.log('delete', id);
         setDeleteId(id)
         setDeleteOpenModal(true);
@@ -491,7 +494,7 @@ const AddProductOrderSupplierTransaction = () => {
 
 
     const deleteOrderTransaction = (id, e) => {
-        if (Number(orderSupplierTransaction.payment_status) === 1) return;
+        if (isOrderLocked) return;
 
         const index = orderList.findIndex(orderSupplier => orderSupplier.id === id);
         const neworderSupplier = [...orderList];
@@ -518,7 +521,7 @@ const AddProductOrderSupplierTransaction = () => {
     }
 
     const updateOrderSupplier = () => {
-        if (Number(orderSupplierTransaction.payment_status) === 1) return;
+        if (isOrderLocked) return;
         setSubmitLoadingUpdate(true);
         OrderSupplierService.update(orderSupplierModal.id, orderSupplierModal)
             .then(response => {
@@ -548,6 +551,10 @@ const AddProductOrderSupplierTransaction = () => {
 
 
     const isFullyPaid = Number(orderSupplierTransaction.payment_status) === 1;
+    const isCompleted = orderSupplierTransaction.status === 'COMPLETED';
+    const isAdmin = Number(localStorage.getItem('role_as')) === 2;
+    const isAdminEditing = isAdmin && adminEditingOrderId === id;
+    const isOrderLocked = (isFullyPaid || isCompleted) && !isAdminEditing;
 
     return (
         <main className="purchase-order-page po-products-page">
@@ -575,6 +582,16 @@ const AddProductOrderSupplierTransaction = () => {
                 autoComplete="off"
             >
                 <div className="purchase-order-progress">
+                    <Button
+                        type="button"
+                        variant="text"
+                        startIcon={<ArrowBackRoundedIcon />}
+                        onClick={() => navigate('/editOrderSupplierTransaction/' + id)}
+                        disabled={isAddDisabled}
+                        className="purchase-order-back"
+                    >
+                        Back to order details
+                    </Button>
                 <Stepper activeStep={1} alternativeLabel>
                     {steps.map((label) => (
                         <Step key={label}>
@@ -613,9 +630,34 @@ const AddProductOrderSupplierTransaction = () => {
                         <div>
                             <span>Step 2 of 5</span>
                             <h2>Add an item</h2>
-                            <p>Choose a supplier product and enter the order quantity.</p>
+                            <p>{isAdminEditing
+                                ? 'Admin editing is enabled. You can update products in this order.'
+                                : isCompleted
+                                ? 'This order is completed. Products can no longer be changed.'
+                                : 'Choose a supplier product and enter the order quantity.'}</p>
                         </div>
+                        {isCompleted && (
+                            <div className="po-approved-badge"><CheckCircleIcon /> Completed</div>
+                        )}
                     </div>
+                {isAdmin && isCompleted && (
+                    <Button
+                        type="button"
+                        variant="contained"
+                        className="purchase-order-submit"
+                        sx={{ mb: 3 }}
+                        disabled={isAddDisabled || submitLoadingAdd || submitLoadingUpdate || submitLoading}
+                        aria-pressed={isAdminEditing}
+                        onClick={() => {
+                            if (!isAdmin) return;
+                            setAdminEditingOrderId(isAdminEditing ? null : id);
+                            setOpen(false);
+                            setDeleteOpenModal(false);
+                        }}
+                    >
+                        {isAdminEditing ? 'Disable admin Editing' : 'Admin: Enable Editing'}
+                    </Button>
+                )}
                 <form onSubmit={saveOrderSupplier} className="po-products-form">
                     <div className="po-form-field po-form-field-full">
                         <Autocomplete
@@ -625,6 +667,7 @@ const AddProductOrderSupplierTransaction = () => {
                             value={value}
                             className="po-product-search"
                             id="supplier-product-select"
+                            disabled={isOrderLocked}
                             onChange={handleInputChange}
                             groupBy={(product) => product.category_name}
                             isOptionEqualToValue={(option, selected) => option.product_id === selected.product_id}
@@ -648,6 +691,7 @@ const AddProductOrderSupplierTransaction = () => {
                             <Select
                                 labelId="product-variation-label"
                                 id="product-variation"
+                                disabled={isOrderLocked}
                                 name='variation'
                                 label="Pricing variation"
                                 value={orderSupplier.variation}
@@ -669,7 +713,7 @@ const AddProductOrderSupplierTransaction = () => {
                             name='price'
                             value={orderSupplier.price}
                             onChange={onChangeInput}
-                            disabled={orderSupplier.price == 0}
+                            disabled={isOrderLocked || orderSupplier.price == 0}
                             error={Boolean(formErrors.price)}
                             helperText={formErrors.price}
                             InputProps={{
@@ -686,7 +730,7 @@ const AddProductOrderSupplierTransaction = () => {
                             type='number'
                             name='quantity_order'
                             value={orderSupplier.quantity_order}
-                            disabled={orderSupplier.price == 0}
+                            disabled={isOrderLocked || orderSupplier.price == 0}
                             onChange={onChangeInput}
                             error={Boolean(formErrors.quantity_order)}
                             helperText={formErrors.quantity_order}
@@ -698,6 +742,7 @@ const AddProductOrderSupplierTransaction = () => {
                         <TextField
                             fullWidth
                             id="product-expiration"
+                            disabled={isOrderLocked}
                             label="Expiration date"
                             type="date"
                             name="expiration"
@@ -716,7 +761,7 @@ const AddProductOrderSupplierTransaction = () => {
                         <Button
                             variant="contained"
                             type="submit"
-                            disabled={isFullyPaid || isAddDisabled}
+                            disabled={isOrderLocked || isAddDisabled}
                             startIcon={submitLoadingAdd ? <CircularProgress size={18} color="inherit" /> : <AddRoundedIcon />}
                             className="po-add-button"
                         >
@@ -730,7 +775,7 @@ const AddProductOrderSupplierTransaction = () => {
                     <Button
                         variant="outlined"
                         type="submit"
-                        disabled={isFullyPaid || isAddDisabled}
+                        disabled={isOrderLocked || isAddDisabled}
                         startIcon={<AutoAwesomeRoundedIcon />}
                         className="po-auto-button"
                     >
@@ -784,18 +829,18 @@ const AddProductOrderSupplierTransaction = () => {
                                 <TableCell align="right"><strong>₱{ccyFormat(Number(row.total_price))}</strong></TableCell>
                                 <TableCell align="right">{row.expiration != null ? formatStatementDate(row.expiration) : "—"}</TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title={isFullyPaid ? "Fully paid orders cannot be updated" : "Edit product"}>
+                                    <Tooltip title={!isOrderLocked ? "Edit product" : isCompleted ? "Completed orders cannot be changed" : "Fully paid orders cannot be updated"}>
                                         <span>
-                                            <IconButton disabled={isFullyPaid} onClick={(e) => handleOpen(row.id, e)} aria-label={`Edit ${row.product_name}`}>
+                                            <IconButton disabled={isOrderLocked} onClick={(e) => handleOpen(row.id, e)} aria-label={`Edit ${row.product_name}`}>
                                                 <UpdateIcon />
                                             </IconButton>
                                         </span>
                                     </Tooltip>
                                 </TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title={isFullyPaid ? "Fully paid orders cannot be deleted" : "Remove product"}>
+                                    <Tooltip title={!isOrderLocked ? "Remove product" : isCompleted ? "Completed orders cannot be changed" : "Fully paid orders cannot be deleted"}>
                                         <span>
-                                            <IconButton color="error" disabled={isFullyPaid} onClick={(e) => openDelete(row.id, e)} aria-label={`Remove ${row.product_name}`}>
+                                            <IconButton color="error" disabled={isOrderLocked} onClick={(e) => openDelete(row.id, e)} aria-label={`Remove ${row.product_name}`}>
                                                 <DeleteIcon />
                                             </IconButton>
                                         </span>
@@ -905,7 +950,7 @@ const AddProductOrderSupplierTransaction = () => {
                             variant="contained"
                             type="submit"
                             onClick={updateOrderSupplier}
-                            disabled={isFullyPaid || submitLoadingUpdate}
+                            disabled={isOrderLocked || submitLoadingUpdate}
                             size="large" >
                             Submit
                         </Button>
@@ -930,7 +975,7 @@ const AddProductOrderSupplierTransaction = () => {
                 }
                 <DialogActions>
                     <Button onClick={handleDeleteCloseModal}>Cancel</Button>
-                    <Button disabled={isFullyPaid || submitLoading} onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
+                    <Button disabled={isOrderLocked || submitLoading} onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
                         Agree
                     </Button>
                 </DialogActions>
