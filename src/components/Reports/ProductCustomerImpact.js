@@ -49,7 +49,7 @@ const ProductCustomerImpact = () => {
     ];
     const product = report.product || report.product_details || {};
     return <main className="pr-page pci-page">
-        {loading&&<LinearProgress/>}<Button startIcon={<ArrowBackRoundedIcon/>} onClick={()=>navigate(-1)}>Back to product trends</Button>
+        {loading&&<LinearProgress/>}<Button startIcon={<ArrowBackRoundedIcon/>} onClick={()=>navigate('/reports/productTrendComparison')}>Back to product trends</Button>
         <section className="pr-hero pci-hero"><div><span>Customer impact · {month}</span><h1>{product.product_name || report.product_name || 'Product customer impact'}</h1><p>Customers who drove growth, reduced purchasing, or stopped ordering in the selected month.</p></div></section>
         {error&&<div className="alert alert-danger">{error}</div>}
         {!loading&&!error&&<div className="pci-benchmark-note"><strong>Primary impact benchmark</strong><span>Customer impact groups are classified against the previous 3-month average. Last month is shown as secondary context.</span></div>}

@@ -1,1 +1,18 @@
 @media(min-width:1101px){.mec-filter-grid{grid-template-columns:minmax(170px,.75fr) minmax(260px,1.2fr) auto}}
+
+.mec-totals .mec-expense-change { margin-top: 8px; font-weight: 700; }
+.mec-totals .mec-expense-change.increase { color: #a43745; }
+.mec-totals .mec-expense-change.decrease { color: #18705c; }
+
+.mec-table-card td .mec-expense-change {
+    display: block;
+    width: fit-content;
+    margin-top: 6px;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-weight: 700;
+    color: #626b75;
+    background: #eceef1;
+}
+.mec-table-card td .mec-expense-change.increase { color: #a43745; background: #fbe8eb; }
+.mec-table-card td .mec-expense-change.decrease { color: #18705c; background: #e3f4ef; }

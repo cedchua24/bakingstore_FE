@@ -23,6 +23,10 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Checkbox from '@mui/material/Checkbox';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
 import moment from "moment";
 import './ViewExpenseTransactionApproval.css';
 import './ViewExpenseTransaction.css';
@@ -33,6 +37,34 @@ import '../Reports/MonthlyExpenseAdminPrivacy.css';
 const ViewExpenseTransaction = () => {
     const isAdmin = Number(localStorage.getItem('role_as')) === 2;
     const [showHiddenExpenses, setShowHiddenExpenses] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteError, setDeleteError] = useState('');
+    const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
+
+    useEffect(() => {
+        if (!deleteSuccessOpen) return;
+        const timer = setTimeout(() => setDeleteSuccessOpen(false), 2000);
+        return () => clearTimeout(timer);
+    }, [deleteSuccessOpen]);
+
+    const handleDelete = async () => {
+        if (!isAdmin || deleteId === null || deleteLoading) return;
+        setDeleteLoading(true);
+        setDeleteError('');
+        try {
+            await ExpenseTransactionService.sanctum();
+            await ExpenseTransactionService.delete(deleteId);
+            setExpenseTransactionList((items) => items.filter((item) => item.id !== deleteId));
+            setDeleteId(null);
+            setValidator({ severity: 'success', message: 'Expense transaction deleted.', isShow: true });
+            setDeleteSuccessOpen(true);
+        } catch (error) {
+            setDeleteError(error.response?.data?.message || 'Unable to delete the expense transaction. Please try again.');
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchExpenseType();
@@ -434,7 +466,7 @@ const ViewExpenseTransaction = () => {
                         <th>Details</th>
                         <th>₱ Received</th>
                         <th>Date</th>
-                        <th>Action</th>
+                        <th style={isAdmin ? { width: 110 } : undefined}>Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -497,11 +529,30 @@ const ViewExpenseTransaction = () => {
                                             </td>
                                             <td>{data.expense_date}</td>
                                             <td>
-                                                <Link to={"/expensesV2/editExpenseTransaction/" + data.id}>
-                                                    <Button variant={data.approval_status === 'APPROVED' ? "primary" : "success"}>
-                                                        {data.approval_status === 'APPROVED' ? "View" : "Update"}
-                                                    </Button>
-                                                </Link>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                <IconButton
+                                                    component={Link}
+                                                    to={"/expensesV2/editExpenseTransaction/" + data.id}
+                                                    size="small"
+                                                    color={data.approval_status === 'APPROVED' ? 'primary' : 'success'}
+                                                    aria-label={`${data.approval_status === 'APPROVED' ? 'View' : 'Update'} expense transaction ${data.id}`}
+                                                    title={data.approval_status === 'APPROVED' ? 'View expense transaction' : 'Update expense transaction'}
+                                                >
+                                                    {data.approval_status === 'APPROVED' ? <VisibilityOutlinedIcon fontSize="small" /> : <EditOutlinedIcon fontSize="small" />}
+                                                </IconButton>
+                                                {isAdmin && (
+                                                    <IconButton
+                                                        size="small"
+                                                        color="error"
+                                                        aria-label={`Delete expense transaction ${data.id}`}
+                                                        title="Delete expense transaction"
+                                                        disabled={deleteLoading}
+                                                        onClick={() => { setDeleteError(''); setDeleteId(data.id); }}
+                                                    >
+                                                        <DeleteOutlineIcon fontSize="small" />
+                                                    </IconButton>
+                                                )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -522,6 +573,26 @@ const ViewExpenseTransaction = () => {
             </div>
             </section>
             </div>
+            <Dialog open={deleteId !== null} onClose={() => { if (!deleteLoading) setDeleteId(null); }} aria-labelledby="delete-expense-title">
+                <DialogTitle id="delete-expense-title">Delete expense transaction?</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>Expense transaction #{deleteId} will be deleted. This action cannot be undone.</DialogContentText>
+                    {deleteError && <Alert severity="error" sx={{ mt: 2 }}>{deleteError}</Alert>}
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="secondary" disabled={deleteLoading} onClick={() => setDeleteId(null)}>Cancel</Button>
+                    <Button variant="danger" disabled={deleteLoading} onClick={handleDelete}>{deleteLoading ? 'Deleting...' : 'Delete'}</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={deleteSuccessOpen} onClose={() => setDeleteSuccessOpen(false)} aria-labelledby="delete-expense-success-title">
+                <DialogTitle id="delete-expense-success-title">Successfully deleted</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>The expense transaction was successfully deleted.</DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="primary" autoFocus onClick={() => setDeleteSuccessOpen(false)}>OK</Button>
+                </DialogActions>
+            </Dialog>
         </main>
     )
 }

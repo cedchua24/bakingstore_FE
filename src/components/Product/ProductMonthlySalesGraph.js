@@ -56,7 +56,7 @@ const ProductMonthlySalesGraph = () => {
 
     return <div style={{ minHeight: "100vh", padding: 22, background: "#f6f8fb" }}>
         {loading && <LinearProgress />}
-        <Button variant="outline-secondary" className="mb-3" onClick={() => navigate(-1)}>Back to product history</Button>
+        <Button variant="outline-secondary" className="mb-3" onClick={() => source === "trend" ? navigate('/reports/productTrendComparison') : navigate(-1)}>{source === "trend" ? 'Back to product trends' : 'Back to product history'}</Button>
         {error && <div className="alert alert-danger">{error}</div>}
         {!loading && !error && !product && <div className="alert alert-warning">Product report was not found.</div>}
         {product && <section style={{ padding: 20, background: "#fff", border: "1px solid #e1e6ec", borderRadius: 12 }}>

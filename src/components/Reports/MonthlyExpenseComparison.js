@@ -38,6 +38,19 @@ const pick = (source, keys, fallback = 0) => {
 const selectedIds = (value) => (typeof value === 'string' ? value.split(',') : value).map(Number).filter((id) => id > 0);
 const currentMonth = () => new Date().toLocaleDateString('en-CA').slice(0, 7);
 
+const ExpenseChange = ({ current, baseline }) => {
+    const difference = current - baseline;
+    const direction = difference > 0 ? 'increase' : difference < 0 ? 'decrease' : 'unchanged';
+    const percentage = baseline !== 0 ? Math.abs(difference / baseline) * 100 : null;
+    const label = difference === 0
+        ? '0.0% · No change'
+        : percentage === null
+            ? 'New expense · No prior baseline'
+            : `${difference > 0 ? '−' : '+'}${percentage.toFixed(1)}% · Expense ${direction}`;
+
+    return <small className={`mec-expense-change ${direction}`}>{label}</small>;
+};
+
 const categoryMeta = {
     UNUSUAL: { label: 'Unusual', icon: <AutoAwesomeRoundedIcon />, className: 'unusual' },
     INCREASED: { label: 'Increased', icon: <TrendingUpRoundedIcon />, className: 'increased' },
@@ -58,6 +71,7 @@ const expenseTypePalettes = [
 const MonthlyExpenseComparison = ({ movementOnly = false }) => {
     const isAdmin = Number(localStorage.getItem('role_as')) === 2;
     const [showHiddenExpenses, setShowHiddenExpenses] = useState(false);
+    const [showPercentages, setShowPercentages] = useState(false);
     const [filters, setFilters] = useState({ month: currentMonth(), expense_type_ids: [], expense_category_ids: [], expense_ids: [], chart_of_account_ids: [], approval_statuses: ['APPROVED'], is_received: [] });
     const [types, setTypes] = useState([]);
     const [report, setReport] = useState({ summary: {}, data: [] });
@@ -175,6 +189,9 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
     const previousDate = new Date(selectedMonthDate); previousDate.setMonth(previousDate.getMonth() - 1);
     const previousLabel = pick(report, ['previous_month_label'], new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(previousDate));
     const toggleExpanded = (setter, key) => setter((current) => ({ ...current, [key]: !current[key] }));
+    const currentTotal = number(movementOnly ? movementTotals.current : pick(summary, ['current_month_total']));
+    const previousTotal = number(movementOnly ? movementTotals.previous : pick(summary, ['previous_month_total']));
+    const averageTotal = number(movementOnly ? movementTotals.average : pick(summary, ['previous_three_month_average_total', 'three_month_average_total']));
 
     return <main className={`mec-page ${movementOnly ? 'mec-movement-page' : ''}`}><div className="mec-shell">
         <header className="mec-hero"><div className="mec-hero-icon"><CompareArrowsRoundedIcon /></div><div><span>Financial intelligence</span><h1>{movementOnly ? 'Expense Movement Watch' : 'Monthly Expense Comparison'}</h1><p>{movementOnly ? `Focus on new and changing expenses for ${currentLabel}.` : `Compare ${currentLabel} against ${previousLabel} and the previous three-month average.`}</p></div></header>
@@ -188,10 +205,14 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
 
         {movementOnly && !selectedMonthIsComplete && <Alert severity="info" className="mec-movement-note"><strong>Decreased and missing expenses are not shown yet.</strong> The selected month is still in progress. Both will appear after the month is complete so partial-month activity is not treated as a decrease or a missing expense.</Alert>}
 
-        <section className="mec-totals"><article><span>{currentLabel}</span><strong>{money(movementOnly ? movementTotals.current : pick(summary, ['current_month_total']))}</strong><small>{movementOnly && activeGroup !== 'ALL' ? categoryMeta[activeGroup]?.label : 'Current month'}</small></article><article><span>{previousLabel}</span><strong>{money(movementOnly ? movementTotals.previous : pick(summary, ['previous_month_total']))}</strong><small>{money(movementOnly ? movementTotals.current - movementTotals.previous : pick(summary, ['difference_from_previous_month']))} difference</small></article><article><span>Previous 3 months</span><strong>{money(movementOnly ? movementTotals.average : pick(summary, ['previous_three_month_average_total', 'three_month_average_total']))}</strong><small>{money(movementOnly ? movementTotals.current - movementTotals.average : pick(summary, ['difference_from_three_month_average']))} difference</small></article></section>
+        <section className="mec-totals">
+            <article><span>{currentLabel}</span><strong>{money(currentTotal)}</strong><small>{movementOnly && activeGroup !== 'ALL' ? categoryMeta[activeGroup]?.label : 'Current month'}</small></article>
+            <article><span>{previousLabel}</span><strong>{money(previousTotal)}</strong><small>{money(currentTotal - previousTotal)} difference</small><ExpenseChange current={currentTotal} baseline={previousTotal} /></article>
+            <article><span>Previous 3 months</span><strong>{money(averageTotal)}</strong><small>{money(currentTotal - averageTotal)} difference</small><ExpenseChange current={currentTotal} baseline={averageTotal} /></article>
+        </section>
         <section className={`mec-signals ${movementOnly ? 'movement-only' : ''}`}>{Object.entries(displayedCategoryMeta).map(([key, meta]) => { const disabled = movementOnly && (key === 'DECREASED' || key === 'MISSING') && !selectedMonthIsComplete; return <button key={key} type="button" disabled={disabled} className={`${meta.className} ${activeGroup === key ? 'active' : ''}`} onClick={() => setActiveGroup(activeGroup === key ? 'ALL' : key)}><i>{meta.icon}</i><span>{meta.label}</span><strong>{disabled ? '—' : number(pick(summary, [`${key.toLowerCase()}_expense_count`], groups[key].length))}</strong></button>; })}</section>
 
-        <section className="mec-table-card"><header><div><span>{activeGroup === 'ALL' ? (movementOnly ? 'New and changing expenses' : 'All classifications') : categoryMeta[activeGroup].label}</span><h2>{movementOnly ? 'Expense movement details' : 'Expense comparison details'}</h2><p>Expand an expense type, then a category, to review its expenses.</p></div><div className="mec-table-actions"><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showHiddenExpenses} disabled={!isAdmin} onChange={(event) => setShowHiddenExpenses(event.target.checked)} />} label="Confidential" /><TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expenses..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></div></header><div className="mec-table-scroll"><table><thead><tr><th>Expense hierarchy</th><th>Classification</th><th>{currentLabel}</th><th>{previousLabel}</th><th>Previous 3-month average</th><th>vs {previousLabel}</th><th>vs 3-month average</th></tr></thead><tbody>
+<section className="mec-table-card"><header><div><span>{activeGroup === 'ALL' ? (movementOnly ? 'New and changing expenses' : 'All classifications') : categoryMeta[activeGroup].label}</span><h2>{movementOnly ? 'Expense movement details' : 'Expense comparison details'}</h2><p>Expand an expense type, then a category, to review its expenses.</p></div><div className="mec-table-actions"><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showPercentages} onChange={(event) => setShowPercentages(event.target.checked)} />} label="Show percentages" /><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showHiddenExpenses} disabled={!isAdmin} onChange={(event) => setShowHiddenExpenses(event.target.checked)} />} label="Confidential" /><TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expenses..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></div></header><div className="mec-table-scroll"><table><thead><tr><th>Expense hierarchy</th><th>Classification</th><th>{currentLabel}</th><th>{previousLabel}</th><th>Previous 3-month average</th><th>vs {previousLabel}</th><th>vs 3-month average</th></tr></thead><tbody>
             {Object.entries(groupedRows).map(([typeName, type], typeIndex) => {
                 const palette = expenseTypePalettes[typeIndex % expenseTypePalettes.length];
                 const groupStyle = { '--mec-main': palette.main, '--mec-category': palette.category, '--mec-expense': palette.expense, '--mec-border': palette.border, '--mec-text': palette.text };
@@ -201,25 +222,23 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
                 return <React.Fragment key={typeName}>
                     <tr className="mec-type-summary" style={groupStyle}>
                         <td><button type="button" onClick={() => toggleExpanded(setExpandedTypes, typeName)} aria-expanded={typeOpen}>{typeOpen ? <KeyboardArrowDownRoundedIcon /> : <KeyboardArrowRightRoundedIcon />}<span>Expense type</span><strong>{typeName}</strong><small>{type.count} {type.count === 1 ? 'expense' : 'expenses'}</small></button></td>
-                        <td><span className="mec-badge type-total">Type total</span></td><td><b>{money(type.total)}</b></td><td>{money(type.previousTotal)}</td><td>{money(type.averageTotal)}</td><td className={typePreviousDifference >= 0 ? 'positive' : 'negative'}>{money(typePreviousDifference)}</td><td className={typeAverageDifference >= 0 ? 'positive' : 'negative'}>{money(typeAverageDifference)}</td>
+                        <td><span className="mec-badge type-total">Type total</span></td><td><b>{money(type.total)}</b></td><td>{money(type.previousTotal)}</td><td>{money(type.averageTotal)}</td><td className={typePreviousDifference >= 0 ? 'positive' : 'negative'}>{money(typePreviousDifference)}{showPercentages && <ExpenseChange current={type.total} baseline={type.previousTotal} />}</td><td className={typeAverageDifference >= 0 ? 'positive' : 'negative'}>{money(typeAverageDifference)}{showPercentages && <ExpenseChange current={type.total} baseline={type.averageTotal} />}</td>
                     </tr>
                     {typeOpen && Object.entries(type.categories).map(([categoryName, category], categoryIndex) => {
                         const previousDifference = category.total - category.previousTotal;
                         const averageDifference = category.total - category.averageTotal;
-                        const previousPercent = category.previousTotal ? (previousDifference / category.previousTotal) * 100 : category.total ? 100 : 0;
-                        const averagePercent = category.averageTotal ? (averageDifference / category.averageTotal) * 100 : category.total ? 100 : 0;
                         const categoryKey = `${typeName}::${categoryName}`;
                         const categoryOpen = Boolean(query.trim()) || Boolean(expandedCategories[categoryKey]);
                         return <React.Fragment key={`${typeName}-${categoryName}`}>
                             <tr className="mec-category-summary" style={groupStyle}>
                                 <td><button type="button" onClick={() => toggleExpanded(setExpandedCategories, categoryKey)} aria-expanded={categoryOpen}><b>{String(categoryIndex + 1).padStart(2, '0')}</b>{categoryOpen ? <KeyboardArrowDownRoundedIcon /> : <KeyboardArrowRightRoundedIcon />}<span>Category</span><strong>{categoryName}</strong><small>{category.items.length} {category.items.length === 1 ? 'expense' : 'expenses'}</small></button></td>
-                                <td><span className="mec-badge category-total">Category total</span></td><td><b>{money(category.total)}</b></td><td>{money(category.previousTotal)}</td><td>{money(category.averageTotal)}</td><td className={previousDifference >= 0 ? 'positive' : 'negative'}>{money(previousDifference)}<small>{previousPercent.toFixed(1)}%</small></td><td className={averageDifference >= 0 ? 'positive' : 'negative'}>{money(averageDifference)}<small>{averagePercent.toFixed(1)}%</small></td>
+                                <td><span className="mec-badge category-total">Category total</span></td><td><b>{money(category.total)}</b></td><td>{money(category.previousTotal)}</td><td>{money(category.averageTotal)}</td><td className={previousDifference >= 0 ? 'positive' : 'negative'}>{money(previousDifference)}{showPercentages && <ExpenseChange current={category.total} baseline={category.previousTotal} />}</td><td className={averageDifference >= 0 ? 'positive' : 'negative'}>{money(averageDifference)}{showPercentages && <ExpenseChange current={category.total} baseline={category.averageTotal} />}</td>
                             </tr>
                             {categoryOpen && category.items.map((item, index) => {
                                 const classification = String(pick(item, ['classification', 'comparison_status', 'status'], 'UNCHANGED')).toUpperCase();
                                 const meta = categoryMeta[classification];
                                 const expenseName = Number(item.is_hidden) === 1 && shouldMaskHiddenExpenses ? '***' : pick(item, ['expense_name', 'expense'], 'Unnamed expense');
-                                return <tr className="mec-expense-summary" style={groupStyle} key={item.expense_id || item.id || index}><td><div><i>↳</i><span>Expense</span><strong>{expenseName}</strong></div></td><td><span className={`mec-badge ${meta?.className || 'unchanged'}`}>{meta?.label || 'Unchanged'}</span></td><td><b>{money(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))}</b></td><td>{money(pick(item, ['previous_month_amount', 'previous_amount', 'previous_month_total']))}</td><td>{money(pick(item, ['previous_three_month_average', 'three_month_average', 'average_amount']))}</td><td className={number(pick(item, ['difference_from_previous_month', 'previous_month_difference'])) >= 0 ? 'positive' : 'negative'}>{money(pick(item, ['difference_from_previous_month', 'previous_month_difference']))}<small>{pick(item, ['percentage_change_from_previous_month', 'previous_month_percentage_change'], 0)}%</small></td><td className={number(pick(item, ['difference_from_three_month_average', 'three_month_average_difference'])) >= 0 ? 'positive' : 'negative'}>{money(pick(item, ['difference_from_three_month_average', 'three_month_average_difference']))}<small>{pick(item, ['percentage_change_from_three_month_average', 'three_month_average_percentage_change'], 0)}%</small></td></tr>;
+                                return <tr className="mec-expense-summary" style={groupStyle} key={item.expense_id || item.id || index}><td><div><i>↳</i><span>Expense</span><strong>{expenseName}</strong></div></td><td><span className={`mec-badge ${meta?.className || 'unchanged'}`}>{meta?.label || 'Unchanged'}</span></td><td><b>{money(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))}</b></td><td>{money(pick(item, ['previous_month_amount', 'previous_amount', 'previous_month_total']))}</td><td>{money(pick(item, ['previous_three_month_average', 'three_month_average', 'average_amount']))}</td><td className={number(pick(item, ['difference_from_previous_month', 'previous_month_difference'])) >= 0 ? 'positive' : 'negative'}>{money(pick(item, ['difference_from_previous_month', 'previous_month_difference']))}{showPercentages && <ExpenseChange current={number(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))} baseline={number(pick(item, ['previous_month_amount', 'previous_amount', 'previous_month_total']))} />}</td><td className={number(pick(item, ['difference_from_three_month_average', 'three_month_average_difference'])) >= 0 ? 'positive' : 'negative'}>{money(pick(item, ['difference_from_three_month_average', 'three_month_average_difference']))}{showPercentages && <ExpenseChange current={number(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))} baseline={number(pick(item, ['previous_three_month_average', 'three_month_average', 'average_amount']))} />}</td></tr>;
                             })}
                         </React.Fragment>;
                     })}
