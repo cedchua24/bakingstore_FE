@@ -18,9 +18,15 @@ import './ProductReport.css';
 
 const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
 const date = value => value ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(value)) : null;
+const reportParams = ({ total_value_sort, stock_sort, last_sold_at_sort, ...filters }) => ({
+    ...filters,
+    ...(total_value_sort && { total_value_sort }),
+    ...(stock_sort && { stock_sort }),
+    ...(last_sold_at_sort && { last_sold_at_sort }),
+});
 
 const ReportProductUnsold = () => {
-    const [filters, setFilters] = useState({ supplier_id: '', category_id: '', dateFrom: '', dateTo: '' });
+    const [filters, setFilters] = useState({ supplier_id: '', category_id: '', dateFrom: '', dateTo: '', total_value_sort: '', stock_sort: '', last_sold_at_sort: '' });
     const [suppliers, setSuppliers] = useState([]);
     const [categories, setCategories] = useState([]);
     const [records, setRecords] = useState([]);
@@ -29,7 +35,7 @@ const ReportProductUnsold = () => {
     const [query, setQuery] = useState('');
 
     useEffect(() => {
-        ProductService.getUnsoldProducts(filters).then(response => setRecords(response.data?.data || [])).catch(error => console.log('error', error));
+        ProductService.getUnsoldProducts(reportParams(filters)).then(response => setRecords(response.data?.data || [])).catch(error => console.log('error', error));
         SupplierService.getAll().then(response => setSuppliers(response.data || [])).catch(error => console.log('error', error));
         CategoryService.getAll().then(response => setCategories(response.data || [])).catch(error => console.log('error', error));
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -40,7 +46,7 @@ const ReportProductUnsold = () => {
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length) return;
         setLoading(true);
-        ProductService.getUnsoldProducts(filters).then(response => setRecords(response.data?.data || [])).catch(error => console.log('error', error)).finally(() => setLoading(false));
+        ProductService.getUnsoldProducts(reportParams(filters)).then(response => setRecords(response.data?.data || [])).catch(error => console.log('error', error)).finally(() => setLoading(false));
     };
     const update = event => setFilters({ ...filters, [event.target.name]: event.target.value });
     const filtered = useMemo(() => { const q = query.trim().toLowerCase(); return q ? records.filter(item => [item.id,item.product_name,item.category_name,item.brand_name].some(value => String(value ?? '').toLowerCase().includes(q))) : records; }, [records, query]);
@@ -50,13 +56,16 @@ const ReportProductUnsold = () => {
     return <main className="pr-page">
         <section className="pr-hero"><div className="pr-hero__icon"><HistoryToggleOffRoundedIcon /></div><div><span>Inventory intelligence</span><h1>Unsold Products</h1><p>Find products without recent sales and identify inventory that needs attention.</p></div></section>
         <section className="pr-summary"><div><Inventory2OutlinedIcon /><div><span>Unsold products</span><strong>{records.length}</strong></div></div><div><PaymentsOutlinedIcon /><div><span>Inventory value</span><strong>{money(totalValue)}</strong></div></div><div><HistoryToggleOffRoundedIcon /><div><span>Never sold</span><strong>{neverSold}</strong></div></div></section>
-        <section className="pr-filter"><div className="pr-filter__header"><strong>Report filters</strong><span>Choose a period and optionally narrow results by supplier or category.</span></div><div className="pr-filter__grid">
+        <section className="pr-filter pu-filter"><div className="pr-filter__header"><strong>Report filters</strong><span>Choose a date range and narrow results by supplier or category.</span></div><div className="pu-filter__fields">
             <FormControl size="small"><InputLabel>Supplier</InputLabel><Select name="supplier_id" value={filters.supplier_id} label="Supplier" onChange={update}><MenuItem value="">All suppliers</MenuItem>{suppliers.map(item => <MenuItem key={item.id} value={item.id}>{item.supplier_name}</MenuItem>)}</Select></FormControl>
             <FormControl size="small"><InputLabel>Category</InputLabel><Select name="category_id" value={filters.category_id} label="Category" onChange={update}><MenuItem value="">All categories</MenuItem>{categories.map(item => <MenuItem key={item.id} value={item.id}>{item.category_name}</MenuItem>)}</Select></FormControl>
             <div><TextField fullWidth size="small" type="date" name="dateFrom" value={filters.dateFrom} onChange={update} label="Date from" InputLabelProps={{ shrink:true }} />{errors.dateFrom && <p className="pr-filter__error">Date from is required</p>}</div>
             <div><TextField fullWidth size="small" type="date" name="dateTo" value={filters.dateTo} onChange={update} label="Date to" InputLabelProps={{ shrink:true }} />{errors.dateTo && <p className="pr-filter__error">Date to is required</p>}</div>
-            <Button variant="contained" onClick={runReport} disabled={loading}>Run report</Button>
-        </div>{loading && <LinearProgress className="pr-progress" />}</section>
+            </div><div className="pu-filter__sorting"><div className="pu-filter__sort-heading"><strong>Sort results <span>Optional</span></strong><p>Sort priority: total value → stock → last sold date. Oldest first includes never-sold products first.</p></div><div className="pu-filter__sort-controls"><FormControl fullWidth size="small"><InputLabel shrink id="unsold-total-value-sort-label">Total value</InputLabel><Select displayEmpty labelId="unsold-total-value-sort-label" name="total_value_sort" value={filters.total_value_sort} label="Total value" onChange={update}><MenuItem value="">Default order</MenuItem><MenuItem value="highest">Highest first</MenuItem><MenuItem value="lowest">Lowest first</MenuItem></Select></FormControl>
+            <FormControl fullWidth size="small"><InputLabel shrink id="unsold-stock-sort-label">Stock</InputLabel><Select displayEmpty labelId="unsold-stock-sort-label" name="stock_sort" value={filters.stock_sort} label="Stock" onChange={update}><MenuItem value="">Default order</MenuItem><MenuItem value="highest">Highest first</MenuItem><MenuItem value="lowest">Lowest first</MenuItem></Select></FormControl>
+            <FormControl fullWidth size="small"><InputLabel shrink id="unsold-last-sold-sort-label">Last sold date</InputLabel><Select displayEmpty labelId="unsold-last-sold-sort-label" name="last_sold_at_sort" value={filters.last_sold_at_sort} label="Last sold date" onChange={update}><MenuItem value="">Default order</MenuItem><MenuItem value="highest">Newest first</MenuItem><MenuItem value="lowest">Oldest first</MenuItem></Select></FormControl>
+            <Button variant="contained" disableElevation startIcon={<SearchRoundedIcon />} onClick={runReport} disabled={loading}>{loading ? 'Running...' : 'Run report'}</Button>
+        </div></div>{loading && <LinearProgress className="pr-progress" />}</section>
         <section className="pr-card"><header><div><h2>Unsold inventory</h2><p>{filtered.length} products found</p></div><TextField className="pr-search" size="small" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search products..." InputProps={{startAdornment:<InputAdornment position="start"><SearchRoundedIcon /></InputAdornment>}} /></header><div className="table-responsive"><table className="pr-table"><thead><tr><th>Product</th><th>Package</th><th>Price</th><th>Stock</th><th>Total value</th><th>Last sold</th></tr></thead><tbody>
             {filtered.map(item => <tr key={item.id}><td><div className="pr-product"><strong>{item.product_name}</strong><span>#{item.id} · {item.category_name || item.brand_name || 'Product'}</span></div></td><td>{item.quantity === 1 ? `${item.weight}${item.variation || ''}` : `${item.quantity} × ${(Number(item.weight || 0)/Number(item.quantity || 1)).toPrecision(2)}${item.variation || ''}`}</td><td><strong>{money(item.price)}</strong></td><td><div className="pr-stock"><span>{item.stock ?? 0} WS</span><span>{item.stock_pc ?? 0} RTL</span></div></td><td className="pr-money">{money(item.total_value)}</td><td>{date(item.last_sold_at) || <span className="pr-negative">No sales recorded</span>}</td></tr>)}
             {!filtered.length && <tr><td colSpan="6"><div className="pr-empty"><Inventory2OutlinedIcon /><strong>No unsold products found</strong><span>Adjust the filters and run the report again.</span></div></td></tr>}

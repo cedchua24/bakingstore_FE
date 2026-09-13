@@ -57,6 +57,7 @@ const groupMap = {
 
 const CustomerSalesImpact = () => {
     const [filters, setFilters] = useState({ month: thisMonth(), limit: 10, group: 'positive_impact_customers' });
+    const [appliedFilters, setAppliedFilters] = useState(filters);
     const [report, setReport] = useState({ data: [] });
     const [query, setQuery] = useState('');
     const [showProfit, setShowProfit] = useState(false);
@@ -78,6 +79,7 @@ const CustomerSalesImpact = () => {
         }).then(response => {
             const body = response.data?.data && !Array.isArray(response.data.data) ? response.data.data : response.data;
             setReport(body || { data: [] });
+            setAppliedFilters({ ...request });
             setSelectedRecoveryIds([]);
         }).catch(err => setError(err.response?.data?.message || 'Unable to load the customer sales comparison.'))
           .finally(() => setLoading(false));
@@ -92,7 +94,7 @@ const CustomerSalesImpact = () => {
         const { name, value } = event.target;
         setFilters(current => ({ ...current, [name]: value }));
     };
-    const groupKey = groupMap[filters.group]?.[0] || 'data';
+    const groupKey = groupMap[appliedFilters.group]?.[0] || 'data';
     const rawRows = Array.isArray(report[groupKey]) ? report[groupKey] : [];
     const rows = useMemo(() => {
         const term = query.trim().toLowerCase();
@@ -101,13 +103,13 @@ const CustomerSalesImpact = () => {
     const positiveCount = Array.isArray(report.positive_impact_customers) ? report.positive_impact_customers.length : 0;
     const decliningCount = Array.isArray(report.declining_customers) ? report.declining_customers.length : 0;
     const missingCount = Array.isArray(report.missing_customers) ? report.missing_customers.length : 0;
-    const isRecoveryGroup = ['biggest_rank_drop_customers', 'declining_customers', 'missing_customers'].includes(filters.group);
+    const isRecoveryGroup = ['biggest_rank_drop_customers', 'declining_customers', 'missing_customers'].includes(appliedFilters.group);
     const recoveryKey = (item, index) => String(item.customer_id || item.id || index);
     const recoveryTarget = item => {
         const current = period(item, 'current_month', 'current').sales;
         const last = period(item, 'last_month', 'previous').sales;
         const average = period(item, 'previous_three_month_average', 'three_month_average').sales;
-        const target = filters.group === 'biggest_rank_drop_customers' ? last : average;
+        const target = appliedFilters.group === 'biggest_rank_drop_customers' ? last : average;
         return Math.max(Number(target || 0) - Number(current || 0), 0);
     };
     const eligibleRecoveryRows = rows.filter(item => recoveryTarget(item) > 0);
@@ -134,8 +136,8 @@ const CustomerSalesImpact = () => {
         </div>{loading && <LinearProgress className="pr-progress"/>}</section>
         {error && <Alert severity="error" className="pt-alert">{error}</Alert>}
         <div className="pci-benchmark-note"><strong>Primary impact benchmark</strong><span>Winning, declining, and missing verdicts are based on the selected month versus the previous 3-month average.</span></div>
-        {isRecoveryGroup && <section className={`ct-recovery-plan ${selectedRecoveryIds.length ? 'ct-recovery-plan--active' : ''}`}><div><span>What-if customer recovery</span><strong>{selectedRecoveryIds.length ? `${selectedRecoveryIds.length} customers selected` : `Select customers to pursue · ${money(totalRecoveryOpportunity)} available`}</strong><small>{filters.group === 'biggest_rank_drop_customers' ? 'Target returns each selected customer to last month’s sales.' : 'Target returns each selected customer to the previous three-month average.'}</small></div><div><span>Selected potential added sales</span><strong>+{money(potentialRecovery)}</strong><small>of {money(totalRecoveryOpportunity)} available</small></div><label><Checkbox size="small" checked={allRecoverySelected} onChange={toggleAllRecovery}/> Select all displayed</label></section>}
-        <section className="pr-card"><header><div><h2>{groupMap[filters.group]?.[1]}</h2><p>{rows.length} customers · selected month {filters.month}</p></div><div className="ct-table-tools"><FormControlLabel control={<Switch size="small" checked={showProfit} onChange={event => setShowProfit(event.target.checked)}/>} label="Show profit"/><TextField className="pr-search" size="small" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search customer..." InputProps={{ startAdornment:<InputAdornment position="start"><SearchRoundedIcon/></InputAdornment> }}/></div></header><div className="table-responsive"><table className="pr-table ct-table"><thead><tr>{isRecoveryGroup && <th>Plan</th>}<th>Rank movement</th><th>Customer</th><th className="pci-current-col">Current month</th><th>Last month</th><th>Previous 3-month average</th><th>Vs last month</th><th>Vs 3-month average</th><th>Status</th></tr></thead><tbody>
+        {isRecoveryGroup && <section className={`ct-recovery-plan ${selectedRecoveryIds.length ? 'ct-recovery-plan--active' : ''}`}><div><span>What-if customer recovery</span><strong>{selectedRecoveryIds.length ? `${selectedRecoveryIds.length} customers selected` : `Select customers to pursue · ${money(totalRecoveryOpportunity)} available`}</strong><small>{appliedFilters.group === 'biggest_rank_drop_customers' ? 'Target returns each selected customer to last month’s sales.' : 'Target returns each selected customer to the previous three-month average.'}</small></div><div><span>Selected potential added sales</span><strong>+{money(potentialRecovery)}</strong><small>of {money(totalRecoveryOpportunity)} available</small></div><label><Checkbox size="small" checked={allRecoverySelected} onChange={toggleAllRecovery}/> Select all displayed</label></section>}
+        <section className="pr-card"><header><div><h2>{groupMap[appliedFilters.group]?.[1]}</h2><p>{rows.length} customers · selected month {appliedFilters.month}</p></div><div className="ct-table-tools"><FormControlLabel control={<Switch size="small" checked={showProfit} onChange={event => setShowProfit(event.target.checked)}/>} label="Show profit"/><TextField className="pr-search" size="small" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search customer..." InputProps={{ startAdornment:<InputAdornment position="start"><SearchRoundedIcon/></InputAdornment> }}/></div></header><div className="table-responsive"><table className="pr-table ct-table"><thead><tr>{isRecoveryGroup && <th>Plan</th>}<th>Rank movement</th><th>Customer</th><th className="pci-current-col">Current month</th><th>Last month</th><th>Previous 3-month average</th><th>Vs last month</th><th>Vs 3-month average</th><th>Status</th></tr></thead><tbody>
             {rows.map((item,index) => {
                 const current = period(item, 'current_month', 'current');
                 const last = period(item, 'last_month', 'previous');

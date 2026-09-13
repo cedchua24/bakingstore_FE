@@ -114,6 +114,7 @@ const ReportPurchaseOrderList = ({
     deleteDialogTitle = 'Delete purchase order?',
     deleteDialogText = 'This purchase order will be removed. This action cannot be undone.',
 }) => {
+    const isAdmin = Number(localStorage.getItem('role_as')) === 2;
     const [report, setReport] = useState(emptyReport);
     const [filters, setFilters] = useState(getCurrentMonthFilters);
     const [suppliers, setSuppliers] = useState([]);
@@ -558,7 +559,7 @@ const ReportPurchaseOrderList = ({
                                                     >
                                                         Review
                                                     </Button>
-                                                    {order.status !== 'COMPLETED' && (
+                                                    {(isAdmin || order.status !== 'COMPLETED') && (
                                                         <Button
                                                             component={Link}
                                                             to={`/addProductOrderSupplierTransaction/${order.id}`}
