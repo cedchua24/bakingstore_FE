@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import ProductServiceService from "../Product/ProductService.service";
+import { getStockModifierName } from './stockModifier';
 
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -62,7 +63,9 @@ const ModifiedStock = () => {
         () => Array.isArray(report.data) ? report.data : [],
         [report.data]
     );
-    const filteredRecords = records.filter(item => matchesStockSearch(item, searchQuery));
+    const filteredRecords = records.filter(item => matchesStockSearch({
+        ...item, modifier_name: getStockModifierName(item)
+    }, searchQuery));
 
     const totals = useMemo(() => records.reduce((summary, record) => {
         const totalCost = Number(record.total_cost || 0);
@@ -215,6 +218,7 @@ const ModifiedStock = () => {
                                 <th>Unit price</th>
                                 <th>Total impact</th>
                                 <th>Date modified</th>
+                                <th>Modified by</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -244,11 +248,12 @@ const ModifiedStock = () => {
                                             </strong>
                                         </td>
                                         <td><span className="modified-stock-date">{formatDate(record.updated_at)}</span></td>
+                                        <td>{getStockModifierName(record)}</td>
                                     </tr>
                                 );
                             }) : (
                                 <tr>
-                                    <td colSpan="7">
+                                    <td colSpan="8">
                                         <div className="modified-stock-empty">
                                             <Inventory2OutlinedIcon />
                                             <h3>No stock modifications</h3>

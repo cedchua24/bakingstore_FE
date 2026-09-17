@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from 'react-bootstrap';
 import ProductServiceService from "../Product/ProductService.service";
+import { getStockModifierName } from '../Stock/stockModifier';
 import CategoryServiceService from "../Category/CategoryService.service";
 
 import IconButton from '@mui/material/IconButton';
@@ -363,6 +364,7 @@ const ReportModifiedStock = (props) => {
                         <th>Quantity</th>
                         <th>Total Cost</th>
                         <th>Date</th>
+                        <th>Modified by</th>
                         {/* <th>Transaction</th> */}
                     </tr>
                 </thead>
@@ -379,6 +381,7 @@ const ReportModifiedStock = (props) => {
                                 <td>{product.stock + " " + product.pack}</td>
                                 <td>{numberFormat(product.total_cost)}</td>
                                 <td>{formatStatementDate(product.updated_at)}</td>
+                                <td>{getStockModifierName(product)}</td>
                                 {/* <td>
                                     <Link variant="primary" to={"/viewTransaction/" + product.id}   >
                                         <Button variant="contained" >
@@ -388,7 +391,7 @@ const ReportModifiedStock = (props) => {
                                 </td> */}
                             </tr>
                         )) : (
-                            <tr><td colSpan="9"><div className="modified-report-empty"><Inventory2OutlinedIcon /><strong>No modified stock records</strong><span>Adjust the filters or choose another date range.</span></div></td></tr>
+                            <tr><td colSpan="10"><div className="modified-report-empty"><Inventory2OutlinedIcon /><strong>No modified stock records</strong><span>Adjust the filters or choose another date range.</span></div></td></tr>
                         )
                     }
                 </tbody>

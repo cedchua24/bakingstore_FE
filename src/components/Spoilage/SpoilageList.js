@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
 import SpoilageService from "./SpoilageService";
+import { getStockModifierName } from '../Stock/stockModifier';
 import CategoryServiceService from "../Category/CategoryService.service";
 
 import IconButton from '@mui/material/IconButton';
@@ -245,11 +246,12 @@ const SpoilageList = (props) => {
                         <th>Total Cost</th>
                         <th>Reason</th>
                         <th>Date</th>
+                        <th>Modified by</th>
                         <th aria-label="Actions"></th>
                     </tr>
                 </thead>
                 {productList.length == 0 ?
-                    (<tbody><tr><td colSpan="11"><div className="spoilage-list-empty"><Inventory2OutlinedIcon /><strong>No spoilage records</strong><span>Recorded spoilage will appear here.</span></div></td></tr></tbody>)
+                    (<tbody><tr><td colSpan="12"><div className="spoilage-list-empty"><Inventory2OutlinedIcon /><strong>No spoilage records</strong><span>Recorded spoilage will appear here.</span></div></td></tr></tbody>)
                     :
                     (
                         <tbody>
@@ -268,6 +270,7 @@ const SpoilageList = (props) => {
                                         <td>{numberFormat(product.total_cost)}</td>
                                         <td>{product.reason}</td>
                                         <td>{covertDateString(product.updated_at)}</td>
+                                        <td>{getStockModifierName(product)}</td>
 
 
 
