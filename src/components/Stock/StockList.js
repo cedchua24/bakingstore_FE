@@ -5,6 +5,7 @@ import ProductServiceService from "../Product/ProductService.service";
 import CustomerService from "../Customer/CustomerService";
 import CategoryServiceService from "../Category/CategoryService.service";
 import OutOfStockUpdateService from "../OtherService/OutOfStockUpdateService";
+import { getAuthUserIdFromCookie } from '../User/authSession';
 
 import Autocomplete from '@mui/material/Autocomplete';
 import Modal from '@mui/material/Modal';
@@ -154,7 +155,10 @@ const StockList = () => {
 
     const updateProduct = () => {
         setSubmitLoading(true);
-        ProductServiceService.update(product.id, product)
+        ProductServiceService.updateV2(product.id, {
+            ...product,
+            user_id: getAuthUserIdFromCookie()
+        })
             .then(() => {
                 setModifyOpen(false);
                 setProduct(emptyProduct);

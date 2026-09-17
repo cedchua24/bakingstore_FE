@@ -6,6 +6,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import SwapVertRoundedIcon from '@mui/icons-material/SwapVertRounded';
 import ProductServiceService from "../Product/ProductService.service";
+import { getStockModifierName } from './stockModifier';
 import './ViewStockTransactionList.css';
 
 const normalizeTransactions = (payload) => {
@@ -72,6 +73,7 @@ const ViewStockTransactionList = () => {
             transaction.pack,
             transaction.stock_reason,
             transaction.stock,
+            getStockModifierName(transaction),
             transaction.updated_at
         ].some(value => String(value ?? '').toLowerCase().includes(search)));
     }, [query, transactions]);
@@ -145,6 +147,7 @@ const ViewStockTransactionList = () => {
                                     <th>Reason</th>
                                     <th>Stock balance</th>
                                     <th>Date</th>
+                                    <th>Modified by</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -159,6 +162,7 @@ const ViewStockTransactionList = () => {
                                             <td><span className="stock-history-reason">{transaction.stock_reason || 'No reason provided'}</span></td>
                                             <td><strong className="stock-history-balance">{transaction.stock ?? '—'}</strong></td>
                                             <td><span className="stock-history-date"><strong>{timestamp.date}</strong><small>{timestamp.time}</small></span></td>
+                                            <td>{getStockModifierName(transaction)}</td>
                                         </tr>
                                     );
                                 })}

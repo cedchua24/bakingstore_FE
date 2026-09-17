@@ -86,6 +86,9 @@ class ProductService {
     update(id, data) {
         return axios.put(`/api/products/${id}`, data);
     }
+    updateV2(id, data) {
+        return axios.put(`/api/products/updateV2/${id}`, data);
+    }
     delete(brand) {
         return axios.delete(`/api/products/${brand}`);
     }

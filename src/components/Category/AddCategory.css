@@ -1,0 +1,58 @@
+.category-page { padding:26px; min-height:100%; color:#262334; background:#f6f5f8; }
+.category-hero { display:flex; align-items:center; gap:16px; margin-bottom:24px; padding:26px 28px; border-radius:16px; background:linear-gradient(115deg,#30243e,#59416d); color:#fff; }
+.category-hero-icon { display:grid; place-items:center; width:52px; height:52px; flex-shrink:0; background:#ffffff14; border:1px solid #ffffff20; border-radius:14px; }
+.category-hero-icon svg { font-size:28px; color:#dfc9f2; }
+.category-hero-copy { flex:1; }
+.category-hero-copy > span { color:#d7bce9; font-size:10px; font-weight:700; letter-spacing:.14em; }
+.category-hero h1 { margin:4px 0; font-size:28px; font-weight:700; }
+.category-hero p { margin:0; color:#e1d8e8; font-size:13px; }
+.category-total { padding:4px 8px 4px 28px; border-left:1px solid #ffffff30; display:flex; flex-direction:column; }
+.category-total strong { font-size:29px; line-height:1.2; }
+.category-total span { margin-top:5px; font-size:11px; color:#e1d8e8; }
+.category-layout { display:grid; grid-template-columns:minmax(270px,340px) minmax(0,1fr); align-items:start; gap:22px; }
+.category-card { background:#fff; border:1px solid #e6e2eb; border-radius:14px; overflow:hidden; box-shadow:0 3px 14px #30243e04; }
+.category-card h2 { margin:0; font-size:17px; font-weight:700; }
+.category-card-heading,.category-list-heading { display:flex; align-items:center; gap:11px; padding:22px; border-bottom:1px solid #eeeaf2; }
+.category-card-heading p,.category-list-heading p { margin:6px 0 0; color:#777181; font-size:12px; line-height:1.5; }
+.category-section-icon { display:grid; place-items:center; width:36px; height:36px; flex-shrink:0; color:#795498; background:#f3edf8; border-radius:10px; }
+.category-create form { padding:24px 22px; }
+.category-page .form-label { font-size:13px; font-weight:600; margin-bottom:9px; }
+.category-page .form-label > span { color:#9268af; }
+.category-page .form-control,.category-page .form-select { min-height:44px; border-color:#ded9e4; border-radius:8px; font-size:13px; }
+.category-page .form-control:focus,.category-page .form-select:focus { border-color:#956daf; box-shadow:0 0 0 3px #895ba51c; }
+.category-page .form-text { display:block; margin-top:8px; color:#777181; font-size:11px; line-height:1.6; }
+.category-page .category-save { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px; border-radius:8px; background:#775092; border-color:#775092; font-size:13px; font-weight:600; }
+.category-page .category-save:hover { background:#624078; border-color:#624078; }
+.category-tip { display:flex; gap:10px; margin:0 22px 22px; padding:14px; border-radius:9px; color:#786587; background:#f8f5fa; }
+.category-tip p { margin:0; font-size:11px; line-height:1.7; }
+.category-tip svg { flex-shrink:0; margin-top:2px; }
+.category-count { display:inline-block; margin-left:7px; padding:3px 8px; background:#f1ebf6; border-radius:6px; color:#775092; font-size:11px; vertical-align:middle; }
+.category-search { position:relative; margin:18px 22px; }
+.category-search > svg { position:absolute; left:13px; top:12px; font-size:20px; color:#91869b; }
+.category-search .form-control { padding-left:41px; background:#fcfbfd; }
+.category-table-wrap { overflow-x:auto; }
+.category-table { width:100%; border-collapse:collapse; font-size:13px; }
+.category-table th { padding:12px 22px; background:#faf9fc; border-top:1px solid #eeeaf2; border-bottom:1px solid #eeeaf2; color:#81778a; font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; }
+.category-table td { padding:15px 22px; border-bottom:1px solid #f0edf3; vertical-align:middle; }
+.category-table tbody tr:hover { background:#fcfafd; }
+.category-order-badge { display:inline-grid; place-items:center; min-width:30px; height:28px; padding:0 6px; border-radius:7px; background:#f4f0f8; color:#7b5695; font-weight:600; font-size:12px; }
+.category-name-cell { font-weight:600; overflow-wrap:anywhere; min-width:140px; }
+.category-id { color:#8b8293; font-size:12px; white-space:nowrap; }
+.category-actions { display:flex; align-items:center; justify-content:flex-end; gap:12px; }
+.category-actions-heading { text-align:right; }
+.category-edit { display:inline-flex; align-items:center; gap:5px; padding:5px 0; color:#775092; font-size:12px; text-decoration:none; white-space:nowrap; }
+.category-edit:hover { color:#4f2f65; text-decoration:underline; }
+.category-edit svg,.category-delete svg { font-size:17px; }
+.category-page .category-delete { display:grid; place-items:center; padding:7px; color:#aa6370; border-radius:7px; }
+.category-page .category-delete:hover { color:#a12e42; background:#fff0f2; }
+.category-list-footer { display:flex; justify-content:space-between; gap:12px; padding:16px 22px; color:#867d90; font-size:11px; }
+.category-table .category-empty { padding:46px 22px; text-align:center; color:#81758c; }
+.category-empty > svg { display:block; margin:0 auto 12px; font-size:34px; color:#b19bc1; }
+.category-empty strong { display:block; color:#54455f; font-size:14px; }
+.category-empty p { margin:8px 0 0; font-size:12px; }
+.category-page a:focus-visible,.category-page button:focus-visible { outline:3px solid #b88bd5; outline-offset:3px; }
+@media (max-width:1050px) { .category-layout { grid-template-columns:1fr; } }
+@media (max-width:600px) { .category-page { padding:14px; } .category-hero { padding:20px; gap:12px; flex-wrap:wrap; } .category-hero h1 { font-size:24px; } .category-total { flex-direction:row; align-items:center; gap:10px; width:100%; border-left:0; border-top:1px solid #ffffff25; padding:14px 0 0; margin-top:4px; } .category-total strong { font-size:22px; } .category-total span { margin:0; } .category-table td,.category-table th { padding:12px; } .category-list-footer { flex-wrap:wrap; } }
+.category-list-toolbar { justify-content:space-between; flex-wrap:wrap; }
+.category-page .category-add-link { width:auto; flex-shrink:0; text-decoration:none; }
+@media (max-width:600px) { .category-page .category-add-link { width:100%; } }
