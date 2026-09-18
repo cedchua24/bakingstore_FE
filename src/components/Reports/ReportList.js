@@ -21,6 +21,10 @@ const ReportList = () => {
     const [selectedExpenseTypeIds, setSelectedExpenseTypeIds] = useState([]);
     const [expenseTypesLoading, setExpenseTypesLoading] = useState(false);
     const [totalDiscountLoss, setTotalDiscountLoss] = useState(0);
+    const [includeDiscounts, setIncludeDiscounts] = useState(false);
+    const [discountedSales, setDiscountedSales] = useState(0);
+    const [allSalesTotal, setAllSalesTotal] = useState(0);
+    const [useProfitabilitySales, setUseProfitabilitySales] = useState(false);
     const [customerOrderDate, setCustomerOrderDate] = useState({
         dateFrom: "",
         dateTo: "",
@@ -34,7 +38,11 @@ const ReportList = () => {
 
     const isAdmin = String(role) === "2";
     const dailyOrders = shopOrderTransaction?.data || [];
-    const totalSales = Number(shopOrderTransaction.total_sales || 0);
+    const reportedTotalSales = Number(shopOrderTransaction.total_sales || 0);
+    const baseTotalSales = useProfitabilitySales ? reportedTotalSales : allSalesTotal;
+    const excludedSales = includeDiscounts ? discountedSales : 0;
+    const totalSales = Math.max(baseTotalSales - excludedSales, 0);
+    // These sales have no profit, so excluding them only changes the margin denominator.
     const totalProfit = Number(shopOrderTransaction.total_profit || 0);
     const totalExpenses = Number(shopOrderTransaction.total_expenses || 0);
     const totalTransactions = Number(shopOrderTransaction.total_count || 0);
@@ -266,11 +274,18 @@ const ReportList = () => {
         setSubmitLoadingAdd(true);
 
         try {
-            const [response, discountLossResponse] = await Promise.all([
+            const [
+                response,
+                salesResponse,
+                discountLossResponse,
+                discountSummaryResponse,
+            ] = await Promise.all([
                 ShopOrderTransactionService.fetchOnlineShopOrderTransactionListReportByDate(
                     customerOrderDate
                 ),
+                ShopOrderTransactionService.fetchSalesListV2(customerOrderDate),
                 DiscountService.fetchDiscountLossReport(customerOrderDate),
+                DiscountService.fetchDiscountSummary(customerOrderDate),
             ]);
             let reportData = {
                 ...response.data,
@@ -282,6 +297,13 @@ const ReportList = () => {
                 : [];
             const discountLossTotal = discountLossRows.reduce(
                 (total, item) => total + (Number(item.loss_amount) || 0),
+                0
+            );
+            const salesRows = Array.isArray(salesResponse.data?.data)
+                ? salesResponse.data.data
+                : [];
+            const fetchedAllSalesTotal = salesRows.reduce(
+                (total, item) => total + (Number(item.total_sales) || 0),
                 0
             );
 
@@ -298,7 +320,11 @@ const ReportList = () => {
             };
 
             setShopOrderTransaction(reportData);
+            setAllSalesTotal(fetchedAllSalesTotal);
             setTotalDiscountLoss(discountLossTotal);
+            setDiscountedSales(
+                Math.max(Number(discountSummaryResponse.data?.shop_order_total_price) || 0, 0)
+            );
             setHasGenerated(true);
         } catch (error) {
             console.error("Unable to generate online order report", error);
@@ -388,6 +414,33 @@ const ReportList = () => {
                         ))}
                     </div>
                 </div>
+                <div className="profit-report__expense-types">
+                    <Form.Check
+                        id="report-use-profitability-sales"
+                        type="checkbox"
+                        label="Show only sales included in this profitability report"
+                        checked={useProfitabilitySales}
+                        onChange={(event) => setUseProfitabilitySales(event.target.checked)}
+                        disabled={submitLoadingAdd}
+                    />
+                    <small>
+                        By default, total sales uses all recorded sales from the Sales report.
+                    </small>
+                </div>
+                <div className="profit-report__expense-types">
+                    <Form.Check
+                        id="report-include-discounts"
+                        type="checkbox"
+                        label="Remove sales from orders with no profit"
+                        checked={includeDiscounts}
+                        onChange={(event) => setIncludeDiscounts(event.target.checked)}
+                        disabled={submitLoadingAdd}
+                    />
+                    <small>
+                        When checked, these orders are removed from total sales so the profit margin
+                        only uses sales that earned a profit.
+                    </small>
+                </div>
                 {formErrors.dateRange && (
                     <p className="sales-report__error">{formErrors.dateRange}</p>
                 )}
@@ -410,16 +463,43 @@ const ReportList = () => {
 
                         <div className="profit-report__metrics">
                             <article className="sales-metric sales-metric--primary">
-                                <span>Total sales</span>
+                                <span>{includeDiscounts ? "Adjusted sales" : "Total sales"}</span>
                                 <strong>{numberFormat(totalSales)}</strong>
-                                <small>{totalTransactions.toLocaleString("en-US")} completed transactions</small>
+                                <small className="profit-report__transaction-count">
+                                    {totalTransactions.toLocaleString("en-US")} completed transactions
+                                </small>
+                                <div className="profit-report__sales-details">
+                                    <small>
+                                        <span>Sales source</span>
+                                        <b>
+                                            {useProfitabilitySales
+                                                ? "Profitability report only"
+                                                : "All recorded sales"}
+                                        </b>
+                                    </small>
+                                    {includeDiscounts && (
+                                        <>
+                                            <small>
+                                                <span>Sales before adjustment</span>
+                                                <b>{numberFormat(baseTotalSales)}</b>
+                                            </small>
+                                            <small>
+                                                <span>Less sales with no profit</span>
+                                                <b>− {numberFormat(excludedSales)}</b>
+                                            </small>
+                                        </>
+                                    )}
+                                </div>
                             </article>
 
                             {isAdmin && (
                                 <article className="sales-metric profit-metric--profit">
                                     <span>Gross profit</span>
                                     <strong>{numberFormat(totalProfit)}</strong>
-                                    <small>{profitMargin.toFixed(2)}% profit margin</small>
+                                    <small>
+                                        {profitMargin.toFixed(2)}% profit margin
+                                        {includeDiscounts ? " based on adjusted sales" : ""}
+                                    </small>
                                 </article>
                             )}
 
@@ -429,12 +509,6 @@ const ReportList = () => {
                                 <small>{expenseMargin.toFixed(2)}% expense margin</small>
                             </article>
 
-                            <article className="sales-metric profit-metric--expense">
-                                <span>Total discount loss</span>
-                                <strong>{numberFormat(-Math.abs(totalDiscountLoss))}</strong>
-                                <small>Sum of discount loss amounts</small>
-                            </article>
-
                             {isAdmin && (
                                 <article className="sales-metric profit-metric--net">
                                     <span>Net profit</span>
@@ -442,6 +516,23 @@ const ReportList = () => {
                                     <small>{netProfitMargin.toFixed(2)}% net profit margin</small>
                                 </article>
                             )}
+                        </div>
+
+                        <div className="profit-report__deductions" aria-label="Sales deductions">
+                            <article>
+                                <span>Total discount loss</span>
+                                <strong>{numberFormat(-Math.abs(totalDiscountLoss))}</strong>
+                                <small>Discount amounts recorded for this period</small>
+                            </article>
+                            <article>
+                                <span>Sales from orders with no profit</span>
+                                <strong>{numberFormat(-Math.abs(discountedSales))}</strong>
+                                <small>
+                                    {includeDiscounts
+                                        ? "Removed from total sales"
+                                        : "Check the option above to remove these from total sales"}
+                                </small>
+                            </article>
                         </div>
 
                         <div className="profit-report__supporting-metrics">
@@ -691,6 +782,9 @@ const ReportList = () => {
                     )}
 
                     <section className="sales-report__chart-card">
+                        {includeDiscounts && (
+                            <p>Daily figures are before excluding {numberFormat(excludedSales)} in zero-profit sales.</p>
+                        )}
                         <ReportBar transactionList={shopOrderTransaction} showProfit={isAdmin} />
                     </section>
 
