@@ -23,6 +23,11 @@ class DiscountService {
     fetchDiscountLossReport(data) {
         return axios.post("/api/discount/fetchDiscountLossReport", data);
     }
+    fetchDiscountSummary({ dateFrom, dateTo }) {
+        return axios.get("/api/shopOrder/fetchDiscountSummary", {
+            params: { date_from: dateFrom, date_to: dateTo },
+        });
+    }
     update(id, data) {
         return axios.put(`/api/discount/${id}`, data);
     }
