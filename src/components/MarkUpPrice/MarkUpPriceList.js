@@ -19,6 +19,7 @@ const MarkUpPriceList = ({
     onUpdated,
     replacementProductPrice,
     replacementPiecesPerPack,
+    showSupplierPriceChange = false,
     v2RequiredProductIds = []
 }) => {
     const records = Array.isArray(markupPriceList) ? markupPriceList : [];
@@ -197,6 +198,14 @@ const MarkUpPriceList = ({
                     <tbody>
                         {records.length > 0 ? productGroups.map(group => group.records.map((record, recordIndex) => {
                             const requiresV2 = v2RequiredProductIds.includes(Number(record.product_id));
+                            const replacementPrice = showSupplierPriceChange && replacementProductPrice != null
+                                && String(replacementProductPrice).trim() !== ''
+                                ? applyReplacementCost(record).price
+                                : null;
+                            const hasSupplierPriceChange = replacementPrice != null
+                                && Number.isFinite(replacementPrice)
+                                && replacementPrice >= 0
+                                && formatMoney(replacementPrice) !== formatMoney(record.price);
                             return (
                             <tr key={record.id} className={recordIndex === 0 ? 'markup-list-group-start' : ''}>
                                 {recordIndex === 0 && (
@@ -223,7 +232,18 @@ const MarkUpPriceList = ({
                                         <small>{getVariantLabel(record)}</small>
                                     </div>
                                 </td>
-                                <td>{formatMoney(record.price)}</td>
+                                <td>
+                                    {hasSupplierPriceChange ? (
+                                        <div className="markup-supplier-price-change">
+                                            <del aria-label={`Existing supplier price: ${formatMoney(record.price)}`}>
+                                                {formatMoney(record.price)}
+                                            </del>
+                                            <strong aria-label={`New supplier price: ${formatMoney(replacementPrice)}`}>
+                                                {formatMoney(replacementPrice)}
+                                            </strong>
+                                        </div>
+                                    ) : formatMoney(record.price)}
+                                </td>
                                 <td>
                                     <strong>{record.mark_up_option === 'PERCENTAGE'
                                         ? `${record.mark_up_price}%`

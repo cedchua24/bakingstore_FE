@@ -134,6 +134,7 @@ const MarkUpPriceListV2 = () => {
                 onUpdated={refreshPrices}
                 replacementProductPrice={replacementProductPrice}
                 replacementPiecesPerPack={replacementPiecesPerPack}
+                showSupplierPriceChange
                 v2RequiredProductIds={replacementProductPrice == null ? v2RequiredProductIds : []}
             />
         </div>
