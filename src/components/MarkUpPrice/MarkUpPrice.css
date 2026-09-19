@@ -84,6 +84,9 @@
 .markup-type--retail { color:#895019; background:#fff2e5; }
 .markup-profit { color:#26724a; font-weight:700; white-space:nowrap; }
 .markup-selling-price { color:#285fc7; font-size:.82rem; white-space:nowrap; }
+.markup-supplier-price-change { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
+.markup-supplier-price-change del { color:#778195; white-space:nowrap; }
+.markup-supplier-price-change strong { color:#285fc7; white-space:nowrap; }
 .markup-list-actions { position:sticky; right:0; min-width:125px; background:#fff; box-shadow:-8px 0 12px -12px rgba(23,32,51,.6); }
 .markup-list-table th:last-child { position:sticky; right:0; min-width:125px; background:#fafbfc; z-index:2; }
 .markup-list-actions button,.markup-list-actions a { display:inline-flex; align-items:center; gap:3px; padding:5px 6px; color:#4f6078; background:#fff; border:1px solid #dce2ea; border-radius:6px; font-family:inherit; font-size:.61rem; font-weight:700; text-decoration:none; }

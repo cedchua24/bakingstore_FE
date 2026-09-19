@@ -180,6 +180,9 @@ const MarkUpNewPriceV2 = () => {
                                 || product.markups[0];
                             const oldPrice = Number(primaryMarkup?.mark_up_product_price || 0);
                             const newPrice = comparableProductCost(primaryMarkup || product);
+                            const piecesPerPack = Number(product.pieces_per_pack);
+                            const isRetailCost = primaryMarkup?.business_type === "RETAIL";
+                            const canShowRetailCost = !isRetailCost && Number.isFinite(piecesPerPack) && piecesPerPack > 0;
                             const primaryDifference = newPrice - oldPrice;
                             const primaryPercentage = oldPrice ? primaryDifference / oldPrice * 100 : null;
                             const hasAdminOverride = isAdmin && !product.can_change_selling_price;
@@ -208,13 +211,27 @@ const MarkUpNewPriceV2 = () => {
                                     <div className="markup-v2__primary-price is-old">
                                         <span>Old price</span>
                                         <strong>{money(oldPrice)}</strong>
-                                        <small>Saved wholesale cost</small>
+                                        <small>{isRetailCost ? "Saved retail cost / piece" : "Saved wholesale cost"}</small>
+                                        {canShowRetailCost && (
+                                            <div className="markup-v2__retail-cost">
+                                                <span>Retail / piece</span>
+                                                <strong>{money(oldPrice / piecesPerPack)}</strong>
+                                                <small>{money(oldPrice)} ÷ {number(piecesPerPack)} pcs</small>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="markup-v2__primary-arrow" aria-hidden="true">→</div>
                                     <div className="markup-v2__primary-price is-new">
                                         <span>New price</span>
                                         <strong>{money(newPrice)}</strong>
                                         <small>Current product cost</small>
+                                        {canShowRetailCost && (
+                                            <div className="markup-v2__retail-cost">
+                                                <span>Retail / piece</span>
+                                                <strong>{money(newPrice / piecesPerPack)}</strong>
+                                                <small>{money(newPrice)} ÷ {number(piecesPerPack)} pcs</small>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className={`markup-v2__primary-difference ${primaryDifference >= 0 ? "is-up" : "is-down"}`}>
                                         <span>Price change</span>
