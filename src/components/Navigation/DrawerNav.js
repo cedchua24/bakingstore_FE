@@ -67,6 +67,10 @@ import PriceCheckIcon from '@mui/icons-material/PriceCheck';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import PaymentIcon from '@mui/icons-material/Payment';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import PaletteRoundedIcon from '@mui/icons-material/PaletteRounded';
+import ViewListRoundedIcon from '@mui/icons-material/ViewListRounded';
+import HourglassTopRoundedIcon from '@mui/icons-material/HourglassTopRounded';
+import TaskAltRoundedIcon from '@mui/icons-material/TaskAltRounded';
 import CreditScoreIcon from '@mui/icons-material/CreditScore';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
@@ -329,6 +333,8 @@ export default function PersistentDrawerLeft() {
     const handleClick26 = () => {
         setOpen26(!open26);
     };
+
+    const [openPrinting, setOpenPrinting] = React.useState(false);
 
 
 
@@ -1754,6 +1760,40 @@ export default function PersistentDrawerLeft() {
                                     </ListItemButton>
                                 </ListItem>
                             ))}
+                        </List>
+                    </Collapse>
+                </List>
+
+                <List
+                    sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-label="Printing"
+                >
+                    <ListItemButton onClick={() => setOpenPrinting((current) => !current)}>
+                        <ListItemIcon><PaletteRoundedIcon color="primary" /></ListItemIcon>
+                        <ListItemText primary="Printing" />
+                        {openPrinting ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={openPrinting} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            <ListItem component={Link} href="/printingTransaction" disablePadding>
+                                <ListItemButton sx={{ pl: 6 }}>
+                                    <ListItemIcon sx={{ minWidth: 38 }}><ViewListRoundedIcon sx={{ color: '#2563a6' }} /></ListItemIcon>
+                                    <ListItemText primary="Printing Transaction" sx={{ color: 'black' }} />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem component={Link} href="/printingTransaction/pending" disablePadding>
+                                <ListItemButton sx={{ pl: 6 }}>
+                                    <ListItemIcon sx={{ minWidth: 38 }}><HourglassTopRoundedIcon sx={{ color: '#b36b08' }} /></ListItemIcon>
+                                    <ListItemText primary="Pending Transactions" sx={{ color: 'black' }} />
+                                </ListItemButton>
+                            </ListItem>
+                            <ListItem component={Link} href="/printingTransaction/completed" disablePadding>
+                                <ListItemButton sx={{ pl: 6 }}>
+                                    <ListItemIcon sx={{ minWidth: 38 }}><TaskAltRoundedIcon sx={{ color: '#168a47' }} /></ListItemIcon>
+                                    <ListItemText primary="Completed Transactions" sx={{ color: 'black' }} />
+                                </ListItemButton>
+                            </ListItem>
                         </List>
                     </Collapse>
                 </List>

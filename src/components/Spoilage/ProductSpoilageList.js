@@ -6,6 +6,7 @@ import ProductServiceService from "../Product/ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
 import { useNavigate } from "react-router-dom";
 import SpoilageService from "./SpoilageService";
+import { getAuthUserIdFromCookie } from "../User/authSession";
 
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -178,7 +179,8 @@ const ProductSpoilageList = (props) => {
         setSubmitLoading(true);
         SpoilageService.create({
             ...product,
-            type: 'SPOILAGE'
+            type: 'SPOILAGE',
+            user_id: getAuthUserIdFromCookie()
         })
             .then(response => {
                 fetchProductList();

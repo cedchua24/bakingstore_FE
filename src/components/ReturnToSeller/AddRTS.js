@@ -7,6 +7,7 @@ import ProductSupplierService from "../ProductSupplier/ProductSupplierService";
 import CategoryServiceService from "../Category/CategoryService.service";
 import { useNavigate } from "react-router-dom";
 import RTSService from "./RTSService";
+import { getAuthUserIdFromCookie } from "../User/authSession";
 
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';
@@ -207,7 +208,8 @@ const AddRTS = (props) => {
         setSubmitLoading(true);
         RTSService.create({
             ...product,
-            type: 'RETURN'
+            type: 'RETURN',
+            user_id: getAuthUserIdFromCookie()
         })
             .then(response => {
                 fetchProductList();
