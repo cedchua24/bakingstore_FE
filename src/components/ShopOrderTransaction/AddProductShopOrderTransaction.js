@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
 import MarkUpPriceService from "../MarkUpPrice/MarkUpPriceService.service";
+import PrintingTransactionService from "../PrintingTransaction/PrintingTransactionService";
 
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -81,6 +82,29 @@ const isProductSaleBlocked = (product) =>
 
 const productSaleBlockReason = (product) => product.sale_block_reason
     || 'Old stock is consumed. Update the product to the new price before selling it.';
+
+const productHasPrintingTag = (product) => {
+    let tags = product?.tags ?? [];
+
+    if (typeof tags === 'string') {
+        try {
+            tags = JSON.parse(tags);
+        } catch (error) {
+            tags = tags.split(',');
+        }
+    }
+
+    if (!Array.isArray(tags)) {
+        tags = [tags];
+    }
+
+    return tags.some((tag) => {
+        const tagName = typeof tag === 'object' && tag !== null
+            ? tag.name ?? tag.tag ?? tag.label
+            : tag;
+        return String(tagName ?? '').trim().toLowerCase() === 'printing';
+    });
+};
 
 const AddProductCustomerOrderTransaction = () => {
 
@@ -161,6 +185,7 @@ const AddProductCustomerOrderTransaction = () => {
         date: '',
         requestor_name: '',
         checker_name: '',
+        printing_transaction_id: null,
         created_at: '',
         updated_at: ''
     });
@@ -301,10 +326,24 @@ const AddProductCustomerOrderTransaction = () => {
 
                     ShopOrderService.sanctum().then(() => {
                         ShopOrderService.create(orderShop)
-                            .then(response => {
+                            .then(async response => {
 
                                 if (response.data.code == 200) {
-                                    setValidator({
+                                    let printingError = null;
+
+                                    if (productHasPrintingTag(value) && !shopOrderTransaction.printing_transaction_id) {
+                                        try {
+                                            await createPrintingTransaction();
+                                        } catch (error) {
+                                            printingError = error;
+                                        }
+                                    }
+
+                                    setValidator(printingError ? {
+                                        severity: 'warning',
+                                        message: `Product added, but the printing transaction could not be created: ${printingError.response?.data?.message || printingError.message || 'Something went wrong.'}`,
+                                        isShow: true,
+                                    } : {
                                         severity: 'success',
                                         message: response.data.message,
                                         isShow: true,
@@ -371,6 +410,30 @@ const AddProductCustomerOrderTransaction = () => {
             }
         window.scrollTo(0, 0);
     }
+
+    const createPrintingTransaction = async () => {
+        const orderDate = shopOrderTransaction.date
+            || new Date().toLocaleDateString('en-CA');
+
+        const response = await PrintingTransactionService.create({
+            shop_order_transaction_id: id,
+            order_coordinator_id: localStorage.getItem('auth_user_id'),
+            logo: 'PENDING',
+            plate: false,
+            mock_up_status: 'PENDING',
+            sales_channel: 'FACEBOOK',
+            order_priority: 'NORMAL',
+            order_status: 'PENDING',
+            order_date: orderDate,
+            sent_date: null,
+            received_date: null,
+        });
+
+        setShopOrderTransaction((currentTransaction) => ({
+            ...currentTransaction,
+            printing_transaction_id: response.data.id ?? response.data.data?.id,
+        }));
+    };
 
 
     const onChangeInput = (e) => {
@@ -577,11 +640,12 @@ const AddProductCustomerOrderTransaction = () => {
 
     const fetchShopOrderTransaction = async (id) => {
         console.log('test')
-        await ShopOrderTransactionService.fetchShopOrderTransaction(id)
+        return await ShopOrderTransactionService.fetchShopOrderTransaction(id)
             .then(response => {
                 console.log('fetchShopOrderTransaction', response.data)
                 setShopOrderTransaction(response.data);
                 fetchProductList(response.data.checker);
+                return response.data;
             })
             .catch(e => {
                 console.log("error", e)
@@ -667,9 +731,15 @@ const AddProductCustomerOrderTransaction = () => {
         setSubmitLoading(true);
         console.log("test", orderSupplierModal);
         console.log("deleteId", deleteId);
+        const printingTransactionId = shopOrderTransaction.printing_transaction_id;
         ShopOrderService.delete(deleteId, orderSupplierModal)
-            .then(response => {
-                setSubmitLoading(false);
+            .then(async response => {
+                const refreshedTransaction = await fetchShopOrderTransaction(id);
+
+                if (printingTransactionId && refreshedTransaction && !refreshedTransaction.printing_transaction_id) {
+                    await PrintingTransactionService.delete(printingTransactionId);
+                }
+
                 setOpen(false);
                 setDeleteOpenModal(false);
                 window.scrollTo(0, 0);
@@ -683,6 +753,14 @@ const AddProductCustomerOrderTransaction = () => {
             })
             .catch(e => {
                 console.log('error', e);
+                setValidator({
+                    severity: 'error',
+                    message: e.response?.data?.message || 'Something went wrong while deleting the product.',
+                    isShow: true,
+                });
+            })
+            .finally(() => {
+                setSubmitLoading(false);
             });
     }
 

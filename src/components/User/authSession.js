@@ -78,14 +78,18 @@ export const saveAuthSession = (data) => {
     localStorage.setItem("auth_expires_at", String(expirationTime));
     localStorage.setItem("auth_token", data.token);
 
+    const maxAge = Math.max(0, Math.floor((expirationTime - Date.now()) / 1000));
+    const secure = window.location.protocol === "https:" ? "; Secure" : "";
+
     if (data.id !== undefined) {
         localStorage.setItem("auth_user_id", data.id);
-        const maxAge = Math.max(0, Math.floor((expirationTime - Date.now()) / 1000));
-        const secure = window.location.protocol === "https:" ? "; Secure" : "";
         document.cookie = `auth_user_id=${encodeURIComponent(data.id)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;
     }
     if (data.name !== undefined) localStorage.setItem("name", data.name);
-    if (data.role_as !== undefined) localStorage.setItem("role_as", data.role_as);
+    if (data.role_as !== undefined) {
+        localStorage.setItem("role_as", data.role_as);
+        document.cookie = `role_as=${encodeURIComponent(data.role_as)}; Path=/; Max-Age=${maxAge}; SameSite=Lax${secure}`;
+    }
 
     return true;
 };
@@ -93,6 +97,7 @@ export const saveAuthSession = (data) => {
 export const clearAuthSession = () => {
     AUTH_KEYS.forEach((key) => localStorage.removeItem(key));
     document.cookie = "auth_user_id=; Path=/; Max-Age=0; SameSite=Lax";
+    document.cookie = "role_as=; Path=/; Max-Age=0; SameSite=Lax";
 };
 
 export const hasValidAuthSession = () => {

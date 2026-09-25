@@ -156,6 +156,8 @@ import EditShop from "./components/Shop/EditShop";
 
 import ShopOrderTransaction from "./components/ShopOrderTransaction/ShopOrderTransaction";
 import AddProductShopOrderTransaction from "./components/ShopOrderTransaction/AddProductShopOrderTransaction";
+import PrintingTransactionList from "./components/PrintingTransaction/PrintingTransactionList";
+import EditPrintingTransaction from "./components/PrintingTransaction/EditPrintingTransaction";
 import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
 import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
@@ -626,6 +628,10 @@ const App = () => {
 
 
           <Route exact path="/shopOrderTransaction/addProductShopOrderTransaction/:id" element={<AddProductShopOrderTransaction />} />
+          <Route exact path="/printingTransaction" element={<PrintingTransactionList />} />
+          <Route exact path="/printingTransaction/pending" element={<PrintingTransactionList fixedStatus="PENDING" />} />
+          <Route exact path="/printingTransaction/completed" element={<PrintingTransactionList fixedStatus="COMPLETED" />} />
+          <Route exact path="/printingTransaction/:id/edit" element={<EditPrintingTransaction />} />
           <Route exact path="/shopOrderTransaction/shorOrderTransactionList/" element={<ShorOrderTransactionList />} />
           <Route exact path="/shopOrderTransaction/searchTransaction/" element={<SearchTransaction />} />
           <Route exact path="/shopOrderTransaction/quantitySortedList/" element={<QuantitySorted />} />

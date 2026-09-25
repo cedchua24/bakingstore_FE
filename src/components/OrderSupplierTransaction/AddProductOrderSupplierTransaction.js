@@ -52,6 +52,17 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import "./OrderSupplierTransaction.css";
 
+const getRoleAs = () => {
+    const roleCookie = document.cookie
+        .split(';')
+        .map((part) => part.trim())
+        .find((part) => part.startsWith('role_as='));
+
+    return roleCookie
+        ? decodeURIComponent(roleCookie.substring('role_as='.length))
+        : localStorage.getItem('role_as');
+};
+
 
 const AddProductOrderSupplierTransaction = () => {
     const { id } = useParams();
@@ -328,7 +339,10 @@ const AddProductOrderSupplierTransaction = () => {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
             OrderSupplierService.sanctum().then(response => {
-                OrderSupplierService.create(orderSupplier)
+                OrderSupplierService.create({
+                    ...orderSupplier,
+                    role_as: getRoleAs(),
+                })
                     .then(response => {
                         fetchByOrderSupplierId(id);
                         setOrderSupplier({
@@ -523,7 +537,10 @@ const AddProductOrderSupplierTransaction = () => {
     const updateOrderSupplier = () => {
         if (isOrderLocked) return;
         setSubmitLoadingUpdate(true);
-        OrderSupplierService.update(orderSupplierModal.id, orderSupplierModal)
+        OrderSupplierService.update(orderSupplierModal.id, {
+            ...orderSupplierModal,
+            role_as: getRoleAs(),
+        })
             .then(response => {
                 setSubmitLoadingUpdate(false);
                 setOpen(false);

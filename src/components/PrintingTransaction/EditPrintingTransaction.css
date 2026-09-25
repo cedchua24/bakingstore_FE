@@ -1,0 +1,90 @@
+.printing-ready-banner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    overflow: hidden;
+    padding: 22px 26px;
+    border: 2px solid #58bd82;
+    border-radius: 16px;
+    background: linear-gradient(115deg, #e8fff0 0%, #f1fff5 55%, #e9f8ff 100%);
+    box-shadow: 0 12px 28px rgba(25, 135, 78, .13);
+}
+
+.printing-ready-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 7px;
+    background: linear-gradient(#16b8d4, #dd4d9c, #f2c94c);
+}
+
+.printing-ready-icon {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 15px;
+    background: #d6f8e1;
+    font-size: 28px;
+    animation: printing-ready-pop .7s ease-out both;
+}
+
+.printing-ready-title.MuiTypography-root {
+    position: relative;
+    z-index: 1;
+    color: #116b3b;
+    font-size: 20px;
+    font-weight: 850;
+    line-height: 1.2;
+}
+
+.printing-ready-description.MuiTypography-root {
+    position: relative;
+    z-index: 1;
+    margin-top: 4px;
+    color: #325b48;
+    font-size: 14px;
+}
+
+.printing-ready-confetti {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.printing-ready-confetti span {
+    position: absolute;
+    left: 52%;
+    top: 50%;
+    width: 7px;
+    height: 12px;
+    border-radius: 2px;
+    background: hsl(calc(var(--piece) * 37deg), 82%, 58%);
+    opacity: 0;
+    animation: printing-confetti-burst 1.35s ease-out both;
+    animation-delay: calc(var(--piece) * 22ms);
+}
+
+@keyframes printing-ready-pop {
+    0% { transform: scale(.55) rotate(-20deg); }
+    65% { transform: scale(1.12) rotate(8deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes printing-confetti-burst {
+    0% { opacity: 0; transform: translate(0, 0) rotate(0); }
+    12% { opacity: 1; }
+    100% {
+        opacity: 0;
+        transform: translate(var(--dx), var(--dy)) rotate(calc(var(--piece) * 47deg));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .printing-ready-icon,
+    .printing-ready-confetti span { animation: none; }
+}
