@@ -26,6 +26,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 
 import LinearProgress from '@mui/material/LinearProgress';
+import "../ShopOrderTransaction/CustomerOrderTransactionList.css";
+import DeliveryReportTable from "./DeliveryReportTable";
 
 const ReportDelivery = () => {
 
@@ -246,9 +248,9 @@ const ReportDelivery = () => {
 
     const handleClose = () => setOpen(false);
 
-    const handleCloseRider = () => setOpen(false);
+    const handleCloseRider = () => setOpenRider(false);
 
-    const handleClosePickUp = () => setOpen(false);
+    const handleClosePickUp = () => setOpenPickUp(false);
 
     const [openRider, setOpenRider] = React.useState(false);
 
@@ -328,6 +330,8 @@ const ReportDelivery = () => {
         note: '',
         contact_number: '',
         address: '',
+        driver_id: '',
+        helper_id: '',
         status: 0,
         address: ''
     });
@@ -340,25 +344,25 @@ const ReportDelivery = () => {
     }
 
     const fetchDelivery = async (shop_order_transaction_id) => {
-        await DeliveryCustomerService.fetchDeliveryById(shop_order_transaction_id)
-            .then(response => {
-                if (JSON.stringify(response.data) === '{}') {
+        await Promise.all([DeliveryCustomerService.fetchDeliveryById(shop_order_transaction_id), ShopOrderTransactionService.fetchCustomerDetails(shop_order_transaction_id)])
+            .then(([deliveryResponse, customerResponse]) => {
+                if (JSON.stringify(deliveryResponse.data) === '{}') {
+                    const customer = customerResponse.data || {};
                     setDeliveryModal({
                         shop_order_transaction_id: shop_order_transaction_id,
                         id: 0,
-                        name: '',
+                        name: customer.name || customer.requestor_name || [customer.first_name, customer.last_name].filter(Boolean).join(' '),
                         date: '',
                         note: '',
-                        contact_number: '',
-                        address: '',
+                        contact_number: customer.contact_number || '',
+                        address: customer.address || '',
+                        driver_id: '', helper_id: '',
                         status: 0,
                         address: ''
                     });
 
-                    console.log('wla', response.data)
                 } else {
-                    console.log('meron', response.data)
-                    setDeliveryModal(response.data);
+                    setDeliveryModal(deliveryResponse.data);
                 }
 
             })
@@ -369,17 +373,14 @@ const ReportDelivery = () => {
 
     const validateDelivery = (values) => {
         const errors = {};
-        if (deliveryModal.name.length == 0) {
-            errors.name = "Name is Required!";
-        }
-        if (deliveryModal.address.length == 0) {
-            errors.name = "Address is Required!";
-        }
-        if (deliveryModal.contact_number.length == 0) {
-            errors.name = "Contact Number is Required!";
-        }
-        if (deliveryModal.date.length == 0) {
-            errors.name = "Date is Required!";
+        if (Number(values.status) === 1) {
+            if (!String(values.name || '').trim()) errors.name = "Name is Required!";
+            if (!String(values.address || '').trim()) errors.address = "Address is Required!";
+            if (!String(values.contact_number || '').trim()) errors.contact_number = "Contact Number is Required!";
+            if (!String(values.note || '').trim()) errors.note = "Note is Required!";
+            if (!String(values.date || '').trim()) errors.date = "Date is Required!";
+            if (!values.driver_id) errors.driver_id = "Driver is Required!";
+            if (!values.helper_id) errors.helper_id = "Helper is Required!";
         }
 
         return errors;
@@ -474,8 +475,9 @@ const ReportDelivery = () => {
             </div>
 
 
-            <legend align="center" style={{ fontWeight: 'bold' }} > Delivery List   </legend>
-            <table class="table table-bordered">
+            <DeliveryReportTable transactions={shopOrderTransaction.data} role={2} date={date} onDate={handleOpen} onPickup={handleOpenPickUp} onDelivery={handleOpenDelivery} onDeleteDelivery={openDelete} onCancel={deleteShopOrderTransaction} />
+            <div className="legacy-report-delivery-table table-responsive">
+            <table className="table table-bordered align-middle report-delivery-table">
                 <thead class="table-dark">
                     <tr class="table-secondary">
                         <th>ID</th>
@@ -489,8 +491,8 @@ const ReportDelivery = () => {
                         <th>Profit</th>
                         <th>Date</th>
                         <th>Payment Status</th>
-                        <th>For Trucking</th>
-                        <th >Pick Up Status</th>
+                        <th>Delivery</th>
+                        <th>Pick Up</th>
                         <th></th>
                         <th></th>
                         <th></th>
@@ -503,7 +505,7 @@ const ReportDelivery = () => {
                     {
                         shopOrderTransaction.data.map((shopOrderTransaction, index) => (
                             <tr key={shopOrderTransaction.id} >
-                                <td>{shopOrderTransaction.id}</td>
+                                <td><strong>#{shopOrderTransaction.id}</strong>{shopOrderTransaction.delivery_customer_id != 0 && <span className="customer-report-delivery-order-badge">Delivery Order</span>}</td>
                                 <td>{shopOrderTransaction.shop_name}</td>
                                 <td>{shopOrderTransaction.customer_type}</td>
                                 <td>{shopOrderTransaction.requestor_name}</td>
@@ -517,9 +519,7 @@ const ReportDelivery = () => {
                                         <UpdateIcon color="primary" onClick={(e) => handleOpen(shopOrderTransaction.id, e)} />
                                     </IconButton>
                                 </td>
-                                <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                    : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                        <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}</td>
+                                <td><span className={`status-pill ${shopOrderTransaction.status === 1 ? 'status-success' : shopOrderTransaction.status === 2 ? 'status-warning' : 'status-danger'}`}>{shopOrderTransaction.status === 1 ? 'Completed' : shopOrderTransaction.status === 2 ? 'Pending' : 'Cancelled'}</span></td>
                                 <td>
                                     <td>
                                         <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
@@ -558,6 +558,7 @@ const ReportDelivery = () => {
                                         </Button>
                                     </Link>
                                 </td>
+                                <td>{Number(shopOrderTransaction.is_pickup) === 1 ? <Link to={"../shopOrderTransaction/deliveryReceipt/" + shopOrderTransaction.id}><Button variant="outline-secondary">Delivery Receipt</Button></Link> : <Tooltip title="Complete pick-up to enable"><span><Button variant="outline-secondary" disabled>Delivery Receipt</Button></span></Tooltip>}</td>
                                 <td>
                                     <Link variant="primary" to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}   >
                                         <Button variant="success" >
@@ -590,6 +591,7 @@ const ReportDelivery = () => {
                     }
                 </tbody>
             </table>
+            </div>
             <Dialog
                 open={submitOpenModal}
                 onClose={handleSubmitCloseModal}
@@ -784,11 +786,16 @@ const ReportDelivery = () => {
                         <Form.Label>Note</Form.Label>
                         <Form.Control type="text" value={deliveryModal.note} name="note" onChange={onChangeDelivery} />
                     </Form.Group>
+                    {formDeliveryErrors.note && <p style={{ color: "red" }}>{formDeliveryErrors.note}</p>}
                     {formDeliveryErrors.date && <p style={{ color: "red" }}>{formDeliveryErrors.date}</p>}
                     <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" value={deliveryModal.date} name="date" onChange={onChangeDelivery} />
                     </Form.Group>
+                    {formDeliveryErrors.driver_id && <p style={{ color: "red" }}>{formDeliveryErrors.driver_id}</p>}
+                    <FormControl required={Number(deliveryModal.status) === 1} sx={{ width: '100%', mb: 2 }}><InputLabel>Driver</InputLabel><Select name="driver_id" label="Driver" value={deliveryModal.driver_id || ''} onChange={onChangeDelivery}>{requestorList.map((user) => <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>)}</Select></FormControl>
+                    {formDeliveryErrors.helper_id && <p style={{ color: "red" }}>{formDeliveryErrors.helper_id}</p>}
+                    <FormControl required={Number(deliveryModal.status) === 1} sx={{ width: '100%', mb: 2 }}><InputLabel>Helper</InputLabel><Select name="helper_id" label="Helper" value={deliveryModal.helper_id || ''} onChange={onChangeDelivery}>{requestorList.map((user) => <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>)}</Select></FormControl>
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>is Delivered ? </Form.Label>

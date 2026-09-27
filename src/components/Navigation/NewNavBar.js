@@ -15,6 +15,7 @@ import { hasValidAuthSession } from "../User/authSession";
 const NewNavBar = (props) => {
     const location = useLocation();
     const isReceiptOrderPage = location.pathname.startsWith("/shopOrderTransaction/receiptOrder/");
+    const isDeliveryReceiptPage = location.pathname.startsWith("/shopOrderTransaction/deliveryReceipt/");
     const isReceiptSupplierPage = location.pathname.startsWith("/printOrderSupplier/");
     const isReceipShopBranchPage = location.pathname.startsWith("/shopOrderTransaction/printShopBranch/");
 
@@ -22,7 +23,7 @@ const NewNavBar = (props) => {
 
     var AuthButtons = '';
     // Hide nav on receiptOrder page
-    if (isReceiptOrderPage || isReceiptSupplierPage || isReceipShopBranchPage) {
+    if (isReceiptOrderPage || isDeliveryReceiptPage || isReceiptSupplierPage || isReceipShopBranchPage) {
         AuthButtons = null; // or empty fragment <></>
     } else {
         if (!hasValidAuthSession()) {

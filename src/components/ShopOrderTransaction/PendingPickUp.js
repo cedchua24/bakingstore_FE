@@ -81,6 +81,8 @@ const PendingPickUp = () => {
         note: '',
         contact_number: '',
         address: '',
+        driver_id: '',
+        helper_id: '',
         status: 0,
         address: ''
     });
@@ -337,17 +339,14 @@ const PendingPickUp = () => {
 
     const validateDelivery = (values) => {
         const errors = {};
-        if (deliveryModal.name.length == 0) {
-            errors.name = "Name is Required!";
-        }
-        if (deliveryModal.address.length == 0) {
-            errors.name = "Address is Required!";
-        }
-        if (deliveryModal.contact_number.length == 0) {
-            errors.name = "Contact Number is Required!";
-        }
-        if (deliveryModal.date.length == 0) {
-            errors.name = "Date is Required!";
+        if (Number(values.status) === 1) {
+            if (!String(values.name || '').trim()) errors.name = "Name is Required!";
+            if (!String(values.address || '').trim()) errors.address = "Address is Required!";
+            if (!String(values.contact_number || '').trim()) errors.contact_number = "Contact Number is Required!";
+            if (!String(values.note || '').trim()) errors.note = "Note is Required!";
+            if (!String(values.date || '').trim()) errors.date = "Date is Required!";
+            if (!values.driver_id) errors.driver_id = "Driver is Required!";
+            if (!values.helper_id) errors.helper_id = "Helper is Required!";
         }
 
         return errors;
@@ -489,27 +488,29 @@ const PendingPickUp = () => {
     }
 
     const fetchDelivery = async (shop_order_transaction_id) => {
-        await DeliveryCustomerService.fetchDeliveryById(shop_order_transaction_id)
-            .then(response => {
-                if (JSON.stringify(response.data) === '{}') {
+        await Promise.all([
+            DeliveryCustomerService.fetchDeliveryById(shop_order_transaction_id),
+            ShopOrderTransactionService.fetchCustomerDetails(shop_order_transaction_id)
+        ])
+            .then(([deliveryResponse, customerResponse]) => {
+                if (JSON.stringify(deliveryResponse.data) === '{}') {
+                    const customer = customerResponse.data || {};
+                    const customerName = customer.name || customer.requestor_name || [customer.first_name, customer.last_name].filter(Boolean).join(' ');
                     setDeliveryModal({
                         shop_order_transaction_id: shop_order_transaction_id,
                         id: 0,
-                        name: '',
+                        name: customerName || '',
                         date: '',
                         note: '',
-                        contact_number: '',
-                        address: '',
+                        contact_number: customer.contact_number || '',
+                        address: customer.address || '',
+                        driver_id: '',
+                        helper_id: '',
                         status: 0,
-                        address: ''
                     });
-
-                    console.log('wla', response.data)
                 } else {
-                    console.log('meron', response.data)
-                    setDeliveryModal(response.data);
+                    setDeliveryModal(deliveryResponse.data);
                 }
-
             })
             .catch(e => {
                 console.log("error", e)
@@ -661,10 +662,9 @@ const PendingPickUp = () => {
 
                                         <th>Date</th>
                                         <th>Payment</th>
-                                        <th>Delivery</th>
-                                        <th>Rider</th>
-                                        <th>Pick Up</th>
-                                        <th>Actions</th>
+                                        <th className="customer-report-pickup-col">Pick Up</th>
+                                        <th className="customer-report-delivery-col">Delivery</th>
+                                        <th className="customer-report-actions-col">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -686,6 +686,9 @@ const PendingPickUp = () => {
                                                         }
                                                         <span className="customer-report-id-stack">
                                                             <span className="customer-report-order-id">#{shopOrderTransaction.id}</span>
+                                                            {shopOrderTransaction.delivery_customer_id != 0 &&
+                                                                <span className="customer-report-delivery-order-badge">Delivery Order</span>
+                                                            }
                                                             {vipCustomers.length > 0 &&
                                                                 <span className="customer-report-vip-badge-list">
                                                                     {vipCustomers.map((vipCustomer, vipIndex) => (
@@ -748,38 +751,31 @@ const PendingPickUp = () => {
                                                             </IconButton> : ""
                                                         }
                                                     </td>
-                                                    <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
-                                                        : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :
-                                                            <p style={{ fontWeight: 'bold', color: 'red', }}>CANCELLED</p>}
-                                                    </td>
-                                                    <td>
-                                                        <p>{shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DELIVERED</p> :
-                                                            shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 ? <>                                    <Tooltip title="Delete">
-                                                                <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING DELIVERY</p>
-                                                                <IconButton>
-                                                                    <DeleteIcon color="error" onClick={(e) => openDelete(shopOrderTransaction.id, e)} />
-                                                                </IconButton>
-                                                            </Tooltip></> : ''}</p>
-                                                        <IconButton>
-                                                            <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(shopOrderTransaction.id, e)} />
-                                                        </IconButton>
-                                                    </td>
-                                                    <td>
-                                                        <p>{shopOrderTransaction.rider_name}</p>
-                                                        <IconButton>
-                                                            <UpdateIcon color="primary" onClick={(e) => handleOpenRider(shopOrderTransaction.id, e)} />
-                                                        </IconButton>
-                                                    </td>
-
-
-                                                    <td>
-                                                        <p>{shopOrderTransaction.is_pickup === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>DONE</p> :
-                                                            <p style={{ fontWeight: 'bold', color: 'orange', }}>WAITING</p>}</p>
+                                                    <td><span className={`status-pill ${shopOrderTransaction.status === 1 ? 'status-success' : shopOrderTransaction.status === 2 ? 'status-warning' : 'status-danger'}`}>{shopOrderTransaction.status === 1 ? 'Completed' : shopOrderTransaction.status === 2 ? 'Pending' : 'Cancelled'}</span></td>
+                                                    <td className="customer-report-pickup-col">
+                                                        <div className="customer-report-status-action customer-report-pickup-action">
+                                                        <span className={`status-pill ${shopOrderTransaction.is_pickup === 1 ? 'status-success' : 'status-warning'}`}>{shopOrderTransaction.is_pickup === 1 ? 'Done' : 'Waiting'}</span>
                                                         <IconButton>
                                                             <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
                                                         </IconButton>
+                                                        </div>
                                                     </td>
-                                                    <td>
+                                                    <td className="customer-report-delivery-col">
+                                                        <div className="customer-report-status-action customer-report-delivery-action">
+                                                        {shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 1 && <span className="status-pill status-success">Delivered</span>}
+                                                        {shopOrderTransaction.delivery_customer_id != 0 && shopOrderTransaction.delivery_status == 0 && <Tooltip title="Delete"><span>
+                                                                <span className="status-pill status-warning">Pending Delivery</span>
+                                                                <IconButton>
+                                                                    <DeleteIcon color="error" onClick={(e) => openDelete(shopOrderTransaction.id, e)} />
+                                                                </IconButton>
+                                                            </span></Tooltip>}
+                                                        {shopOrderTransaction.delivery_customer_id == 0 && <span className="customer-report-muted">None</span>}
+                                                        <IconButton>
+                                                            <UpdateIcon color="primary" onClick={(e) => handleOpenDelivery(shopOrderTransaction.id, e)} />
+                                                        </IconButton>
+                                                        </div>
+                                                    </td>
+                                                    <td className="customer-report-actions-col">
                                                         <div className="customer-report-actions">
                                                             <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + shopOrderTransaction.id}>
                                                                 <Button className="customer-report-update-btn" size="sm" variant="success">
@@ -796,6 +792,17 @@ const PendingPickUp = () => {
                                                                     Receipt
                                                                 </Button>
                                                             </Link>
+                                                            {shopOrderTransaction.shop_order_transaction_total_quantity != 0 && shopOrderTransaction.delivery_customer_id != 0 && (
+                                                                Number(shopOrderTransaction.is_pickup) === 1 ? (
+                                                                    <Link to={"../shopOrderTransaction/deliveryReceipt/" + shopOrderTransaction.id}>
+                                                                        <Button size="sm" variant="outline-secondary">Delivery Receipt</Button>
+                                                                    </Link>
+                                                                ) : (
+                                                                    <Tooltip title="Complete pick-up to enable">
+                                                                        <span><Button size="sm" variant="outline-secondary" disabled>Delivery Receipt</Button></span>
+                                                                    </Tooltip>
+                                                                )
+                                                            )}
                                                             {shopOrderTransaction.status != 3 &&
                                                                 <Tooltip title={shopOrderTransaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
                                                                     <span>
@@ -1056,11 +1063,26 @@ const PendingPickUp = () => {
                         <Form.Label>Note</Form.Label>
                         <Form.Control type="text" value={deliveryModal.note} name="note" onChange={onChangeDelivery} />
                     </Form.Group>
+                    {formDeliveryErrors.note && <p style={{ color: "red" }}>{formDeliveryErrors.note}</p>}
                     {formDeliveryErrors.date && <p style={{ color: "red" }}>{formDeliveryErrors.date}</p>}
                     <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" value={deliveryModal.date} name="date" onChange={onChangeDelivery} />
                     </Form.Group>
+                    {formDeliveryErrors.driver_id && <p style={{ color: "red" }}>{formDeliveryErrors.driver_id}</p>}
+                    <FormControl required={Number(deliveryModal.status) === 1} sx={{ width: '100%', mb: 2 }}>
+                        <InputLabel>Driver</InputLabel>
+                        <Select name="driver_id" label="Driver" value={deliveryModal.driver_id || ''} onChange={onChangeDelivery}>
+                            {requestorList.map((user) => <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    {formDeliveryErrors.helper_id && <p style={{ color: "red" }}>{formDeliveryErrors.helper_id}</p>}
+                    <FormControl required={Number(deliveryModal.status) === 1} sx={{ width: '100%', mb: 2 }}>
+                        <InputLabel>Helper</InputLabel>
+                        <Select name="helper_id" label="Helper" value={deliveryModal.helper_id || ''} onChange={onChangeDelivery}>
+                            {requestorList.map((user) => <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>)}
+                        </Select>
+                    </FormControl>
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>is Delivered ? </Form.Label>
