@@ -15,6 +15,7 @@ import UserService from '../User/UserService.service'
 import { styled } from '@mui/material/styles';
 import { Form } from 'react-bootstrap';
 import Checkbox from '@mui/material/Checkbox';
+import Badge from '@mui/material/Badge';
 import CircularProgress from '@mui/material/CircularProgress';
 
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -34,20 +35,21 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import moment from "moment";
 import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
 import { getTransactionCategoryTags } from "./shopOrderTransactionTagHelpers";
 import { formatPaymentLabel, getPaymentLabelParts } from "./shopOrderPaymentHelpers";
 
 import LinearProgress from '@mui/material/LinearProgress';
-import useActiveShopColor from "../Shop/useActiveShopColor";
 import "./CustomerOrderTransactionList.css";
 
 const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
 
     const { id } = useParams();
-    const activeShopColor = useActiveShopColor();
-
     useEffect(() => {
         if (!searchByTransactionId) {
             fetchOnlineShopOrderTransactionList();
@@ -876,7 +878,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
         : shopOrderTransaction.data;
 
     return (
-        <div className="customer-report-page" style={{ "--shop-color": activeShopColor }}>
+        <div className="customer-report-page customer-report-page-yellow">
             <section className={`customer-report-hero${searchByTransactionId ? ' customer-report-search-hero' : ''}`}>
                 <div>
                     <p className="customer-report-eyebrow">{searchByTransactionId ? 'Transaction lookup' : 'Daily customer order report'}</p>
@@ -1331,42 +1333,51 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                             </div>
                                         </td>
                                         <td className="customer-report-actions-col">
-                                            <div className="customer-report-actions">
-                                                <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + transaction.id}>
-                                                    <Button className="customer-report-update-btn" size="sm" variant="success">Update</Button>
-                                                </Link>
-                                                <Link to={"../shopOrderTransaction/completedShopOrderTransaction/" + transaction.id}>
-                                                    <Button size="sm" variant="outline-primary">View</Button>
-                                                </Link>
+                                            <div className="customer-report-actions customer-report-actions-compact">
+                                                <Tooltip title="View transaction">
+                                                    <IconButton component={Link} to={"../shopOrderTransaction/completedShopOrderTransaction/" + transaction.id} size="small">
+                                                        <VisibilityOutlinedIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
                                                 {transaction.shop_order_transaction_total_quantity != 0 && (
-                                                    <Link to={"../shopOrderTransaction/receiptOrder/" + transaction.id}>
-                                                        <Button size="sm" variant="outline-secondary">Receipt</Button>
-                                                    </Link>
+                                                    <Tooltip title={Number(transaction.print_count) > 0 ? `Print receipt (${transaction.print_count} recorded)` : "Print receipt"}>
+                                                        <IconButton component={Link} to={"../shopOrderTransaction/receiptOrder/" + transaction.id} size="small">
+                                                            <Badge badgeContent={Number(transaction.print_count)} invisible={!(Number(transaction.print_count) > 0)} max={999}
+                                                                sx={{ '& .MuiBadge-badge': { bgcolor: '#a95317', color: '#fff' } }}>
+                                                                <PrintOutlinedIcon fontSize="small" />
+                                                            </Badge>
+                                                        </IconButton>
+                                                    </Tooltip>
                                                 )}
                                                 {transaction.shop_order_transaction_total_quantity != 0 && transaction.delivery_customer_id != 0 && (
                                                     Number(transaction.is_pickup) === 1 ? (
-                                                        <Link to={"../shopOrderTransaction/deliveryReceipt/" + transaction.id}>
-                                                            <Button size="sm" variant="outline-secondary">Delivery Receipt</Button>
-                                                        </Link>
+                                                        <Tooltip title="Delivery receipt">
+                                                            <IconButton component={Link} to={"../shopOrderTransaction/deliveryReceipt/" + transaction.id} size="small">
+                                                                <LocalShippingOutlinedIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
                                                     ) : (
                                                         <Tooltip title="Complete pick-up to enable">
-                                                            <span>
-                                                                <Button size="sm" variant="outline-secondary" disabled>Delivery Receipt</Button>
-                                                            </span>
+                                                            <span><IconButton size="small" disabled><LocalShippingOutlinedIcon fontSize="small" /></IconButton></span>
                                                         </Tooltip>
                                                     )
                                                 )}
+                                                <Tooltip title="Update transaction">
+                                                    <IconButton component={Link} to={"../shopOrderTransaction/addProductShopOrderTransaction/" + transaction.id} size="small" className="customer-report-update-action">
+                                                        <EditOutlinedIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
                                                 {transaction.status != 3 &&
-                                                    <Tooltip title={transaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
+                                                    <Tooltip title={transaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : "Delete transaction"}>
                                                         <span>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline-danger"
+                                                            <IconButton
+                                                                size="small"
                                                                 onClick={(e) => deleteShopOrderTransaction(transaction)}
                                                                 disabled={transaction.shop_order_transaction_total_price != 0 ? true : false}
+                                                                className="customer-report-delete-action"
                                                             >
-                                                                Delete
-                                                            </Button>
+                                                                <DeleteIcon fontSize="small" />
+                                                            </IconButton>
                                                         </span>
                                                     </Tooltip>
                                                 }

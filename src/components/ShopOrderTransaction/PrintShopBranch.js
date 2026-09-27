@@ -1,265 +1,217 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from 'react-router-dom';
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
+import React, { useCallback, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
-import TextField from '@mui/material/TextField';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import ShopService from "../Shop/ShopService";
+import "./PrintShopBranch.css";
 
-import Stepper from '@mui/material/Stepper';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
+const ITEMS_PER_PAGE = 15;
+
+const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && String(value).trim() !== "") || "";
+
+const money = (value) => new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    minimumFractionDigits: 2,
+}).format(Number(value || 0));
+
+const formatDate = (value) => {
+    if (!value) return "-";
+    const parsed = new Date(String(value).replace(" ", "T"));
+    return Number.isNaN(parsed.getTime())
+        ? value
+        : parsed.toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
+};
 
 const PrintShopBranch = () => {
-
-
     const { id } = useParams();
+    const [transaction, setTransaction] = useState({});
+    const [items, setItems] = useState([]);
+    const [activeShop, setActiveShop] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [printError, setPrintError] = useState("");
+    const [printing, setPrinting] = useState(false);
 
     useEffect(() => {
-        fetchShopOrderTransaction(id);
-        fetchShopOrderDTO(id);
-        fetchPaymentTypeByShopTransactionIdV2(id);
-    }, []);
-
-    const [orderShop, setOrderShop] = useState({
-        id: 0,
-        shop_transaction_id: id,
-        branch_stock_transaction_id: 0,
-        product_id: 0,
-        shop_order_quantity: 0,
-        shop_order_price: 0,
-        shop_order_total_price: 0,
-        created_at: ''
-    });
-
-    const [modeOfPaymentDTO, setModeOfPaymentDTO] = useState({
-        data: [],
-        code: ''
-    });
-
-    const [shopOrderTransaction, setShopOrderTransaction] = useState({
-        id: 0,
-        shop_id: 0,
-        shop_order_transaction_total_quantity: 0,
-        shop_order_transaction_total_price: 0,
-        requestor: 0,
-        checker: 0,
-        requestor_name: '',
-        status: 0,
-        checker_name: '',
-        created_at: '',
-        updated_at: ''
-    });
-
-    const steps = [
-        'Created Transaction Details',
-        'Add Product Orders',
-        'Finalize Orders',
-    ];
-
-    const TAX_RATE = 0.12;
-
-    function ccyFormat(num) {
-        return `${num.toFixed(2)}`;
-    }
-
-
-    const [invoiceSubtotal, setinvoiceSubtotal] = useState(0);
-    const [invoiceTaxes, setinvoiceTaxes] = useState(0);
-    const [invoiceTotal, setinvoiceTotal] = useState(0);
-
-
-    const [orderShopDTO, setOrderShopDTO] = useState({
-        shopOrderTransaction: {},
-        shopOrderList: []
-    });
-
-
-    const [message, setMessage] = useState(false);
-
-    const fetchPaymentTypeByShopTransactionIdV2 = async (id) => {
-        await ModeOfPaymentService.fetchPaymentTypeByShopTransactionIdV2(id)
-            .then(response => {
-                const paymentSummary = response.data || {};
-                setModeOfPaymentDTO({
-                    ...paymentSummary,
-                    data: Array.isArray(paymentSummary.data) ? paymentSummary.data : [],
-                    total_payment: Number(paymentSummary.total_payment || 0),
-                });
-                console.log('balance', response.data)
-
+        let active = true;
+        Promise.all([
+            ShopOrderTransactionService.fetchShopOrderTransaction(id),
+            ShopOrderService.fetchShopOrderDTO(id),
+            ShopService.fetchShopActive("active"),
+        ])
+            .then(([transactionResponse, orderResponse, shopResponse]) => {
+                if (!active) return;
+                const orderData = orderResponse.data || {};
+                const transactionData = transactionResponse.data || orderData.shopOrderTransaction || {};
+                const shopPayload = shopResponse.data?.data || shopResponse.data || {};
+                setTransaction(transactionData);
+                setItems(Array.isArray(orderData.shopOrderList) ? orderData.shopOrderList : []);
+                setActiveShop(Array.isArray(shopPayload) ? (shopPayload[0] || {}) : shopPayload);
             })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+            .catch(() => { if (active) setError("The inter-branch order could not be loaded."); })
+            .finally(() => { if (active) setLoading(false); });
+        return () => { active = false; };
+    }, [id]);
 
+    const handlePrint = useCallback(async () => {
+        setPrinting(true);
+        setPrintError("");
 
-
-
-    const fetchShopOrderTransaction = async (id) => {
-
-        var valueParam = id.split("+");
-        console.log('pieces', valueParam);
-        console.log('date', valueParam[1]);
-
-        if (valueParam[1] === '') {
-            console.log('empty');
-        } else {
-            console.log('non empty');
+        try {
+            const response = await ShopOrderTransactionService.incrementPrintCount(id);
+            setTransaction((current) => ({
+                ...current,
+                print_count: response.data?.print_count ?? current.print_count,
+            }));
+            document.body.classList.add("tracked-print-authorized");
+            window.print();
+        } catch (requestError) {
+            setPrintError(requestError.response?.data?.message || "The print count could not be updated. Please try again.");
+        } finally {
+            document.body.classList.remove("tracked-print-authorized");
+            setPrinting(false);
         }
-        await ShopOrderTransactionService.fetchShopOrderTransaction(id)
-            .then(response => {
-                console.log('fetchShopOrderTransaction', response.data)
-                setShopOrderTransaction(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+    }, [id]);
 
-    const fetchShopOrderDTO = async (id) => {
-        await ShopOrderService.fetchShopOrderDTO(id)
-            .then(response => {
-                setOrderShopDTO(response.data);
-                const totalPrice = response.data.shopOrderTransaction.shop_order_transaction_total_price;
-                const subtotal = totalPrice / (1 + TAX_RATE);
+    useEffect(() => {
+        const handlePrintShortcut = (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "p") {
+                event.preventDefault();
+                handlePrint();
+            }
+        };
 
-                setinvoiceSubtotal(subtotal);
-                setinvoiceTaxes(totalPrice - subtotal);
-                setinvoiceTotal(totalPrice);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+        window.addEventListener("keydown", handlePrintShortcut);
+        return () => {
+            window.removeEventListener("keydown", handlePrintShortcut);
+            document.body.classList.remove("tracked-print-authorized");
+        };
+    }, [handlePrint]);
 
+    const pages = items.length
+        ? Array.from({ length: Math.ceil(items.length / ITEMS_PER_PAGE) }, (_, pageIndex) =>
+            items.slice(pageIndex * ITEMS_PER_PAGE, (pageIndex + 1) * ITEMS_PER_PAGE))
+        : [[]];
+    const totalQuantity = Number(transaction.shop_order_transaction_total_quantity || 0)
+        || items.reduce((sum, item) => sum + Number(item.shop_order_quantity || 0), 0);
+    const totalAmount = Number(transaction.shop_order_transaction_total_price || 0)
+        || items.reduce((sum, item) => sum + Number(item.shop_order_total_price || 0), 0);
+    const issuingBranch = firstValue(activeShop.shop_name, "MDR Consumer Goods Trading");
+    const requestingBranch = firstValue(transaction.shop_name, "-");
 
-
-
-    const print = () => {
-        window.print();
-    }
-
-
-
+    if (loading) return <div className="branch-order-state"><CircularProgress /> Preparing inter-branch order...</div>;
+    if (error) return <div className="branch-order-state"><Alert severity="error">{error}</Alert></div>;
 
     return (
-        <div>
-            {message &&
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
+        <main className="branch-order-page">
+            {pages.map((pageItems, pageIndex) => {
+                const isFirstPage = pageIndex === 0;
+                const isLastPage = pageIndex === pages.length - 1;
+                const itemOffset = pageIndex * ITEMS_PER_PAGE;
 
-            }
-            <br></br>
-            <di></di>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                    <TableBody>
-                        <TableRow >
-                            <TableCell style={{ fontWeight: 'bold' }}>Reference #: </TableCell>
-                            <TableCell align="right">{shopOrderTransaction.id}</TableCell>
-                            <TableCell style={{ fontWeight: 'bold' }}>Requestor Branch: </TableCell>
-                            <TableCell align="right">{shopOrderTransaction.shop_name}</TableCell>
-                            <TableCell style={{ fontWeight: 'bold' }}>  Date:</TableCell>
-                            <TableCell align="right">{shopOrderTransaction.created_at}</TableCell>
+                return (
+                    <article className="branch-order-sheet" key={`branch-order-page-${pageIndex}`}>
+                        {isFirstPage ? <>
+                            <header className="branch-order-header">
+                                <div className="branch-order-brand">
+                                    <img src="/mdr_nav_logo.png" alt="MDR" />
+                                    <div>
+                                        <strong>{issuingBranch}</strong>
+                                        {activeShop.address && <span>{activeShop.address}</span>}
+                                        {activeShop.contact_number && <span>Contact: {activeShop.contact_number}</span>}
+                                    </div>
+                                </div>
+                                <div className="branch-order-title">
+                                    <p>Inter-Branch Order</p>
+                                    <strong>IBO-{String(transaction.id || id).padStart(6, "0")}</strong>
+                                    <span>{formatDate(transaction.created_at)}</span>
+                                </div>
+                            </header>
 
+                            <section className="branch-order-summary">
+                                <div className="branch-order-route">
+                                    <div><span>From · Issuing branch</span><strong>{issuingBranch}</strong></div>
+                                    <b aria-hidden="true">→</b>
+                                    <div><span>To · Requesting branch</span><strong>{requestingBranch}</strong></div>
+                                </div>
+                                <div className="branch-order-details">
+                                    <div><span>Requested by</span><strong>{firstValue(transaction.requestor_name, "-")}</strong></div>
+                                    <div><span>Request date</span><strong>{formatDate(transaction.created_at)}</strong></div>
+                                    <div><span>Reference</span><strong>#{transaction.id || id}</strong></div>
+                                    <div><span>Total quantity</span><strong>{totalQuantity}</strong></div>
+                                </div>
+                            </section>
+                        </> : (
+                            <header className="branch-order-continuation">
+                                <strong>Inter-Branch Order — Items Continued</strong>
+                                <span>IBO-{String(transaction.id || id).padStart(6, "0")}</span>
+                            </header>
+                        )}
 
+                        <section className="branch-order-items">
+                            <table>
+                                <thead><tr><th>#</th><th>Product description</th><th>Unit</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr></thead>
+                                <tbody>
+                                    {pageItems.map((item, index) => {
+                                        const unitWeight = Number(item.quantity) ? Number(item.weight) / Number(item.quantity) : 0;
+                                        return (
+                                            <tr key={item.id || `${item.product_id}-${itemOffset + index}`}>
+                                                <td>{itemOffset + index + 1}</td>
+                                                <td>
+                                                    <strong>{item.product_name || "Unnamed item"}</strong>
+                                                    {item.business_type !== "WHOLESALE" && unitWeight > 0 && <small>{Number(unitWeight.toPrecision(3))}{item.variation || ""}</small>}
+                                                </td>
+                                                <td>{firstValue(item.unit, item.packaging, "-")}</td>
+                                                <td>{item.shop_order_quantity || 0}</td>
+                                                <td>{money(item.shop_order_price)}</td>
+                                                <td>{money(item.shop_order_total_price)}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {!items.length && <tr><td className="branch-order-empty" colSpan="6">No products found.</td></tr>}
+                                </tbody>
+                            </table>
+                            {isLastPage && (
+                                <div className="branch-order-totals">
+                                    <span>Total items <strong>{items.length}</strong></span>
+                                    <span>Total quantity <strong>{totalQuantity}</strong></span>
+                                    <span>Grand total <strong>{money(totalAmount)}</strong></span>
+                                </div>
+                            )}
+                        </section>
 
+                        {isLastPage && <>
+                            <section className="branch-order-notes">
+                                <strong>Special instructions / discrepancies</strong>
+                                <div />
+                                <div />
+                            </section>
+                            <section className="branch-order-signatures">
+                                <div><strong>{firstValue(transaction.requestor_name)}</strong><span>Requested by</span><small>Requesting branch</small></div>
+                                <div><strong>{firstValue(transaction.sr_name)}</strong><span>Released by</span><small>Issuing branch</small></div>
+                                <div><strong>&nbsp;</strong><span>Transported by</span><small>Driver name and signature</small></div>
+                                <div><strong>&nbsp;</strong><span>Received by</span><small>Name, signature, and date</small></div>
+                            </section>
+                            <footer className="branch-order-footer">Please verify product descriptions and quantities before signing. Report discrepancies immediately.</footer>
+                        </>}
 
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        <div className="branch-order-page-number">Page {pageIndex + 1} of {pages.length}</div>
+                    </article>
+                );
+            })}
 
-            <br></br>
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 700 }} aria-label="spanning table">
-                    <TableHead>
-                        <TableRow >
-                            <TableCell style={{ fontWeight: 'bold', }}>Product</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Unit</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Qty.</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Price</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>Sum</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {orderShopDTO.shopOrderList.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell>{row.product_name}{
-                                    row.business_type === 'WHOLESALE' ? <></>
-                                        : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) </>
-                                }</TableCell>
-                                <TableCell align="right">{row.unit}</TableCell>
-                                <TableCell align="right">{row.shop_order_quantity}</TableCell>
-                                <TableCell align="right">{row.shop_order_price}</TableCell>
-
-                                <TableCell align="right">{row.shop_order_total_price}</TableCell>
-                            </TableRow>
-                        ))}
-
-
-                        <TableRow>
-                            <TableCell colSpan={4} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {ccyFormat(invoiceTotal)}</TableCell>
-                        </TableRow>
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            <br></br>
-            <br></br>
-            <br></br>
-            <br></br>
-            <div style={{ marginTop: "60px", display: "flex", justifyContent: "space-between", textAlign: "center" }}>
-                <div style={{ width: "30%" }}>
-                    <div style={{ borderBottom: "1px solid #000", height: "30px" }}></div>
-                    <div>DRIVER</div>
-                </div>
-
-                <div style={{ width: "30%" }}>
-                    <div style={{ borderBottom: "1px solid #000", height: "30px" }}></div>
-                    <div>SENDER</div>
-                </div>
-
-                <div style={{ width: "30%" }}>
-                    <div style={{ borderBottom: "1px solid #000", height: "30px" }}></div>
-                    <div>RECEIVER</div>
-                </div>
-            </div>
-            <br></br>
-            <br></br>
-            <br></br>
-            <div class="hide-on-print" style={{ textAlign: "center" }}>
-                <Button
-                    variant="contained"
-                    onClick={print}
-                    size="large" >
-                    Print
+            <div className="branch-order-actions hide-on-print">
+                {printError && <Alert severity="error" sx={{ mb: 2 }}>{printError}</Alert>}
+                <Button variant="contained" size="large" onClick={handlePrint} disabled={printing}>
+                    {printing ? "Preparing print..." : "Print inter-branch order"}
                 </Button>
-                {/* <button class="hide-on-print" onClick={print}>Print</button> */}
-                <br></br>
-
             </div>
-            <br></br>
-        </div >
-    )
-}
+        </main>
+    );
+};
 
-export default PrintShopBranch
-
-
-
+export default PrintShopBranch;

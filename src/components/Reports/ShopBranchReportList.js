@@ -3,6 +3,7 @@ import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransa
 import { Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import Alert from '@mui/material/Alert';
+import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -10,6 +11,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import UpdateIcon from '@mui/icons-material/Update';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
@@ -295,8 +297,23 @@ const ShopBranchReportList = () => {
                                         <td>
                                             <div className="shop-report-actions">
                                                 <Tooltip title="View"><IconButton component={Link} to={`../shopOrderTransaction/completedShopOrderTransaction/${row.id}`}><VisibilityOutlinedIcon /></IconButton></Tooltip>
-                                                <Tooltip title="Print"><IconButton component={Link} to={`../shopOrderTransaction/printShopBranch/${row.id}`}><PrintOutlinedIcon /></IconButton></Tooltip>
-                                                <Button component={Link} to={`../shopOrderTransaction/addProductShopOrderTransaction/${row.id}`} variant="outlined" size="small">Update</Button>
+                                                <Tooltip title={Number(row.print_count) > 0 ? `Print (${row.print_count} recorded)` : "Print"}>
+                                                    <IconButton component={Link} to={`../shopOrderTransaction/printShopBranch/${row.id}`}>
+                                                        <Badge
+                                                            badgeContent={Number(row.print_count)}
+                                                            invisible={!(Number(row.print_count) > 0)}
+                                                            max={999}
+                                                            sx={{ '& .MuiBadge-badge': { bgcolor: '#a95317', color: '#fff' } }}
+                                                        >
+                                                            <PrintOutlinedIcon />
+                                                        </Badge>
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="Update transaction">
+                                                    <IconButton component={Link} to={`../shopOrderTransaction/addProductShopOrderTransaction/${row.id}`} className="shop-report-update-action">
+                                                        <EditOutlinedIcon />
+                                                    </IconButton>
+                                                </Tooltip>
                                             </div>
                                         </td>
                                     </tr>

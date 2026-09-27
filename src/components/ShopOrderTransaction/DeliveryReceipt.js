@@ -117,6 +117,13 @@ const DeliveryReceipt = () => {
         transaction.rider_name,
         transaction.dispatcher_name
     ));
+    const itemsPerPage = 12;
+    const itemPages = items.length
+        ? Array.from({ length: Math.ceil(items.length / itemsPerPage) }, (_, pageIndex) =>
+            items.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage))
+        : [[]];
+    const totalQuantity = transaction.shop_order_transaction_total_quantity
+        || items.reduce((sum, item) => sum + Number(item.shop_order_quantity || 0), 0);
 
     if (loading) {
         return <div className="delivery-receipt-state"><CircularProgress /><span>Preparing delivery receipt...</span></div>;
@@ -128,81 +135,99 @@ const DeliveryReceipt = () => {
 
     return (
         <main className="delivery-receipt-page">
-            <article className="delivery-receipt-sheet">
-                <header className="delivery-receipt-header">
-                    <div className="delivery-receipt-brand">
-                        <img src="/mdr_nav_logo.png" alt="MDR Consumer Goods Trading" />
-                        <strong>{activeShop.shop_name || "MDR Consumer Goods Trading"}</strong>
-                        {activeShop.address && <span>{activeShop.address}</span>}
-                        {activeShop.contact_number && <span>Contact: {activeShop.contact_number}</span>}
-                    </div>
-                    <div className="delivery-receipt-title">
-                        <p>Delivery Receipt</p>
-                        <h1>DR-{String(transaction.id || id).padStart(6, "0")}</h1>
-                        <span>{formatDate(receiptDate)}</span>
-                    </div>
-                </header>
+            {itemPages.map((pageItems, pageIndex) => {
+                const isLastPage = pageIndex === itemPages.length - 1;
+                const itemOffset = pageIndex * itemsPerPage;
 
-                <section className="delivery-receipt-recipient">
-                    <dl>
-                        <div><dt>Customer</dt><dd className="delivery-receipt-customer-name">{customerName}</dd></div>
-                        {businessName && <div><dt>Business name</dt><dd className="delivery-receipt-business">{businessName}</dd></div>}
-                    </dl>
-                    <dl>
-                        <div><dt>Address</dt><dd>{address}</dd></div>
-                        <div><dt>Contact</dt><dd>{contactNumber}</dd></div>
-                        {delivery.note && <div><dt>Delivery note</dt><dd>{delivery.note}</dd></div>}
-                    </dl>
-                </section>
+                return (
+                    <article className="delivery-receipt-sheet" key={`receipt-page-${pageIndex}`}>
+                        {pageIndex === 0 ? <>
+                            <header className="delivery-receipt-header">
+                                <div className="delivery-receipt-brand">
+                                    <img src="/mdr_nav_logo.png" alt="MDR Consumer Goods Trading" />
+                                    <strong>{activeShop.shop_name || "MDR Consumer Goods Trading"}</strong>
+                                    {activeShop.address && <span>{activeShop.address}</span>}
+                                    {activeShop.contact_number && <span>Contact: {activeShop.contact_number}</span>}
+                                </div>
+                                <div className="delivery-receipt-title">
+                                    <p>Delivery Receipt</p>
+                                    <h1>DR-{String(transaction.id || id).padStart(6, "0")}</h1>
+                                    <span>{formatDate(receiptDate)}</span>
+                                </div>
+                            </header>
 
-                <section className="delivery-receipt-items">
-                    <table>
-                        <thead>
-                            <tr><th>#</th><th>Product item</th><th>Unit</th><th>Qty</th></tr>
-                        </thead>
-                        <tbody>
-                            {items.map((item, index) => (
-                                <tr key={item.id || `${item.product_id}-${index}`}>
-                                    <td>{index + 1}</td>
-                                    <td>
-                                        <strong>{item.product_name || "Unnamed item"}</strong>
-                                        {item.business_type !== "WHOLESALE" && item.weight && item.quantity
-                                            ? <small>{Number(item.weight) / Number(item.quantity)}{item.variation || ""}</small>
-                                            : null}
-                                    </td>
-                                    <td>{firstValue(item.unit, item.packaging, "-")}</td>
-                                    <td>{item.shop_order_quantity || 0}</td>
-                                </tr>
-                            ))}
-                            {!items.length && <tr><td colSpan="4" className="delivery-receipt-empty">No items found for this transaction.</td></tr>}
-                        </tbody>
-                    </table>
-                    <p className="delivery-receipt-total">Total quantity <strong>{transaction.shop_order_transaction_total_quantity || items.reduce((sum, item) => sum + Number(item.shop_order_quantity || 0), 0)}</strong></p>
-                </section>
+                            <section className="delivery-receipt-recipient">
+                                <dl>
+                                    <div><dt>Customer</dt><dd className="delivery-receipt-customer-name">{customerName}</dd></div>
+                                    {businessName && <div><dt>Business name</dt><dd className="delivery-receipt-business">{businessName}</dd></div>}
+                                </dl>
+                                <dl>
+                                    <div><dt>Address</dt><dd>{address}</dd></div>
+                                    <div><dt>Contact</dt><dd>{contactNumber}</dd></div>
+                                    {delivery.note && <div><dt>Delivery note</dt><dd>{delivery.note}</dd></div>}
+                                </dl>
+                            </section>
+                        </> : (
+                            <header className="delivery-receipt-continuation">
+                                <strong>Product items continued</strong>
+                                <span>DR-{String(transaction.id || id).padStart(6, "0")}</span>
+                            </header>
+                        )}
 
-                <section className="delivery-receipt-payment">
-                    <div className="delivery-receipt-payment-heading">
-                        <span className="delivery-receipt-label">Mode of payment</span>
-                        <span className={`delivery-receipt-payment-status ${paymentStatus.className}`}>{paymentStatus.label}</span>
-                    </div>
-                    {paymentRows.length
-                        ? paymentRows.map((payment, index) => <p key={payment.id || index}>{paymentMethodLabel(payment) || "Payment recorded"}</p>)
-                        : <p>Not specified</p>}
-                </section>
+                        <section className="delivery-receipt-items">
+                            <table>
+                                <thead>
+                                    <tr><th>#</th><th>Product item</th><th>Unit</th><th>Qty</th></tr>
+                                </thead>
+                                <tbody>
+                                    {pageItems.map((item, index) => (
+                                        <tr key={item.id || `${item.product_id}-${itemOffset + index}`}>
+                                            <td>{itemOffset + index + 1}</td>
+                                            <td>
+                                                <strong>{item.product_name || "Unnamed item"}</strong>
+                                                {item.business_type !== "WHOLESALE" && item.weight && item.quantity
+                                                    ? <small>{Number(item.weight) / Number(item.quantity)}{item.variation || ""}</small>
+                                                    : null}
+                                            </td>
+                                            <td>{firstValue(item.unit, item.packaging, "-")}</td>
+                                            <td>{item.shop_order_quantity || 0}</td>
+                                        </tr>
+                                    ))}
+                                    {!items.length && <tr><td colSpan="4" className="delivery-receipt-empty">No items found for this transaction.</td></tr>}
+                                </tbody>
+                            </table>
+                            {isLastPage && <p className="delivery-receipt-total">Total quantity <strong>{totalQuantity}</strong></p>}
+                        </section>
 
-                <section className="delivery-receipt-signatures">
-                    <div><strong>{preparedBy}</strong><span>Prepared by</span></div>
-                    <div><strong>{checkedBy}</strong><span>Checked by</span></div>
-                    <div><strong>{deliveredBy}</strong><span>Driver</span></div>
-                    <div className="delivery-receipt-received"><strong>&nbsp;</strong><span>Received by - name, signature, and date</span></div>
-                </section>
+                        {isLastPage && <>
+                            <section className="delivery-receipt-payment">
+                                <div className="delivery-receipt-payment-heading">
+                                    <span className="delivery-receipt-label">Mode of payment</span>
+                                    <span className={`delivery-receipt-payment-status ${paymentStatus.className}`}>{paymentStatus.label}</span>
+                                </div>
+                                {paymentRows.length
+                                    ? paymentRows.map((payment, index) => <p key={payment.id || index}>{paymentMethodLabel(payment) || "Payment recorded"}</p>)
+                                    : <p>Not specified</p>}
+                            </section>
 
-                <footer>
-                    <strong>Please check all items upon receipt.</strong>
-                    <p>Report missing, incorrect, or damaged items immediately. Keep this delivery receipt as your record of goods received.</p>
-                    <span>This document acknowledges delivery only and is not an official sales invoice.</span>
-                </footer>
-            </article>
+                            <section className="delivery-receipt-signatures">
+                                <div><strong>{preparedBy}</strong><span>Prepared by</span></div>
+                                <div><strong>{checkedBy}</strong><span>Checked by</span></div>
+                                <div><strong>{deliveredBy}</strong><span>Driver</span></div>
+                                <div className="delivery-receipt-received"><strong>&nbsp;</strong><span>Received by - name, signature, and date</span></div>
+                            </section>
+
+                            <footer>
+                                <strong>Please check all items upon receipt.</strong>
+                                <p>Report missing, incorrect, or damaged items immediately. Keep this delivery receipt as your record of goods received.</p>
+                                <span>This document acknowledges delivery only and is not an official sales invoice.</span>
+                            </footer>
+                        </>}
+
+                        <div className="delivery-receipt-page-number">Page {pageIndex + 1} of {itemPages.length}</div>
+                    </article>
+                );
+            })}
 
             <div className="delivery-receipt-actions hide-on-print">
                 <Button variant="contained" size="large" onClick={() => window.print()}>Print delivery receipt</Button>

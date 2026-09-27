@@ -1,230 +1,185 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from 'react-router-dom';
-import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
+import React, { useCallback, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
+import "./ReceiptOrder.css";
 
-import Button from '@mui/material/Button';
+// Eight rows balances readable wrapped item names with efficient 80 mm roll use.
+const ITEMS_PER_PAGE = 8;
 
+const money = (value) => new Intl.NumberFormat("en-PH", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+}).format(Number(value || 0));
 
-import './design.css';
+const compactDate = (value) => {
+    if (!value) return "-";
+    const parsed = new Date(String(value).replace(" ", "T"));
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-PH", {
+        year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+    });
+};
 
+const itemDescription = (row) => {
+    const discount = row.discount === "PERCENTAGE"
+        ? `Disc ${row.discount_percentage}% - ${row.discount_amount}`
+        : row.discount === "AMOUNT" ? `Disc - ${row.discount_amount}` : "";
+    const unitWeight = Number(row.quantity) ? Number(row.weight) / Number(row.quantity) : 0;
+    const weight = unitWeight
+        ? `${Number.isInteger(unitWeight) ? unitWeight : Number(unitWeight.toPrecision(2))}${row.variation || ""}`
+        : "";
+    const packaging = row.business_type === "WHOLESALE"
+        ? [row.packaging, weight && `${weight} x ${row.quantity}`].filter(Boolean).join(" · ")
+        : weight;
+    return { discount, packaging };
+};
 
 const ReceiptOrder = () => {
-
     const { id } = useParams();
+    const [transaction, setTransaction] = useState({});
+    const [items, setItems] = useState([]);
+    const [total, setTotal] = useState(0);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [printError, setPrintError] = useState("");
+    const [printing, setPrinting] = useState(false);
 
     useEffect(() => {
-        fetchShopOrderTransaction(id);
-        fetchShopOrderDTO(id);
-    }, []);
-
-    const [isPrinting, setIsPrinting] = useState(false);
-
-
-    const [orderShop, setOrderShop] = useState({
-        id: 0,
-        shop_transaction_id: id,
-        branch_stock_transaction_id: 0,
-        product_id: 0,
-        shop_order_quantity: 0,
-        shop_order_price: 0,
-        shop_order_total_price: 0,
-        created_at: ''
-    });
-
-    const [shopOrderTransaction, setShopOrderTransaction] = useState({
-        id: 0,
-        shop_id: 0,
-        shop_name: '',
-        address: '',
-        contact_number: '',
-        shop_order_transaction_total_quantity: 0,
-        shop_order_transaction_total_price: 0,
-        requestor: 0,
-        checker: 0,
-        requestor_name: '',
-        customer_type: '',
-        status: 0,
-        checker_name: '',
-        created_at: '',
-        updated_at: ''
-    });
-
-    const steps = [
-        'Created Transaction Details',
-        'Add Product Orders',
-        'Finalize Orders',
-    ];
-
-    const TAX_RATE = 0.12;
-
-    function ccyFormat(num) {
-        return `${num.toFixed(2)}`;
-    }
-
-
-    const [invoiceSubtotal, setinvoiceSubtotal] = useState(0);
-    const [invoiceTaxes, setinvoiceTaxes] = useState(0);
-    const [invoiceTotal, setinvoiceTotal] = useState(0);
-
-    const [orderList, setOrderList] = useState([]);
-
-    const [orderSupplierTransaction, setOrderSupplierTransaction] = useState({
-        id: 0,
-        supplier_name: '',
-        supplier_id: 0,
-        withTax: 0,
-        status: '',
-        total_transaction_price: 0,
-        order_date: '',
-        created_at: '',
-        updated_at: ''
-    });
-
-    const [orderShopDTO, setOrderShopDTO] = useState({
-        shopOrderTransaction: {},
-        shopOrderList: []
-    });
-
-
-    const [message, setMessage] = useState(false);
-
-
-    const fetchShopOrderTransaction = async (id) => {
-        console.log('test')
-        await ShopOrderTransactionService.fetchShopOrderTransaction(id)
-            .then(response => {
-                console.log('fetchShopOrderTransaction', response.data)
-                setShopOrderTransaction(response.data);
+        let active = true;
+        Promise.all([
+            ShopOrderTransactionService.fetchShopOrderTransaction(id),
+            ShopOrderService.fetchShopOrderDTO(id),
+        ])
+            .then(([transactionResponse, orderResponse]) => {
+                if (!active) return;
+                const orderData = orderResponse.data || {};
+                const orderTransaction = orderData.shopOrderTransaction || {};
+                setTransaction(transactionResponse.data || orderTransaction);
+                setItems(Array.isArray(orderData.shopOrderList) ? orderData.shopOrderList : []);
+                setTotal(Number(orderTransaction.shop_order_transaction_total_price || 0));
             })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+            .catch(() => { if (active) setError("The receipt details could not be loaded."); })
+            .finally(() => { if (active) setLoading(false); });
+        return () => { active = false; };
+    }, [id]);
 
-    const fetchShopOrderDTO = async (id) => {
-        await ShopOrderService.fetchShopOrderDTO(id)
-            .then(response => {
-                setOrderShopDTO(response.data);
-                const totalPrice = response.data.shopOrderTransaction.shop_order_transaction_total_price;
-                const subtotal = totalPrice / (1 + TAX_RATE);
+    const handlePrint = useCallback(async () => {
+        setPrinting(true);
+        setPrintError("");
 
-                setinvoiceSubtotal(subtotal);
-                setinvoiceTaxes(totalPrice - subtotal);
-                setinvoiceTotal(totalPrice);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+        try {
+            const response = await ShopOrderTransactionService.incrementPrintCount(id);
+            setTransaction((current) => ({
+                ...current,
+                print_count: response.data?.print_count ?? current.print_count,
+            }));
+            document.body.classList.add("tracked-print-authorized");
+            window.print();
+        } catch (requestError) {
+            setPrintError(requestError.response?.data?.message || "The print count could not be updated. Please try again.");
+        } finally {
+            document.body.classList.remove("tracked-print-authorized");
+            setPrinting(false);
+        }
+    }, [id]);
 
+    useEffect(() => {
+        const handlePrintShortcut = (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "p") {
+                event.preventDefault();
+                handlePrint();
+            }
+        };
 
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        window.addEventListener("keydown", handlePrintShortcut);
+        return () => {
+            window.removeEventListener("keydown", handlePrintShortcut);
+            document.body.classList.remove("tracked-print-authorized");
+        };
+    }, [handlePrint]);
 
+    const pages = items.length
+        ? Array.from({ length: Math.ceil(items.length / ITEMS_PER_PAGE) }, (_, pageIndex) =>
+            items.slice(pageIndex * ITEMS_PER_PAGE, (pageIndex + 1) * ITEMS_PER_PAGE))
+        : [[]];
 
-
-    const print = () => {
-
-        setIsPrinting(true);
-        window.print();
-    }
-
-
-
+    if (loading) return <div className="thermal-receipt-state"><CircularProgress size={28} /> Preparing receipt...</div>;
+    if (error) return <div className="thermal-receipt-state"><Alert severity="error">{error}</Alert></div>;
 
     return (
-        <div>
-            {message &&
-                <Stack sx={{ width: '100%' }} spacing={2}>
-                    <Alert variant="filled" severity="success">
-                        Successfully Addded!
-                    </Alert>
-                </Stack>
+        <main className="thermal-receipt-page">
+            {pages.map((pageItems, pageIndex) => {
+                const isFirstPage = pageIndex === 0;
+                const isLastPage = pageIndex === pages.length - 1;
+                const itemOffset = pageIndex * ITEMS_PER_PAGE;
+                return (
+                    <article className="thermal-receipt" key={`receipt-${pageIndex}`}>
+                        {isFirstPage ? (
+                            <header className="thermal-receipt-header">
+                                <h1>{transaction.shop_name}</h1>
+                                {transaction.address && <p>{transaction.address}</p>}
+                                {transaction.contact_number && <p>Contact: {transaction.contact_number}</p>}
+                                <h2>ORDER RECEIPT</h2>
+                                <strong>Reference #{transaction.id || id}</strong>
+                            </header>
+                        ) : (
+                            <header className="thermal-receipt-continuation">
+                                <strong>ITEMS CONTINUED</strong><span>Ref #{transaction.id || id}</span>
+                            </header>
+                        )}
 
-            }
-            <br></br>
-            <div>
-                <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}> {shopOrderTransaction.shop_name}</h3>
-                <p style={{ textAlign: 'center' }}> {shopOrderTransaction.address}</p>
-                <p style={{ textAlign: 'center' }}>Contact Number:  {shopOrderTransaction.contact_number}</p>
-                <p style={{ textAlign: 'center' }}>Customer Type:  {shopOrderTransaction.customer_type}</p>
-                <h3 style={{ fontWeight: 'bold', textAlign: 'center' }}>Reference Number: #{shopOrderTransaction.id}</h3>
-                <br></br>
-                <table class="print-receipt" >
+                        {isFirstPage && (
+                            <section className="thermal-receipt-meta">
+                                <div><span>Customer</span><strong>{transaction.requestor_name || "-"}</strong></div>
+                                <div><span>Type</span><strong>{transaction.customer_type || "-"}</strong></div>
+                                <div><span>Date</span><strong>{compactDate(transaction.updated_at)}</strong></div>
+                            </section>
+                        )}
 
-                    <tr>
-                        <th>{shopOrderTransaction.requestor_name}</th>
-                        <th>{shopOrderTransaction.updated_at}</th>
-                    </tr>
+                        <table className="thermal-receipt-items">
+                            <thead><tr><th>Qty</th><th>Item</th><th>Price</th><th>Amount</th></tr></thead>
+                            <tbody>
+                                {pageItems.map((row, index) => {
+                                    const details = itemDescription(row);
+                                    return (
+                                        <tr key={row.id || `${row.product_id}-${itemOffset + index}`}>
+                                            <td>{row.shop_order_quantity}</td>
+                                            <td>
+                                                <strong>{row.product_name}</strong>
+                                                {details.packaging && <small>{details.packaging}</small>}
+                                                {details.discount && <small>{details.discount}</small>}
+                                            </td>
+                                            <td>{money(row.shop_order_price)}</td>
+                                            <td>{money(row.shop_order_total_price)}</td>
+                                        </tr>
+                                    );
+                                })}
+                                {!items.length && <tr><td colSpan="4" className="thermal-receipt-empty">No items</td></tr>}
+                            </tbody>
+                        </table>
 
-                    <br></br>
-
-                </table>
-                <table class="print-receipt" >
-                    <tr>
-                        <th>QTY</th>
-                        <th>ITEM</th>
-                        <th>PRICE</th>
-                        <th>SUM</th>
-                    </tr>
-
-                    {orderShopDTO.shopOrderList.map((row) => (
-                        <tr>
-                            <td>{row.shop_order_quantity}</td>
-                            <td>{row.product_name}{row.discount == 'PERCENTAGE' ? " ,Disc " + row.discount_percentage + '%' + ' ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? ',Disc -' + row.discount_amount : ''} {
-                                row.business_type === 'WHOLESALE' ? <p > {row.packaging}({row.weight / row.quantity}{row.variation} x {row.quantity})</p>
-                                    : <p >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation})</p>
-                            }</td>
-                            <td>{row.shop_order_price}</td>
-                            <td>{row.shop_order_total_price}</td>
-                        </tr>
-
-                    ))}
-                    <br></br>
-
-
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td style={{ fontWeight: 'bold' }}>Grand Total</td>
-                        <td style={{ fontWeight: 'bold' }}>{numberFormat(invoiceTotal)}</td>
-                    </tr>
-
-                </table>
-                <br></br>
-                <h6 style={{ textAlign: 'center' }}> Sales Representative: {shopOrderTransaction.sr_name}</h6>
-                <br></br>
-                <h5 style={{ textAlign: 'center' }}> THANK YOU FOR YOUR ORDER</h5>
-                <br></br>
-                <h3 style={{ textAlign: 'center' }}> THIS IS NOT AN OFFICIAL RECEIPT</h3>
-                <br></br>
-
-
-            </div>
-            <br></br>
-            <div class="hide-on-print" style={{ textAlign: "center" }}>
-                <Button
-                    variant="contained"
-                    onClick={print}
-                    size="large" >
-                    Print
+                        {isLastPage && <>
+                            <section className="thermal-receipt-total"><span>GRAND TOTAL</span><strong>PHP {money(total)}</strong></section>
+                            <section className="thermal-receipt-closing">
+                                <p>Sales Representative</p><strong>{transaction.sr_name || "-"}</strong>
+                                <h3>THANK YOU FOR YOUR ORDER</h3><b>THIS IS NOT AN OFFICIAL RECEIPT</b>
+                            </section>
+                        </>}
+                        <footer className="thermal-receipt-page-number">Page {pageIndex + 1} of {pages.length}</footer>
+                    </article>
+                );
+            })}
+            <div className="thermal-receipt-actions hide-on-print">
+                {printError && <Alert severity="error" sx={{ mb: 2 }}>{printError}</Alert>}
+                <Button variant="contained" size="large" onClick={handlePrint} disabled={printing}>
+                    {printing ? "Preparing print..." : "Print receipt"}
                 </Button>
-                {/* <button class="hide-on-print" onClick={print}>Print</button> */}
-                <br></br>
-                <br></br>
-                <br></br>
             </div>
-        </div >
-    )
-}
+        </main>
+    );
+};
 
-export default ReceiptOrder
-
-
-
+export default ReceiptOrder;

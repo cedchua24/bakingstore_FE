@@ -686,8 +686,8 @@
 
 .customer-report-table-transaction .customer-report-actions-col {
     position: static;
-    width: 250px;
-    min-width: 250px;
+    width: 216px;
+    min-width: 216px;
     box-shadow: none;
 }
 
@@ -787,7 +787,7 @@
 .customer-report-online-orders-table th,
 .customer-report-online-orders-table td {
     box-sizing: border-box;
-    padding: 12px 10px;
+    padding: 10px 6px;
     overflow-wrap: normal;
 }
 
@@ -805,22 +805,22 @@
 
 .customer-report-online-orders-table .customer-report-payment-account {
     line-height: 1.25;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .customer-report-online-orders-table {
-    min-width: 1450px;
+    min-width: 1200px;
 }
 
 .customer-report-online-orders-table .customer-report-pickup-col {
-    width: 110px;
-    min-width: 110px;
+    width: 88px;
+    min-width: 88px;
     text-align: center;
 }
 
 .customer-report-online-orders-table .customer-report-delivery-col {
-    width: 145px;
-    min-width: 145px;
+    width: 122px;
+    min-width: 122px;
     text-align: center;
 }
 
@@ -882,8 +882,8 @@
 
 .customer-report-online-orders-table .customer-report-actions-col {
     position: static;
-    width: 250px;
-    min-width: 250px;
+    width: 194px;
+    min-width: 194px;
     box-shadow: none;
 }
 
@@ -1124,6 +1124,87 @@
     font-weight: 800;
 }
 
+.customer-report-actions.customer-report-actions-compact {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    min-width: 182px;
+    gap: 3px;
+}
+
+.customer-report-actions-compact .MuiIconButton-root {
+    width: 34px;
+    height: 34px;
+    padding: 5px;
+    color: #6a737e;
+    border: 1px solid #e2e5e9;
+    border-radius: 9px;
+    background: #fff;
+}
+
+.customer-report-actions-compact .MuiIconButton-root:hover {
+    color: #9a501a;
+    border-color: #d7a47f;
+    background: #fffaf5;
+}
+
+.customer-report-actions-compact .customer-report-update-action {
+    color: #9a501a;
+    border-color: #d7a47f;
+}
+
+.customer-report-actions-compact .customer-report-delete-action {
+    color: #dc3545;
+}
+
+/* Warm yellow theme for the customer transaction screen. */
+.customer-report-page-yellow {
+    background: #f5f6f8;
+}
+
+.customer-report-page-yellow .customer-report-hero {
+    border-color: transparent;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #7a4300, #e6a313);
+    box-shadow: 0 16px 38px rgba(138, 75, 0, .18);
+}
+
+.customer-report-page-yellow .customer-report-table th {
+    background: #7a4300;
+}
+
+.customer-report-page-yellow .customer-report-filter .btn:not(.customer-report-id-search .btn) {
+    border-color: #e0a21b;
+    background: #ffd166;
+    color: #2b2118;
+    font-weight: 800;
+}
+
+.customer-report-page-yellow .customer-report-filter .btn:not(.customer-report-id-search .btn):hover,
+.customer-report-page-yellow .customer-report-filter .btn:not(.customer-report-id-search .btn):focus {
+    border-color: #c88700;
+    background: #f4b41a;
+    color: #2b2118;
+}
+
+.customer-report-page-yellow .customer-report-progress .MuiLinearProgress-bar {
+    background: #e0a21b;
+}
+
+.customer-report-page-yellow .customer-report-kpi:not(.customer-report-kpi-profit) {
+    border-color: #f0dfb2;
+}
+
+.customer-report-page-yellow .customer-report-mini-grid a,
+.customer-report-page-yellow .customer-report-id,
+.customer-report-page-yellow .customer-report-table-header a {
+    color: #a56000;
+}
+
+.customer-report-page-yellow .customer-report-table tbody tr:hover {
+    background: #fff9e8;
+}
+
 .customer-report-empty {
     padding: 34px !important;
     color: #bd2d2d !important;
@@ -1149,6 +1230,56 @@
 
     .customer-report-kpis {
         grid-template-columns: repeat(2, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 1366px) {
+    .customer-report-page-yellow {
+        width: calc(100% + 20px);
+        margin-left: -10px;
+        padding: 18px 6px;
+    }
+
+    .customer-report-online-orders-table {
+        min-width: 1100px;
+        font-size: 11.5px;
+    }
+
+    .customer-report-online-orders-table th,
+    .customer-report-online-orders-table td {
+        padding: 8px 4px;
+    }
+
+    .customer-report-online-orders-table .customer-report-pickup-col {
+        width: 78px;
+        min-width: 78px;
+    }
+
+    .customer-report-online-orders-table .customer-report-delivery-col {
+        width: 108px;
+        min-width: 108px;
+    }
+
+    .customer-report-online-orders-table .customer-report-actions-col {
+        width: 174px;
+        min-width: 174px;
+    }
+
+    .customer-report-online-orders-table .customer-report-actions-compact {
+        min-width: 170px;
+        gap: 2px;
+    }
+
+    .customer-report-online-orders-table .customer-report-actions-compact .MuiIconButton-root {
+        width: 32px;
+        height: 32px;
+        padding: 5px;
+    }
+
+    .customer-report-online-orders-table .status-pill {
+        min-height: 22px;
+        padding: 3px 6px;
+        font-size: 10px !important;
     }
 }
 
