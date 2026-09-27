@@ -205,6 +205,7 @@ import PaymentTypePrev from "./components/ShopOrderTransaction/PaymentTypePrev";
 import ViewDiscount from "./components/ShopOrderTransaction/ViewDiscount";
 import ViewDiscountLoss from "./components/ShopOrderTransaction/ViewDiscountLoss";
 import ReceiptOrder from "./components/ShopOrderTransaction/ReceiptOrder";
+import DeliveryReceipt from "./components/ShopOrderTransaction/DeliveryReceipt";
 
 import CustomerOrderTransaction from "./components/CustomerTransaction/CustomerOrderTransaction";
 import AddProductCustomerOrderTransaction from "./components/CustomerTransaction/AddProductCustomerOrderTransaction";
@@ -662,6 +663,7 @@ const App = () => {
           <Route exact path="/shopOrderTransaction/viewDiscountLoss/:id" element={<ViewDiscountLoss />} />
 
           <Route exact path="/shopOrderTransaction/receiptOrder/:id" element={<ReceiptOrder />} />
+          <Route exact path="/shopOrderTransaction/deliveryReceipt/:id" element={<DeliveryReceipt />} />
           <Route
             exact
             path="/customerOrderTransaction"

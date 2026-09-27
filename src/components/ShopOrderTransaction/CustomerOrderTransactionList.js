@@ -200,6 +200,8 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
         note: '',
         contact_number: '',
         address: '',
+        driver_id: '',
+        helper_id: '',
         status: 0,
         address: ''
     });
@@ -576,27 +578,29 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
     }
 
     const fetchDelivery = async (shop_order_transaction_id) => {
-        await DeliveryCustomerService.fetchDeliveryById(shop_order_transaction_id)
-            .then(response => {
-                if (JSON.stringify(response.data) === '{}') {
+        await Promise.all([
+            DeliveryCustomerService.fetchDeliveryById(shop_order_transaction_id),
+            ShopOrderTransactionService.fetchCustomerDetails(shop_order_transaction_id)
+        ])
+            .then(([deliveryResponse, customerResponse]) => {
+                if (JSON.stringify(deliveryResponse.data) === '{}') {
+                    const customer = customerResponse.data || {};
+                    const customerName = customer.name || customer.requestor_name || [customer.first_name, customer.last_name].filter(Boolean).join(' ');
                     setDeliveryModal({
                         shop_order_transaction_id: shop_order_transaction_id,
                         id: 0,
-                        name: '',
+                        name: customerName || '',
                         date: '',
                         note: '',
-                        contact_number: '',
-                        address: '',
+                        contact_number: customer.contact_number || '',
+                        address: customer.address || '',
+                        driver_id: '',
+                        helper_id: '',
                         status: 0,
-                        address: ''
                     });
-
-                    console.log('wla', response.data)
                 } else {
-                    console.log('meron', response.data)
-                    setDeliveryModal(response.data);
+                    setDeliveryModal(deliveryResponse.data);
                 }
-
             })
             .catch(e => {
                 console.log("error", e)
@@ -658,17 +662,14 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
 
     const validateDelivery = (values) => {
         const errors = {};
-        if (deliveryModal.name.length == 0) {
-            errors.name = "Name is Required!";
-        }
-        if (deliveryModal.address.length == 0) {
-            errors.name = "Address is Required!";
-        }
-        if (deliveryModal.contact_number.length == 0) {
-            errors.name = "Contact Number is Required!";
-        }
-        if (deliveryModal.date.length == 0) {
-            errors.name = "Date is Required!";
+        if (Number(values.status) === 1) {
+            if (!String(values.name || '').trim()) errors.name = "Name is Required!";
+            if (!String(values.address || '').trim()) errors.address = "Address is Required!";
+            if (!String(values.contact_number || '').trim()) errors.contact_number = "Contact Number is Required!";
+            if (!String(values.note || '').trim()) errors.note = "Note is Required!";
+            if (!String(values.date || '').trim()) errors.date = "Date is Required!";
+            if (!values.driver_id) errors.driver_id = "Driver is Required!";
+            if (!values.helper_id) errors.helper_id = "Helper is Required!";
         }
 
         return errors;
@@ -1202,16 +1203,15 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                 {role == 2 && <th>Profit</th>}
                                 <th>Date</th>
                                 <th>Payment</th>
-                                <th>Delivery</th>
-                                <th>Pick Up</th>
-                                <th>Rider</th>
-                                <th>Actions</th>
+                                <th className="customer-report-pickup-col">Pick Up</th>
+                                <th className="customer-report-delivery-col">Delivery</th>
+                                <th className="customer-report-actions-col">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {visibleTransactions.length === 0 ? (
                                 <tr>
-                                    <td className="customer-report-empty" colSpan={role == 2 ? 15 : 14}>No Data Available</td>
+                                    <td className="customer-report-empty" colSpan={role == 2 ? 13 : 12}>No Data Available</td>
                                 </tr>
                             ) : visibleTransactions.map((transaction) => {
                                 const primaryVipCustomer = getPrimaryTransactionVipCustomer(transaction);
@@ -1231,9 +1231,12 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                     style={{ backgroundColor: primaryVipCustomer.vip_color || '#6c757d' }}
                                                 ></span>
                                             }
-                                            <span className="customer-report-id-stack">
-                                                <span className="customer-report-order-id">#{transaction.id}</span>
-                                                {vipCustomers.length > 0 &&
+                                                <span className="customer-report-id-stack">
+                                                    <span className="customer-report-order-id">#{transaction.id}</span>
+                                                    {transaction.delivery_customer_id != 0 &&
+                                                        <span className="customer-report-delivery-order-badge">Delivery Order</span>
+                                                    }
+                                                    {vipCustomers.length > 0 &&
                                                     <span className="customer-report-vip-badge-list">
                                                         {vipCustomers.map((vipCustomer, index) => (
                                                             <Tooltip
@@ -1298,7 +1301,15 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                             </div>
                                         </td>
                                         <td><span className={paymentStatusClass(transaction.status)}>{paymentStatusLabel(transaction.status)}</span></td>
-                                        <td>
+                                        <td className="customer-report-pickup-col">
+                                            <div className="customer-report-status-action customer-report-pickup-action">
+                                                <span className={pickupStatusClass(transaction.is_pickup)}>{transaction.is_pickup === 1 ? "Done" : "Waiting"}</span>
+                                                <IconButton size="small">
+                                                    <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(transaction.id, e)} />
+                                                </IconButton>
+                                            </div>
+                                        </td>
+                                        <td className="customer-report-delivery-col">
                                             <div className="customer-report-status-action customer-report-delivery-action">
                                                 {transaction.delivery_customer_id != 0 && transaction.delivery_status == 1 &&
                                                     <span className="status-pill status-success">Delivered</span>
@@ -1319,23 +1330,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                 </IconButton>
                                             </div>
                                         </td>
-                                        <td>
-                                            <div className="customer-report-status-action customer-report-pickup-action">
-                                                <span className={pickupStatusClass(transaction.is_pickup)}>{transaction.is_pickup === 1 ? "Done" : "Waiting"}</span>
-                                                <IconButton size="small">
-                                                    <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(transaction.id, e)} />
-                                                </IconButton>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="customer-report-status-action customer-report-rider-action">
-                                                <span>{transaction.rider_name || "-"}</span>
-                                                <IconButton size="small">
-                                                    <UpdateIcon color="primary" onClick={(e) => handleOpenRider(transaction.id, e)} />
-                                                </IconButton>
-                                            </div>
-                                        </td>
-                                        <td>
+                                        <td className="customer-report-actions-col">
                                             <div className="customer-report-actions">
                                                 <Link to={"../shopOrderTransaction/addProductShopOrderTransaction/" + transaction.id}>
                                                     <Button className="customer-report-update-btn" size="sm" variant="success">Update</Button>
@@ -1347,6 +1342,19 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                     <Link to={"../shopOrderTransaction/receiptOrder/" + transaction.id}>
                                                         <Button size="sm" variant="outline-secondary">Receipt</Button>
                                                     </Link>
+                                                )}
+                                                {transaction.shop_order_transaction_total_quantity != 0 && transaction.delivery_customer_id != 0 && (
+                                                    Number(transaction.is_pickup) === 1 ? (
+                                                        <Link to={"../shopOrderTransaction/deliveryReceipt/" + transaction.id}>
+                                                            <Button size="sm" variant="outline-secondary">Delivery Receipt</Button>
+                                                        </Link>
+                                                    ) : (
+                                                        <Tooltip title="Complete pick-up to enable">
+                                                            <span>
+                                                                <Button size="sm" variant="outline-secondary" disabled>Delivery Receipt</Button>
+                                                            </span>
+                                                        </Tooltip>
+                                                    )
                                                 )}
                                                 {transaction.status != 3 &&
                                                     <Tooltip title={transaction.shop_order_transaction_total_price != 0 ? "Need to Delete Product in Transaction" : ""}>
@@ -1459,11 +1467,26 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                         <Form.Label>Note</Form.Label>
                         <Form.Control type="text" value={deliveryModal.note} name="note" onChange={onChangeDelivery} />
                     </Form.Group>
+                    {formDeliveryErrors.note && <p style={{ color: "red" }}>{formDeliveryErrors.note}</p>}
                     {formDeliveryErrors.date && <p style={{ color: "red" }}>{formDeliveryErrors.date}</p>}
                     <Form.Group className="w-45 mb-3" controlId="formBasicEmail">
                         <Form.Label>Date</Form.Label>
                         <Form.Control type="date" value={deliveryModal.date} name="date" onChange={onChangeDelivery} />
                     </Form.Group>
+                    {formDeliveryErrors.driver_id && <p style={{ color: "red" }}>{formDeliveryErrors.driver_id}</p>}
+                    <FormControl required={Number(deliveryModal.status) === 1} sx={{ width: '100%', mb: 2 }}>
+                        <InputLabel>Driver</InputLabel>
+                        <Select name="driver_id" label="Driver" value={deliveryModal.driver_id || ''} onChange={onChangeDelivery}>
+                            {requestorList.map((user) => <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                    {formDeliveryErrors.helper_id && <p style={{ color: "red" }}>{formDeliveryErrors.helper_id}</p>}
+                    <FormControl required={Number(deliveryModal.status) === 1} sx={{ width: '100%', mb: 2 }}>
+                        <InputLabel>Helper</InputLabel>
+                        <Select name="helper_id" label="Helper" value={deliveryModal.helper_id || ''} onChange={onChangeDelivery}>
+                            {requestorList.map((user) => <MenuItem key={user.id} value={user.id}>{user.name}</MenuItem>)}
+                        </Select>
+                    </FormControl>
 
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>is Delivered ? </Form.Label>

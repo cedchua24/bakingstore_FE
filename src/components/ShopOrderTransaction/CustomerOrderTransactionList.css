@@ -586,8 +586,8 @@
 }
 
 .customer-report-table-transaction {
-    min-width: 0;
-    table-layout: fixed;
+    min-width: 1300px;
+    table-layout: auto;
 }
 
 .customer-report-table-transaction .customer-report-optional-col {
@@ -669,7 +669,26 @@
 }
 
 .customer-report-table-transaction .customer-report-actions {
-    min-width: 104px;
+    min-width: 230px;
+}
+
+.customer-report-table-transaction .customer-report-pickup-col {
+    width: 110px;
+    min-width: 110px;
+    text-align: center;
+}
+
+.customer-report-table-transaction .customer-report-delivery-col {
+    width: 145px;
+    min-width: 145px;
+    text-align: center;
+}
+
+.customer-report-table-transaction .customer-report-actions-col {
+    position: static;
+    width: 250px;
+    min-width: 250px;
+    box-shadow: none;
 }
 
 .customer-report-table-transaction .customer-report-actions .btn {
@@ -690,6 +709,7 @@
 .customer-report-table th {
     padding: 12px;
     border: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.14);
     background: #172033;
     color: #fff;
     font-size: 11px;
@@ -713,9 +733,15 @@
 .customer-report-table td {
     padding: 14px 12px;
     border: 0;
+    border-right: 1px solid #edf1f6;
     border-bottom: 1px solid #edf1f6;
     color: #172033;
     vertical-align: top;
+}
+
+.customer-report-table th:last-child,
+.customer-report-table td:last-child {
+    border-right: 0;
 }
 
 .customer-report-table td:last-child {
@@ -780,6 +806,85 @@
 .customer-report-online-orders-table .customer-report-payment-account {
     line-height: 1.25;
     white-space: nowrap;
+}
+
+.customer-report-online-orders-table {
+    min-width: 1450px;
+}
+
+.customer-report-online-orders-table .customer-report-pickup-col {
+    width: 110px;
+    min-width: 110px;
+    text-align: center;
+}
+
+.customer-report-online-orders-table .customer-report-delivery-col {
+    width: 145px;
+    min-width: 145px;
+    text-align: center;
+}
+
+.customer-report-delivery-order-badge {
+    display: inline-flex !important;
+    width: fit-content;
+    margin-top: 5px;
+    padding: 3px 7px;
+    border: 1px solid #f4c76b;
+    border-radius: 999px;
+    background: #fff2cf;
+    color: #8a4b00 !important;
+    font-size: 9px !important;
+    font-weight: 800;
+    letter-spacing: .03em;
+    line-height: 1.1;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.report-delivery-table {
+    min-width: 1420px;
+    margin-bottom: 0;
+    font-size: 12px;
+}
+
+.report-delivery-table thead th {
+    padding: 10px 8px;
+    border-color: #344054;
+    background: #172033;
+    color: #fff;
+    font-size: 10px;
+    line-height: 1.25;
+    text-transform: uppercase;
+    vertical-align: middle;
+    white-space: normal;
+}
+
+.report-delivery-table tbody td {
+    padding: 10px 8px;
+    border-color: #e5eaf0;
+    vertical-align: top;
+}
+
+.report-delivery-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.report-delivery-table .btn {
+    min-width: 78px;
+    padding: 6px 9px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.legacy-report-delivery-table {
+    display: none;
+}
+
+.customer-report-online-orders-table .customer-report-actions-col {
+    position: static;
+    width: 250px;
+    min-width: 250px;
+    box-shadow: none;
 }
 
 .customer-report-payment-account {

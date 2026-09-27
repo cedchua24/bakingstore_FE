@@ -1,0 +1,83 @@
+.delivery-receipt-page {
+    min-height: 100vh;
+    padding: 18px 12px;
+    background: #eef1f5;
+    color: #172033;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.delivery-receipt-sheet {
+    width: min(794px, 100%);
+    min-height: 0;
+    margin: 0 auto;
+    padding: 30px 36px;
+    background: #fff;
+    box-shadow: 0 18px 50px rgba(23, 32, 51, .12);
+}
+
+.delivery-receipt-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 14px; border-bottom: 2px solid #303846; }
+.delivery-receipt-brand img { display: block; width: 165px; height: 54px; object-fit: contain; object-position: left center; }
+.delivery-receipt-brand strong { display: block; margin-top: 3px; color: #344054; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+.delivery-receipt-brand span { display: block; margin-top: 2px; max-width: 300px; color: #667085; font-size: 10px; line-height: 1.3; }
+.delivery-receipt-title { text-align: right; }
+.delivery-receipt-title p { margin: 0; color: #202733; font-size: 20px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.delivery-receipt-title h1 { margin: 4px 0 2px; font-size: 14px; }
+.delivery-receipt-title span { color: #667085; font-size: 11px; }
+
+.delivery-receipt-recipient { display: grid; grid-template-columns: 1fr 1.35fr; align-items: start; gap: 24px; margin: 18px 0; padding: 15px 18px; background: #f5f6f7; border-left: 4px solid #303846; }
+.delivery-receipt-label { color: #4b5563; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.delivery-receipt-recipient dl { margin: 0; }
+.delivery-receipt-recipient dl div { display: grid; grid-template-columns: 76px 1fr; gap: 8px; padding: 3px 0; }
+.delivery-receipt-recipient dt { color: #667085; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.delivery-receipt-recipient dd { margin: 0; font-size: 12px; line-height: 1.35; }
+.delivery-receipt-recipient .delivery-receipt-customer-name { color: #111827; font-size: 14px; font-weight: 700; }
+.delivery-receipt-recipient .delivery-receipt-business { color: #303846; font-size: 12px; font-weight: 700; }
+
+.delivery-receipt-items table { width: 100%; border-collapse: collapse; }
+.delivery-receipt-items th { padding: 7px 9px; border: 1px solid #293247; background: #293247; color: #fff; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; }
+.delivery-receipt-items td { padding: 7px 9px; border: 1px solid #d7dce5; font-size: 12px; vertical-align: top; }
+.delivery-receipt-items th:first-child, .delivery-receipt-items td:first-child { width: 48px; text-align: center; }
+.delivery-receipt-items th:nth-last-child(-n+2), .delivery-receipt-items td:nth-last-child(-n+2) { width: 105px; text-align: center; }
+.delivery-receipt-items td strong { display: block; }
+.delivery-receipt-items td small { display: block; margin-top: 3px; color: #667085; }
+.delivery-receipt-empty { text-align: center !important; color: #667085; }
+.delivery-receipt-total { margin: 0; padding: 7px 10px; background: #f3f5f8; font-size: 11px; text-align: right; }
+.delivery-receipt-total strong { display: inline-block; min-width: 55px; color: #202733; font-size: 14px; }
+
+.delivery-receipt-payment { margin-top: 18px; }
+.delivery-receipt-payment-heading { display: flex; align-items: center; gap: 8px; }
+.delivery-receipt-payment-heading .delivery-receipt-label { color: #4b5563; font-size: 10px; }
+.delivery-receipt-payment p { margin: 4px 0 0; font-size: 11px; font-weight: 700; line-height: 1.35; }
+.delivery-receipt-payment-status { display: inline-flex; align-items: center; padding: 2px 6px; border: 1px solid #98a2b3; border-radius: 999px; background: #fff; color: #344054; font-size: 8px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; }
+.delivery-receipt-payment-status.is-paid { border-style: solid; background: #e5e7eb; color: #111827; }
+.delivery-receipt-payment-status.is-partial { border-style: dashed; background: #f3f4f6; color: #1f2937; }
+.delivery-receipt-payment-status.is-pending { border-style: dotted; background: #fff; color: #374151; }
+.delivery-receipt-payment-status.is-cancelled { border: 2px double #374151; background: #fff; color: #111827; }
+
+.delivery-receipt-signatures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 38px; text-align: center; }
+.delivery-receipt-signatures div { min-width: 0; }
+.delivery-receipt-signatures strong { display: block; min-height: 20px; padding: 0 4px 4px; border-bottom: 1px solid #172033; font-size: 11px; overflow-wrap: anywhere; }
+.delivery-receipt-signatures span { display: block; margin-top: 4px; color: #667085; font-size: 9px; text-transform: uppercase; }
+.delivery-receipt-signatures .delivery-receipt-received { grid-column: 1 / -1; width: 62%; margin: 20px auto 0; }
+
+.delivery-receipt-sheet footer { margin-top: 22px; padding-top: 10px; border-top: 1px solid #d7dce5; color: #525f72; font-size: 10px; line-height: 1.45; }
+.delivery-receipt-sheet footer p { margin: 3px 0 8px; }
+.delivery-receipt-sheet footer span { font-style: italic; }
+.delivery-receipt-actions { padding: 24px; text-align: center; }
+.delivery-receipt-state { min-height: 70vh; display: flex; align-items: center; justify-content: center; gap: 16px; }
+
+@media (max-width: 700px) {
+    .delivery-receipt-sheet { min-height: 0; padding: 30px 24px; }
+    .delivery-receipt-header, .delivery-receipt-recipient { grid-template-columns: 1fr; display: grid; }
+    .delivery-receipt-title { text-align: left; }
+    .delivery-receipt-signatures { grid-template-columns: 1fr; gap: 45px; }
+    .delivery-receipt-signatures .delivery-receipt-received { grid-column: auto; margin-top: 0; }
+}
+
+@media print {
+    @page { size: A4 portrait; margin: 7mm; }
+    .delivery-receipt-page { min-height: 0; padding: 0; background: #fff; }
+    .delivery-receipt-sheet { width: 100%; min-height: 0; padding: 6mm; box-shadow: none; }
+    .delivery-receipt-items tr, .delivery-receipt-recipient, .delivery-receipt-signatures div { break-inside: avoid; }
+    .hide-on-print { display: none !important; }
+}
