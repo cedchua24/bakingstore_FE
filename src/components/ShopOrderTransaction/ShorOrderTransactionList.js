@@ -1,251 +1,152 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import moment from "moment";
-import Box from '@mui/material/Box';
+import Alert from '@mui/material/Alert';
+import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
-import InputAdornment from '@mui/material/InputAdornment';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
+import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
-import Typography from '@mui/material/Typography';
-import PageviewIcon from '@mui/icons-material/Pageview';
-import PrintIcon from '@mui/icons-material/Print';
-import SearchIcon from '@mui/icons-material/Search';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import UpdateIcon from '@mui/icons-material/Update';
+import Tooltip from '@mui/material/Tooltip';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
+import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
+import '../Reports/ShopBranchReportList.css';
 
 const ShorOrderTransactionList = () => {
     const today = moment().format("YYYY-MM-DD");
+    const [shopOrderDate, setShopOrderDate] = useState({ date: today });
+    const [shopOrderTransaction, setShopOrderTransaction] = useState({ data: [], code: '', message: '' });
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         fetchShopOrderTransactionList(today);
     }, []);
 
-    const [shopOrderDate, setShopOrderDate] = useState({
-        date: today
-    });
-
-    const [shopOrderTransaction, setShopOrderTransaction] = useState({
-        data: [],
-        code: '',
-        message: '',
-    });
-
     const fetchShopOrderTransactionList = (date) => {
+        setLoading(true);
+        setError('');
         ShopOrderTransactionService.fetchShopOrderTransactionListByDate(date)
-            .then(response => {
-                setShopOrderTransaction(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
-    }
+            .then((response) => setShopOrderTransaction(response.data))
+            .catch(() => setError('The shop branch transactions could not be loaded. Please try again.'))
+            .finally(() => setLoading(false));
+    };
 
-    const onChangeInput = (e) => {
-        setShopOrderDate({ ...shopOrderDate, [e.target.name]: e.target.value });
-    }
+    const saveOrderTransaction = () => fetchShopOrderTransactionList(shopOrderDate.date || today);
 
-    const saveOrderTransaction = () => {
-        fetchShopOrderTransactionList(shopOrderDate.date || today);
-    }
+    const numberFormat = (value) => new Intl.NumberFormat('en-US', {
+        style: 'currency', currency: 'PHP',
+    }).format(Number(value || 0)).replace(/(\.|,)00$/g, '');
 
-    const numberFormat = (value) =>
-        new Intl.NumberFormat('en-us', {
-            style: 'currency',
-            currency: 'PHP'
-        }).format(Number(value || 0)).replace(/(\.|,)00$/g, '');
-
-    const totalSum = (numbers) => {
-        return numbers.reduce((acc, { shop_order_transaction_total_price }) => acc + Number(shop_order_transaction_total_price || 0), 0);
-    }
-
-    const totalProfit = (numbers) => {
-        return numbers.reduce((acc, { profit }) => acc + Number(profit || 0), 0);
-    }
-
-    const statusChip = (status) => {
-        if (status === 1) {
-            return <Chip label="Completed" size="small" sx={{ bgcolor: '#dcfce7', color: '#166534', fontWeight: 700 }} />;
-        }
-
-        if (status === 2) {
-            return <Chip label="Pending" size="small" sx={{ bgcolor: '#fef3c7', color: '#92400e', fontWeight: 700 }} />;
-        }
-
-        return <Chip label="Cancelled" size="small" sx={{ bgcolor: '#fee2e2', color: '#991b1b', fontWeight: 700 }} />;
-    }
-
-    const rows = shopOrderTransaction.data || [];
+    const rows = Array.isArray(shopOrderTransaction.data) ? shopOrderTransaction.data : [];
+    const totalSales = rows.reduce((sum, row) => sum + Number(row.shop_order_transaction_total_price || 0), 0);
+    const totalProfit = rows.reduce((sum, row) => sum + Number(row.profit || 0), 0);
+    const statusLabel = (status) => Number(status) === 1 ? 'COMPLETED' : Number(status) === 2 ? 'PENDING' : 'CANCELLED';
+    const searchTerm = search.trim().toLowerCase();
+    const visibleRows = searchTerm
+        ? rows.filter((row) => [row.id, row.shop_name, row.requestor_name, row.checker_name, row.date,
+            statusLabel(row.status), row.shop_order_transaction_total_quantity,
+            row.shop_order_transaction_total_price, row.profit,
+        ].some((value) => String(value ?? '').toLowerCase().includes(searchTerm)))
+        : rows;
 
     return (
-        <Box sx={{ bgcolor: '#f6f7f9', minHeight: '100vh', py: { xs: 2, md: 4 } }}>
-            <Box sx={{ width: 'min(1320px, calc(100% - 32px))', mx: 'auto' }}>
-                <Paper elevation={0} sx={{ borderRadius: 1, border: '1px solid #e5e7eb', overflow: 'hidden', mb: 2.5 }}>
-                    <Box sx={{ bgcolor: '#2f201b', color: '#fff', px: { xs: 2, md: 3 }, py: 2.5 }}>
-                        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
-                            <Stack direction="row" spacing={1.5} alignItems="center">
-                                <Box sx={{ bgcolor: 'rgba(255,255,255,.14)', borderRadius: 1, p: 1, display: 'flex' }}>
-                                    <StorefrontIcon />
-                                </Box>
-                                <Box>
-                                    <Typography variant="overline" sx={{ color: '#f3c58b', letterSpacing: 0 }}>Shop Branch Orders</Typography>
-                                    <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.15 }}>
-                                        Transactions
-                                    </Typography>
-                                </Box>
-                            </Stack>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25} alignItems={{ xs: 'stretch', sm: 'center' }}>
-                                <TextField
-                                    type="date"
-                                    name="date"
-                                    value={shopOrderDate.date}
-                                    onChange={onChangeInput}
-                                    size="small"
-                                    sx={{
-                                        bgcolor: '#fff',
-                                        borderRadius: 1,
-                                        minWidth: { xs: '100%', sm: 180 },
-                                    }}
-                                />
-                                <Button
-                                    variant="contained"
-                                    startIcon={<SearchIcon />}
-                                    onClick={saveOrderTransaction}
-                                    sx={{ bgcolor: '#f59e0b', color: '#111827', fontWeight: 800, '&:hover': { bgcolor: '#d97706' } }}
-                                >
-                                    Find
-                                </Button>
-                            </Stack>
-                        </Stack>
-                    </Box>
+        <main className="shop-report-page">
+            <div className="shop-report-shell">
+                <header className="shop-report-header">
+                    <span className="shop-report-header-icon"><ReceiptLongRoundedIcon /></span>
+                    <div>
+                        <span>Shop branch orders</span>
+                        <h1>Transactions</h1>
+                        <p>Review daily branch orders, sales, profit, and transaction status.</p>
+                    </div>
+                </header>
 
-                    <Box sx={{ p: { xs: 2, md: 3 } }}>
-                        <Box
-                            sx={{
-                                display: 'grid',
-                                gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' },
-                                gap: 2,
-                            }}
-                        >
-                            <Paper elevation={0} sx={{ p: 2, border: '1px solid #e5e7eb', borderRadius: 1 }}>
-                                <Typography variant="caption" color="text.secondary">Transactions</Typography>
-                                <Typography variant="h5" sx={{ fontWeight: 900 }}>{rows.length}</Typography>
-                            </Paper>
-                            <Paper elevation={0} sx={{ p: 2, border: '1px solid #e5e7eb', borderRadius: 1 }}>
-                                <Typography variant="caption" color="text.secondary">Total Sales</Typography>
-                                <Typography variant="h5" sx={{ fontWeight: 900 }}>{numberFormat(totalSum(rows))}</Typography>
-                            </Paper>
-                            <Paper elevation={0} sx={{ p: 2, border: '1px solid #e5e7eb', borderRadius: 1 }}>
-                                <Typography variant="caption" color="text.secondary">Total Profit</Typography>
-                                <Typography variant="h5" sx={{ fontWeight: 900 }}>{numberFormat(totalProfit(rows))}</Typography>
-                            </Paper>
-                        </Box>
-                    </Box>
-                </Paper>
+                {error && <Alert severity="error" className="shop-report-alert">{error}</Alert>}
 
-                <Paper elevation={0} sx={{ borderRadius: 1, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-                    <Box sx={{ px: { xs: 2, md: 3 }, py: 2, borderBottom: '1px solid #e5e7eb' }}>
-                        <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" spacing={1}>
-                            <Box>
-                                <Typography variant="h6" sx={{ fontWeight: 800 }}>Order List</Typography>
-                                <Typography variant="body2" color="text.secondary">Showing shop branch orders for {shopOrderDate.date || today}</Typography>
-                            </Box>
-                            <TextField
-                                value={numberFormat(totalSum(rows))}
-                                size="small"
-                                label="Total Sales"
-                                InputProps={{
-                                    readOnly: true,
-                                    startAdornment: <InputAdornment position="start">PHP</InputAdornment>,
-                                }}
-                                sx={{ width: { xs: '100%', sm: 220 } }}
-                            />
-                        </Stack>
-                    </Box>
+                <section className="shop-report-filter-card">
+                    <div className="shop-report-section-heading">
+                        <div><span>Transaction date</span><h2>Filter branch orders</h2></div>
+                        <CalendarMonthRoundedIcon />
+                    </div>
+                    <div className="shop-report-filter-grid shop-report-single-date-filter">
+                        <TextField label="Date" type="date" name="date" value={shopOrderDate.date}
+                            onChange={(event) => setShopOrderDate({ date: event.target.value })}
+                            InputLabelProps={{ shrink: true }} fullWidth />
+                        <div className="shop-report-filter-actions">
+                            <Button variant="contained" onClick={saveOrderTransaction} disabled={loading}>Find transactions</Button>
+                        </div>
+                    </div>
+                    {loading && <LinearProgress className="shop-report-progress" />}
+                </section>
 
-                    <TableContainer>
-                        <Table sx={{ minWidth: 1120 }} aria-label="shop branch order table">
-                            <TableHead>
-                                <TableRow sx={{ bgcolor: '#fafafa' }}>
-                                    <TableCell sx={{ fontWeight: 800 }}>Invoice</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>Shop Name</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 800 }}>Qty.</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 800 }}>Total Amount</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 800 }}>Profit</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>Requestor</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>Checker</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>Date</TableCell>
-                                    <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: 800 }}>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {rows.map((row) => (
-                                    <TableRow key={row.id} hover>
-                                        <TableCell sx={{ fontWeight: 700 }}>#{row.id}</TableCell>
-                                        <TableCell sx={{ fontWeight: 700 }}>{row.shop_name}</TableCell>
-                                        <TableCell align="right">{row.shop_order_transaction_total_quantity}</TableCell>
-                                        <TableCell align="right" sx={{ fontWeight: 700 }}>{numberFormat(row.shop_order_transaction_total_price)}</TableCell>
-                                        <TableCell align="right">{numberFormat(row.profit)}</TableCell>
-                                        <TableCell>{row.requestor_name || '-'}</TableCell>
-                                        <TableCell>{row.checker_name || '-'}</TableCell>
-                                        <TableCell>{row.date}</TableCell>
-                                        <TableCell>{statusChip(row.status)}</TableCell>
-                                        <TableCell align="right">
-                                            <Stack direction="row" spacing={1} justifyContent="flex-end">
-                                                <Button
-                                                    component={Link}
-                                                    to={"../shopOrderTransaction/completedShopOrderTransaction/" + row.id}
-                                                    variant="outlined"
-                                                    size="small"
-                                                    startIcon={<PageviewIcon />}
-                                                >
-                                                    View
-                                                </Button>
-                                                <Button
-                                                    component={Link}
-                                                    to={"../shopOrderTransaction/printShopBranch/" + row.id}
-                                                    variant="outlined"
-                                                    size="small"
-                                                    startIcon={<PrintIcon />}
-                                                >
-                                                    Print
-                                                </Button>
-                                                <Button
-                                                    component={Link}
-                                                    to={"../shopOrderTransaction/addProductShopOrderTransaction/" + row.id}
-                                                    variant="contained"
-                                                    size="small"
-                                                    startIcon={<UpdateIcon />}
-                                                >
-                                                    Update
-                                                </Button>
-                                            </Stack>
-                                        </TableCell>
-                                    </TableRow>
+                <section className="shop-report-metrics">
+                    <article><span><Inventory2OutlinedIcon /></span><div><small>Transactions</small><strong>{rows.length}</strong></div></article>
+                    <article><span><PaymentsOutlinedIcon /></span><div><small>Total sales</small><strong>{numberFormat(totalSales)}</strong></div></article>
+                    <article><span className="profit"><TrendingUpRoundedIcon /></span><div><small>Total profit</small><strong>{numberFormat(totalProfit)}</strong></div></article>
+                </section>
+
+                <section className="shop-report-table-card">
+                    <div className="shop-report-table-heading">
+                        <div><span>Branch activity</span><h2>Order list</h2></div>
+                        <div className="shop-report-table-tools">
+                            <TextField size="small" label="Search transactions" value={search} onChange={(event) => setSearch(event.target.value)} />
+                            <strong>{visibleRows.length} records</strong>
+                        </div>
+                    </div>
+                    <div className="shop-report-table-scroll">
+                        <table>
+                            <thead><tr><th>ID</th><th>Shop</th><th>Quantity</th><th>Total amount</th><th>Profit</th><th>Requestor</th><th>Checker</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody>
+                                {!loading && visibleRows.length === 0 && (
+                                    <tr><td colSpan="10"><div className="shop-report-empty"><Inventory2OutlinedIcon /><strong>No branch orders found</strong><span>Try selecting another transaction date.</span></div></td></tr>
+                                )}
+                                {visibleRows.map((row) => (
+                                    <tr key={row.id}>
+                                        <td><span className="shop-report-id">#{row.id}</span></td>
+                                        <td><strong>{row.shop_name}</strong></td>
+                                        <td>{row.shop_order_transaction_total_quantity}</td>
+                                        <td className="shop-report-money">{numberFormat(row.shop_order_transaction_total_price)}</td>
+                                        <td className="shop-report-profit">{numberFormat(row.profit)}</td>
+                                        <td>{row.requestor_name || '—'}</td><td>{row.checker_name || '—'}</td><td>{row.date}</td>
+                                        <td><span className={`shop-report-status status-${statusLabel(row.status).toLowerCase()}`}>{statusLabel(row.status)}</span></td>
+                                        <td><div className="shop-report-actions">
+                                            <Tooltip title="View"><IconButton component={Link} to={`../shopOrderTransaction/completedShopOrderTransaction/${row.id}`}><VisibilityOutlinedIcon /></IconButton></Tooltip>
+                                            <Tooltip title={Number(row.print_count) > 0 ? `Print (${row.print_count} recorded)` : "Print"}>
+                                                <IconButton component={Link} to={`../shopOrderTransaction/printShopBranch/${row.id}`}>
+                                                    <Badge
+                                                        badgeContent={Number(row.print_count)}
+                                                        invisible={!(Number(row.print_count) > 0)}
+                                                        max={999}
+                                                        sx={{ '& .MuiBadge-badge': { bgcolor: '#a95317', color: '#fff' } }}
+                                                    >
+                                                        <PrintOutlinedIcon />
+                                                    </Badge>
+                                                </IconButton>
+                                            </Tooltip>
+                                            <Tooltip title="Update transaction">
+                                                <IconButton component={Link} to={`../shopOrderTransaction/addProductShopOrderTransaction/${row.id}`} className="shop-report-update-action">
+                                                    <EditOutlinedIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </div></td>
+                                    </tr>
                                 ))}
-                                {rows.length === 0 &&
-                                    <TableRow>
-                                        <TableCell colSpan={10} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                                            No shop branch orders found for this date.
-                                        </TableCell>
-                                    </TableRow>
-                                }
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                </Paper>
-            </Box>
-        </Box>
-    )
-}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    );
+};
 
-export default ShorOrderTransactionList
+export default ShorOrderTransactionList;

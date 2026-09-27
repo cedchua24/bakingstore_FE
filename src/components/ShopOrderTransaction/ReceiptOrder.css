@@ -1,0 +1,44 @@
+.thermal-receipt-page { min-height: 100vh; padding: 18px 10px; background: #eef1f5; color: #000; font-family: Arial, Helvetica, sans-serif; }
+.thermal-receipt { --receipt-gutter: 4mm; display: flex; flex-direction: column; box-sizing: border-box; width: 80mm; min-height: 180mm; margin: 0 auto 16px; padding: var(--receipt-gutter); background: #fff; box-shadow: 0 8px 25px rgba(0, 0, 0, .12); font-size: 10.5px; }
+.thermal-receipt > * { box-sizing: border-box; width: 100%; }
+.thermal-receipt-header { padding-bottom: 9px; border-bottom: 1px dashed #000; text-align: center; }
+.thermal-receipt-header h1 { margin: 0 0 4px; font-size: 16px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+.thermal-receipt-header p { margin: 2px auto; max-width: 68mm; font-size: 9.5px; line-height: 1.3; }
+.thermal-receipt-header h2 { margin: 10px 0 3px; font-size: 15px; font-weight: 800; letter-spacing: .1em; }
+.thermal-receipt-header > strong { font-size: 10.5px; }
+.thermal-receipt-continuation { display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px dashed #000; font-size: 10.5px; }
+.thermal-receipt-meta { padding: 8px 0; border-bottom: 1px dashed #000; }
+.thermal-receipt-meta div { display: grid; grid-template-columns: 18mm 1fr; gap: 3mm; margin: 3px 0; }
+.thermal-receipt-meta span { font-size: 9px; letter-spacing: .03em; text-transform: uppercase; }
+.thermal-receipt-meta strong { overflow-wrap: anywhere; }
+.thermal-receipt-items { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.thermal-receipt-items thead { border-top: 1px solid #000; border-bottom: 1px solid #000; background: #f2f2f2; }
+.thermal-receipt-items th { padding: 6px 3px; border-bottom: 0; font-size: 8.5px; font-weight: 800; letter-spacing: .06em; line-height: 1; text-align: right; text-transform: uppercase; white-space: nowrap; }
+.thermal-receipt-items td { padding: 6px 3px 8px; border-bottom: 1px dotted #999; font-size: 9.5px; line-height: 1.3; text-align: right; vertical-align: top; overflow-wrap: anywhere; }
+.thermal-receipt-items th + th, .thermal-receipt-items td + td { border-left: 1px solid #dedede; }
+.thermal-receipt-items th:first-child, .thermal-receipt-items td:first-child { width: 7mm; font-weight: 700; text-align: center; }
+.thermal-receipt-items th:nth-child(2), .thermal-receipt-items td:nth-child(2) { width: auto; text-align: left; }
+.thermal-receipt-items th:nth-last-child(-n+2), .thermal-receipt-items td:nth-last-child(-n+2) { width: 14mm; }
+.thermal-receipt-items td strong, .thermal-receipt-items td small { display: block; }
+.thermal-receipt-items td small { margin-top: 3px; font-size: 8.5px; font-weight: 400; }
+.thermal-receipt-empty { text-align: center !important; }
+.thermal-receipt-total { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; padding: 9px 2px; border-top: 1px solid #000; border-bottom: 3px double #000; font-size: 13px; }
+.thermal-receipt-closing { padding-top: 10px; text-align: center; }
+.thermal-receipt-closing p { margin: 0 0 2px; font-size: 8px; text-transform: uppercase; }
+.thermal-receipt-closing > strong { display: block; margin-bottom: 9px; }
+.thermal-receipt-closing h3 { margin: 0 0 6px; font-size: 11px; letter-spacing: .04em; }
+.thermal-receipt-closing b { font-size: 9.5px; }
+.thermal-receipt-page-number { margin-top: auto; padding-top: 8px; font-size: 8px; text-align: center; }
+.thermal-receipt-actions { padding: 12px; text-align: center; }
+.thermal-receipt-state { min-height: 60vh; display: flex; align-items: center; justify-content: center; gap: 12px; }
+
+@media print {
+    @page { size: 80mm 180mm; margin: 0; }
+    body:not(.tracked-print-authorized) .thermal-receipt-page { display: none !important; }
+    html, body { width: 80mm; margin: 0 !important; padding: 0 !important; background: #fff; }
+    .thermal-receipt-page { width: 80mm; min-height: 0; margin: 0; padding: 0; background: #fff; }
+    .thermal-receipt { width: 80mm; height: 180mm; min-height: 180mm; margin: 0; padding: var(--receipt-gutter); box-shadow: none; break-after: page; page-break-after: always; overflow: hidden; }
+    .thermal-receipt:last-of-type { break-after: auto; page-break-after: auto; }
+    .thermal-receipt-items tr { break-inside: avoid; page-break-inside: avoid; }
+    .hide-on-print { display: none !important; }
+}

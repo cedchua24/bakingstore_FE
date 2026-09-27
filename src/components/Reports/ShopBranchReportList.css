@@ -14,6 +14,7 @@
 .shop-report-section-heading h2, .shop-report-table-heading h2 { margin: 3px 0 0; color: #30363d; font-size: 1.08rem; }
 .shop-report-section-heading > svg { color: #b5682c; font-size: 28px; }
 .shop-report-filter-grid { display: grid; grid-template-columns: minmax(190px, 1fr) minmax(190px, 1fr) auto; align-items: start; gap: 16px; margin-top: 20px; }
+.shop-report-single-date-filter { grid-template-columns: minmax(190px, 1fr) auto; }
 .shop-report-filter-actions { display: flex; gap: 8px; }
 .shop-report-filter-grid .MuiButton-root { min-height: 53px; padding-inline: 20px; border-radius: 9px; text-transform: none; }
 .shop-report-filter-grid .MuiButton-contained { background: #a95317; box-shadow: none; }
@@ -47,6 +48,7 @@
 .status-cancelled { color: #a12626; background: #fde8e8; }
 .shop-report-actions { white-space: nowrap; }
 .shop-report-actions .MuiIconButton-root { color: #6a737e; border: 1px solid #e2e5e9; border-radius: 9px; }
+.shop-report-actions .MuiIconButton-root.shop-report-update-action { color: #9a501a; border-color: #d7a47f; }
 .shop-report-actions .MuiButton-root { color: #9a501a; border-color: #d7a47f; border-radius: 8px; text-transform: none; }
 .shop-report-empty { display: flex; align-items: center; flex-direction: column; gap: 4px; padding: 40px; color: #8a929d; text-align: center; }
 .shop-report-empty svg { margin-bottom: 6px; color: #c0c5cb; font-size: 34px; }

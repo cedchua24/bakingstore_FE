@@ -1,0 +1,71 @@
+.branch-order-page { min-height: 100vh; padding: 18px 12px; background: #eef1f5; color: #172033; font-family: Arial, Helvetica, sans-serif; }
+.branch-order-sheet { display: flex; flex-direction: column; box-sizing: border-box; width: min(794px, 100%); min-height: 1050px; margin: 0 auto 18px; padding: 30px 36px; background: #fff; box-shadow: 0 15px 45px rgba(23, 32, 51, .12); }
+.branch-order-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 14px; border-bottom: 2px solid #303846; }
+.branch-order-brand { display: flex; align-items: flex-start; gap: 12px; }
+.branch-order-brand img { width: 54px; height: 54px; object-fit: contain; }
+.branch-order-brand strong, .branch-order-brand span { display: block; }
+.branch-order-brand strong { margin: 3px 0 4px; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+.branch-order-brand span { max-width: 330px; margin-top: 2px; color: #667085; font-size: 10px; line-height: 1.35; }
+.branch-order-title { text-align: right; }
+.branch-order-title p { margin: 0 0 5px; font-family: Georgia, serif; font-size: 21px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; }
+.branch-order-title strong, .branch-order-title span { display: block; }
+.branch-order-title strong { font-size: 13px; }
+.branch-order-title span { margin-top: 4px; color: #667085; font-size: 11px; }
+.branch-order-summary { margin: 18px 0; border: 1px solid #d7dce5; border-left: 4px solid #303846; background: #f7f8fa; }
+.branch-order-summary span, .branch-order-summary strong { display: block; }
+.branch-order-summary span { margin-bottom: 4px; color: #667085; font-size: 9px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.branch-order-summary strong { font-size: 12px; overflow-wrap: anywhere; }
+.branch-order-route { display: grid; grid-template-columns: 1fr 34px 1fr; align-items: center; border-bottom: 1px solid #d7dce5; }
+.branch-order-route > div { min-width: 0; padding: 12px 14px; }
+.branch-order-route > b { color: #667085; font-size: 20px; text-align: center; }
+.branch-order-details { display: grid; grid-template-columns: repeat(4, 1fr); }
+.branch-order-details > div { min-width: 0; padding: 9px 12px; border-right: 1px solid #e1e5eb; }
+.branch-order-details > div:last-child { border-right: 0; }
+.branch-order-details strong { font-size: 11px; }
+.branch-order-continuation { display: flex; justify-content: space-between; margin-bottom: 16px; padding-bottom: 9px; border-bottom: 1px solid #98a2b3; font-size: 11px; text-transform: uppercase; }
+.branch-order-continuation span { color: #667085; }
+.branch-order-items table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.branch-order-items th { padding: 8px 7px; border: 1px solid #303846; background: #303846; color: #fff; font-size: 9px; letter-spacing: .04em; text-transform: uppercase; }
+.branch-order-items td { padding: 8px 7px; border: 1px solid #d7dce5; font-size: 11px; vertical-align: top; }
+.branch-order-items th:first-child, .branch-order-items td:first-child { width: 38px; text-align: center; }
+.branch-order-items th:nth-child(3), .branch-order-items td:nth-child(3) { width: 70px; text-align: center; }
+.branch-order-items th:nth-child(4), .branch-order-items td:nth-child(4) { width: 54px; text-align: center; }
+.branch-order-items th:nth-last-child(-n+2), .branch-order-items td:nth-last-child(-n+2) { width: 105px; text-align: right; }
+.branch-order-items td strong, .branch-order-items td small { display: block; }
+.branch-order-items td small { margin-top: 3px; color: #667085; }
+.branch-order-empty { text-align: center !important; color: #667085; }
+.branch-order-totals { display: flex; justify-content: flex-end; gap: 24px; padding: 9px 10px; border: 1px solid #d7dce5; border-top: 0; background: #f3f5f8; font-size: 10px; }
+.branch-order-totals span { white-space: nowrap; }
+.branch-order-totals strong { margin-left: 7px; font-size: 12px; }
+.branch-order-notes { margin-top: 18px; }
+.branch-order-notes > strong { display: block; margin-bottom: 7px; color: #525f72; font-size: 9px; letter-spacing: .07em; text-transform: uppercase; }
+.branch-order-notes div { height: 18px; border-bottom: 1px solid #cfd4dc; }
+.branch-order-signatures { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 38px; text-align: center; }
+.branch-order-signatures div > strong { display: block; min-height: 20px; padding: 0 4px 5px; border-bottom: 1px solid #172033; font-size: 11px; }
+.branch-order-signatures span, .branch-order-signatures small { display: block; }
+.branch-order-signatures span { margin-top: 5px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+.branch-order-signatures small { margin-top: 2px; color: #667085; font-size: 8px; }
+.branch-order-footer { margin-top: 24px; padding-top: 9px; border-top: 1px solid #d7dce5; color: #667085; font-size: 9px; }
+.branch-order-page-number { margin-top: auto; padding-top: 12px; color: #667085; font-size: 9px; text-align: center; }
+.branch-order-actions { padding: 12px; text-align: center; }
+.branch-order-state { min-height: 65vh; display: flex; align-items: center; justify-content: center; gap: 12px; }
+
+@media (max-width: 700px) {
+    .branch-order-sheet { min-height: 0; padding: 25px 20px; }
+    .branch-order-header { display: grid; }
+    .branch-order-title { text-align: left; }
+    .branch-order-route { grid-template-columns: 1fr; }
+    .branch-order-route > b { transform: rotate(90deg); }
+    .branch-order-details { grid-template-columns: 1fr 1fr; }
+    .branch-order-details > div { border-bottom: 1px solid #e1e5eb; }
+}
+
+@media print {
+    body:not(.tracked-print-authorized) .branch-order-page { display: none !important; }
+    @page { size: A4 portrait; margin: 7mm; }
+    .branch-order-page { min-height: 0; padding: 0; background: #fff; }
+    .branch-order-sheet { width: 100%; height: 283mm; min-height: 283mm; margin: 0; padding: 6mm; box-shadow: none; break-after: page; page-break-after: always; overflow: hidden; }
+    .branch-order-sheet:last-of-type { break-after: auto; page-break-after: auto; }
+    .branch-order-items tr, .branch-order-signatures div { break-inside: avoid; page-break-inside: avoid; }
+    .hide-on-print { display: none !important; }
+}

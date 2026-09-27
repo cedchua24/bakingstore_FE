@@ -156,6 +156,9 @@ class ShopOrderTransactionService {
     fetchShopOrderTransaction(id) {
         return axios.get(`/api/shopOrderTransaction/fetchShopOrderTransaction/${id}`);
     }
+    incrementPrintCount(id) {
+        return axios.post(`/api/shopOrderTransaction/${id}/incrementPrintCount`);
+    }
     updateShopOrderTransactionStatus(id, data) {
         return axios.put(`/api/shopOrderTransaction/updateShopOrderTransactionStatus/${id}`, data);
     }

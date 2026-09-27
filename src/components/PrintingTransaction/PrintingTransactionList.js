@@ -261,8 +261,8 @@ const PrintingTransactionList = ({ fixedStatus = null }) => {
             : { background: 'linear-gradient(120deg, #172c52 0%, #254b72 58%, #236a86 100%)', eyebrow: '#9ee8f2' };
 
     return (
-        <Box sx={{ bgcolor: '#f3f6fb', minHeight: '100vh', py: { xs: 2, md: 4 } }}>
-            <Box sx={{ width: 'min(1320px, calc(100% - 32px))', mx: 'auto' }}>
+        <Box sx={{ bgcolor: '#f3f6fb', minHeight: '100vh', py: { xs: 2, md: 3 } }}>
+            <Box sx={{ width: 'calc(100% - 24px)', mx: 'auto' }}>
                 <Paper elevation={0} sx={{ borderRadius: 3, border: '1px solid #dfe6f1', overflow: 'hidden', boxShadow: '0 14px 40px rgba(31,48,84,.08)' }}>
                     <Box sx={{ display: 'flex', height: 5 }}>
                         <Box sx={{ flex: 1, bgcolor: '#16b8d4' }} />
@@ -318,8 +318,8 @@ const PrintingTransactionList = ({ fixedStatus = null }) => {
                     {loading ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}><CircularProgress /></Box>
                     ) : (
-                        <TableContainer>
-                            <Table size="small" sx={{ width: '100%', tableLayout: 'auto', '& .MuiTableCell-root': { px: 1, py: 0.75, fontSize: 12.5, lineHeight: 1.25, borderBottom: '1px solid #e5ebf1', borderRight: '1px solid #edf1f5' }, '& .MuiTableHead-root .MuiTableCell-root': { py: 1.1, bgcolor: '#f4f7fb', color: '#42566c', fontSize: 11.5, fontWeight: 850, letterSpacing: 0.45, textTransform: 'uppercase', whiteSpace: 'nowrap', borderBottom: '1px solid #d7e1eb' }, '& .MuiTableBody-root .MuiTableRow-root:nth-of-type(even)': { bgcolor: '#fbfcfe' }, '& .MuiTableBody-root .MuiTableRow-root:hover': { bgcolor: '#f1f7fc' }, '& .MuiTableRow-root:last-child .MuiTableCell-root': { borderBottom: 0 } }} aria-label="printing transactions">
+                        <TableContainer sx={{ overflowX: 'auto' }}>
+                            <Table size="small" sx={{ width: '100%', minWidth: 1200, tableLayout: 'auto', '& .MuiTableCell-root': { boxSizing: 'border-box', px: 0.75, py: 1.25, fontSize: 13, lineHeight: 1.25, verticalAlign: 'top', borderBottom: '1px solid #edf1f6', borderRight: '1px solid #edf1f6' }, '& .MuiTableHead-root .MuiTableCell-root': { py: 1.5, bgcolor: '#17345f', color: '#fff', fontSize: 11, fontWeight: 800, letterSpacing: 0, textTransform: 'uppercase', whiteSpace: 'nowrap', verticalAlign: 'middle', borderRight: '1px solid rgba(255,255,255,.14)', borderBottom: 0 }, '& .MuiTableBody-root .MuiTableRow-root:hover': { bgcolor: '#f1f7fc' }, '& .MuiTableRow-root:last-child .MuiTableCell-root': { borderBottom: 0 }, '& .MuiTableCell-root:last-child': { borderRight: 0 } }} aria-label="printing transactions">
                                 <TableHead>
                                     <TableRow sx={{ bgcolor: '#f8fafc' }}>
                                         <TableCell>IDs</TableCell>
@@ -331,7 +331,7 @@ const PrintingTransactionList = ({ fixedStatus = null }) => {
                                         <TableCell>Order</TableCell>
                                         <TableCell>Sent to Supplier</TableCell>
                                         <TableCell>Warehouse Received</TableCell>
-                                        <TableCell sx={{ minWidth: 150, fontWeight: 800, color: '#1d4b71', bgcolor: '#eaf4fc' }}><Tooltip title="Order to sent, sent to received, and overall days"><span>Days Timeline</span></Tooltip></TableCell>
+                                        <TableCell sx={{ minWidth: 150, fontWeight: 800 }}><Tooltip title="Order to sent, sent to received, and overall days"><span>Days Timeline</span></Tooltip></TableCell>
                                         <TableCell>Status</TableCell>
                                         <TableCell align="center">Actions</TableCell>
                                     </TableRow>
@@ -361,16 +361,16 @@ const PrintingTransactionList = ({ fixedStatus = null }) => {
                                                 {detailBadge(transaction.order_status, transaction.order_status || '—')}
                                                 {completedRowNeedsAttention(transaction) && <Chip icon={<WarningAmberRoundedIcon />} label="ACTION NEEDED" size="small" sx={{ display: 'flex', mt: 0.75, width: 'fit-content', height: 22, bgcolor: '#dc3545', color: '#fff', fontWeight: 850, '& .MuiChip-label': { px: 0.75, fontSize: 9.5 }, '& .MuiChip-icon': { ml: 0.5, color: '#fff', fontSize: 14 } }} />}
                                             </TableCell>
-                                            <TableCell align="center" sx={{ width: 48, px: 0.5 }}>
-                                                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
+                                            <TableCell align="center" sx={{ width: 92, minWidth: 92 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'nowrap', gap: 0.5 }}>
                                                     <Tooltip title="View or edit printing transaction" placement="left">
-                                                        <IconButton component={RouterLink} to={`/printingTransaction/${transaction.id}/edit`} size="small" aria-label={`View or edit printing transaction ${transaction.id}`} sx={{ width: 28, height: 28, color: '#1769aa', bgcolor: '#e8f3fb', border: '1px solid #c5def0', '&:hover': { bgcolor: '#d7ebf8' } }}>
+                                                        <IconButton component={RouterLink} to={`/printingTransaction/${transaction.id}/edit`} size="small" aria-label={`View or edit printing transaction ${transaction.id}`} sx={{ width: 34, height: 34, color: '#1769aa', bgcolor: '#fff', border: '1px solid #c5def0', borderRadius: 1.25, '&:hover': { color: '#135887', borderColor: '#8bbbdc', bgcolor: '#f1f7fc' } }}>
                                                             <VisibilityRoundedIcon sx={{ fontSize: 17 }} />
                                                         </IconButton>
                                                     </Tooltip>
                                                     <Tooltip title={Number(transaction.shop_order_total_price || 0) === 0 ? 'Delete printing transaction' : 'Delete is available only when Print Total is ₱0.00'} placement="left">
                                                         <span>
-                                                            <IconButton onClick={() => deleteTransaction(transaction)} size="small" aria-label={`Delete printing transaction ${transaction.id}`} disabled={Number(transaction.shop_order_total_price || 0) !== 0 || deletingId !== null} sx={{ width: 28, height: 28, color: '#c62828', bgcolor: '#fff0f0', border: '1px solid #f2c2c2', '&:hover': { bgcolor: '#ffe1e1' }, '&.Mui-disabled': { bgcolor: '#f7f7f7', borderColor: '#e5e7eb' } }}>
+                                                            <IconButton onClick={() => deleteTransaction(transaction)} size="small" aria-label={`Delete printing transaction ${transaction.id}`} disabled={Number(transaction.shop_order_total_price || 0) !== 0 || deletingId !== null} sx={{ width: 34, height: 34, color: '#dc3545', bgcolor: '#fff', border: '1px solid #e2e5e9', borderRadius: 1.25, '&:hover': { bgcolor: '#fff5f5', borderColor: '#efb0b0' }, '&.Mui-disabled': { bgcolor: '#f7f7f7', borderColor: '#e5e7eb' } }}>
                                                                 {deletingId === transaction.id ? <CircularProgress size={15} /> : <DeleteOutlineRoundedIcon sx={{ fontSize: 17 }} />}
                                                             </IconButton>
                                                         </span>
