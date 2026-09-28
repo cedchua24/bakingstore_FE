@@ -198,6 +198,7 @@ const MarkUpPercentage = () => {
                 </TextField>
                 <Button
                     variant="contained"
+                    size="small"
                     onClick={fetchMarkupPrices}
                     disabled={loading}
                     className="markup-ranking-submit"
