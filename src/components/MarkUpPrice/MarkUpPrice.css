@@ -14,6 +14,27 @@
 .markup-hero__summary span { color:rgba(255,255,255,.63); font-size:.62rem; }
 
 .markup-list-search { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:14px 18px; margin-bottom:14px; background:#fff; border:1px solid var(--mu-border); border-radius:12px; }
+.markup-ranking-filters { position:relative; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); align-items:center; gap:14px 16px; padding:0 18px 18px; }
+.markup-ranking-filters .markup-ranking-heading { display:flex; grid-column:1/-1; align-items:center; justify-content:space-between; flex-direction:row; padding:16px 0 13px; border-bottom:1px solid #edf0f4; }
+.markup-ranking-heading > div { display:flex; flex-direction:column; }
+.markup-ranking-heading strong { color:var(--mu-ink); font-size:.86rem; }
+.markup-ranking-heading span { margin-top:3px; color:var(--mu-muted); font-size:.68rem; }
+.markup-ranking-heading small { color:#8993a3; font-size:.63rem; }
+.markup-ranking-filters > .MuiFormControl-root { width:100%; min-width:0; }
+.markup-list-search .markup-ranking-search.MuiTextField-root { grid-column:1/-1; width:100%; }
+.markup-ranking-submit.MuiButton-root { grid-column:span 3; width:100%; height:40px; border-radius:8px; box-shadow:0 3px 8px rgba(40,95,199,.2); font-weight:750; text-transform:none; }
+.markup-ranking-progress { position:absolute !important; right:18px; bottom:0; left:18px; width:auto !important; height:3px !important; border-radius:3px 3px 0 0; }
+.markup-sort-option { display:flex; align-items:center; gap:9px; width:100%; }
+.markup-sort-option > svg { padding:4px; box-sizing:content-box; border-radius:7px; font-size:17px !important; }
+.markup-sort-option > span { display:flex; min-width:0; flex-direction:column; line-height:1.15; }
+.markup-sort-option strong { color:#263142; font-size:.76rem; font-weight:750; }
+.markup-sort-option small { margin-top:2px; color:#7b8697; font-size:.57rem; }
+.markup-sort-option--high > svg { color:#16875b !important; background:#e5f6ed; }
+.markup-sort-option--low > svg { color:#c2413b !important; background:#fdeceb; }
+.MuiSelect-select .markup-sort-option small { display:none; }
+.MuiSelect-select .markup-sort-option > svg { padding:2px; font-size:15px !important; }
+@media (max-width:1050px) { .markup-ranking-filters { grid-template-columns:repeat(2,minmax(0,1fr)); } .markup-ranking-submit.MuiButton-root { grid-column:auto; } }
+@media (max-width:620px) { .markup-ranking-filters { grid-template-columns:1fr; gap:12px; } .markup-ranking-filters .markup-ranking-heading { align-items:flex-start; flex-direction:column; gap:5px; } .markup-ranking-submit.MuiButton-root { grid-column:auto; } }
 .markup-list-search > div { display:flex; flex-direction:column; }
 .markup-list-search > div strong { font-size:.82rem; }
 .markup-list-search > div span { margin-top:2px; color:var(--mu-muted); font-size:.68rem; }
@@ -84,6 +105,8 @@
 .markup-type--retail { color:#895019; background:#fff2e5; }
 .markup-profit { color:#26724a; font-weight:700; white-space:nowrap; }
 .markup-selling-price { color:#285fc7; font-size:.82rem; white-space:nowrap; }
+.markup-selling-price-plain { color:var(--mu-ink); font-size:.78rem; white-space:nowrap; }
+.markup-ranking-highlight { display:inline-flex; padding:4px 7px; color:#17653e !important; background:#e7f6ed; border-radius:6px; font-weight:800; white-space:nowrap; }
 .markup-supplier-price-change { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; }
 .markup-supplier-price-change del { color:#778195; white-space:nowrap; }
 .markup-supplier-price-change strong { color:#285fc7; white-space:nowrap; }

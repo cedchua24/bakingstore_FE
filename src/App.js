@@ -136,6 +136,7 @@ import ViewCustomerNotify from "./components/Stock/ViewCustomerNotify";
 
 import MarkUpPrice from "./components/MarkUpPrice/MarkUpPrice";
 import MarkUpPriceListV2 from "./components/MarkUpPrice/MarkUpPriceListV2";
+import MarkUpPercentage from "./components/MarkUpPrice/MarkUpPercentage";
 import ViewMarkUpHistory from "./components/MarkUpPrice/ViewMarkUpHistory";
 import MarkUpNewPrice from "./components/MarkUpPrice/MarkUpNewPrice";
 import MarkUpNewPriceV2 from "./components/MarkUpPrice/MarkUpNewPriceV2";
@@ -313,6 +314,7 @@ import EditExpenses from "./components/Expenses/EditExpenses";
 
 import ReportList from "./components/Reports/ReportList";
 import ReportSales from "./components/Reports/ReportSales";
+import MonthlySalesForecast from "./components/Reports/MonthlySalesForecast";
 import SalesImpactAnalysis from "./components/Reports/SalesImpactAnalysis";
 
 import ReportBar from "./components/Reports/ReportBar";
@@ -531,6 +533,7 @@ const App = () => {
 
           <Route exact path="/markUpPrice/" element={<MarkUpPrice />} />
           <Route exact path="/markUpPriceListV2/" element={<MarkUpPriceListV2 />} />
+          <Route exact path="/markUpPercentage/" element={<MarkUpPercentage />} />
           <Route exact path="/viewMarkUpHistory/:id" element={<ViewMarkUpHistory />} />
 
           <Route exact path="/markUpNewPrice/" element={<MarkUpNewPrice />} />
@@ -728,6 +731,7 @@ const App = () => {
 
           <Route exact path="/reports/reportsList" element={<ReportList />} />
           <Route exact path="/reports/reportSales" element={<ReportSales />} />
+          <Route exact path="/reports/monthlySalesForecast" element={<MonthlySalesForecast />} />
           <Route exact path="/reports/salesImpactAnalysis" element={<SalesImpactAnalysis />} />
 
           <Route exact path="/reports/reportBar" element={<ReportBar />} />

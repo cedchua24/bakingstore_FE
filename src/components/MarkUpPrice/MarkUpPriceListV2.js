@@ -3,7 +3,6 @@ import { useSearchParams } from "react-router-dom";
 import MarkUpPriceService from "./MarkUpPriceService.service";
 import MarkUpPriceList from "./MarkUpPriceList";
 import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import PriceChangeOutlinedIcon from '@mui/icons-material/PriceChangeOutlined';
 import SearchIcon from '@mui/icons-material/Search';
@@ -13,7 +12,6 @@ const MarkUpPriceListV2 = () => {
     const [markupPriceList, setMarkupPriceList] = useState([]);
     const [v2RequiredProductIds, setV2RequiredProductIds] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [profitSort, setProfitSort] = useState('');
     const [searchParams] = useSearchParams();
     const selectedProductId = searchParams.get("product_id");
     const replacementProductPrice = searchParams.get("product_price");
@@ -37,11 +35,7 @@ const MarkUpPriceListV2 = () => {
     ).size;
 
     const fetchMarkUpPriceList = () => {
-        const params = profitSort
-            ? { sort: 'highest_profit', profit_type: profitSort }
-            : {};
-
-        MarkUpPriceService.catalog(params)
+        MarkUpPriceService.catalog()
             .then(response => {
                 const records = Array.isArray(response.data?.data)
                     ? response.data.data
@@ -76,7 +70,7 @@ const MarkUpPriceListV2 = () => {
     useEffect(() => {
         fetchMarkUpPriceList();
         fetchV2RequiredProducts();
-    }, [profitSort]);
+    }, []);
 
     const refreshPrices = () => {
         fetchMarkUpPriceList();
@@ -116,18 +110,6 @@ const MarkUpPriceListV2 = () => {
                         )
                     }}
                 />
-                <TextField
-                    select
-                    size="small"
-                    value={profitSort}
-                    onChange={event => setProfitSort(event.target.value)}
-                    label="Sort"
-                    sx={{ minWidth: 190 }}
-                >
-                    <MenuItem value="">Default</MenuItem>
-                    <MenuItem value="amount">Highest profit amount</MenuItem>
-                    <MenuItem value="margin">Highest profit margin</MenuItem>
-                </TextField>
             </section>
             <MarkUpPriceList
                 markupPriceList={visibleMarkupPrices}
@@ -135,6 +117,9 @@ const MarkUpPriceListV2 = () => {
                 replacementProductPrice={replacementProductPrice}
                 replacementPiecesPerPack={replacementPiecesPerPack}
                 showSupplierPriceChange
+                showProfitMargin
+                marginLabel="Markup margin"
+                hideProfit
                 v2RequiredProductIds={replacementProductPrice == null ? v2RequiredProductIds : []}
             />
         </div>

@@ -20,6 +20,12 @@ const MarkUpPriceList = ({
     replacementProductPrice,
     replacementPiecesPerPack,
     showSupplierPriceChange = false,
+    showProfitMargin = false,
+    marginLabel = 'Profit margin',
+    hideProfit = false,
+    hideEdit = false,
+    highlightMetric = '',
+    highlightSellingPrice = true,
     v2RequiredProductIds = []
 }) => {
     const records = Array.isArray(markupPriceList) ? markupPriceList : [];
@@ -56,6 +62,14 @@ const MarkUpPriceList = ({
         currency: 'PHP',
         maximumFractionDigits: 2
     }).format(Number(value || 0));
+
+    const formatProfitMargin = record => {
+        const sellingPrice = Number(record.new_price || 0);
+        const profit = sellingPrice - Number(record.price || 0);
+
+        if (!sellingPrice) return '0.00%';
+        return `${((profit / sellingPrice) * 100).toFixed(2)}%`;
+    };
 
     const getVariantLabel = record => record.business_type === 'WHOLESALE'
         ? `${record.weight / Math.max(record.quantity, 1)}${record.variation || ''} × ${record.quantity} ${record.packaging || ''}`
@@ -190,7 +204,8 @@ const MarkUpPriceList = ({
                             <th>Type</th>
                             <th>Supplier price</th>
                             <th>Markup</th>
-                            <th>Profit</th>
+                            {!hideProfit && <th>Profit</th>}
+                            {showProfitMargin && <th>{marginLabel}</th>}
                             <th>Selling price</th>
                             <th aria-label="Actions"></th>
                         </tr>
@@ -245,27 +260,28 @@ const MarkUpPriceList = ({
                                     ) : formatMoney(record.price)}
                                 </td>
                                 <td>
-                                    <strong>{record.mark_up_option === 'PERCENTAGE'
+                                    <strong className={highlightMetric === 'markup' ? 'markup-ranking-highlight' : ''}>{record.mark_up_option === 'PERCENTAGE'
                                         ? `${record.mark_up_price}%`
                                         : formatMoney(record.mark_up_price)}</strong>
                                 </td>
-                                <td><span className="markup-profit">+ {formatMoney(Number(record.new_price) - Number(record.price))}</span></td>
-                                <td><strong className="markup-selling-price">{formatMoney(record.new_price)}</strong></td>
+                                {!hideProfit && <td><span className="markup-profit">+ {formatMoney(Number(record.new_price) - Number(record.price))}</span></td>}
+                                {showProfitMargin && <td><strong className={highlightMetric === 'margin' ? 'markup-ranking-highlight' : ''}>{formatProfitMargin(record)}</strong></td>}
+                                <td><strong className={highlightSellingPrice ? 'markup-selling-price' : 'markup-selling-price-plain'}>{formatMoney(record.new_price)}</strong></td>
                                 <td className="markup-list-actions">
                                     {requiresV2 ? (
                                         <Link className="markup-list-v2-action" to={`/markUpNewPriceV2?product_id=${record.product_id}`}>
                                             <PriceChangeOutlinedIcon />Review price change
                                         </Link>
-                                    ) : (
+                                    ) : !hideEdit ? (
                                         <button type="button" onClick={() => openEditor(record.id, group.records)}><EditOutlinedIcon />Edit</button>
-                                    )}
+                                    ) : null}
                                     <Link to={"../viewMarkUpHistory/" + record.product_id}><HistoryRoundedIcon />History</Link>
                                 </td>
                             </tr>
                             );
                         })) : (
                             <tr>
-                                <td colSpan="8">
+                                <td colSpan={7 + (showProfitMargin ? 1 : 0) - (hideProfit ? 1 : 0)}>
                                     <div className="markup-list-empty">
                                         <PriceChangeOutlinedIcon />
                                         <h3>No markup prices found</h3>
