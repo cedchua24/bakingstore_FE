@@ -78,6 +78,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import PointOfSaleIcon from '@mui/icons-material/PointOfSale';
 import PersonIcon from '@mui/icons-material/Person';
 import DiscountIcon from '@mui/icons-material/Discount';
+import PercentRoundedIcon from '@mui/icons-material/PercentRounded';
 import AddIcon from '@mui/icons-material/Add';
 import ListIcon from '@mui/icons-material/List';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -776,6 +777,11 @@ export default function PersistentDrawerLeft() {
             "name": "Supplier Price Changes",
             "url": "/markUpNewPriceV2",
             "icon": <ListIcon />
+        },
+        {
+            "name": "Mark-Up Percentage",
+            "url": "/markUpPercentage",
+            "icon": <PercentRoundedIcon />
         }
     ]);
 
@@ -813,8 +819,7 @@ export default function PersistentDrawerLeft() {
         {
             "name": "Search Transaction",
             "url": "/shopOrderTransaction/searchTransaction",
-            "icon": <ListIcon />,
-            "roles": [2, 3]
+            "icon": <ListIcon />
         },
         {
             "name": "Pending Payment List",
@@ -845,6 +850,12 @@ export default function PersistentDrawerLeft() {
             "name": "Sales List",
             "url": "/reports/reportSales",
             "icon": <PriceCheckIcon />,
+            "roles": [2, 3]
+        },
+        {
+            "name": "Monthly Sales Forecast",
+            "url": "/reports/monthlySalesForecast",
+            "icon": <LeaderboardIcon />,
             "roles": [2, 3]
         },
         {
