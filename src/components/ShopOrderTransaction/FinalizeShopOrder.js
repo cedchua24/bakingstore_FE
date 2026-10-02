@@ -646,7 +646,7 @@ const FinalizeShopOrder = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
-    const currentOrderType = shopOrderTransaction.checker !== 0 ? 'Shop Branch Order' : 'Online Order';
+    const currentOrderType = shopOrderTransaction.checker !== 0 ? 'Inter Branch Order' : 'Online Order';
     const isOnlineOrder = shopOrderTransaction.checker === 0;
     const hasBalance = Number(modeOfPaymentDTO.balance || 0) !== 0;
     const canFinalize = !isOnlineOrder || !hasBalance;
@@ -723,7 +723,7 @@ const FinalizeShopOrder = () => {
             <div>
 
                 {shopOrderTransaction.checker != 0 ? (
-                    <Div>{"Shop Branch Order"}</Div>)
+                    <Div>{"Inter Branch Order"}</Div>)
                     :
                     (<Div>{"Online Order"}</Div>)
                 }

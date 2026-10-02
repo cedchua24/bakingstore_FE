@@ -1,0 +1,136 @@
+:root {
+  --expense-pink: #db2777;
+  --expense-pink-dark: #831843;
+  --expense-pink-mid: #be185d;
+  --expense-pink-soft: #fdf2f8;
+  --expense-pink-line: #f5bfd7;
+}
+
+.aev-page,
+.et-page,
+.veta-page {
+  padding: 24px;
+  min-height: 100vh;
+  background: #f6f7f9;
+}
+
+.aev-shell,
+.et-shell,
+.veta-shell,
+.et-page > .MuiStack-root,
+.et-form {
+  width: 100%;
+  max-width: none;
+}
+
+.aev-hero,
+.et-hero,
+.et-form-header,
+.veta-hero {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  max-width: none;
+  margin: 0 0 18px;
+  padding: 25px 28px;
+  color: #fff;
+  background: linear-gradient(125deg, var(--expense-pink-dark), var(--expense-pink-mid));
+  border-radius: 18px;
+  box-shadow: 0 14px 30px rgba(131, 24, 67, 0.16);
+}
+
+.et-hero-main {
+  display: contents;
+}
+
+.expense-hero-icon,
+.et-hero-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+}
+
+.expense-hero-icon svg,
+.et-hero-icon svg {
+  font-size: 29px;
+}
+
+.aev-hero span,
+.et-hero span,
+.et-form-header > div > span,
+.veta-hero span {
+  color: #fbcfe8;
+  font-size: .7rem;
+  font-weight: 400;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .85;
+}
+
+.aev-hero h1,
+.et-hero h1,
+.et-form-header h1,
+.veta-hero h1 {
+  margin: 3px 0 5px;
+  color: #fff;
+  font-size: 1.55rem;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+
+.aev-hero p,
+.et-hero p,
+.et-form-header p,
+.veta-hero p {
+  margin: 0;
+  color: rgba(255, 255, 255, .78);
+  font-size: .84rem;
+}
+
+.aev-submit,
+.et-form-grid > .MuiButton-root,
+.et-approval-column > .btn-primary,
+.veta-filter-grid > .btn,
+.et-hero-actions > .MuiButton-contained {
+  background: var(--expense-pink) !important;
+  border-color: var(--expense-pink) !important;
+}
+
+.aev-submit:hover,
+.et-form-grid > .MuiButton-root:hover,
+.et-approval-column > .btn-primary:hover,
+.veta-filter-grid > .btn:hover,
+.et-hero-actions > .MuiButton-contained:hover {
+  background: #b91c64 !important;
+  border-color: #b91c64 !important;
+}
+
+.et-progress .MuiLinearProgress-bar,
+.aev-page .MuiLinearProgress-bar,
+.veta-page .MuiLinearProgress-bar {
+  background: var(--expense-pink);
+}
+
+.et-stat > svg,
+.et-section-heading > span {
+  color: var(--expense-pink);
+  background: var(--expense-pink-soft);
+}
+
+@media (max-width: 700px) {
+  .aev-page,
+  .et-page,
+  .veta-page { padding: 12px; }
+
+  .aev-hero,
+  .et-hero,
+  .et-form-header,
+  .veta-hero { grid-template-columns: auto 1fr; padding: 20px; }
+}

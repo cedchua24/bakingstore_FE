@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
 import CustomerService from "../Customer/CustomerService";
 import CategoryServiceService from "../Category/CategoryService.service";
+import SupplierServiceService from "../Supplier/SupplierService.service";
 import OutOfStockUpdateService from "../OtherService/OutOfStockUpdateService";
 import { getAuthUserIdFromCookie } from '../User/authSession';
 
@@ -24,7 +25,7 @@ import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
-import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
+import StockSearchBar from './StockSearchBar';
 import { formatSupplierSentTracking, isSentToSupplier } from './supplierOrderTracking';
 
 import './StockWarning.css';
@@ -45,12 +46,18 @@ const emptyProduct = {
 
 const StockList = () => {
     const [productList, setProductList] = useState({ data: [] });
-    const [categoryId, setCategoryId] = useState(2);
+    const [categoryId, setCategoryId] = useState(0);
+    const [supplierId, setSupplierId] = useState(0);
+    const [appliedCategoryId, setAppliedCategoryId] = useState(0);
+    const [appliedSupplierId, setAppliedSupplierId] = useState(0);
     const [categoryList, setCategoryList] = useState([]);
+    const [supplierList, setSupplierList] = useState([]);
     const [customerList, setCustomerList] = useState([]);
     const [filterLoading, setFilterLoading] = useState(false);
     const [submitLoading, setSubmitLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const requestSequence = useRef(0);
+    const skipNextDebouncedFetch = useRef(false);
 
     const [modifyOpen, setModifyOpen] = useState(false);
     const [notifyOpen, setNotifyOpen] = useState(false);
@@ -62,12 +69,12 @@ const StockList = () => {
     });
 
     useEffect(() => {
-        ProductServiceService.fetchProductByCategoryId(2)
-            .then(response => setProductList(response.data))
-            .catch(error => console.log("error", error));
-
         CategoryServiceService.getAll()
             .then(response => setCategoryList(response.data))
+            .catch(error => console.log("error", error));
+
+        SupplierServiceService.getAll()
+            .then(response => setSupplierList(response.data?.data || response.data || []))
             .catch(error => console.log("error", error));
 
         CustomerService.fetchCustomerEnabled()
@@ -75,18 +82,51 @@ const StockList = () => {
             .catch(error => console.log("error", error));
     }, []);
 
-    const fetchProducts = (selectedCategoryId = categoryId) => {
+    const fetchProducts = useCallback((filters = {}) => {
+        const currentRequest = requestSequence.current + 1;
+        requestSequence.current = currentRequest;
         setFilterLoading(true);
-        ProductServiceService.fetchProductByCategoryId(selectedCategoryId)
-            .then(response => setProductList(response.data))
+        return ProductServiceService.fetchProducts({
+            category_id: filters.categoryId ?? appliedCategoryId,
+            supplier_id: filters.supplierId ?? appliedSupplierId,
+            search: filters.search ?? searchQuery.trim()
+        })
+            .then(response => {
+                if (currentRequest === requestSequence.current) {
+                    setProductList(response.data);
+                }
+            })
             .catch(error => console.log("error", error))
-            .finally(() => setFilterLoading(false));
+            .finally(() => {
+                if (currentRequest === requestSequence.current) {
+                    setFilterLoading(false);
+                }
+            });
+    }, [appliedCategoryId, appliedSupplierId, searchQuery]);
+
+    useEffect(() => {
+        if (skipNextDebouncedFetch.current) {
+            skipNextDebouncedFetch.current = false;
+            return undefined;
+        }
+        const timeoutId = setTimeout(() => fetchProducts(), 400);
+        return () => clearTimeout(timeoutId);
+    }, [fetchProducts]);
+
+    const applyFilters = () => {
+        const filtersChanged = categoryId !== appliedCategoryId || supplierId !== appliedSupplierId;
+        if (filtersChanged) {
+            skipNextDebouncedFetch.current = true;
+        }
+        setAppliedCategoryId(categoryId);
+        setAppliedSupplierId(supplierId);
+        fetchProducts({ categoryId, supplierId });
     };
 
     const products = Array.isArray(productList?.data)
         ? productList.data
         : (Array.isArray(productList) ? productList : []);
-    const filteredProducts = products.filter(item => matchesStockSearch(item, searchQuery));
+    const filteredProducts = products;
 
     const pendingOrderCount = products.reduce(
         (total, currentProduct) => total + (
@@ -217,7 +257,7 @@ const StockList = () => {
                 <div className="stock-warning-hero__icon"><Inventory2OutlinedIcon /></div>
                 <div className="stock-warning-hero__copy">
                     <span className="stock-warning-eyebrow">Inventory management</span>
-                    <h1>Stock List</h1>
+                    <h1>Inventory Overview</h1>
                     <p>Monitor inventory, incoming supplier orders, customer follow-ups, and stock adjustments.</p>
                 </div>
                 <div className="stock-warning-summary">
@@ -239,27 +279,33 @@ const StockList = () => {
             <section className="stock-warning-filter">
                 <div>
                     <span className="stock-warning-filter__label">Filter inventory</span>
-                    <p>Choose a category to view its current stock.</p>
+                    <p>Choose a category or supplier to view its current stock.</p>
                 </div>
                 <div className="stock-warning-filter__controls">
-                    <FormControl size="small" className="stock-warning-category">
-                        <InputLabel id="stock-list-category-label">Category</InputLabel>
-                        <Select
-                            labelId="stock-list-category-label"
-                            value={categoryId}
-                            label="Category"
-                            onChange={event => setCategoryId(event.target.value)}
-                        >
-                            <MenuItem value={0}>All categories</MenuItem>
-                            {categoryList.map(category => (
-                                <MenuItem value={category.id} key={category.id}>{category.category_name}</MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        size="small"
+                        className="stock-warning-category"
+                        options={[{ id: 0, category_name: 'All categories' }, ...categoryList]}
+                        value={[{ id: 0, category_name: 'All categories' }, ...categoryList].find(category => Number(category.id) === Number(categoryId)) || null}
+                        onChange={(_, category) => setCategoryId(category?.id || 0)}
+                        getOptionLabel={category => category.category_name || ''}
+                        isOptionEqualToValue={(option, value) => Number(option.id) === Number(value.id)}
+                        renderInput={params => <TextField {...params} label="Category" placeholder="Search categories" />}
+                    />
+                    <Autocomplete
+                        size="small"
+                        className="stock-warning-category"
+                        options={[{ id: 0, supplier_name: 'All suppliers' }, ...supplierList]}
+                        value={[{ id: 0, supplier_name: 'All suppliers' }, ...supplierList].find(supplier => Number(supplier.id) === Number(supplierId)) || null}
+                        onChange={(_, supplier) => setSupplierId(supplier?.id || 0)}
+                        getOptionLabel={supplier => supplier.supplier_name || ''}
+                        isOptionEqualToValue={(option, value) => Number(option.id) === Number(value.id)}
+                        renderInput={params => <TextField {...params} label="Supplier" placeholder="Search suppliers" />}
+                    />
                     <Button
                         variant="contained"
                         disabled={filterLoading}
-                        onClick={() => fetchProducts()}
+                        onClick={applyFilters}
                         startIcon={<SearchIcon />}
                         className="stock-warning-search"
                     >

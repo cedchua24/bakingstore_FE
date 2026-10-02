@@ -21,6 +21,7 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputAdornment from '@mui/material/InputAdornment';
 import Checkbox from '@mui/material/Checkbox';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import './ExpenseTransaction.css';
 
 
@@ -335,7 +336,7 @@ const ExpenseTransaction = () => {
             </Stack>
             <br></br>
             <Form className="et-form">
-                <header className="et-form-header"><span>New transaction</span><h1>Add Expense Transaction</h1><p>Enter the expense details, assign approval, and optionally add payment information.</p></header>
+                <header className="et-form-header"><div className="expense-hero-icon"><ReceiptLongOutlinedIcon /></div><div><span>New transaction</span><h1>Add Expense Transaction</h1><p>Enter the expense details, assign approval, and optionally add payment information.</p></div></header>
                 <div className="et-form-grid">
                 <section className="et-form-column">
                     <div className="et-section-heading"><span>01</span><div><strong>Expense details</strong><small>Classification, amount, and requestor</small></div></div>

@@ -46,7 +46,7 @@
 .branch-order-signatures span { margin-top: 5px; font-size: 9px; font-weight: 700; text-transform: uppercase; }
 .branch-order-signatures small { margin-top: 2px; color: #667085; font-size: 8px; }
 .branch-order-footer { margin-top: 24px; padding-top: 9px; border-top: 1px solid #d7dce5; color: #667085; font-size: 9px; }
-.branch-order-page-number { margin-top: auto; padding-top: 12px; color: #667085; font-size: 9px; text-align: center; }
+.branch-order-page-number { display: flex; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 12px; border-top: 1px dotted #98a2b3; color: #344054; font-size: 10px; font-weight: 800; }
 .branch-order-actions { padding: 12px; text-align: center; }
 .branch-order-state { min-height: 65vh; display: flex; align-items: center; justify-content: center; gap: 12px; }
 

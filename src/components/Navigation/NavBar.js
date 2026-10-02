@@ -148,8 +148,8 @@ const NavBar = () => {
                     <Nav className="me-auto">
                         <NavDropdown title="Stock" id="basic-nav-dropdown">
                             <NavDropdown.Item href="/addStock">Add Stock</NavDropdown.Item>
-                            <NavDropdown.Item href="/addStock">Stock List</NavDropdown.Item>
-                            <NavDropdown.Item href="/stockWarning">Stock Warning</NavDropdown.Item>
+                            <NavDropdown.Item href="/addStock">Inventory Overview</NavDropdown.Item>
+                            <NavDropdown.Item href="/stockWarning">Low Stock Alerts</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>
                     <Nav className="me-auto">
@@ -189,7 +189,7 @@ const NavBar = () => {
                             <NavDropdown.Item href="/reports/productValueReport">Product Capital Record List</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportsList">Online Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportPurchaseOrder">Purchase Order Reports</NavDropdown.Item>
-                            <NavDropdown.Item href="/reports/shopBranchReportList">Shop Order Reports</NavDropdown.Item>
+                            <NavDropdown.Item href="/reports/shopBranchReportList">Inter Branch Order Reports</NavDropdown.Item>
                             <NavDropdown.Item href="/reports/reportExpenses">Expenses Reports</NavDropdown.Item>
                         </NavDropdown>
                     </Nav>

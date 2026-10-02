@@ -7,8 +7,9 @@ const ProductExpirationList = () => (
         eyebrow="Shelf-life monitoring"
         title="Product Expirations"
         description="Monitor product expiration dates and quickly identify items needing attention."
-        fetchProducts={categoryId => ProductServiceService.fetchProductListExpiration(categoryId)}
+        fetchProducts={filters => ProductServiceService.fetchProductListExpiration(filters)}
         mode="expiration"
+        serverFilters
     />
 );
 

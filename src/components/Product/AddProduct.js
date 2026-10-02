@@ -136,17 +136,17 @@ const AddProduct = () => {
   return (
     <div className="add-product-page">
       <header className="add-product-header">
+        <div className="add-product-header__icon">
+          <Inventory2OutlinedIcon />
+        </div>
         <div>
-          <Link to="/productList" className="add-product-back">
-            <ArrowBackRoundedIcon /> Back to products
-          </Link>
           <span className="add-product-eyebrow">Inventory catalogue</span>
           <h1>Add New Product</h1>
           <p>Create a product and configure how its packaging and low-stock warning should work.</p>
         </div>
-        <div className="add-product-header__icon">
-          <Inventory2OutlinedIcon />
-        </div>
+        <Link to="/productList" className="add-product-back">
+          <ArrowBackRoundedIcon /> Back to products
+        </Link>
       </header>
 
       {alert.visible && (

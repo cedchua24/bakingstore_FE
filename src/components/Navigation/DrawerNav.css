@@ -419,6 +419,112 @@
     --menu-color: #4f46e5;
 }
 
+.operations-drawer .drawer-product-section {
+    --menu-color: #285fc7 !important;
+}
+
+.operations-drawer .drawer-stock-section {
+    --menu-color: #0f766e !important;
+}
+
+.operations-drawer .drawer-markup-section {
+    --menu-color: #6d4bc3 !important;
+}
+
+.operations-drawer .drawer-expense-section {
+    --menu-color: #db2777 !important;
+}
+
+.operations-drawer .drawer-purchase-order-section {
+    --menu-color: #c026d3 !important;
+}
+
+.operations-drawer .drawer-inter-branch-section {
+    --menu-color: #ef6f6c !important;
+}
+
+.operations-drawer .drawer-product-section .MuiCollapse-root::before {
+    background: #c9d8f5;
+}
+
+.operations-drawer .drawer-stock-section .MuiCollapse-root::before {
+    background: #b7ded9;
+}
+
+.operations-drawer .drawer-markup-section .MuiCollapse-root::before {
+    background: #d8ccf3;
+}
+
+.operations-drawer .drawer-expense-section .MuiCollapse-root::before,
+.operations-drawer .drawer-expense-section .MuiCollapse-root .MuiCollapse-root::before {
+    background: #f5bfd7;
+}
+
+.operations-drawer .drawer-purchase-order-section .MuiCollapse-root::before {
+    background: #efb7f5;
+}
+
+.operations-drawer .drawer-inter-branch-section .MuiCollapse-root::before {
+    background: #f5bdbc;
+}
+
+.operations-drawer .drawer-product-section .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #214f9f;
+    background: #edf3ff;
+}
+
+.operations-drawer .drawer-stock-section .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #0b5f59;
+    background: #ecf8f6;
+}
+
+.operations-drawer .drawer-markup-section .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #573a9d;
+    background: #f3efff;
+}
+
+.operations-drawer .drawer-expense-section .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #b91c64;
+    background: #fdf2f8;
+}
+
+.operations-drawer .drawer-purchase-order-section .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #9d1caf;
+    background: #fae8ff;
+}
+
+.operations-drawer .drawer-inter-branch-section .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #c94f4f;
+    background: #fff0f0;
+}
+
+.operations-drawer .drawer-product-section .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #285fc7 !important;
+}
+
+.operations-drawer .drawer-stock-section .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #0f766e !important;
+}
+
+.operations-drawer .drawer-markup-section .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #6d4bc3 !important;
+}
+
+.operations-drawer .drawer-expense-section .MuiListItemIcon-root svg,
+.operations-drawer .drawer-expense-section .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #db2777 !important;
+}
+
+.operations-drawer .drawer-purchase-order-section .MuiListItemIcon-root svg,
+.operations-drawer .drawer-purchase-order-section .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #c026d3 !important;
+}
+
+.operations-drawer .drawer-inter-branch-section .MuiListItemIcon-root svg,
+.operations-drawer .drawer-inter-branch-section .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #ef6f6c !important;
+}
+
 .operations-drawer .MuiDrawer-paper > div:first-of-type > .MuiList-root {
     padding-top: 10px;
 }
@@ -623,7 +729,20 @@
 }
 
 .operations-drawer .drawer-reports-section .report-menu-purchase {
-    --report-color: #7c3aed;
+    --report-color: #c026d3;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-purchase + .MuiCollapse-root::before {
+    background: #efb7f5;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-purchase + .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #9d1caf;
+    background: #fae8ff;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-purchase + .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #c026d3 !important;
 }
 
 .operations-drawer .drawer-reports-section .report-menu-discount {
@@ -635,7 +754,7 @@
 }
 
 .operations-drawer .drawer-reports-section .report-menu-product {
-    --report-color: #d97706;
+    --report-color: #285fc7;
 }
 
 .operations-drawer .drawer-reports-section .report-menu-category {
@@ -643,7 +762,38 @@
 }
 
 .operations-drawer .drawer-reports-section .report-menu-stock {
-    --report-color: #059669;
+    --report-color: #0f766e;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-product + .MuiCollapse-root::before {
+    background: #c9d8f5;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-stock + .MuiCollapse-root::before {
+    background: #b7ded9;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-product + .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #214f9f;
+    background: #edf3ff;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-stock + .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #0b5f59;
+    background: #ecf8f6;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-product + .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #285fc7 !important;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-stock + .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #0f766e !important;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-product + .MuiCollapse-root .MuiListItemText-root .MuiTypography-root,
+.operations-drawer .drawer-reports-section .report-menu-stock + .MuiCollapse-root .MuiListItemText-root .MuiTypography-root {
+    color: inherit !important;
 }
 
 .operations-drawer .drawer-reports-section .report-menu-spoilage {
@@ -655,7 +805,20 @@
 }
 
 .operations-drawer .drawer-reports-section .report-menu-branch {
-    --report-color: #16a34a;
+    --report-color: #ef6f6c;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-branch + .MuiCollapse-root::before {
+    background: #f5bdbc;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-branch + .MuiCollapse-root .MuiListItemButton-root:hover {
+    color: #c94f4f;
+    background: #fff0f0;
+}
+
+.operations-drawer .drawer-reports-section .report-menu-branch + .MuiCollapse-root .MuiListItemIcon-root svg {
+    color: #ef6f6c !important;
 }
 
 @media (max-width: 1050px) {

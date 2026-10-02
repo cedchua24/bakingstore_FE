@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
@@ -13,39 +13,96 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import CategoryServiceService from '../Category/CategoryService.service';
+import SupplierServiceService from '../Supplier/SupplierService.service';
 import './ProductManagement.css';
 
 const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
 const formatDate = value => value ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(value)) : 'Not set';
 
-const ProductManagementList = ({ title, description, eyebrow, fetchProducts, mode }) => {
+const ProductManagementList = ({ title, description, eyebrow, fetchProducts, mode, serverFilters = false }) => {
     const [result, setResult] = useState({ data: [], total_value: {} });
     const [categories, setCategories] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
     const [categoryId, setCategoryId] = useState(0);
+    const [supplierId, setSupplierId] = useState(0);
+    const [appliedCategoryId, setAppliedCategoryId] = useState(0);
+    const [appliedSupplierId, setAppliedSupplierId] = useState(0);
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(false);
+    const requestSequence = useRef(0);
+    const skipNextDebouncedLoad = useRef(false);
 
-    const load = selectedCategory => {
+    const load = filters => {
+        const currentRequest = requestSequence.current + 1;
+        requestSequence.current = currentRequest;
         setLoading(true);
-        fetchProducts(selectedCategory)
-            .then(response => setResult(response.data || { data: [] }))
+        const request = serverFilters
+            ? fetchProducts({
+                category_id: filters?.categoryId ?? appliedCategoryId,
+                supplier_id: filters?.supplierId ?? appliedSupplierId,
+                search: filters?.search ?? query.trim()
+            })
+            : fetchProducts(filters ?? 0);
+        request
+            .then(response => {
+                if (currentRequest === requestSequence.current) {
+                    setResult(response.data || { data: [] });
+                }
+            })
             .catch(error => console.log('error', error))
-            .finally(() => setLoading(false));
+            .finally(() => {
+                if (currentRequest === requestSequence.current) setLoading(false);
+            });
     };
 
     useEffect(() => {
-        load(0);
+        if (!serverFilters) load(0);
         CategoryServiceService.getAll().then(response => setCategories(response.data || [])).catch(error => console.log('error', error));
+        if (serverFilters) {
+            SupplierServiceService.getAll()
+                .then(response => setSuppliers(response.data?.data || response.data || []))
+                .catch(error => console.log('error', error));
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const products = Array.isArray(result?.data) ? result.data : (Array.isArray(result) ? result : []);
+    useEffect(() => {
+        if (!serverFilters) return undefined;
+        if (skipNextDebouncedLoad.current) {
+            skipNextDebouncedLoad.current = false;
+            return undefined;
+        }
+        const timeoutId = setTimeout(() => load(), 400);
+        return () => clearTimeout(timeoutId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [query, appliedCategoryId, appliedSupplierId, serverFilters]);
+
+    const applyFilters = () => {
+        if (!serverFilters) {
+            load(categoryId);
+            return;
+        }
+        const filtersChanged = categoryId !== appliedCategoryId || supplierId !== appliedSupplierId;
+        if (filtersChanged) skipNextDebouncedLoad.current = true;
+        setAppliedCategoryId(categoryId);
+        setAppliedSupplierId(supplierId);
+        load({ categoryId, supplierId });
+    };
+
+    const productRows = Array.isArray(result?.data) ? result.data : (Array.isArray(result) ? result : []);
+    const products = serverFilters
+        ? Array.from(productRows.reduce((byId, product) => {
+            if (!byId.has(product.id)) byId.set(product.id, product);
+            return byId;
+        }, new Map()).values())
+        : productRows;
     const filtered = useMemo(() => {
+        if (serverFilters) return products;
         const search = query.trim().toLowerCase();
         if (!search) return products;
         return products.filter(product => [product.id, product.product_name, product.category_name, product.brand_name, product.note, product.packaging]
             .some(value => String(value ?? '').toLowerCase().includes(search)));
-    }, [products, query]);
+    }, [products, query, serverFilters]);
     const totalValue = products.reduce((sum, product) => sum + Number(product.price || 0) * Number(product.stock || 0), 0);
 
     return (
@@ -64,7 +121,16 @@ const ProductManagementList = ({ title, description, eyebrow, fetchProducts, mod
                         {categories.map(category => <MenuItem key={category.id} value={category.id}>{category.category_name}</MenuItem>)}
                     </Select>
                 </FormControl>
-                <Button variant="contained" onClick={() => load(categoryId)} disabled={loading}>Apply filter</Button>
+                {serverFilters && (
+                    <FormControl size="small" className="pm-category">
+                        <InputLabel>Supplier</InputLabel>
+                        <Select value={supplierId} label="Supplier" onChange={event => setSupplierId(event.target.value)}>
+                            <MenuItem value={0}>All suppliers</MenuItem>
+                            {suppliers.map(supplier => <MenuItem key={supplier.id} value={supplier.id}>{supplier.supplier_name}</MenuItem>)}
+                        </Select>
+                    </FormControl>
+                )}
+                <Button variant="contained" onClick={applyFilters} disabled={loading}>Apply filter</Button>
                 <TextField
                     size="small" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search products..."
                     InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }}

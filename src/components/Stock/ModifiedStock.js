@@ -117,7 +117,7 @@ const ModifiedStock = () => {
                 <div className="modified-stock-hero__icon"><TuneRoundedIcon /></div>
                 <div>
                     <span>Inventory audit</span>
-                    <h1>Modified Stock</h1>
+                    <h1>Daily Stock Adjustments</h1>
                     <p>Review manual stock additions and reductions for a selected day.</p>
                 </div>
             </section>

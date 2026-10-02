@@ -927,7 +927,7 @@ const AddProductCustomerOrderTransaction = () => {
             ? `-${row.discount_amount}`
             : '';
 
-    const currentOrderType = shopOrderTransaction.checker !== 0 ? 'Shop Branch Order' : 'Online Order';
+    const currentOrderType = shopOrderTransaction.checker !== 0 ? 'Inter Branch Order' : 'Online Order';
     const selectedProductReady = orderShop.product_id !== 0;
     const transactionVipCustomers = Array.isArray(shopOrderTransaction.vip_customers)
         ? shopOrderTransaction.vip_customers

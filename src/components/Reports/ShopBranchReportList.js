@@ -7,15 +7,19 @@ import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import UpdateIcon from '@mui/icons-material/Update';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
+import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Box from '@mui/material/Box';
@@ -39,12 +43,32 @@ const getCurrentMonthRange = () => {
     return {
         dateFrom: formatDateInput(new Date(year, month, 1)),
         dateTo: formatDateInput(new Date(year, month + 1, 0)),
+        status: '',
     };
 };
 
+const buildReportFilters = (filters = {}) => Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value !== '' && value !== null && value !== undefined)
+);
+
+const statusOptions = {
+    '': { label: 'All statuses', icon: <FilterAltOutlinedIcon fontSize="small" />, className: 'all' },
+    1: { label: 'COMPLETED', icon: <CheckCircleRoundedIcon fontSize="small" />, className: 'completed' },
+    2: { label: 'PENDING', icon: <ScheduleRoundedIcon fontSize="small" />, className: 'pending' },
+};
+
+const renderStatusOption = (value) => {
+    const option = statusOptions[value] || statusOptions[''];
+    return (
+        <span className={`shop-report-status-option ${option.className}`}>
+            {option.icon}
+            {option.label}
+        </span>
+    );
+};
+
 const ShopBranchReportList = () => {
-
-
+    const isAdmin = Number(localStorage.getItem('role_as')) === 2;
 
     useEffect(() => {
         fetchShopOrderTransactionList(getCurrentMonthRange());
@@ -80,11 +104,17 @@ const ShopBranchReportList = () => {
     };
 
 
-    const handleClosePickUp = () => setOpenPickUp(false);
+    const handleClosePickUp = () => {
+        setOpenPickUp(false);
+        setStatusEditLocked(false);
+    };
     const [openPickUp, setOpenPickUp] = React.useState(false);
+    const [statusEditLocked, setStatusEditLocked] = useState(false);
 
-    const handleOpenPickUp = (id, e) => {
-        console.log('e', id);
+    const handleOpenPickUp = (id, status) => {
+        const completedLocked = Number(status) === 1 && !isAdmin;
+        setStatusEditLocked(completedLocked);
+        if (completedLocked) return;
         setOpenPickUp(true);
         fetchTransaction(id)
     }
@@ -116,13 +146,10 @@ const ShopBranchReportList = () => {
 
 
     const updateDate = () => {
+        if (statusEditLocked) return;
         ShopOrderTransactionService.updateShopBranchStatus(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
             .then(response => {
-                fetchShopOrderTransactionList(
-                    customerOrderDate.dateFrom && customerOrderDate.dateTo
-                        ? customerOrderDate
-                        : undefined
-                );
+                fetchShopOrderTransactionList(customerOrderDate);
                 setOpenPickUp(false);
             })
             .catch(e => {
@@ -134,14 +161,14 @@ const ShopBranchReportList = () => {
     const fetchShopOrderTransactionList = (dateRange) => {
         setLoading(true);
         setError('');
-        ShopOrderTransactionService.fetchShopOrderTransactionListReportByDate(dateRange)
+        ShopOrderTransactionService.fetchShopOrderTransactionListReportByDateV2(buildReportFilters(dateRange))
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
             })
             .catch(e => {
                 console.log("error", e)
-                setError('The shop branch report could not be loaded. Please try again.');
+                setError('The inter branch order report could not be loaded. Please try again.');
             })
             .finally(() => setLoading(false));
     }
@@ -152,22 +179,13 @@ const ShopBranchReportList = () => {
 
     const saveOrderTransaction = () => {
         console.log('orderTransaction', customerOrderDate);
-        setLoading(true);
-        setError('');
-        ShopOrderTransactionService.fetchShopOrderTransactionListReportByDate(customerOrderDate)
-            .then(response => {
-                setShopOrderTransaction(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-                setError('The selected report range could not be loaded.');
-            })
-            .finally(() => setLoading(false));
+        fetchShopOrderTransactionList(customerOrderDate);
     }
 
     const showAllTransactions = () => {
-        setCustomerOrderDate({ dateFrom: '', dateTo: '' });
-        fetchShopOrderTransactionList();
+        const emptyFilters = { dateFrom: '', dateTo: '', status: '' };
+        setCustomerOrderDate(emptyFilters);
+        fetchShopOrderTransactionList(emptyFilters);
     };
 
 
@@ -212,7 +230,7 @@ const ShopBranchReportList = () => {
                     <span className="shop-report-header-icon"><ReceiptLongRoundedIcon /></span>
                     <div>
                         <span>Reports</span>
-                        <h1>Shop branch report</h1>
+                        <h1>Inter Branch Order Report</h1>
                         <p>Track branch orders, sales performance, profit, and transaction status.</p>
                     </div>
                 </header>
@@ -230,6 +248,19 @@ const ShopBranchReportList = () => {
                     <div className="shop-report-filter-grid">
                         <TextField label="Date from" type="date" name="dateFrom" value={customerOrderDate.dateFrom} onChange={onChangeInput} InputLabelProps={{ shrink: true }} fullWidth />
                         <TextField label="Date to" type="date" name="dateTo" value={customerOrderDate.dateTo} onChange={onChangeInput} InputLabelProps={{ shrink: true }} fullWidth />
+                        <TextField
+                            select
+                            label="Status"
+                            name="status"
+                            value={customerOrderDate.status}
+                            onChange={onChangeInput}
+                            SelectProps={{ renderValue: renderStatusOption }}
+                            fullWidth
+                        >
+                            <MenuItem value="">{renderStatusOption('')}</MenuItem>
+                            <MenuItem value={1}>{renderStatusOption(1)}</MenuItem>
+                            <MenuItem value={2}>{renderStatusOption(2)}</MenuItem>
+                        </TextField>
                         <div className="shop-report-filter-actions">
                             <Button variant="contained" onClick={saveOrderTransaction} disabled={loading}>Generate report</Button>
                             <Button variant="outlined" onClick={showAllTransactions} disabled={loading}>All</Button>
@@ -278,7 +309,9 @@ const ShopBranchReportList = () => {
                                 {!loading && visibleRows.length === 0 && (
                                     <tr><td colSpan="10"><div className="shop-report-empty"><Inventory2OutlinedIcon /><strong>No branch transactions found</strong><span>Try selecting a different report range.</span></div></td></tr>
                                 )}
-                                {visibleRows.map((row) => (
+                                {visibleRows.map((row) => {
+                                    const completedLocked = Number(row.status) === 1 && !isAdmin;
+                                    return (
                                     <tr key={row.id}>
                                         <td><span className="shop-report-id">#{row.id}</span></td>
                                         <td><strong>{row.shop_name}</strong></td>
@@ -291,7 +324,11 @@ const ShopBranchReportList = () => {
                                         <td>
                                             <div className="shop-report-status-cell">
                                                 <span className={`shop-report-status status-${statusLabel(row.status).toLowerCase()}`}>{statusLabel(row.status)}</span>
-                                                <Tooltip title="Update status"><IconButton size="small" onClick={(e) => handleOpenPickUp(row.id, e)}><UpdateIcon fontSize="small" /></IconButton></Tooltip>
+                                                <Tooltip title={completedLocked ? "Completed transactions can only be changed by an administrator" : "Update status"}>
+                                                    <span>
+                                                        <IconButton size="small" disabled={completedLocked} onClick={() => handleOpenPickUp(row.id, row.status)}><UpdateIcon fontSize="small" /></IconButton>
+                                                    </span>
+                                                </Tooltip>
                                             </div>
                                         </td>
                                         <td>
@@ -317,7 +354,8 @@ const ShopBranchReportList = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -341,9 +379,16 @@ const ShopBranchReportList = () => {
                         <Checkbox
                             checked={shopOrderTransactionUpdateModal.status !== 2}
                             onChange={onChangePaymentTypeStatus}
+                            disabled={statusEditLocked}
                             inputProps={{ 'aria-label': 'controlled' }}
                         />
                     </Form.Group>
+
+                    {statusEditLocked && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                            This transaction is completed. Only an administrator can change its status.
+                        </Alert>
+                    )}
 
                     <Box
                         sx={{
@@ -353,7 +398,7 @@ const ShopBranchReportList = () => {
                             justifyContent: 'center',
                         }}
                     >
-                        <Button variant="contained" onClick={updateDate}>
+                        <Button variant="contained" onClick={updateDate} disabled={statusEditLocked}>
                             Save status
                         </Button>
                     </Box>

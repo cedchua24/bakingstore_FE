@@ -11,34 +11,36 @@
 .modified-stock-hero {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 22px 24px;
+    gap: 18px;
+    padding: 25px 28px;
     margin-bottom: 14px;
     color: #fff;
-    background: linear-gradient(120deg, #252338, #37345c 62%, #4d4778);
-    border-radius: 16px;
+    background: linear-gradient(125deg, #123b3a, #1f5c58);
+    border-radius: 18px;
+    box-shadow: 0 14px 30px rgba(24, 38, 70, .15);
 }
 
 .modified-stock-hero__icon {
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    color: #cbc4ff;
+    width: 52px;
+    height: 52px;
+    color: #fff;
     background: rgba(255,255,255,.1);
-    border-radius: 13px;
+    border-radius: 14px;
 }
 
 .modified-stock-hero > div:last-child > span {
-    color: #cbc4ff;
-    font-size: .68rem;
-    font-weight: 800;
-    letter-spacing: .1em;
+    color: #99f6e4;
+    font-size: .7rem;
+    font-weight: 400;
+    letter-spacing: .12em;
+    opacity: .75;
     text-transform: uppercase;
 }
 
-.modified-stock-hero h1 { margin: 2px 0 0; font-size: 1.75rem; }
-.modified-stock-hero p { margin: 4px 0 0; color: rgba(255,255,255,.68); font-size: .78rem; }
+.modified-stock-hero h1 { margin: 3px 0 5px; font-size: 1.55rem; font-weight: 500; }
+.modified-stock-hero p { margin: 0; color: rgba(255,255,255,.78); font-size: .84rem; }
 .modified-stock-alert { margin-bottom: 14px; }
 
 .modified-stock-summary {
@@ -67,7 +69,7 @@
 }
 .modified-stock-summary__icon--green { color: #26724a; background: #eaf8ef; }
 .modified-stock-summary__icon--red { color: #a63a34; background: #ffedeb; }
-.modified-stock-summary__icon--blue { color: #285fc7; background: #edf3ff; }
+.modified-stock-summary__icon--blue { color: #0f766e; background: #ecf8f6; }
 .modified-stock-summary__icon svg { font-size: 19px; }
 .modified-stock-summary > div > div { display: flex; flex-direction: column; }
 .modified-stock-summary > div > div span { color: var(--ms-muted); font-size: .66rem; }
@@ -92,7 +94,7 @@
 .modified-stock-type-filter { width: 300px; min-width: 220px !important; }
 .modified-stock-type-filter .MuiSelect-select { display: flex; align-items: center; min-height: 40px !important; padding-top: 4px !important; padding-bottom: 4px !important; box-sizing: border-box; }
 .modified-stock-type-chips { display: flex; align-items: center; gap: 4px; max-width: 100%; overflow: hidden; }
-.modified-stock-type-chips .MuiChip-root { height: 24px; max-width: 160px; color: #514d7a; background: #f0eff9; font-size: .62rem; font-weight: 700; }
+.modified-stock-type-chips .MuiChip-root { height: 24px; max-width: 160px; color: #0f766e; background: #ecf8f6; font-size: .62rem; font-weight: 700; }
 .modified-stock-search.MuiButton-root { background: var(--ms-ink); border-radius: 8px; box-shadow: none; font-size: .72rem; font-weight: 700; text-transform: none; }
 .modified-stock-progress { position: absolute !important; right: 10px; bottom: 0; left: 10px; }
 
@@ -105,7 +107,7 @@
 .modified-stock-card__header { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--ms-border); }
 .modified-stock-card__header h2 { margin: 0; font-size: 1rem; }
 .modified-stock-card__header p { margin: 3px 0 0; color: var(--ms-muted); font-size: .7rem; }
-.modified-stock-card__header > span { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; color: #514d7a; background: #f0eff9; border-radius: 999px; font-size: .64rem; font-weight: 700; }
+.modified-stock-card__header > span { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; color: #0f766e; background: #ecf8f6; border-radius: 999px; font-size: .64rem; font-weight: 700; }
 .modified-stock-card__header > span svg { font-size: 14px; }
 
 .modified-stock-table { width: 100%; min-width: 850px; border-collapse: collapse; }
@@ -114,12 +116,12 @@
 .modified-stock-table tr:last-child td { border-bottom: 0; }
 
 .modified-stock-product { display: flex; align-items: center; gap: 9px; min-width: 180px; }
-.modified-stock-product > span { display: grid; place-items: center; flex: 0 0 34px; height: 34px; color: #514d7a; background: #f0eff9; border-radius: 9px; font-weight: 800; }
+.modified-stock-product > span { display: grid; place-items: center; flex: 0 0 34px; height: 34px; color: #0f766e; background: #ecf8f6; border-radius: 9px; font-weight: 800; }
 .modified-stock-product > div { display: flex; flex-direction: column; }
 .modified-stock-product strong { font-size: .8rem; }
 .modified-stock-product small { margin-top: 2px; color: var(--ms-muted); font-size: .64rem; }
 .modified-stock-reason { display: -webkit-box; max-width: 230px; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.modified-stock-type { display: inline-flex; padding: 4px 7px; color: #514d7a; background: #f0eff9; border-radius: 999px; font-size: .66rem; font-weight: 750; white-space: nowrap; }
+.modified-stock-type { display: inline-flex; padding: 4px 7px; color: #0f766e; background: #ecf8f6; border-radius: 999px; font-size: .66rem; font-weight: 750; white-space: nowrap; }
 .modified-stock-quantity { display: inline-flex; padding: 4px 7px; border-radius: 999px; font-size: .68rem; font-weight: 750; white-space: nowrap; }
 .modified-stock-quantity--added { color: #26724a; background: #eaf8ef; }
 .modified-stock-quantity--reduced { color: #a63a34; background: #ffedeb; }

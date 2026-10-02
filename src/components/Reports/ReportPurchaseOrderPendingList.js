@@ -13,6 +13,7 @@ const ReportPurchaseOrderPendingList = () => (
         emptyMessage="No purchase orders have pending payments"
         allowDateEdit={false}
         allowDelete={false}
+        fixedPaymentStatus={0}
     />
 );
 

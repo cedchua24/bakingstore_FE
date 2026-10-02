@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
+import SupplierServiceService from "../Supplier/SupplierService.service";
 
 import Button from '@mui/material/Button';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 import LinearProgress from '@mui/material/LinearProgress';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import SearchIcon from '@mui/icons-material/Search';
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
+import StockSearchBar from './StockSearchBar';
 import { formatSupplierSentTracking, isSentToSupplier } from './supplierOrderTracking';
 
 import './StockWarning.css';
@@ -22,30 +21,71 @@ import './StockWarning.css';
 const NoStock = () => {
     const [productList, setProductList] = useState({ data: [] });
     const [categoryList, setCategoryList] = useState([]);
+    const [supplierList, setSupplierList] = useState([]);
     const [categoryId, setCategoryId] = useState(0);
+    const [supplierId, setSupplierId] = useState(0);
+    const [appliedCategoryId, setAppliedCategoryId] = useState(0);
+    const [appliedSupplierId, setAppliedSupplierId] = useState(0);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const requestSequence = useRef(0);
+    const skipNextDebouncedFetch = useRef(false);
 
     useEffect(() => {
-        ProductServiceService.fetchOutOfStock(0)
-            .then(response => setProductList(response.data))
-            .catch(error => console.log("error", error));
-
         CategoryServiceService.getAll()
             .then(response => setCategoryList(response.data))
             .catch(error => console.log("error", error));
+
+        SupplierServiceService.getAll()
+            .then(response => setSupplierList(response.data?.data || response.data || []))
+            .catch(error => console.log("error", error));
     }, []);
 
-    const fetchProducts = () => {
+    const fetchProducts = useCallback((filters = {}) => {
+        const currentRequest = requestSequence.current + 1;
+        requestSequence.current = currentRequest;
         setLoading(true);
-        ProductServiceService.fetchOutOfStock(categoryId)
-            .then(response => setProductList(response.data))
+        return ProductServiceService.fetchOutOfStock({
+            category_id: filters.categoryId ?? appliedCategoryId,
+            supplier_id: filters.supplierId ?? appliedSupplierId,
+            search: filters.search ?? searchQuery.trim()
+        })
+            .then(response => {
+                if (currentRequest === requestSequence.current) setProductList(response.data);
+            })
             .catch(error => console.log("error", error))
-            .finally(() => setLoading(false));
+            .finally(() => {
+                if (currentRequest === requestSequence.current) setLoading(false);
+            });
+    }, [appliedCategoryId, appliedSupplierId, searchQuery]);
+
+    useEffect(() => {
+        if (skipNextDebouncedFetch.current) {
+            skipNextDebouncedFetch.current = false;
+            return undefined;
+        }
+        const timeoutId = setTimeout(() => fetchProducts(), 400);
+        return () => clearTimeout(timeoutId);
+    }, [fetchProducts]);
+
+    const applyFilters = () => {
+        const filtersChanged = categoryId !== appliedCategoryId || supplierId !== appliedSupplierId;
+        if (filtersChanged) skipNextDebouncedFetch.current = true;
+        setAppliedCategoryId(categoryId);
+        setAppliedSupplierId(supplierId);
+        fetchProducts({ categoryId, supplierId });
     };
 
-    const products = Array.isArray(productList.data) ? productList.data : [];
-    const filteredProducts = products.filter(item => matchesStockSearch(item, searchQuery));
+    const productRows = Array.isArray(productList?.data)
+        ? productList.data
+        : (Array.isArray(productList) ? productList : []);
+    const products = Array.from(
+        productRows.reduce((productsById, product) => {
+            if (!productsById.has(product.id)) productsById.set(product.id, product);
+            return productsById;
+        }, new Map()).values()
+    );
+    const filteredProducts = products;
     const pendingOrderCount = products.reduce(
         (total, product) => total + (
             Array.isArray(product.pending_orders) ? product.pending_orders.length : 0
@@ -102,7 +142,7 @@ const NoStock = () => {
                 </div>
                 <div className="stock-warning-hero__copy">
                     <span className="stock-warning-eyebrow">Critical inventory monitor</span>
-                    <h1>Out of Stock</h1>
+                    <h1>Out-of-Stock Products</h1>
                     <p>Track unavailable products and confirm whether replacement stock is already on order.</p>
                 </div>
                 <div className="stock-warning-summary">
@@ -120,29 +160,33 @@ const NoStock = () => {
             <section className="stock-warning-filter">
                 <div>
                     <span className="stock-warning-filter__label">Filter inventory</span>
-                    <p>Choose a category to narrow the out-of-stock list.</p>
+                    <p>Choose a category or supplier to narrow the out-of-stock list.</p>
                 </div>
                 <div className="stock-warning-filter__controls">
-                    <FormControl size="small" className="stock-warning-category">
-                        <InputLabel id="no-stock-category-label">Category</InputLabel>
-                        <Select
-                            labelId="no-stock-category-label"
-                            value={categoryId}
-                            label="Category"
-                            onChange={event => setCategoryId(event.target.value)}
-                        >
-                            <MenuItem value={0}>All categories</MenuItem>
-                            {categoryList.map(category => (
-                                <MenuItem value={category.id} key={category.id}>
-                                    {category.category_name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        size="small"
+                        className="stock-warning-category"
+                        options={[{ id: 0, category_name: 'All categories' }, ...categoryList]}
+                        value={[{ id: 0, category_name: 'All categories' }, ...categoryList].find(category => Number(category.id) === Number(categoryId)) || null}
+                        onChange={(_, category) => setCategoryId(category?.id || 0)}
+                        getOptionLabel={category => category.category_name || ''}
+                        isOptionEqualToValue={(option, value) => Number(option.id) === Number(value.id)}
+                        renderInput={params => <TextField {...params} label="Category" placeholder="Search categories" />}
+                    />
+                    <Autocomplete
+                        size="small"
+                        className="stock-warning-category"
+                        options={[{ id: 0, supplier_name: 'All suppliers' }, ...supplierList]}
+                        value={[{ id: 0, supplier_name: 'All suppliers' }, ...supplierList].find(supplier => Number(supplier.id) === Number(supplierId)) || null}
+                        onChange={(_, supplier) => setSupplierId(supplier?.id || 0)}
+                        getOptionLabel={supplier => supplier.supplier_name || ''}
+                        isOptionEqualToValue={(option, value) => Number(option.id) === Number(value.id)}
+                        renderInput={params => <TextField {...params} label="Supplier" placeholder="Search suppliers" />}
+                    />
                     <Button
                         variant="contained"
                         disabled={loading}
-                        onClick={fetchProducts}
+                        onClick={applyFilters}
                         startIcon={<SearchIcon />}
                         className="stock-warning-search"
                     >
@@ -179,7 +223,7 @@ const NoStock = () => {
                         </thead>
                         <tbody>
                             {filteredProducts.length > 0 ? filteredProducts.map(product => (
-                                <tr key={product.id}>
+                                <tr key={`out-of-stock-${product.id}`}>
                                     <td>
                                         <div className="stock-warning-product">
                                             <div>

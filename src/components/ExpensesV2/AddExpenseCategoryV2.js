@@ -3,6 +3,7 @@ import Alert from '@mui/material/Alert';
 import LinearProgress from '@mui/material/LinearProgress';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import { Button, Form, InputGroup } from 'react-bootstrap';
 import ExpensesTypeV2Service from './ExpensesTypeV2Service';
 import ExpensesCategoryV2Service from './ExpensesCategoryV2Service';
@@ -65,7 +66,7 @@ const AddExpenseCategoryV2 = () => {
     }, [categories, query]);
 
     return <main className="aev-page"><div className="aev-shell">
-        <header className="aev-hero"><span>Expense setup</span><h1>Add Expense Category</h1><p>Create a category under an existing expense type.</p></header>
+        <header className="aev-hero"><div className="expense-hero-icon"><ReceiptLongOutlinedIcon /></div><div><span>Expense setup</span><h1>Add Expense Category</h1><p>Create a category under an existing expense type.</p></div></header>
         {notice && <Alert severity={notice.severity} className="aec-alert" onClose={() => setNotice(null)}>{notice.message}</Alert>}
         <section className="aev-form-card">
             <div className="aev-card-heading"><strong>Category details</strong><span>Choose its parent type, assign a two-digit code, and enter a clear name.</span></div>

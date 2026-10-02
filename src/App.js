@@ -2,6 +2,7 @@ import React, { Component, useState, useEffect } from "react";
 import { BrowserRouter as Router, Navigate, Redirect, Routes, Route, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
+import "./components/ExpensesV2/ExpenseTheme.css";
 import NavBar from "./components/Navigation/NavBar";
 import NewNavBar from "./components/Navigation/NewNavBar";
 import AddProduct from "./components/Product/AddProduct";

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "./ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
+import SupplierServiceService from "../Supplier/SupplierService.service";
 import OrderSupplierServiceService from "../OrderSupplierTransaction/OrderSupplierServiceService";
 
 import Alert from '@mui/material/Alert';
@@ -31,52 +32,90 @@ import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import './ProductList.css';
 
 const ProductList = () => {
+    const [productList, setProductList] = useState({ data: [] });
     const [categoryId, setCategoryId] = useState(0);
+    const [supplierId, setSupplierId] = useState(0);
+    const [appliedCategoryId, setAppliedCategoryId] = useState(0);
+    const [appliedSupplierId, setAppliedSupplierId] = useState(0);
     const [categoryList, setCategoryList] = useState([]);
-    const [productList, setProductList] = useState({ total_value: {}, data: [] });
+    const [supplierList, setSupplierList] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [priceHistoryProduct, setPriceHistoryProduct] = useState(null);
     const [priceHistory, setPriceHistory] = useState([]);
     const [priceHistoryLoading, setPriceHistoryLoading] = useState(false);
     const [priceHistoryError, setPriceHistoryError] = useState('');
+    const requestSequence = useRef(0);
+    const skipNextDebouncedFetch = useRef(false);
 
     useEffect(() => {
-        ProductServiceService.fetchProductListV2()
-            .then(response => setProductList(response.data))
-            .catch(error => console.log("error", error));
-
         CategoryServiceService.getAll()
             .then(response => setCategoryList(response.data))
             .catch(error => console.log("error", error));
+
+        SupplierServiceService.getAll()
+            .then(response => setSupplierList(response.data?.data || response.data || []))
+            .catch(error => console.log("error", error));
     }, []);
 
-    const fetchProductsByCategory = () => {
+    const fetchProducts = useCallback((filters = {}) => {
+        const currentRequest = requestSequence.current + 1;
+        requestSequence.current = currentRequest;
         setLoading(true);
-        ProductServiceService.fetchProductByCategoryId(categoryId)
-            .then(response => setProductList(response.data))
+        return ProductServiceService.fetchStocks({
+            category_id: filters.categoryId ?? appliedCategoryId,
+            supplier_id: filters.supplierId ?? appliedSupplierId,
+            search: filters.search ?? searchQuery.trim()
+        })
+            .then(response => {
+                if (currentRequest === requestSequence.current) {
+                    setProductList(response.data);
+                }
+            })
             .catch(error => console.log("error", error))
-            .finally(() => setLoading(false));
+            .finally(() => {
+                if (currentRequest === requestSequence.current) {
+                    setLoading(false);
+                }
+            });
+    }, [appliedCategoryId, appliedSupplierId, searchQuery]);
+
+    useEffect(() => {
+        if (skipNextDebouncedFetch.current) {
+            skipNextDebouncedFetch.current = false;
+            return undefined;
+        }
+        const timeoutId = setTimeout(() => fetchProducts(), 400);
+        return () => clearTimeout(timeoutId);
+    }, [fetchProducts]);
+
+    const applyFilters = () => {
+        const filtersChanged = categoryId !== appliedCategoryId || supplierId !== appliedSupplierId;
+        if (filtersChanged) {
+            skipNextDebouncedFetch.current = true;
+        }
+        setAppliedCategoryId(categoryId);
+        setAppliedSupplierId(supplierId);
+        fetchProducts({ categoryId, supplierId });
     };
 
-    const products = Array.isArray(productList?.data)
+    const productRows = Array.isArray(productList?.data)
         ? productList.data
         : (Array.isArray(productList) ? productList : []);
-    const normalizedSearch = searchQuery.trim().toLowerCase();
-    const filteredProducts = products.filter(product => !normalizedSearch || [
-        product.id,
-        product.product_name,
-        product.category_name,
-        product.brand_name,
-        product.packaging,
-        product.note
-    ].some(value => String(value ?? '').toLowerCase().includes(normalizedSearch)));
+    const products = Array.from(
+        productRows.reduce((productsById, product) => {
+            if (!productsById.has(product.id)) {
+                productsById.set(product.id, product);
+            }
+            return productsById;
+        }, new Map()).values()
+    );
+    const filteredProducts = products;
 
-    const totalInventoryValue = productList?.total_value?.total_price
-        ?? products.reduce(
-            (total, product) => total + (Number(product.price || 0) * Number(product.stock || 0)),
-            0
-        );
+    const totalInventoryValue = products.reduce(
+        (total, product) => total + (Number(product.price || 0) * Number(product.stock || 0)),
+        0
+    );
 
     const lowStockCount = products.filter(product => {
         const currentStock = product.stock_warning_type === 'RETAIL'
@@ -168,6 +207,9 @@ const ProductList = () => {
     return (
         <div className="product-list-page">
             <section className="product-list-header">
+                <div className="product-list-header__icon">
+                    <Inventory2OutlinedIcon />
+                </div>
                 <div>
                     <span className="product-list-eyebrow">Inventory catalogue</span>
                     <h1>Product List</h1>
@@ -211,7 +253,7 @@ const ProductList = () => {
             <section className="product-list-filter">
                 <div>
                     <strong>Filter products</strong>
-                    <span>Choose a category to narrow the inventory list.</span>
+                    <span>Choose a category or supplier to narrow the inventory list.</span>
                 </div>
                 <div className="product-list-filter__controls">
                     <TextField
@@ -241,10 +283,26 @@ const ProductList = () => {
                             ))}
                         </Select>
                     </FormControl>
+                    <FormControl size="small" className="product-list-category">
+                        <InputLabel id="product-list-supplier-label">Supplier</InputLabel>
+                        <Select
+                            labelId="product-list-supplier-label"
+                            value={supplierId}
+                            label="Supplier"
+                            onChange={event => setSupplierId(event.target.value)}
+                        >
+                            <MenuItem value={0}>All suppliers</MenuItem>
+                            {supplierList.map(supplier => (
+                                <MenuItem value={supplier.id} key={supplier.id}>
+                                    {supplier.supplier_name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     <Button
                         variant="contained"
                         disabled={loading}
-                        onClick={fetchProductsByCategory}
+                        onClick={applyFilters}
                         startIcon={<SearchIcon />}
                         className="product-list-search"
                     >
@@ -285,7 +343,7 @@ const ProductList = () => {
                                 const isLowStock = warningStock <= Number(product.stock_warning || 0);
 
                                 return (
-                                    <tr key={product.id} className={product.disabled === 1 ? 'product-list-row--disabled' : ''}>
+                                    <tr key={`product-${product.id}`} className={product.disabled === 1 ? 'product-list-row--disabled' : ''}>
                                         <td>
                                             <div className="product-list-product">
                                                 <div>

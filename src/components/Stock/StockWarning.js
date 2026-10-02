@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
+import SupplierServiceService from "../Supplier/SupplierService.service";
 
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
@@ -11,6 +12,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Input from '@mui/material/Input';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
+import Autocomplete from '@mui/material/Autocomplete';
 import Typography from '@mui/material/Typography'
 import UpdateIcon from '@mui/icons-material/Update';
 import Button from '@mui/material/Button';
@@ -18,7 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import WarningAmberRoundedIcon from '@mui/icons-material/WarningAmberRounded';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
-import StockSearchBar, { matchesStockSearch } from './StockSearchBar';
+import StockSearchBar from './StockSearchBar';
 
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -58,11 +60,6 @@ const formatSupplierSentTracking = (value) => {
 const StockWarning = (props) => {
 
     // const productList = props.productList;
-    useEffect(() => {
-        fetchProductList(0);
-        fetchCategoryList();
-    }, []);
-
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isAddDisabled, setIsAddDisabled] = useState(false);
@@ -73,8 +70,14 @@ const StockWarning = (props) => {
     });
 
     const [categoryId, setCategoryId] = useState(0);
+    const [supplierId, setSupplierId] = useState(0);
+    const [appliedCategoryId, setAppliedCategoryId] = useState(0);
+    const [appliedSupplierId, setAppliedSupplierId] = useState(0);
     const [categeryList, setCategoryList] = useState([]);
+    const [supplierList, setSupplierList] = useState([]);
     const [submitLoading, setSubmitLoading] = useState(false);
+    const requestSequence = useRef(0);
+    const skipNextDebouncedFetch = useRef(false);
 
     const style = {
         position: 'absolute',
@@ -109,11 +112,6 @@ const StockWarning = (props) => {
 
     const [realStock, setRealStock] = useState(0);
     const [errorStock, setErrorStock] = useState(false);
-
-    const onChangeInput = (e) => {
-        console.log(e.target.value)
-        setCategoryId(e.target.value)
-    }
 
     const onChangePackaging = (e) => {
         console.log(e.target.value)
@@ -159,6 +157,13 @@ const StockWarning = (props) => {
             });
     }
 
+    useEffect(() => {
+        fetchCategoryList();
+        SupplierServiceService.getAll()
+            .then(response => setSupplierList(response.data?.data || response.data || []))
+            .catch(error => console.log("error", error));
+    }, []);
+
     const updateProduct = () => {
         setSubmitLoading(true);
         ProductServiceService.update(product.id, product)
@@ -177,28 +182,63 @@ const StockWarning = (props) => {
     }
 
 
-    const fetchProductList = (selectedCategoryId = 0) => {
-        ProductServiceService.fetchByStockWarning(selectedCategoryId)
+    const fetchProductList = useCallback((filters = {}) => {
+        const currentRequest = requestSequence.current + 1;
+        requestSequence.current = currentRequest;
+        setSubmitLoadingAdd(true);
+        setIsAddDisabled(true);
+        return ProductServiceService.fetchStockWarnings({
+            category_id: filters.categoryId ?? appliedCategoryId,
+            supplier_id: filters.supplierId ?? appliedSupplierId,
+            search: filters.search ?? searchQuery.trim()
+        })
             .then(response => {
-                setProductList(response.data);
+                if (currentRequest === requestSequence.current) {
+                    setProductList(response.data);
+                }
             })
             .catch(e => {
                 console.log("error", e)
             })
             .finally(() => {
-                setSubmitLoadingAdd(false);
-                setIsAddDisabled(false);
+                if (currentRequest === requestSequence.current) {
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                }
             });
-    }
+    }, [appliedCategoryId, appliedSupplierId, searchQuery]);
 
-    const fetchProductByCategoryId = () => {
-        setSubmitLoadingAdd(true);
-        setIsAddDisabled(true);
-        fetchProductList(categoryId);
-    }
+    useEffect(() => {
+        if (skipNextDebouncedFetch.current) {
+            skipNextDebouncedFetch.current = false;
+            return undefined;
+        }
+        const timeoutId = setTimeout(() => fetchProductList(), 400);
+        return () => clearTimeout(timeoutId);
+    }, [fetchProductList]);
 
-    const products = Array.isArray(productList.data) ? productList.data : [];
-    const filteredProducts = products.filter(item => matchesStockSearch(item, searchQuery));
+    const applyFilters = () => {
+        const filtersChanged = categoryId !== appliedCategoryId || supplierId !== appliedSupplierId;
+        if (filtersChanged) {
+            skipNextDebouncedFetch.current = true;
+        }
+        setAppliedCategoryId(categoryId);
+        setAppliedSupplierId(supplierId);
+        fetchProductList({ categoryId, supplierId });
+    };
+
+    const productRows = Array.isArray(productList?.data)
+        ? productList.data
+        : (Array.isArray(productList) ? productList : []);
+    const products = Array.from(
+        productRows.reduce((productsById, currentProduct) => {
+            if (!productsById.has(currentProduct.id)) {
+                productsById.set(currentProduct.id, currentProduct);
+            }
+            return productsById;
+        }, new Map()).values()
+    );
+    const filteredProducts = products;
     const pendingOrderCount = products.reduce(
         (total, currentProduct) => total + (
             Array.isArray(currentProduct.pending_orders)
@@ -255,7 +295,7 @@ const StockWarning = (props) => {
                 </div>
                 <div className="stock-warning-hero__copy">
                     <span className="stock-warning-eyebrow">Inventory monitor</span>
-                    <h1>Stock Warning</h1>
+                    <h1>Low Stock Alerts</h1>
                     <p>Products at or below their warning level, with incoming supplier orders at a glance.</p>
                 </div>
                 <div className="stock-warning-summary">
@@ -279,31 +319,33 @@ const StockWarning = (props) => {
             <section className="stock-warning-filter">
                 <div>
                     <span className="stock-warning-filter__label">Filter inventory</span>
-                    <p>Choose a category to narrow the warning list.</p>
+                    <p>Choose a category or supplier to narrow the warning list.</p>
                 </div>
                 <div className="stock-warning-filter__controls">
-                    <FormControl size="small" className="stock-warning-category">
-                        <InputLabel id="stock-warning-category-label">Category</InputLabel>
-                        <Select
-                            labelId="stock-warning-category-label"
-                            id="stock-warning-category"
-                            value={categoryId}
-                            label="Category"
-                            name="categoryId"
-                            onChange={onChangeInput}
-                        >
-                            <MenuItem value={0}>All categories</MenuItem>
-                            {
-                                categeryList.map((category) => (
-                                    <MenuItem value={category.id} key={category.id}>{category.category_name}</MenuItem>
-                                ))
-                            }
-                        </Select>
-                    </FormControl>
+                    <Autocomplete
+                        size="small"
+                        className="stock-warning-category"
+                        options={[{ id: 0, category_name: 'All categories' }, ...categeryList]}
+                        value={[{ id: 0, category_name: 'All categories' }, ...categeryList].find(category => Number(category.id) === Number(categoryId)) || null}
+                        onChange={(_, category) => setCategoryId(category?.id || 0)}
+                        getOptionLabel={category => category.category_name || ''}
+                        isOptionEqualToValue={(option, value) => Number(option.id) === Number(value.id)}
+                        renderInput={params => <TextField {...params} label="Category" placeholder="Search categories" />}
+                    />
+                    <Autocomplete
+                        size="small"
+                        className="stock-warning-category"
+                        options={[{ id: 0, supplier_name: 'All suppliers' }, ...supplierList]}
+                        value={[{ id: 0, supplier_name: 'All suppliers' }, ...supplierList].find(supplier => Number(supplier.id) === Number(supplierId)) || null}
+                        onChange={(_, supplier) => setSupplierId(supplier?.id || 0)}
+                        getOptionLabel={supplier => supplier.supplier_name || ''}
+                        isOptionEqualToValue={(option, value) => Number(option.id) === Number(value.id)}
+                        renderInput={params => <TextField {...params} label="Supplier" placeholder="Search suppliers" />}
+                    />
                     <Button
                         variant="contained"
                         disabled={isAddDisabled}
-                        onClick={fetchProductByCategoryId}
+                        onClick={applyFilters}
                         startIcon={<SearchIcon />}
                         className="stock-warning-search"
                     >
@@ -349,7 +391,7 @@ const StockWarning = (props) => {
                         <tbody>
                     {filteredProducts.length > 0 ? (
                         filteredProducts.map((product) => (
-                            <tr key={product.id}>
+                            <tr key={`stock-warning-${product.id}`}>
                                 <td>
                                     <div className="stock-warning-product">
                                         <div>

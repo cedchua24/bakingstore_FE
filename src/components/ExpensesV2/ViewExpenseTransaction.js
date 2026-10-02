@@ -26,6 +26,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton } from '@mui/material';
 import moment from "moment";
 import './ViewExpenseTransactionApproval.css';
@@ -309,7 +310,7 @@ const ViewExpenseTransaction = () => {
     return (
         <main className="veta-page vet-page">
             <div className="veta-shell">
-            <header className="veta-hero"><span>Expense management</span><h1>Expense Transactions</h1><p>Search and review transaction status, recipients, and payment information.</p></header>
+            <header className="veta-hero"><div className="expense-hero-icon"><ReceiptLongOutlinedIcon /></div><div><span>Expense management</span><h1>Expense Transactions</h1><p>Search and review transaction status, recipients, and payment information.</p></div></header>
             <Stack sx={{ width: '100%' }} spacing={2}>
                 {validator.isShow &&
                     <Alert variant="filled" severity={validator.severity}>{validator.message}</Alert>
