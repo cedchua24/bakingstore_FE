@@ -10,6 +10,7 @@ import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import './AddExpenseV2.css';
 
 
@@ -194,7 +195,7 @@ const AddExpenseV2 = () => {
     return (
         <main className="aev-page">
             <div className="aev-shell">
-            <header className="aev-hero"><span>Expense setup</span><h1>Add Expense</h1><p>Create an expense under the correct account, type, and category.</p></header>
+            <header className="aev-hero"><div className="expense-hero-icon"><ReceiptLongOutlinedIcon /></div><div><span>Expense setup</span><h1>Add Expense</h1><p>Create an expense under the correct account, type, and category.</p></div></header>
             <Form className="aev-form-card">
                 <Stack sx={{ width: '100%' }} spacing={2}>
                     {validator.isShow &&

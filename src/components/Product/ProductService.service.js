@@ -13,6 +13,12 @@ class ProductService {
     fetchProductByCategoryId(id) {
         return axios.get(`/api/products/fetchProductByCategoryId/${id}`);
     }
+    fetchProducts(filters = {}) {
+        const params = Object.fromEntries(
+            Object.entries(filters).filter(([, value]) => value !== '' && value !== null && value !== undefined && value !== 0)
+        );
+        return axios.get("/api/products/fetchProducts", { params });
+    }
     fetchById(id) {
         return axios.get(`/api/products/fetchById/${id}`);
     }
@@ -31,8 +37,11 @@ class ProductService {
     fetchProductListNote(id) {
         return axios.get(`/api/products/fetchProductListNote/${id}`);
     }
-    fetchProductListExpiration(id) {
-        return axios.get(`/api/products/fetchProductListExpiration/${id}`);
+    fetchProductListExpiration(filters = {}) {
+        const params = Object.fromEntries(
+            Object.entries(filters).filter(([, value]) => value !== '' && value !== null && value !== undefined && value !== 0)
+        );
+        return axios.get("/api/products/fetchProductListExpiration", { params });
     }
     fetchOrderSupplierExpirationList(id) {
         return axios.get(`/api/products/fetchOrderSupplierExpirationList/${id}`);
@@ -43,11 +52,26 @@ class ProductService {
     fetchByStockWarning(id) {
         return axios.get(`/api/products/fetchByStockWarning/${id}`);
     }
+    fetchStockWarnings(filters = {}) {
+        const params = Object.fromEntries(
+            Object.entries(filters).filter(([, value]) => value !== '' && value !== null && value !== undefined && value !== 0)
+        );
+        return axios.get("/api/products/fetchStockWarnings", { params });
+    }
+    fetchStocks(filters = {}) {
+        const params = Object.fromEntries(
+            Object.entries(filters).filter(([, value]) => value !== '' && value !== null && value !== undefined && value !== 0)
+        );
+        return axios.get("/api/products/fetchStocks", { params });
+    }
     fetchNoStockWarning(id) {
         return axios.get(`/api/products/fetchNoStockWarning/${id}`);
     }
-    fetchOutOfStock(id) {
-        return axios.get(`/api/products/fetchOutOfStock/${id}`);
+    fetchOutOfStock(filters = {}) {
+        const params = Object.fromEntries(
+            Object.entries(filters).filter(([, value]) => value !== '' && value !== null && value !== undefined && value !== 0)
+        );
+        return axios.get("/api/products/fetchOutOfStock", { params });
     }
     fetchStockWarningPerSupplier(id) {
         return axios.get(`/api/products/fetchStockWarningPerSupplier/${id}`);

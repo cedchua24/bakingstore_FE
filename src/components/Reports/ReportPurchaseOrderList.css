@@ -94,7 +94,7 @@
 
 .po-report-filter-grid {
     display: grid;
-    grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(220px, 1.2fr) auto;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
     align-items: start;
     gap: 18px;
     margin-top: 22px;
@@ -103,6 +103,86 @@
 .po-report-filter-grid .MuiOutlinedInput-root {
     min-height: 53px;
 }
+
+.po-report-status-filter .MuiSelect-select,
+.po-report-filter-option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.po-report-status-filter .MuiSelect-select svg,
+.po-report-filter-option svg {
+    font-size: 20px;
+}
+
+.po-report-status-filter.all .MuiSelect-select,
+.po-report-filter-option.all {
+    color: #626b77;
+}
+
+.po-report-status-filter.pending .MuiSelect-select,
+.po-report-filter-option.pending {
+    color: #a3620b;
+}
+
+.po-report-status-filter.send-to-supplier .MuiSelect-select,
+.po-report-filter-option.send-to-supplier {
+    color: #225bb5;
+}
+
+.po-report-status-filter.completed .MuiSelect-select,
+.po-report-status-filter.approved .MuiSelect-select,
+.po-report-filter-option.completed {
+    color: #17723b;
+}
+
+.po-report-status-filter.rejected .MuiSelect-select,
+.po-report-filter-option.rejected {
+    color: #b53b32;
+}
+
+.po-report-status-filter.pending .MuiOutlinedInput-notchedOutline {
+    border-color: #ddb26f;
+}
+
+.po-report-status-filter.pending .MuiInputBase-root.Mui-disabled,
+.po-report-status-filter.pending .MuiSelect-select.Mui-disabled,
+.po-report-status-filter.pending .MuiInputLabel-root.Mui-disabled {
+    color: #a3620b;
+    -webkit-text-fill-color: #a3620b;
+}
+
+.po-report-status-filter.pending .MuiInputBase-root.Mui-disabled .MuiOutlinedInput-notchedOutline {
+    border-color: #ddb26f;
+}
+
+.po-report-status-filter.send-to-supplier .MuiOutlinedInput-notchedOutline {
+    border-color: #8eb2e9;
+}
+
+.po-report-status-filter.completed .MuiOutlinedInput-notchedOutline,
+.po-report-status-filter.approved .MuiOutlinedInput-notchedOutline {
+    border-color: #81c79e;
+}
+
+.po-report-status-filter.approved .MuiInputLabel-root {
+    color: #17723b;
+}
+
+.po-report-status-filter.approved .MuiSvgIcon-root {
+    color: #17723b;
+}
+
+.po-report-status-filter.rejected .MuiOutlinedInput-notchedOutline {
+    border-color: #e1a09a;
+}
+
+.po-report-filter-option.all.Mui-selected { background: #f0f2f4; }
+.po-report-filter-option.pending.Mui-selected { background: #fff5e4; }
+.po-report-filter-option.send-to-supplier.Mui-selected { background: #edf4ff; }
+.po-report-filter-option.completed.Mui-selected { background: #eaf7ef; }
+.po-report-filter-option.rejected.Mui-selected { background: #fff0ef; }
 
 .po-report-filter-actions {
     display: flex;
@@ -703,3 +783,19 @@
         width: 100%;
     }
 }
+
+/* Match Purchase Order reports to the orchid Purchase Order module. */
+.po-report-page { --po-report-orchid:#c026d3; padding:24px; min-height:100vh; background:#f6f7f9; }
+.po-report-header { box-sizing:border-box; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:18px; padding:25px 28px; background:linear-gradient(125deg,#701a75,#a21caf); border-radius:18px; box-shadow:0 14px 30px rgba(112,26,117,.16); }
+.po-report-header-icon { width:52px; height:52px; color:#fff; background:rgba(255,255,255,.12); }
+.po-report-header span { color:#f5d0fe; font-size:.7rem; font-weight:400; }
+.po-report-header h1 { margin:3px 0 5px; color:#fff; font-size:1.55rem; font-weight:500; letter-spacing:normal; }
+.po-report-header p { margin:0; color:rgba(255,255,255,.78); font-size:.84rem; }
+.po-report-page .MuiButton-containedPrimary { background:var(--po-report-orchid); }
+.po-report-page .MuiButton-containedPrimary:hover { background:#9d1caf; }
+.po-report-page .MuiLinearProgress-bar { background:var(--po-report-orchid); }
+.po-report-page .po-report-header-icon,
+.po-report-page .po-report-metric-icon { color:var(--po-report-orchid); background:#fae8ff; }
+.po-report-page .po-report-header .po-report-header-icon { color:#fff; background:rgba(255,255,255,.12); }
+.po-report-page .po-report-order-id { color:var(--po-report-orchid); }
+@media(max-width:700px){.po-report-header{grid-template-columns:auto 1fr;padding:20px}}

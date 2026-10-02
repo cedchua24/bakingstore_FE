@@ -90,7 +90,7 @@ const StockSupplierWarning = () => {
                 </div>
                 <div className="stock-warning-hero__copy">
                     <span className="stock-warning-eyebrow">Supplier inventory monitor</span>
-                    <h1>Stock Warning by Supplier</h1>
+                    <h1>Low Stock by Supplier</h1>
                     <p>Review low-stock products and incoming purchase orders for the selected supplier.</p>
                 </div>
                 <div className="stock-warning-summary">

@@ -138,7 +138,7 @@ const OutOfStockReturn = () => {
                 <div className="oos-return-hero__icon"><NotificationsActiveOutlinedIcon /></div>
                 <div className="oos-return-hero__copy">
                     <span>Customer restock queue</span>
-                    <h1>Customers to Notify</h1>
+                    <h1>Restock Notifications</h1>
                     <p>Track products customers are waiting for and manage restock follow-ups.</p>
                 </div>
                 <div className="oos-return-summary">

@@ -114,11 +114,16 @@ const EditProduct = () => {
   };
 
   const packageQuantity = Number(product.quantity || 0);
-  const retailPrice = packageQuantity > 0
-    ? Number(product.price || 0) / packageQuantity
+  const totalWeight = Number(product.weight || 0);
+  const unitName = product.variation || "unit";
+  const priceDivisor = String(product.variation || "").toLowerCase() === "kg"
+    ? totalWeight
+    : packageQuantity;
+  const retailPrice = priceDivisor > 0
+    ? Number(product.price || 0) / priceDivisor
     : 0;
-  const retailSalePrice = packageQuantity > 0
-    ? Number(product.sale_price || 0) / packageQuantity
+  const retailSalePrice = priceDivisor > 0
+    ? Number(product.sale_price || 0) / priceDivisor
     : 0;
   const quantityLabel = product.packaging
     ? `Quantity per ${product.packaging}`
@@ -215,8 +220,19 @@ const EditProduct = () => {
                       />
                     </div>
                     {!isAdmin && <Form.Text>Only administrators can change this price.</Form.Text>}
-                    {packageQuantity > 1 && (
-                      <Form.Text>{currency(retailPrice)} per {product.variation || "unit"}</Form.Text>
+                    {priceDivisor > 0 && (
+                      <div className="add-product-calculated-price">
+                        <Form.Label>Price per {unitName}</Form.Label>
+                        <div className="add-product-money">
+                          <span>₱</span>
+                          <Form.Control
+                            type="text"
+                            value={retailPrice.toFixed(2)}
+                            disabled
+                            readOnly
+                          />
+                        </div>
+                      </div>
                     )}
                   </Form.Group>
 
@@ -233,8 +249,19 @@ const EditProduct = () => {
                         onChange={updateField}
                       />
                     </div>
-                    {Number(product.sale_price || 0) > 0 && packageQuantity > 1 && (
-                      <Form.Text>{currency(retailSalePrice)} per {product.variation || "unit"}</Form.Text>
+                    {Number(product.sale_price || 0) > 0 && priceDivisor > 0 && (
+                      <div className="add-product-calculated-price">
+                        <Form.Label>Sale price per {unitName}</Form.Label>
+                        <div className="add-product-money">
+                          <span>₱</span>
+                          <Form.Control
+                            type="text"
+                            value={retailSalePrice.toFixed(2)}
+                            disabled
+                            readOnly
+                          />
+                        </div>
+                      </div>
                     )}
                   </Form.Group>
                 </div>

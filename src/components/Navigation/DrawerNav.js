@@ -649,28 +649,18 @@ export default function PersistentDrawerLeft() {
 
     const [stock, setStock] = useState([
         {
-            "name": "Stock List",
+            "name": "Inventory Overview",
             "url": "/addStock",
             "icon": <ListIcon />
         },
         {
-            "name": "Products Per Supplier",
-            "url": "/stockSupplier",
-            "icon": <ListIcon />
-        },
-        {
-            "name": "Modifed Stock Daily",
+            "name": "Daily Stock Adjustments",
             "url": "/modifiedStock",
             "icon": <ListIcon />
         },
         {
-            "name": "Stock Warning ",
+            "name": "Low Stock Alerts",
             "url": "/stockWarning",
-            "icon": <ListIcon />
-        },
-        {
-            "name": "Stock Warning Per Supplier",
-            "url": "/stockSupplierWarning",
             "icon": <ListIcon />
         },
         // {
@@ -679,13 +669,13 @@ export default function PersistentDrawerLeft() {
         //     "icon": <ListIcon />
         // },
         {
-            "name": "Customer to Notify Stock",
+            "name": "Restock Notifications",
             "url": "/outOfStockReturn",
             "icon": <ListIcon />
         },
 
         {
-            "name": "Out of Stock",
+            "name": "Out-of-Stock Products",
             "url": "/noStock",
             "icon": <ListIcon />
         }
@@ -707,12 +697,12 @@ export default function PersistentDrawerLeft() {
 
     const [shopOrder, setShopOrder] = useState([
         {
-            "name": "Add Branch Shop Order",
+            "name": "Add Inter Branch Order",
             "url": "/shopOrderTransaction",
             "icon": <AddIcon />
         },
         {
-            "name": "Shop Branch Order List",
+            "name": "Inter Branch Order List",
             "url": "/shopOrderTransaction/shorOrderTransactionList",
             "icon": <ListIcon />
         },
@@ -866,28 +856,8 @@ export default function PersistentDrawerLeft() {
 
     const [purchaseOrderReportList, setPurchaseOrderReportList] = useState([
         {
-            "name": "PO Daily",
-            "url": "/reports/reportPurchaseOrder",
-            "icon": <ListIcon />
-        },
-        {
-            "name": "PO All List",
+            "name": "Purchase Orders",
             "url": "/reports/reportPurchaseOrderList",
-            "icon": <ListIcon />
-        },
-        {
-            "name": "PO Pending Payment List",
-            "url": "/reports/ReportPurchaseOrderPendingList",
-            "icon": <ListIcon />
-        },
-        {
-            "name": "PO On-Process Supplier List",
-            "url": "/reports/reportPurchaseOrderPendingSupplier",
-            "icon": <ListIcon />
-        },
-        {
-            "name": "PO Pending Approval List",
-            "url": "/reports/reportPurchaseOrderApproval",
             "icon": <ListIcon />
         }
 
@@ -1083,7 +1053,7 @@ export default function PersistentDrawerLeft() {
 
     const [shopBranchOrderReportList, setShopBranchOrderReportList] = useState([
         {
-            "name": "Shop Branch Order Reports",
+            "name": "Inter Branch Order Reports",
             "url": "/reports/shopBranchReportList",
             "icon": <ListIcon />
         },
@@ -1101,7 +1071,7 @@ export default function PersistentDrawerLeft() {
     const [report, setReport] = useState([
 
         {
-            "name": "Shop Branch Order Reports",
+            "name": "Inter Branch Order Reports",
             "url": "/reports/shopBranchReportList",
             "icon": ""
         },
@@ -1696,6 +1666,7 @@ export default function PersistentDrawerLeft() {
                 </List>
 
                 <List
+                    className="drawer-product-section"
                     sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
@@ -1978,6 +1949,7 @@ export default function PersistentDrawerLeft() {
                 </List>
 
                 <List
+                    className="drawer-stock-section"
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
@@ -2006,6 +1978,7 @@ export default function PersistentDrawerLeft() {
                 </List>
 
                 <List
+                    className="drawer-markup-section"
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
@@ -2034,6 +2007,7 @@ export default function PersistentDrawerLeft() {
                 </List>
 
                 <List
+                    className="drawer-purchase-order-section"
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
@@ -2062,6 +2036,7 @@ export default function PersistentDrawerLeft() {
                 </List>
 
                 <List
+                    className="drawer-inter-branch-section"
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
@@ -2070,7 +2045,7 @@ export default function PersistentDrawerLeft() {
                         <ListItemIcon>
                             <StorefrontIcon color="primary" />
                         </ListItemIcon>
-                        <ListItemText primary="Shop Branch Order" />
+                        <ListItemText primary="Inter Branch Order" />
                         {open15 ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={open15} timeout="auto" unmountOnExit>
@@ -2090,6 +2065,7 @@ export default function PersistentDrawerLeft() {
                 </List>
 
                 <List
+                    className="drawer-expense-section"
                     sx={{ width: '100%', maxWidth: 3100, bgcolor: 'background.paper' }}
                     component="nav"
                     aria-labelledby="nested-list-subheader"
@@ -2552,7 +2528,7 @@ export default function PersistentDrawerLeft() {
                             <ListItemIcon>
                                 <StorefrontIcon color="success" />
                             </ListItemIcon>
-                            <ListItemText primary="Shop Branch Order Report" />
+                            <ListItemText primary="Inter Branch Order Report" />
                             {openShopBranchOrderReport ? <ExpandLess /> : <ExpandMore />}
                         </ListItemButton>
 

@@ -4,10 +4,8 @@ import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -143,26 +141,33 @@ const AddOrderSupplierTransaction = (props) => {
                                 <span>Choose the supplier fulfilling this order</span>
                             </div>
                         </div>
-                        <FormControl fullWidth disabled={props.isLoadingSuppliers || Boolean(props.supplierError)}>
-                            <InputLabel id="supplier-select-label">
-                                {props.isLoadingSuppliers ? 'Loading suppliers…' : 'Select a supplier'}
-                            </InputLabel>
-                            <Select
-                                labelId="supplier-select-label"
-                                id="supplier-select"
-                                value={orderTransaction.supplier_id}
-                                label={props.isLoadingSuppliers ? 'Loading suppliers…' : 'Select a supplier'}
-                                name="supplier_id"
-                                onChange={onChangeInput}
-                                MenuProps={{ PaperProps: { style: { maxHeight: 320 } } }}
-                            >
-                                {supplierList.map((supplier) => (
-                                    <MenuItem key={supplier.id} value={supplier.id}>
-                                        {supplier.supplier_name}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <Autocomplete
+                            fullWidth
+                            id="supplier-select"
+                            options={supplierList}
+                            value={supplierList.find(supplier => Number(supplier.id) === Number(orderTransaction.supplier_id)) || null}
+                            onChange={(_, supplier) => {
+                                setorderTransaction({
+                                    ...orderTransaction,
+                                    supplier_id: supplier?.id || '',
+                                    supplier_name: supplier?.supplier_name || '',
+                                });
+                                setSubmitError('');
+                            }}
+                            getOptionLabel={supplier => supplier.supplier_name || ''}
+                            isOptionEqualToValue={(option, value) => Number(option.id) === Number(value.id)}
+                            loading={props.isLoadingSuppliers}
+                            disabled={props.isLoadingSuppliers || Boolean(props.supplierError)}
+                            noOptionsText="No suppliers found"
+                            ListboxProps={{ style: { maxHeight: 320 } }}
+                            renderInput={params => (
+                                <TextField
+                                    {...params}
+                                    label={props.isLoadingSuppliers ? 'Loading suppliers…' : 'Select a supplier'}
+                                    placeholder="Search suppliers"
+                                />
+                            )}
+                        />
                     </div>
 
                     <div className="purchase-order-field">

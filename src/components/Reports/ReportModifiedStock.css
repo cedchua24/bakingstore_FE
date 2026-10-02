@@ -4,3 +4,17 @@
 .modified-report-type-select .MuiSelect-select{display:flex;align-items:center;min-height:40px!important;padding-top:4px!important;padding-bottom:4px!important;box-sizing:border-box}.modified-report-type-chips{display:flex;align-items:center;gap:4px;max-width:100%;overflow:hidden}.modified-report-type-chips .MuiChip-root{height:24px;max-width:170px;color:#514d7a;background:#f0eff9;font-size:.62rem;font-weight:700}
 .modified-report-card{overflow:hidden;background:#fff;border:1px solid var(--mr-border);border-radius:14px}.modified-report-card__header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--mr-border)}.modified-report-card__header h2{margin:0;font-size:1rem}.modified-report-card__header p{margin:3px 0 0;color:var(--mr-muted);font-size:.7rem}.modified-report-card__header>span{display:inline-flex;align-items:center;gap:4px;padding:5px 8px;color:#514d7a;background:#f0eff9;border-radius:999px;font-size:.64rem;font-weight:700}.modified-report-card__header svg{font-size:14px}.modified-report-table{width:100%;min-width:900px;border-collapse:collapse}.modified-report-table th{padding:10px 12px;color:#778195;background:#fafbfc;border-bottom:1px solid var(--mr-border);font-size:.65rem;letter-spacing:.07em;text-align:left;text-transform:uppercase}.modified-report-table td{padding:12px;border-bottom:1px solid #edf0f4;font-size:.76rem;vertical-align:middle}.modified-report-table tbody tr:hover{background:#fafbfe}.modified-report-table td:nth-child(4){max-width:230px;color:#596579}.modified-report-table td:nth-child(7){font-weight:800}.modified-report-empty{display:flex;align-items:center;flex-direction:column;gap:4px;padding:48px;color:var(--mr-muted);text-align:center}.modified-report-empty svg{margin-bottom:4px;font-size:34px}.modified-report-empty strong{color:var(--mr-ink);font-size:.92rem}
 @media(max-width:900px){.modified-report-filter__fields{grid-template-columns:1fr 1fr}.modified-report-type-select,.modified-report-find{margin-top:0!important}}@media(max-width:700px){.modified-report-page{padding:15px}.modified-report-summary,.modified-report-filter__fields{grid-template-columns:1fr}.modified-report-card__header{align-items:flex-start;gap:10px}}
+
+/* Shared Stock module identity. */
+.modified-report-page{--mr-accent:#0f766e}
+.modified-report-hero{gap:18px;padding:25px 28px;background:linear-gradient(125deg,#123b3a,#1f5c58);border-radius:18px;box-shadow:0 14px 30px rgba(18,59,58,.15)}
+.modified-report-hero__icon{width:52px;height:52px;color:#fff;border-radius:14px}
+.modified-report-hero span{color:#99f6e4;font-size:.7rem;font-weight:400;letter-spacing:.12em;opacity:.75}
+.modified-report-hero h1{margin:3px 0 5px;font-size:1.55rem;font-weight:500}
+.modified-report-hero p{margin:0;color:rgba(255,255,255,.78);font-size:.84rem}
+.modified-report-summary__icon--blue{color:var(--mr-accent);background:#ecf8f6}
+.modified-report-find{background:var(--mr-accent)!important}
+.modified-report-find:hover{background:#0b5f59!important}
+.modified-report-progress{background:#d5eeeb!important}
+.modified-report-progress .MuiLinearProgress-bar{background:var(--mr-accent)!important}
+.modified-report-type-chips .MuiChip-root,.modified-report-card__header>span{color:var(--mr-accent);background:#ecf8f6}

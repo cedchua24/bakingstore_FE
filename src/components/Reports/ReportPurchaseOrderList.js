@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
+import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
@@ -15,10 +16,15 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import CheckCircleOutlineRoundedIcon from '@mui/icons-material/CheckCircleOutlineRounded';
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import EditCalendarRoundedIcon from '@mui/icons-material/EditCalendarRounded';
 import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import PendingActionsRoundedIcon from '@mui/icons-material/PendingActionsRounded';
+import FilterAltOutlinedIcon from '@mui/icons-material/FilterAltOutlined';
+import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
@@ -76,6 +82,9 @@ const getCurrentMonthFilters = () => {
         dateFrom: formatDateInput(new Date(year, month, 1)),
         dateTo: formatDateInput(new Date(year, month + 1, 0)),
         supplier_id: '',
+        status: '',
+        payment_status: '',
+        approval_status: '',
     };
 };
 
@@ -85,6 +94,11 @@ const getRequestFilters = (filters) => {
     if (filters?.dateFrom) requestFilters.dateFrom = filters.dateFrom;
     if (filters?.dateTo) requestFilters.dateTo = filters.dateTo;
     if (filters?.supplier_id) requestFilters.supplier_id = filters.supplier_id;
+    if (filters?.status) requestFilters.status = filters.status;
+    if (filters?.approval_status) requestFilters.approval_status = filters.approval_status;
+    if (filters?.payment_status !== '' && filters?.payment_status !== undefined) {
+        requestFilters.payment_status = filters.payment_status;
+    }
 
     return Object.keys(requestFilters).length ? requestFilters : undefined;
 };
@@ -113,10 +127,14 @@ const ReportPurchaseOrderList = ({
     deleteActionLabel = 'Delete',
     deleteDialogTitle = 'Delete purchase order?',
     deleteDialogText = 'This purchase order will be removed. This action cannot be undone.',
+    fixedPaymentStatus,
 }) => {
     const isAdmin = Number(localStorage.getItem('role_as')) === 2;
     const [report, setReport] = useState(emptyReport);
-    const [filters, setFilters] = useState(getCurrentMonthFilters);
+    const [filters, setFilters] = useState(() => ({
+        ...getCurrentMonthFilters(),
+        ...(fixedPaymentStatus !== undefined ? { payment_status: fixedPaymentStatus } : {}),
+    }));
     const [suppliers, setSuppliers] = useState([]);
     const [suppliersLoading, setSuppliersLoading] = useState(true);
     const [filterErrors, setFilterErrors] = useState({});
@@ -144,8 +162,11 @@ const ReportPurchaseOrderList = ({
     }, [fetchReport]);
 
     useEffect(() => {
-        loadReport(getRequestFilters(getCurrentMonthFilters()));
-    }, [loadReport]);
+        loadReport(getRequestFilters({
+            ...getCurrentMonthFilters(),
+            ...(fixedPaymentStatus !== undefined ? { payment_status: fixedPaymentStatus } : {}),
+        }));
+    }, [fixedPaymentStatus, loadReport]);
 
     useEffect(() => {
         SupplierService.getAll()
@@ -321,21 +342,100 @@ const ReportPurchaseOrderList = ({
                             InputLabelProps={{ shrink: true }}
                             fullWidth
                         />
+                        <Autocomplete
+                            options={suppliers}
+                            value={suppliers.find((supplier) =>
+                                String(supplier.id) === String(filters.supplier_id)
+                            ) || null}
+                            onChange={(_, supplier) => setFilters({
+                                ...filters,
+                                supplier_id: supplier?.id || '',
+                            })}
+                            getOptionLabel={(supplier) => supplier.supplier_name || ''}
+                            isOptionEqualToValue={(option, value) =>
+                                String(option.id) === String(value.id)
+                            }
+                            loading={suppliersLoading}
+                            disabled={suppliersLoading}
+                            noOptionsText="No suppliers found"
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Supplier"
+                                    helperText="Optional — type to search"
+                                    fullWidth
+                                />
+                            )}
+                        />
                         <TextField
                             select
-                            label="Supplier"
-                            value={filters.supplier_id}
-                            onChange={(event) => setFilters({ ...filters, supplier_id: event.target.value })}
+                            label="Delivery status"
+                            className={`po-report-status-filter delivery ${filters.status
+                                ? String(filters.status).toLowerCase().replaceAll('_', '-')
+                                : 'all'}`}
+                            value={filters.status}
+                            onChange={(event) => setFilters({ ...filters, status: event.target.value })}
                             helperText="Optional"
-                            disabled={suppliersLoading}
                             fullWidth
                         >
-                            <MenuItem value="">All suppliers</MenuItem>
-                            {suppliers.map((supplier) => (
-                                <MenuItem key={supplier.id} value={supplier.id}>
-                                    {supplier.supplier_name}
-                                </MenuItem>
-                            ))}
+                            <MenuItem className="po-report-filter-option all" value="">
+                                <FilterAltOutlinedIcon /> All delivery statuses
+                            </MenuItem>
+                            <MenuItem className="po-report-filter-option pending" value="PENDING">
+                                <PendingActionsRoundedIcon /> Pending
+                            </MenuItem>
+                            <MenuItem className="po-report-filter-option send-to-supplier" value="SEND_TO_SUPPLIER">
+                                <LocalShippingOutlinedIcon /> Sent to supplier
+                            </MenuItem>
+                            <MenuItem className="po-report-filter-option completed" value="COMPLETED">
+                                <CheckCircleOutlineRoundedIcon /> Completed
+                            </MenuItem>
+                        </TextField>
+                        <TextField
+                            select
+                            label="Payment status"
+                            className={`po-report-status-filter payment ${filters.payment_status === ''
+                                ? 'all'
+                                : Number(filters.payment_status) === 1 ? 'completed' : 'pending'}`}
+                            value={filters.payment_status}
+                            onChange={(event) => setFilters({ ...filters, payment_status: event.target.value })}
+                            helperText={fixedPaymentStatus !== undefined ? 'Fixed for this report' : 'Optional'}
+                            disabled={fixedPaymentStatus !== undefined}
+                            fullWidth
+                        >
+                            <MenuItem className="po-report-filter-option all" value="">
+                                <FilterAltOutlinedIcon /> All payment statuses
+                            </MenuItem>
+                            <MenuItem className="po-report-filter-option pending" value={0}>
+                                <PendingActionsRoundedIcon /> Pending
+                            </MenuItem>
+                            <MenuItem className="po-report-filter-option completed" value={1}>
+                                <CheckCircleOutlineRoundedIcon /> Completed
+                            </MenuItem>
+                        </TextField>
+                        <TextField
+                            select
+                            label="Approval status"
+                            className={`po-report-status-filter approval ${filters.approval_status
+                                ? String(filters.approval_status).toLowerCase()
+                                : 'all'}`}
+                            value={filters.approval_status}
+                            onChange={(event) => setFilters({ ...filters, approval_status: event.target.value })}
+                            helperText="Optional"
+                            fullWidth
+                        >
+                            <MenuItem className="po-report-filter-option all" value="">
+                                <FilterAltOutlinedIcon /> All approval statuses
+                            </MenuItem>
+                            <MenuItem className="po-report-filter-option pending" value="PENDING">
+                                <PendingActionsRoundedIcon /> Pending
+                            </MenuItem>
+                            <MenuItem className="po-report-filter-option completed" value="APPROVED">
+                                <CheckCircleOutlineRoundedIcon /> Approved
+                            </MenuItem>
+                            <MenuItem className="po-report-filter-option rejected" value="REJECTED">
+                                <HighlightOffRoundedIcon /> Rejected
+                            </MenuItem>
                         </TextField>
                         <div className="po-report-filter-actions">
                             <Button variant="contained" onClick={applyFilters} disabled={loading}>

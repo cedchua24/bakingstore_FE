@@ -221,3 +221,41 @@
     .markup-list-search .MuiTextField-root { width:100%; }
     .markup-whole-fields { grid-template-columns:1fr; }
 }
+
+/* Shared Mark Up module identity: purple is reserved for pricing and margin tools. */
+.markup-page { --mu-accent:#6d4bc3; padding:24px; min-height:100vh; background:#f6f7f9; }
+.markup-page .markup-hero { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:18px; padding:25px 28px; margin-bottom:18px; background:linear-gradient(125deg,#2b2342,#4b3b72); border-radius:18px; box-shadow:0 14px 30px rgba(43,35,66,.15); }
+.markup-page .markup-hero__icon { width:52px; height:52px; color:#fff; border-radius:14px; }
+.markup-page .markup-hero__copy > span { color:#d8ccff; font-size:.7rem; font-weight:400; letter-spacing:.12em; opacity:.78; }
+.markup-page .markup-hero__copy h1 { margin:3px 0 5px; font-size:1.55rem; font-weight:500; }
+.markup-page .markup-hero__copy p { margin:0; color:rgba(255,255,255,.78); font-size:.84rem; }
+.markup-page .markup-hero__summary > svg { color:#d8ccff; }
+.markup-page .MuiButton-containedPrimary { background-color:var(--mu-accent); }
+.markup-page .MuiButton-containedPrimary:hover { background-color:#573a9d; }
+.markup-page .MuiLinearProgress-bar { background-color:var(--mu-accent); }
+.markup-page .markup-list-result-pill,
+.markup-page .markup-category-pill { color:var(--mu-accent); background:#f3efff; }
+.markup-page .markup-create-card__header > span,
+.markup-page .markup-list-card__header > span,
+.markup-page .markup-selected-product > span,
+.markup-page .markup-pricing-panel__header > span,
+.markup-page .markup-list-product > span,
+.markup-page .markup-type--wholesale,
+.markup-page .markup-modal__header > span,
+.markup-page .markup-modal__result { color:var(--mu-accent); background:#f3efff; }
+.markup-page .markup-pricing-panel__result { background:#f6f2ff; }
+.markup-page .markup-pricing-panel__result strong,
+.markup-page .markup-selling-price,
+.markup-page .markup-supplier-price-change strong,
+.markup-page .markup-history-price__selling strong,
+.markup-page .markup-history-events__labels span:first-child,
+.markup-page .markup-v2__primary-price.is-new strong,
+.markup-page .markup-v2__markups-title > a { color:var(--mu-accent); }
+.markup-page .markup-history-lane--wholesale > header { color:var(--mu-accent); background:#f3efff; }
+.markup-page .markup-v2__edit { background:var(--mu-accent); }
+.markup-page .markup-v2__edit:hover { background:#573a9d; }
+
+@media(max-width:700px) {
+    .markup-page .markup-hero { grid-template-columns:auto 1fr; padding:20px; }
+    .markup-page .markup-hero__summary { display:none; }
+}

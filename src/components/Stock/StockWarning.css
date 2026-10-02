@@ -6,12 +6,10 @@
     --sw-warning-soft: #fff4e8;
     --sw-danger: #c83e36;
     --sw-danger-soft: #fff0ef;
-    --sw-blue: #275bc5;
+    --sw-blue: #0f766e;
     padding: 28px;
     min-height: 100%;
-    background:
-        radial-gradient(circle at top right, rgba(255, 226, 191, 0.55), transparent 28%),
-        #f6f7f9;
+    background: #f6f7f9;
     color: var(--sw-ink);
 }
 
@@ -19,14 +17,14 @@
     display: flex;
     align-items: center;
     gap: 18px;
-    padding: 24px 26px;
+    padding: 25px 28px;
     margin-bottom: 18px;
     overflow: hidden;
     position: relative;
-    background: linear-gradient(120deg, #2d211a 0%, #4b2f20 62%, #6b3c20 100%);
+    background: linear-gradient(125deg, #123b3a, #1f5c58);
     border-radius: 18px;
     color: #fff;
-    box-shadow: 0 12px 30px rgba(60, 37, 22, 0.16);
+    box-shadow: 0 14px 30px rgba(24, 38, 70, 0.15);
 }
 
 .stock-warning-hero::after {
@@ -41,17 +39,17 @@
 }
 
 .stock-warning-hero--out {
-    background: linear-gradient(120deg, #311d1d 0%, #542524 62%, #762e29 100%);
+    background: linear-gradient(125deg, #123b3a, #1f5c58);
 }
 
 .stock-warning-hero__icon {
     display: grid;
     place-items: center;
-    flex: 0 0 54px;
-    width: 54px;
-    height: 54px;
-    border-radius: 15px;
-    color: #ffb35c;
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    color: #fff;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -67,11 +65,20 @@
     z-index: 1;
 }
 
-.stock-warning-eyebrow,
+.stock-warning-eyebrow {
+    display: block;
+    color: #99f6e4;
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    opacity: 0.75;
+    text-transform: uppercase;
+}
+
 .stock-warning-filter__label {
     display: block;
     margin-bottom: 3px;
-    color: #ffb35c;
+    color: var(--sw-blue);
     font-size: 0.72rem;
     font-weight: 800;
     letter-spacing: 0.11em;
@@ -79,17 +86,17 @@
 }
 
 .stock-warning-hero h1 {
-    margin: 0;
-    font-size: clamp(1.55rem, 2.3vw, 2.15rem);
-    font-weight: 750;
-    letter-spacing: -0.03em;
+    margin: 3px 0 5px;
+    font-size: 1.55rem;
+    font-weight: 500;
+    letter-spacing: normal;
 }
 
 .stock-warning-hero p {
-    margin: 5px 0 0;
+    margin: 0;
     max-width: 620px;
     color: rgba(255, 255, 255, 0.72);
-    font-size: 0.91rem;
+    font-size: 0.84rem;
 }
 
 .stock-warning-summary {
@@ -112,7 +119,7 @@
 }
 
 .stock-warning-summary__item > svg {
-    color: #ffb35c;
+    color: #99f6e4;
     font-size: 22px;
 }
 
@@ -404,8 +411,8 @@
     max-width: 145px;
     padding: 5px 9px;
     overflow: hidden;
-    color: #35548e;
-    background: #eef3fc;
+    color: #0f766e;
+    background: #ecf8f6;
     border-radius: 7px;
     font-size: 0.74rem;
     font-weight: 650;
@@ -551,8 +558,8 @@
     gap: 11px;
     padding: 11px 12px;
     color: inherit;
-    background: #f8faff;
-    border: 1px solid #e4eaf7;
+    background: #f1f9f8;
+    border: 1px solid #d2ebe7;
     border-radius: 9px;
     text-decoration: none;
     transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
@@ -560,7 +567,7 @@
 
 .stock-warning-order:hover {
     color: inherit;
-    border-color: #afc2e9;
+    border-color: #8fcac3;
     box-shadow: 0 4px 12px rgba(39, 91, 197, 0.08);
     transform: translateY(-1px);
 }
@@ -571,7 +578,7 @@
     width: 34px;
     height: 34px;
     color: var(--sw-blue);
-    background: #e9f0ff;
+    background: #ecf8f6;
     border-radius: 8px;
 }
 
@@ -616,8 +623,8 @@
 .stock-warning-order__details .stock-warning-order__status--send_to_supplier,
 .stock-warning-order__details .stock-warning-order__status--sent_to_supplier,
 .stock-warning-order__details .stock-warning-order__status--approved {
-    color: #2457a6;
-    background: #eaf1ff;
+    color: #0f766e;
+    background: #ecf8f6;
 }
 
 .stock-warning-order__details .stock-warning-order__sent-age {
@@ -688,7 +695,7 @@
     display: inline-flex;
     padding: 6px 8px;
     color: var(--sw-blue);
-    border: 1px solid #d9e2f4;
+    border: 1px solid #c4e2de;
     border-radius: 8px;
     font-size: 0.72rem;
     font-weight: 700;
@@ -696,8 +703,8 @@
 }
 
 .stock-warning-history-link:hover {
-    color: #1847a8;
-    background: #f4f7fd;
+    color: #0b5f59;
+    background: #f1f9f8;
 }
 
 .stock-warning-table.no-stock-table th:last-child,

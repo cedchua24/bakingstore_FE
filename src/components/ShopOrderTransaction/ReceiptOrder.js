@@ -7,8 +7,8 @@ import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
 import "./ReceiptOrder.css";
 
-// Eight rows balances readable wrapped item names with efficient 80 mm roll use.
-const ITEMS_PER_PAGE = 8;
+// Larger customer-readable type needs fewer rows per thermal page.
+const ITEMS_PER_PAGE = 6;
 
 const money = (value) => new Intl.NumberFormat("en-PH", {
     minimumFractionDigits: 2,
@@ -46,6 +46,7 @@ const ReceiptOrder = () => {
     const [error, setError] = useState("");
     const [printError, setPrintError] = useState("");
     const [printing, setPrinting] = useState(false);
+    const [activePrintNumber, setActivePrintNumber] = useState(null);
 
     useEffect(() => {
         let active = true;
@@ -72,19 +73,28 @@ const ReceiptOrder = () => {
 
         try {
             const response = await ShopOrderTransactionService.incrementPrintCount(id);
+            const updatedPrintCount = Number(
+                response.data?.print_count
+                ?? response.data?.data?.print_count
+                ?? (Number(transaction.print_count || 0) + 1)
+            );
             setTransaction((current) => ({
                 ...current,
-                print_count: response.data?.print_count ?? current.print_count,
+                print_count: updatedPrintCount,
             }));
+            setActivePrintNumber(updatedPrintCount);
+            // Allow React to paint the new print number before the browser captures the receipt.
+            await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             document.body.classList.add("tracked-print-authorized");
             window.print();
         } catch (requestError) {
             setPrintError(requestError.response?.data?.message || "The print count could not be updated. Please try again.");
         } finally {
             document.body.classList.remove("tracked-print-authorized");
+            setActivePrintNumber(null);
             setPrinting(false);
         }
-    }, [id]);
+    }, [id, transaction.print_count]);
 
     useEffect(() => {
         const handlePrintShortcut = (event) => {
@@ -105,6 +115,7 @@ const ReceiptOrder = () => {
         ? Array.from({ length: Math.ceil(items.length / ITEMS_PER_PAGE) }, (_, pageIndex) =>
             items.slice(pageIndex * ITEMS_PER_PAGE, (pageIndex + 1) * ITEMS_PER_PAGE))
         : [[]];
+    const displayPrintNumber = activePrintNumber ?? (Number(transaction.print_count || 0) + 1);
 
     if (loading) return <div className="thermal-receipt-state"><CircularProgress size={28} /> Preparing receipt...</div>;
     if (error) return <div className="thermal-receipt-state"><Alert severity="error">{error}</Alert></div>;
@@ -127,7 +138,8 @@ const ReceiptOrder = () => {
                             </header>
                         ) : (
                             <header className="thermal-receipt-continuation">
-                                <strong>ITEMS CONTINUED</strong><span>Ref #{transaction.id || id}</span>
+                                <strong>ITEMS CONTINUED</strong>
+                                <span>Ref #{transaction.id || id}</span>
                             </header>
                         )}
 
@@ -140,7 +152,7 @@ const ReceiptOrder = () => {
                         )}
 
                         <table className="thermal-receipt-items">
-                            <thead><tr><th>Qty</th><th>Item</th><th>Price</th><th>Amount</th></tr></thead>
+                            <thead><tr><th>Qty</th><th>Item</th><th>Price</th><th>Total</th></tr></thead>
                             <tbody>
                                 {pageItems.map((row, index) => {
                                     const details = itemDescription(row);
@@ -168,7 +180,10 @@ const ReceiptOrder = () => {
                                 <h3>THANK YOU FOR YOUR ORDER</h3><b>THIS IS NOT AN OFFICIAL RECEIPT</b>
                             </section>
                         </>}
-                        <footer className="thermal-receipt-page-number">Page {pageIndex + 1} of {pages.length}</footer>
+                        <footer className="thermal-receipt-page-number">
+                            <span>Page {pageIndex + 1} of {pages.length}</span>
+                            <span>Print No. {displayPrintNumber}</span>
+                        </footer>
                     </article>
                 );
             })}

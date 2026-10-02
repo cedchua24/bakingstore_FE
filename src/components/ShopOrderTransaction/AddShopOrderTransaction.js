@@ -65,26 +65,27 @@ const AddShopOrderTransaction = (props) => {
     }
 
     return (
-        <Box sx={{ bgcolor: '#f6f7f9', minHeight: '100vh', py: { xs: 2, md: 4 } }}>
-            <Box sx={{ width: 'min(960px, calc(100% - 32px))', mx: 'auto' }}>
-                <Paper elevation={0} sx={{ borderRadius: 1, border: '1px solid #e5e7eb', overflow: 'hidden' }}>
-                    <Box sx={{ bgcolor: '#2f201b', color: '#fff', px: { xs: 2, md: 3 }, py: 2.5 }}>
+        <Box sx={{ bgcolor: '#f6f7f9', minHeight: '100vh', p: { xs: 1.5, md: 3 } }}>
+            <Box sx={{ width: '100%', mx: 'auto' }}>
+                <Paper elevation={0} sx={{ bgcolor: 'transparent', borderRadius: 0, overflow: 'visible' }}>
+                    <Box sx={{ color: '#fff', px: { xs: 2.5, md: 3.5 }, py: 3.125, background: 'linear-gradient(125deg, #7f2828, #c94f4f)', borderRadius: '18px', boxShadow: '0 14px 30px rgba(127,40,40,.16)' }}>
                         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2}>
                             <Stack direction="row" spacing={1.5} alignItems="center">
-                                <Box sx={{ bgcolor: 'rgba(255,255,255,.14)', borderRadius: 1, p: 1, display: 'flex' }}>
+                                <Box sx={{ width: 52, height: 52, alignItems: 'center', justifyContent: 'center', bgcolor: 'rgba(255,255,255,.12)', borderRadius: '14px', display: 'flex' }}>
                                     <StorefrontIcon />
                                 </Box>
                                 <Box>
-                                    <Typography variant="overline" sx={{ color: '#f3c58b', letterSpacing: 0 }}>Shop Order</Typography>
-                                    <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.15 }}>
-                                        Create Transaction
+                                    <Typography variant="overline" sx={{ color: '#ffd9d8', fontSize: '.7rem', fontWeight: 400, letterSpacing: '.12em', lineHeight: 1.2 }}>Inter Branch Order</Typography>
+                                    <Typography component="h1" sx={{ mt: '3px', mb: '5px', fontSize: '1.55rem', fontWeight: 500, lineHeight: 1.15 }}>
+                                        Add Inter Branch Order
                                     </Typography>
+                                    <Typography sx={{ color: 'rgba(255,255,255,.78)', fontSize: '.84rem' }}>Create the branch transaction details before adding its products.</Typography>
                                 </Box>
                             </Stack>
                         </Stack>
                     </Box>
 
-                    <Box sx={{ px: { xs: 2, md: 3 }, py: 3 }}>
+                    <Box sx={{ mt: 2, px: { xs: 2, md: 3 }, py: 3, bgcolor: '#fff', border: '1px solid #e5e7eb', borderRadius: '16px' }}>
                         {message &&
                             <Alert severity="success" sx={{ mb: 2 }}>
                                 Successfully added.
@@ -167,7 +168,7 @@ const AddShopOrderTransaction = (props) => {
                                 variant="contained"
                                 endIcon={<ArrowForwardIcon />}
                                 onClick={saveOrderTransaction}
-                                sx={{ fontWeight: 800, minWidth: 140 }}
+                                sx={{ bgcolor: '#ef6f6c', '&:hover': { bgcolor: '#c94f4f' }, fontWeight: 700, minWidth: 140 }}
                             >
                                 Next
                             </Button>

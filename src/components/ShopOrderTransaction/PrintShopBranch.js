@@ -35,6 +35,7 @@ const PrintShopBranch = () => {
     const [error, setError] = useState("");
     const [printError, setPrintError] = useState("");
     const [printing, setPrinting] = useState(false);
+    const [activePrintNumber, setActivePrintNumber] = useState(null);
 
     useEffect(() => {
         let active = true;
@@ -63,19 +64,27 @@ const PrintShopBranch = () => {
 
         try {
             const response = await ShopOrderTransactionService.incrementPrintCount(id);
+            const updatedPrintCount = Number(
+                response.data?.print_count
+                ?? response.data?.data?.print_count
+                ?? (Number(transaction.print_count || 0) + 1)
+            );
             setTransaction((current) => ({
                 ...current,
-                print_count: response.data?.print_count ?? current.print_count,
+                print_count: updatedPrintCount,
             }));
+            setActivePrintNumber(updatedPrintCount);
+            await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             document.body.classList.add("tracked-print-authorized");
             window.print();
         } catch (requestError) {
             setPrintError(requestError.response?.data?.message || "The print count could not be updated. Please try again.");
         } finally {
             document.body.classList.remove("tracked-print-authorized");
+            setActivePrintNumber(null);
             setPrinting(false);
         }
-    }, [id]);
+    }, [id, transaction.print_count]);
 
     useEffect(() => {
         const handlePrintShortcut = (event) => {
@@ -102,6 +111,7 @@ const PrintShopBranch = () => {
         || items.reduce((sum, item) => sum + Number(item.shop_order_total_price || 0), 0);
     const issuingBranch = firstValue(activeShop.shop_name, "MDR Consumer Goods Trading");
     const requestingBranch = firstValue(transaction.shop_name, "-");
+    const displayPrintNumber = activePrintNumber ?? (Number(transaction.print_count || 0) + 1);
 
     if (loading) return <div className="branch-order-state"><CircularProgress /> Preparing inter-branch order...</div>;
     if (error) return <div className="branch-order-state"><Alert severity="error">{error}</Alert></div>;
@@ -199,7 +209,10 @@ const PrintShopBranch = () => {
                             <footer className="branch-order-footer">Please verify product descriptions and quantities before signing. Report discrepancies immediately.</footer>
                         </>}
 
-                        <div className="branch-order-page-number">Page {pageIndex + 1} of {pages.length}</div>
+                        <div className="branch-order-page-number">
+                            <span>Page {pageIndex + 1} of {pages.length}</span>
+                            <span>Print No. {displayPrintNumber}</span>
+                        </div>
                     </article>
                 );
             })}

@@ -18,6 +18,8 @@ import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import PendingActionsRoundedIcon from '@mui/icons-material/PendingActionsRounded';
+import HighlightOffRoundedIcon from '@mui/icons-material/HighlightOffRounded';
 
 
 import Stepper from '@mui/material/Stepper';
@@ -505,14 +507,21 @@ const OrderSupplierApproval = () => {
     );
     const canSelfApprove = Number(localStorage.getItem('role_as')) === 2;
     const isSelfApprovalBlocked = isRequestorApprover && !canSelfApprove;
+    const approvalStatus = String(orderSupplierTransaction.approval_status || 'PENDING').toUpperCase();
+    const approvalStatusLabel = approvalStatus.charAt(0) + approvalStatus.slice(1).toLowerCase();
+    const approvalStatusClass = approvalStatus.toLowerCase();
+    const isCompletedOrder = orderSupplierTransaction.status === 'COMPLETED';
+    const savedApprovalStatus = String(savedDecision?.approval_status || 'PENDING').toUpperCase();
+    const canEditApproval = !isCompletedOrder || (canSelfApprove && savedApprovalStatus !== 'APPROVED');
     const hasDecisionChanges = savedDecision !== null && (
         orderSupplierTransaction.approval_status !== savedDecision.approval_status ||
-        (orderSupplierTransaction.note || '') !== (savedDecision.note || '')
+        (orderSupplierTransaction.note || '') !== (savedDecision.note || '') ||
+        (orderSupplierTransaction.approval || '') !== (savedDecision.approval || '')
     );
     const canContinue = savedDecision?.approval_status === 'APPROVED' && !hasDecisionChanges && !isAddDisabled;
 
     const submitApproval = () => {
-        if (isSubmittingDecision.current || !hasDecisionChanges || orderSupplierTransaction.status === 'COMPLETED') {
+        if (isSubmittingDecision.current || !hasDecisionChanges || !canEditApproval) {
             return;
         }
         if (isSelfApprovalBlocked && orderSupplierTransaction.approval_status == 'APPROVED') {
@@ -678,7 +687,6 @@ const OrderSupplierApproval = () => {
         APPROVED: 'success.main',
         REJECTED: 'error.main',
     };
-
     return (
         <main className="purchase-order-page po-approval-page">
             <section className="purchase-order-shell po-approval-shell">
@@ -1049,13 +1057,20 @@ const OrderSupplierApproval = () => {
                 <div className="po-card-heading">
                     <div>
                         <span>Approval decision</span>
-                        <h2>{orderSupplierTransaction.status == 'COMPLETED' ? 'Review completed' : 'Record your decision'}</h2>
-                        <p>{orderSupplierTransaction.status == 'COMPLETED'
-                            ? 'This purchase order has already been approved.'
+                        <h2>{isCompletedOrder && !canEditApproval
+                            ? `Approval ${approvalStatusLabel.toLowerCase()}`
+                            : 'Record your decision'}</h2>
+                        <p>{isCompletedOrder && !canEditApproval
+                            ? `This completed purchase order has an approval status of ${approvalStatusLabel}.`
                             : 'Choose an approval status and leave a note for the purchasing team.'}</p>
                     </div>
                     {orderSupplierTransaction.status == 'COMPLETED' && (
-                        <div className="po-approved-badge"><CheckCircleIcon /> Approved</div>
+                        <div className={`po-approved-badge po-approval-badge-${approvalStatusClass}`}>
+                            {approvalStatus === 'APPROVED' && <CheckCircleIcon />}
+                            {approvalStatus === 'PENDING' && <PendingActionsRoundedIcon />}
+                            {approvalStatus === 'REJECTED' && <HighlightOffRoundedIcon />}
+                            {approvalStatusLabel}
+                        </div>
                     )}
                 </div>
 
@@ -1071,6 +1086,12 @@ const OrderSupplierApproval = () => {
                     </Alert>
                 )}
 
+                {isCompletedOrder && canEditApproval && (
+                    <Alert severity="info" className="po-self-approval-note">
+                        <strong>Administrator correction.</strong> Saving this decision will replace the approver with {loginAccountName}.
+                    </Alert>
+                )}
+
                 {submitLoadingAdd && <LinearProgress color="warning" className="po-approval-progress" />}
 
                 <div className="po-approval-form">
@@ -1081,18 +1102,19 @@ const OrderSupplierApproval = () => {
                         disabled
                     />
 
-                    {orderSupplierTransaction.status == 'COMPLETED' ? (
+                    {!canEditApproval ? (
                         <TextField
                             fullWidth
                             label="Status"
-                            value="Approved"
+                            value={approvalStatusLabel}
+                            className={`po-readonly-approval po-readonly-approval-${approvalStatusClass}`}
                             InputProps={{
                                 readOnly: true,
-                                endAdornment: (
+                                endAdornment: approvalStatus === 'APPROVED' ? (
                                     <InputAdornment position="end">
                                         <CheckCircleIcon color="success" />
                                     </InputAdornment>
-                                ),
+                                ) : null,
                             }}
                             disabled
                         />
@@ -1137,7 +1159,7 @@ const OrderSupplierApproval = () => {
                         name="note"
                         value={orderSupplierTransaction.note}
                         onChange={onChange}
-                        disabled={orderSupplierTransaction.status == 'COMPLETED'}
+                        disabled={!canEditApproval}
                         className="po-approval-note"
                     />
                 </div>
@@ -1150,7 +1172,7 @@ const OrderSupplierApproval = () => {
                         : hasDecisionChanges
                             ? 'Submit your changes before selecting Next.'
                             : 'Next continues without submitting the decision again.'}</p>
-                    {orderSupplierTransaction.status !== 'COMPLETED' && (
+                    {canEditApproval && (
                         <Button
                             disabled={isAddDisabled || !hasDecisionChanges || !orderSupplierTransaction.approval_status || !orderSupplierTransaction.note?.trim() || (isSelfApprovalBlocked && orderSupplierTransaction.approval_status === 'APPROVED')}
                             variant="contained"
