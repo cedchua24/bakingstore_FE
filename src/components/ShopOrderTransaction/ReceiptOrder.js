@@ -7,8 +7,9 @@ import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
 import "./ReceiptOrder.css";
 
-// Larger customer-readable type needs fewer rows per thermal page.
-const ITEMS_PER_PAGE = 6;
+// Keep enough room for long, wrapped product names in the printer's actual
+// printable area. Six rows can be clipped by some 80 mm printer drivers.
+const ITEMS_PER_PAGE = 5;
 
 const money = (value) => new Intl.NumberFormat("en-PH", {
     minimumFractionDigits: 2,
