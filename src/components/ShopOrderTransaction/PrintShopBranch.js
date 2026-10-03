@@ -213,7 +213,7 @@ const PrintShopBranch = () => {
                         </>}
 
                         <div className="branch-order-page-number">
-                            <span>Page {pageIndex + 1} of {pages.length}</span>
+                            {pages.length > 1 && <span>Page {pageIndex + 1} of {pages.length}</span>}
                             <span>Print No. {displayPrintNumber}</span>
                         </div>
                     </article>

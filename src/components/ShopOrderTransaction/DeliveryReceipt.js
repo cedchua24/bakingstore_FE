@@ -224,7 +224,9 @@ const DeliveryReceipt = () => {
                             </footer>
                         </>}
 
-                        <div className="delivery-receipt-page-number">Page {pageIndex + 1} of {itemPages.length}</div>
+                        {itemPages.length > 1 && (
+                            <div className="delivery-receipt-page-number">Page {pageIndex + 1} of {itemPages.length}</div>
+                        )}
                     </article>
                 );
             })}
