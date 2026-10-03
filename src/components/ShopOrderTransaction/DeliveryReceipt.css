@@ -84,7 +84,7 @@
 @media print {
     @page { size: A4 portrait; margin: 7mm; }
     .delivery-receipt-page { min-height: 0; padding: 0; background: #fff; }
-    .delivery-receipt-sheet { width: 100%; height: 283mm; min-height: 283mm; margin: 0; padding: 6mm; box-shadow: none; break-after: page; page-break-after: always; overflow: hidden; }
+    .delivery-receipt-sheet { width: 100%; height: 278mm; min-height: 278mm; margin: 0; padding: 6mm; box-shadow: none; break-after: page; page-break-after: always; overflow: hidden; }
     .delivery-receipt-sheet:last-of-type { break-after: auto; page-break-after: auto; }
     .delivery-receipt-items tr, .delivery-receipt-recipient, .delivery-receipt-signatures div { break-inside: avoid; }
     .hide-on-print { display: none !important; }
