@@ -63,8 +63,8 @@
 @media print {
     body:not(.tracked-print-authorized) .branch-order-page { display: none !important; }
     @page branchOrder { size: A4 portrait; margin: 10mm; }
-    .branch-order-page { min-height: 0; padding: 0; background: #fff; }
-    .branch-order-sheet { page: branchOrder; width: 100%; height: 277mm; min-height: 277mm; margin: 0; padding: 6mm; box-shadow: none; break-after: page; page-break-after: always; overflow: hidden; }
+    .branch-order-page { page: branchOrder; min-height: 0; padding: 0; background: #fff; }
+    .branch-order-sheet { width: 100%; height: 277mm; min-height: 277mm; margin: 0; padding: 6mm; box-shadow: none; break-after: page; page-break-after: always; overflow: hidden; }
     .branch-order-sheet:last-of-type { break-after: auto; page-break-after: auto; }
     .branch-order-items tr, .branch-order-signatures div { break-inside: avoid; page-break-inside: avoid; }
     .hide-on-print { display: none !important; }
