@@ -76,11 +76,13 @@ const PrintShopBranch = () => {
             setActivePrintNumber(updatedPrintCount);
             await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             document.body.classList.add("tracked-print-authorized");
+            document.body.classList.add("branch-order-printing");
             window.print();
         } catch (requestError) {
             setPrintError(requestError.response?.data?.message || "The print count could not be updated. Please try again.");
         } finally {
             document.body.classList.remove("tracked-print-authorized");
+            document.body.classList.remove("branch-order-printing");
             setActivePrintNumber(null);
             setPrinting(false);
         }
@@ -98,6 +100,7 @@ const PrintShopBranch = () => {
         return () => {
             window.removeEventListener("keydown", handlePrintShortcut);
             document.body.classList.remove("tracked-print-authorized");
+            document.body.classList.remove("branch-order-printing");
         };
     }, [handlePrint]);
 
