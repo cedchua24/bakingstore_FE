@@ -68,6 +68,7 @@ const renderStatusOption = (value) => {
 };
 
 const ShopBranchReportList = () => {
+    const showPrintAction = false;
     const isAdmin = Number(localStorage.getItem('role_as')) === 2;
 
     useEffect(() => {
@@ -334,18 +335,20 @@ const ShopBranchReportList = () => {
                                         <td>
                                             <div className="shop-report-actions">
                                                 <Tooltip title="View"><IconButton component={Link} to={`../shopOrderTransaction/completedShopOrderTransaction/${row.id}`}><VisibilityOutlinedIcon /></IconButton></Tooltip>
-                                                <Tooltip title={Number(row.print_count) > 0 ? `Print (${row.print_count} recorded)` : "Print"}>
-                                                    <IconButton component={Link} to={`../shopOrderTransaction/printShopBranch/${row.id}`}>
-                                                        <Badge
-                                                            badgeContent={Number(row.print_count)}
-                                                            invisible={!(Number(row.print_count) > 0)}
-                                                            max={999}
-                                                            sx={{ '& .MuiBadge-badge': { bgcolor: '#a95317', color: '#fff' } }}
-                                                        >
-                                                            <PrintOutlinedIcon />
-                                                        </Badge>
-                                                    </IconButton>
-                                                </Tooltip>
+                                                {showPrintAction && (
+                                                    <Tooltip title={Number(row.print_count) > 0 ? `Print (${row.print_count} recorded)` : "Print"}>
+                                                        <IconButton component={Link} to={`../shopOrderTransaction/printShopBranch/${row.id}`}>
+                                                            <Badge
+                                                                badgeContent={Number(row.print_count)}
+                                                                invisible={!(Number(row.print_count) > 0)}
+                                                                max={999}
+                                                                sx={{ '& .MuiBadge-badge': { bgcolor: '#a95317', color: '#fff' } }}
+                                                            >
+                                                                <PrintOutlinedIcon />
+                                                            </Badge>
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                )}
                                                 <Tooltip title="Update transaction">
                                                     <IconButton component={Link} to={`../shopOrderTransaction/addProductShopOrderTransaction/${row.id}`} className="shop-report-update-action">
                                                         <EditOutlinedIcon />
