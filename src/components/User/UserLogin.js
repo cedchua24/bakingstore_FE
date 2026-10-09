@@ -12,7 +12,12 @@ import {
     getEnvironmentColor,
 } from "../Shop/databaseEnvironment";
 
-const UserLogin = () => {
+const graduatePhotos = Array.from({ length: 6 }, (_, index) => ({
+    src: `${process.env.PUBLIC_URL}/graduates/p${index + 1}.jpg`,
+    alt: `MDR graduate portrait ${index + 1} of 6`,
+}));
+
+const UserLogin = ({ showLoginForm = true }) => {
     const activeShopColor = useActiveShopColor();
     const [sessionExpired, setSessionExpired] = useState(
         () => new URLSearchParams(window.location.search).get("reason") === "session-expired"
@@ -24,12 +29,35 @@ const UserLogin = () => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [activeGraduate, setActiveGraduate] = useState(0);
+    const [isCarouselPaused, setIsCarouselPaused] = useState(false);
 
     useEffect(() => {
         if (sessionExpired) {
-            window.history.replaceState({}, "", "/login");
+            window.history.replaceState({}, "", window.location.pathname);
         }
     }, [sessionExpired]);
+
+    useEffect(() => {
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (isCarouselPaused || prefersReducedMotion) return undefined;
+
+        const timer = window.setInterval(() => {
+            setActiveGraduate((current) => (current + 1) % graduatePhotos.length);
+        }, 4500);
+
+        return () => window.clearInterval(timer);
+    }, [isCarouselPaused]);
+
+    const showPreviousGraduate = () => {
+        setActiveGraduate((current) =>
+            (current - 1 + graduatePhotos.length) % graduatePhotos.length
+        );
+    };
+
+    const showNextGraduate = () => {
+        setActiveGraduate((current) => (current + 1) % graduatePhotos.length);
+    };
 
     const updateField = (event) => {
         const { name, value } = event.target;
@@ -115,30 +143,80 @@ const UserLogin = () => {
 
     return (
         <main
-            className="login-page"
-            style={{ "--shop-color": activeShopColor || "#4f2d23" }}
+            className={`login-page${showLoginForm ? "" : " celebration-only"}`}
+            style={{
+                "--shop-color": activeShopColor || "#4f2d23",
+                "--graduates-background": `url(${process.env.PUBLIC_URL}/pup-graduates-2026.jpg)`,
+            }}
         >
             <section className="login-overview" aria-labelledby="login-heading">
-                <div className="login-brand-mark" aria-hidden="true">
-                    <span>☕</span>
-                    <span>📦</span>
-                </div>
-                <span className="login-eyebrow">Internal business system</span>
-                <h1 id="login-heading">Operations, all in one place.</h1>
-                <p>
-                    Sign in to manage sales, stock, purchasing, customer orders,
-                    expenses, and business reporting.
-                </p>
+                <div
+                    className="login-graduate-carousel"
+                    aria-label="MDR graduate portraits"
+                    onMouseEnter={() => setIsCarouselPaused(true)}
+                    onMouseLeave={() => setIsCarouselPaused(false)}
+                    onFocus={() => setIsCarouselPaused(true)}
+                    onBlur={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget)) {
+                            setIsCarouselPaused(false);
+                        }
+                    }}
+                >
+                    <div className="login-graduate-slides">
+                        {graduatePhotos.map((photo, index) => (
+                            <img
+                                key={photo.src}
+                                className={index === activeGraduate ? "active" : ""}
+                                src={photo.src}
+                                alt={index === activeGraduate ? photo.alt : ""}
+                                aria-hidden={index !== activeGraduate}
+                                loading={index === 0 ? "eager" : "lazy"}
+                            />
+                        ))}
+                    </div>
 
-                <div className="login-module-grid" aria-label="System modules">
-                    <div><span aria-hidden="true">▦</span> POS & sales</div>
-                    <div><span aria-hidden="true">□</span> Inventory</div>
-                    <div><span aria-hidden="true">↗</span> Purchase orders</div>
-                    <div><span aria-hidden="true">⌁</span> Reports & accounts</div>
+                    <button
+                        className="login-carousel-arrow previous"
+                        type="button"
+                        onClick={showPreviousGraduate}
+                        aria-label="Show previous graduate"
+                    >
+                        ‹
+                    </button>
+                    <button
+                        className="login-carousel-arrow next"
+                        type="button"
+                        onClick={showNextGraduate}
+                        aria-label="Show next graduate"
+                    >
+                        ›
+                    </button>
+
+                    <div className="login-carousel-dots" aria-label="Choose a graduate portrait">
+                        {graduatePhotos.map((photo, index) => (
+                            <button
+                                key={photo.src}
+                                className={index === activeGraduate ? "active" : ""}
+                                type="button"
+                                onClick={() => setActiveGraduate(index)}
+                                aria-label={`Show graduate portrait ${index + 1}`}
+                                aria-current={index === activeGraduate ? "true" : undefined}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="login-welcome-copy">
+                    <span className="login-eyebrow">Celebrating our team</span>
+                    <h1 id="login-heading">Congratulations, PUP graduates!</h1>
+                    <p>
+                        Your MDR family is proud of this incredible milestone. Your
+                        hard work, perseverance, and dedication inspire us all.
+                    </p>
                 </div>
             </section>
 
-            <section className="login-card" aria-label="Login form">
+            {showLoginForm && <section className="login-card" aria-label="Login form">
                 <div className="login-card-heading">
                     <span className="login-lock" aria-hidden="true">🔐</span>
                     <div>
@@ -214,7 +292,7 @@ const UserLogin = () => {
                         Your session and account access are protected.
                     </p>
                 </div>
-            </section>
+            </section>}
         </main>
     );
 };
