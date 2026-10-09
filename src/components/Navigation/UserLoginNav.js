@@ -25,7 +25,8 @@ const UserLoginNav = () => {
             });
     }, []);
 
-    const isLoginPage = location.pathname === "/" || location.pathname === "/login";
+    const isLoginPage = location.pathname === "/staff-login";
+    const isGraduatesPage = ["/", "/login", "/graduates"].includes(location.pathname);
 
     return (
         <header className="public-nav" style={{ "--shop-color": shopColor }}>
@@ -40,8 +41,15 @@ const UserLoginNav = () => {
 
                 <nav className="public-nav-actions" aria-label="Account navigation">
                     <Link
-                        className={`public-nav-link${isLoginPage ? " active" : ""}`}
+                        className={`public-nav-link${isGraduatesPage ? " active" : ""}`}
                         to="/login"
+                        aria-current={isGraduatesPage ? "page" : undefined}
+                    >
+                        Our Graduates
+                    </Link>
+                    <Link
+                        className={`public-nav-link${isLoginPage ? " active" : ""}`}
+                        to="/staff-login"
                         aria-current={isLoginPage ? "page" : undefined}
                     >
                         Sign in
