@@ -7,7 +7,7 @@
 .cr-hero h1 { margin: 2px 0 0; color: #20242b; font-size: clamp(1.7rem, 4vw, 2.25rem); letter-spacing: -.025em; }
 .cr-hero p { margin: 6px 0 0; color: #707883; }
 .cr-alert { margin-top: 22px; }
-.cr-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+.cr-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; margin-top: 28px; }
 .cr-summary article { display: flex; align-items: center; gap: 14px; padding: 20px; background: #fff; border: 1px solid #e2e6eb; border-radius: 14px; box-shadow: 0 10px 26px rgba(39, 45, 55, .045); }
 .cr-summary svg { box-sizing: content-box; padding: 10px; color: #386ba9; background: #edf4ff; border-radius: 10px; }
 .cr-summary article:nth-child(2) svg { color: #16716a; background: #eaf8f5; }

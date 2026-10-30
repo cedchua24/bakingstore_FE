@@ -16,11 +16,15 @@ import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import BarChartRoundedIcon from '@mui/icons-material/BarChartRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransactionService';
 import SupplierService from '../Supplier/SupplierService.service';
 import CategoryService from '../Category/CategoryService.service';
 import ImpactGroupSelect from '../Common/ImpactGroupSelect';
+import { monthDateRange } from '../Accounting/centralCustomerReport';
+import { emptyCollectionSummary, loadCombinedCustomerCollections } from '../Accounting/centralProductAccounting';
 import './ProductReport.css';
+import './ProductAccountingReport.css';
 
 const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
 const number = value => Number(value || 0).toLocaleString();
@@ -124,6 +128,7 @@ const ProductTrendComparison = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [query, setQuery] = useState('');
+    const [collections, setCollections] = useState(emptyCollectionSummary);
 
     const load = (request = filters) => {
         if (!request.month) return setError('Please choose a month.');
@@ -134,7 +139,16 @@ const ProductTrendComparison = () => {
             limit: Number(request.limit),
             category_id: request.category_id || null,
             supplier_id: request.supplier_id || null
-        }).then(response => setReport(response.data?.data && !Array.isArray(response.data.data) ? response.data.data : response.data || { data: [] }))
+        }).then(async response => {
+            setReport(response.data?.data && !Array.isArray(response.data.data) ? response.data.data : response.data || { data: [] });
+            try {
+                const range = monthDateRange(request.month);
+                setCollections(await loadCombinedCustomerCollections(range.dateFrom, range.dateTo));
+            } catch (collectionError) {
+                setCollections(emptyCollectionSummary());
+                console.log('Unable to load product trend collections', collectionError);
+            }
+        })
           .catch(err => setError(err.response?.data?.message || 'Unable to load the product comparison.'))
           .finally(() => setLoading(false));
     };
@@ -160,7 +174,7 @@ const ProductTrendComparison = () => {
 
     return <main className="pr-page pt-page">
         <section className="pr-hero"><div className="pr-hero__icon"><CompareArrowsRoundedIcon /></div><div><span>Month-over-month intelligence</span><h1>Product Trend Comparison</h1><p>Compare every product with last month and review its three-month sales direction.</p></div></section>
-        <section className="pr-summary"><div><TrendingUpRoundedIcon/><div><span>Selected month sales</span><strong>{money(currentSales)}</strong></div></div><div><CompareArrowsRoundedIcon/><div><span>Previous month sales</span><strong>{money(previousSales)}</strong></div></div><div><TrendingDownRoundedIcon/><div><span>Declining products</span><strong>{number(decliningCount)}</strong></div></div></section>
+        <section className="pr-summary pr-summary--accounting"><div><TrendingUpRoundedIcon/><div><span>Selected month sales</span><strong>{money(currentSales)}</strong></div></div><div><CompareArrowsRoundedIcon/><div><span>Previous month sales</span><strong>{money(previousSales)}</strong></div></div><div><TrendingDownRoundedIcon/><div><span>Declining products</span><strong>{number(decliningCount)}</strong></div></div><div className="pr-accounting-metric"><AccountBalanceWalletOutlinedIcon/><div><span>Collected sales</span><strong>{money(collections.total)}</strong><small>Legacy + Central Accounting</small></div></div></section>
         <section className="pr-filter"><div className="pr-filter__header"><strong>Comparison filters</strong><span>Select a month; the report automatically compares it with the prior month and a three-month window.</span></div><div className="pr-filter__grid pt-filter__grid">
             <TextField fullWidth size="small" type="month" name="month" value={filters.month} onChange={update} label="Report month" InputLabelProps={{ shrink: true }}/>
             <FormControl fullWidth size="small"><InputLabel>Show</InputLabel><Select name="limit" value={filters.limit} label="Show" onChange={update}>{[10, 50, 100, 250, 500, 1000, 5000].map(value => <MenuItem key={value} value={value}>Top {value}</MenuItem>)}</Select></FormControl>

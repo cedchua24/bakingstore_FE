@@ -13,13 +13,18 @@ import Checkbox from '@mui/material/Checkbox';
 import TextField from '@mui/material/TextField';
 import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import PersonOffOutlinedIcon from '@mui/icons-material/PersonOffOutlined';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import TrendingDownRoundedIcon from '@mui/icons-material/TrendingDownRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransactionService';
 import ImpactGroupSelect from '../Common/ImpactGroupSelect';
+import CentralCustomerPaymentService from '../Accounting/CentralCustomerPaymentService';
+import { ACCOUNTING_TOKEN_KEY } from '../Accounting/accountingApi';
+import { centralCustomerMonthTotals, rollingMonthDateRange } from '../Accounting/centralCustomerReport';
 import './ProductReport.css';
+import './ProductAccountingReport.css';
 
 const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
 const number = value => Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 1 });
@@ -64,25 +69,39 @@ const CustomerSalesImpact = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [selectedRecoveryIds, setSelectedRecoveryIds] = useState([]);
+    const [centralReport, setCentralReport] = useState(null);
 
-    const load = (request = filters) => {
+    const load = async (request = filters) => {
         if (!request.month) return setError('Please choose a report month.');
         setLoading(true);
         setError('');
         const { group, ...apiFilters } = request;
         const groupSort = { data: 'current_sales', top_customers: 'current_sales', positive_impact_customers: 'biggest_increase', biggest_rank_drop_customers: 'biggest_rank_drop', declining_customers: 'biggest_drop', missing_customers: 'biggest_drop' };
-        ShopOrderTransactionService.fetchMonthlyCustomerSalesComparison({
-            ...apiFilters,
-            limit: Number(apiFilters.limit),
-            sort: groupSort[group] || 'current_sales',
-            direction: 'desc'
-        }).then(response => {
+        try {
+            const response = await ShopOrderTransactionService.fetchMonthlyCustomerSalesComparison({
+                ...apiFilters,
+                limit: Number(apiFilters.limit),
+                sort: groupSort[group] || 'current_sales',
+                direction: 'desc'
+            });
             const body = response.data?.data && !Array.isArray(response.data.data) ? response.data.data : response.data;
             setReport(body || { data: [] });
             setAppliedFilters({ ...request });
             setSelectedRecoveryIds([]);
-        }).catch(err => setError(err.response?.data?.message || 'Unable to load the customer sales comparison.'))
-          .finally(() => setLoading(false));
+            setCentralReport(null);
+            if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                try {
+                    const range = rollingMonthDateRange(request.month, 3);
+                    setCentralReport(await CentralCustomerPaymentService.paymentReport(range.dateFrom, range.dateTo));
+                } catch (accountingError) {
+                    console.log('Unable to load Central Accounting customer collections', accountingError);
+                }
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Unable to load the customer sales comparison.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -103,6 +122,10 @@ const CustomerSalesImpact = () => {
     const positiveCount = Array.isArray(report.positive_impact_customers) ? report.positive_impact_customers.length : 0;
     const decliningCount = Array.isArray(report.declining_customers) ? report.declining_customers.length : 0;
     const missingCount = Array.isArray(report.missing_customers) ? report.missing_customers.length : 0;
+    const centralCollections = centralCustomerMonthTotals(centralReport);
+    const centralCollected = Object.entries(centralCollections).reduce((total, [key, value]) => (
+        key.endsWith(`:${appliedFilters.month}`) ? total + Number(value || 0) : total
+    ), 0);
     const isRecoveryGroup = ['biggest_rank_drop_customers', 'declining_customers', 'missing_customers'].includes(appliedFilters.group);
     const recoveryKey = (item, index) => String(item.customer_id || item.id || index);
     const recoveryTarget = item => {
@@ -127,7 +150,7 @@ const CustomerSalesImpact = () => {
 
     return <main className="pr-page ct-page">
         <section className="pr-hero"><div className="pr-hero__icon"><GroupsOutlinedIcon/></div><div><span>Customer reports</span><h1>Customer Sales Impact</h1><p>Find the customers driving growth, causing declines, or no longer ordering in the selected month.</p></div></section>
-        <section className="pr-summary ct-summary"><div><TrendingUpRoundedIcon/><div><span>Winning customers</span><strong>{number(positiveCount)}</strong></div></div><div><TrendingDownRoundedIcon/><div><span>Declining customers</span><strong>{number(decliningCount)}</strong></div></div><div><PersonOffOutlinedIcon/><div><span>Missing customers</span><strong>{number(missingCount)}</strong></div></div></section>
+        <section className="pr-summary pr-summary--accounting ct-summary"><div><TrendingUpRoundedIcon/><div><span>Winning customers</span><strong>{number(positiveCount)}</strong></div></div><div><TrendingDownRoundedIcon/><div><span>Declining customers</span><strong>{number(decliningCount)}</strong></div></div><div><PersonOffOutlinedIcon/><div><span>Missing customers</span><strong>{number(missingCount)}</strong></div></div>{centralReport && <div className="pr-accounting-metric"><AccountBalanceWalletOutlinedIcon/><div><span>Central collected</span><strong>{money(centralCollected)}</strong><small>Net receipts for selected month</small></div></div>}</section>
         <section className="pr-filter"><div className="pr-filter__header"><strong>Customer impact filters</strong><span>Impact status is based on the selected month compared with the previous three-month average. Last month is secondary context.</span></div><div className="ct-filter-grid">
             <TextField fullWidth size="small" type="month" name="month" value={filters.month} onChange={update} label="Report month" InputLabelProps={{ shrink: true }}/>
             <FormControl fullWidth size="small"><InputLabel>Show</InputLabel><Select name="limit" value={filters.limit} label="Show" onChange={update}>{[10,50,100,250,500,1000,5000].map(value => <MenuItem key={value} value={value}>Top {value}</MenuItem>)}</Select></FormControl>
@@ -137,7 +160,7 @@ const CustomerSalesImpact = () => {
         {error && <Alert severity="error" className="pt-alert">{error}</Alert>}
         <div className="pci-benchmark-note"><strong>Primary impact benchmark</strong><span>Winning, declining, and missing verdicts are based on the selected month versus the previous 3-month average.</span></div>
         {isRecoveryGroup && <section className={`ct-recovery-plan ${selectedRecoveryIds.length ? 'ct-recovery-plan--active' : ''}`}><div><span>What-if customer recovery</span><strong>{selectedRecoveryIds.length ? `${selectedRecoveryIds.length} customers selected` : `Select customers to pursue · ${money(totalRecoveryOpportunity)} available`}</strong><small>{appliedFilters.group === 'biggest_rank_drop_customers' ? 'Target returns each selected customer to last month’s sales.' : 'Target returns each selected customer to the previous three-month average.'}</small></div><div><span>Selected potential added sales</span><strong>+{money(potentialRecovery)}</strong><small>of {money(totalRecoveryOpportunity)} available</small></div><label><Checkbox size="small" checked={allRecoverySelected} onChange={toggleAllRecovery}/> Select all displayed</label></section>}
-        <section className="pr-card"><header><div><h2>{groupMap[appliedFilters.group]?.[1]}</h2><p>{rows.length} customers · selected month {appliedFilters.month}</p></div><div className="ct-table-tools"><FormControlLabel control={<Switch size="small" checked={showProfit} onChange={event => setShowProfit(event.target.checked)}/>} label="Show profit"/><TextField className="pr-search" size="small" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search customer..." InputProps={{ startAdornment:<InputAdornment position="start"><SearchRoundedIcon/></InputAdornment> }}/></div></header><div className="table-responsive"><table className="pr-table ct-table"><thead><tr>{isRecoveryGroup && <th>Plan</th>}<th>Rank movement</th><th>Customer</th><th className="pci-current-col">Current month</th><th>Last month</th><th>Previous 3-month average</th><th>Vs last month</th><th>Vs 3-month average</th><th>Status</th></tr></thead><tbody>
+        <section className="pr-card"><header><div><h2>{groupMap[appliedFilters.group]?.[1]}</h2><p>{rows.length} customers · selected month {appliedFilters.month}</p></div><div className="ct-table-tools"><FormControlLabel control={<Switch size="small" checked={showProfit} onChange={event => setShowProfit(event.target.checked)}/>} label="Show profit"/><TextField className="pr-search" size="small" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search customer..." InputProps={{ startAdornment:<InputAdornment position="start"><SearchRoundedIcon/></InputAdornment> }}/></div></header><div className="table-responsive"><table className="pr-table ct-table"><thead><tr>{isRecoveryGroup && <th>Plan</th>}<th>Rank movement</th><th>Customer</th><th className="pci-current-col">Current month</th>{centralReport && <th>Central collected</th>}<th>Last month</th><th>Previous 3-month average</th><th>Vs last month</th><th>Vs 3-month average</th><th>Status</th></tr></thead><tbody>
             {rows.map((item,index) => {
                 const current = period(item, 'current_month', 'current');
                 const last = period(item, 'last_month', 'previous');
@@ -155,9 +178,9 @@ const CustomerSalesImpact = () => {
                 const movedUp = movementDirection === 'UP';
                 const status = first(item, ['status'], 'UNCHANGED');
                 const Impact = ({ value }) => <div className="ct-impact"><strong className={value.sales < 0 ? 'pr-negative' : 'pt-positive'}>{value.sales >= 0 ? '+' : ''}{money(value.sales)}</strong>{showProfit && <span>{value.profit ? `${value.profit >= 0 ? '+' : ''}${money(value.profit)} profit` : '—'}</span>}<b className={value.percent < 0 ? 'ct-percent ct-percent--down' : 'ct-percent ct-percent--up'}>{value.percent >= 0 ? '+' : ''}{number(value.percent)}%</b></div>;
-                return <tr key={item.customer_id || item.id || index}>{isRecoveryGroup && <td><Checkbox size="small" checked={selectedRecoveryIds.includes(recoveryKey(item, index))} disabled={recoveryTarget(item) <= 0} onChange={() => toggleRecovery(item, index)}/></td>}<td><div className="pt-rank-move"><span className="pr-rank">{currentRank}</span><div><small>{previousRank === '—' ? 'No prior rank' : `was #${previousRank}`}</small><strong className={movedDown ? 'pr-negative' : movedUp ? 'pt-positive' : 'pr-subtle'}>{movedUp ? '▲ ' : movedDown ? '▼ ' : ''}{movedDown && rankDrop ? rankDrop : Math.abs(rankChange) || '—'}</strong></div></div></td><td><div className="pr-product"><strong>{customerName(item)}</strong><span>{first(item, ['store_name', 'business_name'], '')}</span></div></td><td className="pci-current-cell"><strong>{money(current.sales)}</strong><span className="pci-qty">{number(current.orders)} orders</span>{showProfit && <small>{money(current.profit)} profit</small>}</td><td><strong>{money(last.sales)}</strong><span className="pci-qty">{number(last.orders)} orders</span>{showProfit && <small>{money(last.profit)} profit</small>}</td><td><strong>{money(average.sales)}</strong><span className="pci-qty">{number(average.orders)} avg. orders</span>{showProfit && <small>{money(average.profit)} avg. profit</small>}</td><td><Impact value={versusLast}/></td><td><Impact value={versusAverage}/></td><td><span className={`pci-status pci-status--${String(status).toLowerCase()}`}>{statusLabel(status)}</span></td></tr>;
+                return <tr key={item.customer_id || item.id || index}>{isRecoveryGroup && <td><Checkbox size="small" checked={selectedRecoveryIds.includes(recoveryKey(item, index))} disabled={recoveryTarget(item) <= 0} onChange={() => toggleRecovery(item, index)}/></td>}<td><div className="pt-rank-move"><span className="pr-rank">{currentRank}</span><div><small>{previousRank === '—' ? 'No prior rank' : `was #${previousRank}`}</small><strong className={movedDown ? 'pr-negative' : movedUp ? 'pt-positive' : 'pr-subtle'}>{movedUp ? '▲ ' : movedDown ? '▼ ' : ''}{movedDown && rankDrop ? rankDrop : Math.abs(rankChange) || '—'}</strong></div></div></td><td><div className="pr-product"><strong>{customerName(item)}</strong><span>{first(item, ['store_name', 'business_name'], '')}</span></div></td><td className="pci-current-cell"><strong>{money(current.sales)}</strong><span className="pci-qty">{number(current.orders)} orders</span>{showProfit && <small>{money(current.profit)} profit</small>}</td>{centralReport && <td><strong>{money(centralCollections[`${item.customer_id || item.id}:${appliedFilters.month}`])}</strong></td>}<td><strong>{money(last.sales)}</strong><span className="pci-qty">{number(last.orders)} orders</span>{showProfit && <small>{money(last.profit)} profit</small>}</td><td><strong>{money(average.sales)}</strong><span className="pci-qty">{number(average.orders)} avg. orders</span>{showProfit && <small>{money(average.profit)} avg. profit</small>}</td><td><Impact value={versusLast}/></td><td><Impact value={versusAverage}/></td><td><span className={`pci-status pci-status--${String(status).toLowerCase()}`}>{statusLabel(status)}</span></td></tr>;
             })}
-            {!rows.length && !loading && <tr><td colSpan={isRecoveryGroup ? 9 : 8}><div className="pr-empty"><CompareArrowsRoundedIcon/><strong>No customer impact found</strong><span>Try another month, impact group, or filter.</span></div></td></tr>}
+            {!rows.length && !loading && <tr><td colSpan={(isRecoveryGroup ? 9 : 8) + (centralReport ? 1 : 0)}><div className="pr-empty"><CompareArrowsRoundedIcon/><strong>No customer impact found</strong><span>Try another month, impact group, or filter.</span></div></td></tr>}
         </tbody></table></div></section>
     </main>;
 };

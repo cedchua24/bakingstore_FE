@@ -12,6 +12,8 @@ import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
 import { useParams } from "react-router-dom";
 import VipProductTransactionService from "./VipProductTransactionService";
 import ImpactGroupSelect from "../Common/ImpactGroupSelect";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
 import "../Reports/ProductReport.css";
 import "../VipCustomer/VIPTransactionHistory.css";
 import "./VipProductSoldHistory.css";
@@ -130,6 +132,7 @@ const VipProductSoldHistory = () => {
     const [selectedRecoveryIds, setSelectedRecoveryIds] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [centralCollected, setCentralCollected] = useState(0);
 
     const load = useCallback((month, page = 0, request = {}) => {
         const requestedGroup = request.impactGroup || "all";
@@ -137,7 +140,22 @@ const VipProductSoldHistory = () => {
         setLoading(true);
         setError("");
         return VipProductTransactionService.fetchVipProductMonthlySold(id, month, { comparison_page: page, impact_group: "all", limit: 100, ...(requestedSearch ? { search: requestedSearch } : {}) })
-            .then(response => { setReport(response.data); setAppliedGroup(requestedGroup); setSelectedRecoveryIds([]); })
+            .then(async response => {
+                setReport(response.data);
+                setAppliedGroup(requestedGroup);
+                setSelectedRecoveryIds([]);
+                setCentralCollected(0);
+                if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                    try {
+                        const summaries = await CentralCustomerPaymentService.summaries(response.data?.current_month_order_ids || []);
+                        setCentralCollected(Object.values(summaries).reduce(
+                            (total, summary) => total + Number(summary?.total_payment || 0), 0
+                        ));
+                    } catch (accountingError) {
+                        console.log("Unable to load Central Accounting VIP product history collections", accountingError);
+                    }
+                }
+            })
             .catch(requestError => {
                 setReport(null);
                 setError(requestError.response?.data?.message || "Unable to load product sales history.");
@@ -275,6 +293,11 @@ const VipProductSoldHistory = () => {
                         <span style={{ ...styles.label, display: "block", marginBottom: 2 }}>Selected month change</span>
                         <strong style={{ color: averageGap >= 0 ? "#146c43" : "#dc3545", fontSize: 15 }}>{averageGap >= 0 ? "+" : "-"}{money(Math.abs(averageGap))}</strong>
                     </div>
+                </div>
+                <div style={styles.card}>
+                    <p style={styles.label}>Central collected</p>
+                    <p style={styles.value}>{money(centralCollected)}</p>
+                    <span style={styles.meta}>Posted receipts less refunds for related orders</span>
                 </div>
             </section>
             <section className="pr-summary ct-summary">

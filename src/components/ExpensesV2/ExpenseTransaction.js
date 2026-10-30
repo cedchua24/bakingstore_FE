@@ -5,8 +5,8 @@ import ExpensesTypeV2Service from "./ExpensesTypeV2Service";
 import ExpensesCategoryV2Service from "./ExpensesCategoryV2Service";
 import ExpensesV2Service from "./ExpensesV2Service";
 import ExpenseTransactionService from "./ExpenseTransactionService";
-import PaymentTypePoService from "../OtherService/PaymentTypePoService";
-import PaymentTermService from "../OtherService/PaymentTermService";
+import CentralExpenseService from "../Accounting/CentralExpenseService";
+import ShopService from "../Shop/ShopService";
 import ChartOfAccountService from "./ChartOfAccountService";
 import UserService from '../User/UserService.service'
 import LinearProgress from '@mui/material/LinearProgress';
@@ -30,10 +30,15 @@ const ExpenseTransaction = () => {
 
     const [paymentTermList, setPaymentTermList] = useState([]);
     const [paymentTypePoList, setPaymentTypePoList] = useState([]);
+    const [shop, setShop] = useState({ id: 0, shop_name: '' });
+    const [installmentCount, setInstallmentCount] = useState(1);
+    const [pendingAccountingSync, setPendingAccountingSync] = useState(null);
 
     useEffect(() => {
         fetchChartOfAccount();
         fetchPaymentTerm();
+        fetchPaymentAccounts();
+        fetchCurrentShop();
         fetchRequestor();
     }, []);
 
@@ -152,13 +157,35 @@ const ExpenseTransaction = () => {
     }
 
     const fetchPaymentTerm = () => {
-        PaymentTermService.getAll()
-            .then(response => setPaymentTermList(Array.isArray(response.data) ? response.data : []))
+        CentralExpenseService.paymentMethods()
+            .then(methods => setPaymentTermList(methods))
+            .catch(e => console.log("error", e));
+    }
+
+    const fetchPaymentAccounts = () => {
+        CentralExpenseService.accounts()
+            .then(accounts => setPaymentTypePoList(accounts))
+            .catch(e => {
+                setPaymentTypePoList([]);
+                console.log("error", e);
+            });
+    }
+
+    const fetchCurrentShop = () => {
+        ShopService.fetchShopCurrent()
+            .then(response => setShop(response.data || {}))
             .catch(e => console.log("error", e));
     }
 
     const onChangePaymentReceived = (e) => {
-        setExpenseTransaction((current) => ({ ...current, is_received: e.target.checked ? 1 : 0 }));
+        const checked = e.target.checked;
+        setExpenseTransaction((current) => ({
+            ...current,
+            is_received: checked ? 1 : 0,
+            payment_term_id: checked ? current.payment_term_id : 0,
+            payment_type_po_id: checked ? current.payment_type_po_id : 0,
+        }));
+        if (!checked) setInstallmentCount(1);
     }
 
     const handlePaymentTermChange = (e, value) => {
@@ -166,15 +193,9 @@ const ExpenseTransaction = () => {
         setExpenseTransaction((current) => ({
             ...current,
             payment_term_id: paymentTermId,
-            payment_type_po_id: paymentTermId === 1 ? 1 : paymentTermId === 5 ? 2 : 0,
-            is_received: paymentTermId === 0 ? 0 : current.is_received,
+            payment_type_po_id: 0,
         }));
-        setPaymentTypePoList([]);
-        if (paymentTermId) {
-            PaymentTypePoService.findByCategory(paymentTermId)
-                .then(response => setPaymentTypePoList(Array.isArray(response.data) ? response.data : []))
-                .catch(e => console.log("error", e));
-        }
+        if (value?.type !== 'credit_card') setInstallmentCount(1);
     }
 
     const handlePaymentTypeChange = (e, value) => {
@@ -244,17 +265,22 @@ const ExpenseTransaction = () => {
         // if (expenseTransaction.payment_term_id == 0) {
         //     errors.payment_term_id = "Payment Term is Required!";
         // }
-        if (
-            Number(expenseTransaction.payment_term_id) !== 0 &&
-            Number(expenseTransaction.payment_type_po_id) === 0
-        ) {
-            errors.payment_type_po_id = "Choose Bank is required when a Payment Term is selected!";
+        if (Number(expenseTransaction.is_received) === 1) {
+            if (Number(expenseTransaction.payment_term_id) === 0) {
+                errors.payment_term_id = "Payment method is required when paying now!";
+            }
+            if (Number(expenseTransaction.payment_type_po_id) === 0) {
+                errors.payment_type_po_id = "Financial account is required when paying now!";
+            }
+            if (!shop.id || !shop.shop_name) {
+                errors.payment_term_id = "Current branch could not be identified.";
+            }
         }
         return errors;
     }
 
 
-    const saveExpenseType = () => {
+    const saveExpenseType = async () => {
 
         console.log('expenseTransaction', expenseTransaction);
 
@@ -268,9 +294,41 @@ const ExpenseTransaction = () => {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
             console.log(expenseTransaction);
-            ExpenseTransactionService.sanctum().then(response => {
-                ExpenseTransactionService.create(expenseTransaction)
-                    .then(response => {
+            try {
+                let sync = pendingAccountingSync;
+                if (!sync) {
+                    await ExpenseTransactionService.sanctum();
+                    const localPayload = { ...expenseTransaction, payment_type_po_id: 0 };
+                    const localResponse = await ExpenseTransactionService.create(localPayload);
+                    const localExpense = localResponse.data?.data;
+                    const selectedChart = chartOfAccountList.find((item) =>
+                        Number(item.id) === Number(expenseTransaction.chart_of_account_id)
+                    );
+                    sync = {
+                        external_branch_id: Number(shop.id || expenseTransaction.shop_id),
+                        branch_name: shop.shop_name || `Branch ${expenseTransaction.shop_id}`,
+                        external_expense_id: Number(localExpense.id),
+                        external_chart_account_id: Number(expenseTransaction.chart_of_account_id),
+                        chart_account_name: selectedChart?.chart_of_account_name || expenseTransaction.transaction,
+                        expense_name: expenseTransaction.transaction,
+                        expense_date: expenseTransaction.expense_date,
+                        amount: Number(expenseTransaction.amount),
+                        description: expenseTransaction.details || null,
+                        currency: 'PHP',
+                        record_payment: Number(expenseTransaction.is_received) === 1,
+                        financial_account_id: Number(expenseTransaction.payment_type_po_id) || null,
+                        payment_method_id: Number(expenseTransaction.payment_term_id) || null,
+                        payment_date: expenseTransaction.expense_date,
+                        installment_count: Number(installmentCount || 1),
+                        idempotency_key: Number(expenseTransaction.is_received) === 1
+                            ? CentralExpenseService.newIdempotencyKey()
+                            : undefined,
+                    };
+                    setPendingAccountingSync(sync);
+                }
+
+                await CentralExpenseService.record(sync);
+                setPendingAccountingSync(null);
                         setExpenseTransaction({
                             id: 0,
                             shop_id: 5,
@@ -302,22 +360,24 @@ const ExpenseTransaction = () => {
                         setIsAddDisabled(false);
                         setValidator({
                             severity: 'success',
-                            message: response.data.message,
+                            message: 'Expense saved and synchronized with Central Accounting.',
                             isShow: true,
                         });
                         navigate('/expensesV2/viewExpenseTransactionApproval');
-                    })
-                    .catch(e => {
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        console.log(e);
-                        setValidator({
-                            severity: 'error',
-                            message: "expenseTransaction Already Exists",
-                            isShow: true,
-                        });
-                    });
-            });
+            } catch (e) {
+                setSubmitLoadingAdd(false);
+                setIsAddDisabled(false);
+                console.log(e);
+                const centralMessage = e.response?.data?.message
+                    || Object.values(e.response?.data?.errors || {})?.[0]?.[0];
+                setValidator({
+                    severity: 'error',
+                    message: pendingAccountingSync
+                        ? (centralMessage || 'Unable to synchronize this expense with Central Accounting. Please retry.')
+                        : (centralMessage || 'The expense may have been saved locally, but Central Accounting synchronization failed. Click Retry Accounting Sync.'),
+                    isShow: true,
+                });
+            }
         }
     }
 
@@ -326,6 +386,27 @@ const ExpenseTransaction = () => {
         var d = new Date(date);
         return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: '2-digit' }).format(d);
     }
+
+    const selectedPaymentMethod = paymentTermList.find((method) =>
+        Number(method.id) === Number(expenseTransaction.payment_term_id)
+    );
+    const accountKindsByMethod = {
+        cash: ['cash'],
+        bank_transfer: ['bank_account', 'checking_account'],
+        cheque: ['checking_account'],
+        credit_card: ['credit_card'],
+        e_wallet: ['e_wallet'],
+    };
+    const availablePaymentAccounts = paymentTypePoList.filter((account) =>
+        (accountKindsByMethod[selectedPaymentMethod?.type] || []).includes(account.kind)
+    );
+    const paymentAccountLabel = (account) => [
+        account.institution?.name,
+        account.name,
+        account.masked_account_number || account.account_number,
+    ].filter(Boolean).filter((value, index, values) =>
+        values.findIndex((candidate) => String(candidate).trim().toLowerCase() === String(value).trim().toLowerCase()) === index
+    ).join(' · ');
 
     return (
         <div className="et-page">
@@ -528,7 +609,7 @@ const ExpenseTransaction = () => {
 
                 {formErrors.expense_date && <p style={{ color: "red" }}>{formErrors.expense_date}</p>}
                 <Form.Group className="mb-3" controlId="expenseDate" style={{ width: '100%' }}>
-                    <Form.Label>{expenseTransaction.payment_term_id == 3 ? "Due Date" : "Date"}<span style={{ color: 'red' }}> *</span></Form.Label>
+                    <Form.Label>Date<span style={{ color: 'red' }}> *</span></Form.Label>
                     <Form.Control type="date" name="expense_date" value={expenseTransaction.expense_date} onChange={onChangeInput} style={{ width: '100%', minHeight: 48, padding: '11px 13px' }} />
                 </Form.Group>
 
@@ -547,53 +628,63 @@ const ExpenseTransaction = () => {
                 </Box>
 
                 <>
-                    <FormControl variant="standard">
-                        <Autocomplete
-                            sx={{ width: 300 }}
-                            options={paymentTermList}
-                            value={paymentTermList.find((item) => Number(item.id) === Number(expenseTransaction.payment_term_id)) || null}
-                            onChange={handlePaymentTermChange}
-                            getOptionLabel={(option) => option.payment_term || ''}
-                            renderInput={(params) => <TextField {...params} label="Choose Payment Term (Optional)" variant="standard" />}
-                        />
-                    </FormControl>
-                    <br />
-
-                    {[2, 3, 4].includes(Number(expenseTransaction.payment_term_id)) && <>
-                    {formErrors.payment_type_po_id && <p style={{ color: 'red' }}>{formErrors.payment_type_po_id}</p>}
-                    <Box
-                        sx={{ '& .MuiTextField-root': { width: '65ch' } }}
-                        noValidate
-                        autoComplete="off"
-                    >
-                        <FormControl variant="standard">
-                            <Autocomplete
-                                options={paymentTypePoList}
-                                onChange={handlePaymentTypeChange}
-                                getOptionLabel={(option) => `${option.bank_name || ''} ${option.account_name || ''} ${option.account_description || ''} - ${option.account_number || ''}`.trim()}
-                                renderInput={(params) => <TextField {...params} required label="Choose Bank" variant="standard" />}
-                            />
-                        </FormControl>
-                    </Box>
-                    </>}
-
-                    <Form.Group className="mb-3" controlId="amountReceived">
+                    <Form.Group className="mb-3" controlId="payExpenseNow">
                         <Form.Label>
-                            Amount Received? <small className="text-muted">(Optional)</small>
+                            Pay now through Central Accounting? <small className="text-muted">(Optional)</small>
                         </Form.Label>
                         <Checkbox
                             checked={Number(expenseTransaction.is_received) === 1}
                             onChange={onChangePaymentReceived}
-                            inputProps={{ 'aria-label': 'Amount received' }}
-                            disabled={Number(expenseTransaction.payment_term_id) === 0}
+                            inputProps={{ 'aria-label': 'Pay expense now' }}
                         />
                     </Form.Group>
+
+                    {Number(expenseTransaction.is_received) === 1 && <>
+                        {formErrors.payment_term_id && <p style={{ color: 'red' }}>{formErrors.payment_term_id}</p>}
+                        <FormControl variant="standard" sx={{ width: '100%', mb: 2 }}>
+                            <Autocomplete
+                                options={paymentTermList}
+                                value={selectedPaymentMethod || null}
+                                onChange={handlePaymentTermChange}
+                                getOptionLabel={(option) => option.name || ''}
+                                renderInput={(params) => <TextField {...params} required label="Payment method" variant="standard" />}
+                            />
+                        </FormControl>
+
+                        {Number(expenseTransaction.payment_term_id) !== 0 && <>
+                            {formErrors.payment_type_po_id && <p style={{ color: 'red' }}>{formErrors.payment_type_po_id}</p>}
+                            <FormControl variant="standard" sx={{ width: '100%', mb: 2 }}>
+                                <Autocomplete
+                                    options={availablePaymentAccounts}
+                                    value={availablePaymentAccounts.find((account) =>
+                                        Number(account.id) === Number(expenseTransaction.payment_type_po_id)
+                                    ) || null}
+                                    onChange={handlePaymentTypeChange}
+                                    getOptionLabel={paymentAccountLabel}
+                                    renderInput={(params) => <TextField {...params} required label="Financial account" variant="standard" />}
+                                />
+                            </FormControl>
+                        </>}
+
+                        {selectedPaymentMethod?.type === 'credit_card' && (
+                            <TextField
+                                fullWidth
+                                type="number"
+                                label="Installments"
+                                value={installmentCount}
+                                onChange={(event) => setInstallmentCount(Math.max(1, Number(event.target.value || 1)))}
+                                inputProps={{ min: 1, max: 60, step: 1 }}
+                                helperText="Accounting will create the monthly statement due dates."
+                                sx={{ mb: 2 }}
+                            />
+                        )}
+                    </>}
                 </>
 
                 <Button variant="primary"
                     disabled={isAddDisabled}
                     onClick={saveExpenseType}>
-                    Submit
+                    {pendingAccountingSync ? 'Retry Accounting Sync' : 'Submit'}
                 </Button>
                 <br></br>
                 <br></br>

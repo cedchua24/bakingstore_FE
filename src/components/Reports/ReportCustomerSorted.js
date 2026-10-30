@@ -13,9 +13,13 @@ import TextField from '@mui/material/TextField';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransactionService';
+import CentralCustomerPaymentService from '../Accounting/CentralCustomerPaymentService';
+import { ACCOUNTING_TOKEN_KEY } from '../Accounting/accountingApi';
+import { centralCustomersById } from '../Accounting/centralCustomerReport';
 import './ReportCustomerSorted.css';
 
 const emptyReport = { data: [], code: '', message: '', id: 0 };
@@ -52,14 +56,27 @@ const ReportCustomerSorted = () => {
     const [error, setError] = useState('');
     const [query, setQuery] = useState('');
     const [showProfit, setShowProfit] = useState(false);
+    const [centralReport, setCentralReport] = useState(null);
 
-    const loadReport = (requestFilters) => {
+    const loadReport = async (requestFilters) => {
         setLoading(true);
         setError('');
-        ShopOrderTransactionService.fetchSortedCustomerReport(requestFilters)
-            .then((response) => setReport(response.data || emptyReport))
-            .catch(() => setError('The customer sales report could not be loaded. Please try again.'))
-            .finally(() => setLoading(false));
+        try {
+            const response = await ShopOrderTransactionService.fetchSortedCustomerReport(requestFilters);
+            setReport(response.data || emptyReport);
+            setCentralReport(null);
+            if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                try {
+                    setCentralReport(await CentralCustomerPaymentService.paymentReport(requestFilters.dateFrom, requestFilters.dateTo));
+                } catch (accountingError) {
+                    console.log('Unable to load Central Accounting customer collections', accountingError);
+                }
+            }
+        } catch (requestError) {
+            setError('The customer sales report could not be loaded. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -97,6 +114,8 @@ const ReportCustomerSorted = () => {
 
     const totalSales = records.reduce((sum, customer) => sum + Number(customer.total_price || 0), 0);
     const totalProfit = records.reduce((sum, customer) => sum + Number(customer.total_profit || 0), 0);
+    const centralCollections = centralCustomersById(centralReport);
+    const centralCollected = Object.values(centralCollections).reduce((sum, value) => sum + Number(value || 0), 0);
     const customerName = (customer) => [customer.first_name, customer.last_name].filter(Boolean).join(' ') || 'Unnamed customer';
 
     return (
@@ -117,6 +136,7 @@ const ReportCustomerSorted = () => {
                     <article><GroupsOutlinedIcon /><div><span>Customers</span><strong>{records.length.toLocaleString()}</strong></div></article>
                     <article><PaymentsOutlinedIcon /><div><span>Total sales</span><strong>{money(totalSales)}</strong></div></article>
                     {showProfit && <article><TrendingUpRoundedIcon /><div><span>Total profit</span><strong>{money(totalProfit)}</strong></div></article>}
+                    {centralReport && <article><AccountBalanceWalletOutlinedIcon /><div><span>Central collected</span><strong>{money(centralCollected)}</strong></div></article>}
                 </section>
 
                 <section className="cr-filter-card">
@@ -161,7 +181,7 @@ const ReportCustomerSorted = () => {
                     </header>
                     <div className="cr-table-scroll">
                         <table className="cr-table">
-                            <thead><tr><th>Rank</th><th>Customer</th>{showProfit && <th>Profit</th>}<th>Sales amount</th></tr></thead>
+                            <thead><tr><th>Rank</th><th>Customer</th>{showProfit && <th>Profit</th>}<th>Sales amount</th>{centralReport && <th>Central collected</th>}</tr></thead>
                             <tbody>
                                 {visibleRecords.map((customer, index) => (
                                     <tr key={customer.id || index}>
@@ -169,9 +189,10 @@ const ReportCustomerSorted = () => {
                                         <td><div className="cr-customer"><strong>{customerName(customer)}</strong><span>Customer #{customer.id}</span></div></td>
                                         {showProfit && <td className="cr-money cr-profit">{money(customer.total_profit)}</td>}
                                         <td className="cr-money">{money(customer.total_price)}</td>
+                                        {centralReport && <td className="cr-money">{money(centralCollections[String(customer.id)])}</td>}
                                     </tr>
                                 ))}
-                                {!loading && !visibleRecords.length && <tr><td colSpan={showProfit ? 4 : 3}><div className="cr-empty"><GroupsOutlinedIcon /><strong>No customers found</strong><span>Configure the report filters or try another search.</span></div></td></tr>}
+                                {!loading && !visibleRecords.length && <tr><td colSpan={(showProfit ? 4 : 3) + (centralReport ? 1 : 0)}><div className="cr-empty"><GroupsOutlinedIcon /><strong>No customers found</strong><span>Configure the report filters or try another search.</span></div></td></tr>}
                             </tbody>
                         </table>
                     </div>

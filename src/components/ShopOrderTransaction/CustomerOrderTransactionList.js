@@ -43,6 +43,8 @@ import moment from "moment";
 import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
 import { getTransactionCategoryTags } from "./shopOrderTransactionTagHelpers";
 import { formatPaymentLabel, getPaymentLabelParts } from "./shopOrderPaymentHelpers";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
 
 import LinearProgress from '@mui/material/LinearProgress';
 import "./CustomerOrderTransactionList.css";
@@ -209,6 +211,8 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
     });
 
     const [shopOrderTransactionList, setShopOrderTransactionList] = useState([]);
+    const [accountingSummaries, setAccountingSummaries] = useState({});
+    const [overpaymentsByTransactionId, setOverpaymentsByTransactionId] = useState({});
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
     const [submitLoadingReport, setSubmitLoadingReport] = useState(false);
@@ -220,10 +224,30 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
     const [isDeliveryDisabled, setIsDeliveryDisabled] = useState(false);
     const [submitDeliveryLoadingDisabled, setSubmitDeliveryLoadingDisabled] = useState(false);
 
+    const fetchAccountingSummaries = async (transactions = []) => {
+        const orderIds = transactions
+            .map((transaction) => Number(transaction.id))
+            .filter((orderId) => Number.isInteger(orderId) && orderId > 0);
+
+        if (!localStorage.getItem(ACCOUNTING_TOKEN_KEY) || orderIds.length === 0) {
+            setAccountingSummaries({});
+            return;
+        }
+
+        try {
+            setAccountingSummaries(await CentralCustomerPaymentService.summaries([...new Set(orderIds)]));
+        } catch (error) {
+            setAccountingSummaries({});
+            console.log("Unable to load Central Accounting payments", error);
+        }
+    };
+
 
 
 
     const fetchOnlineShopOrderTransactionList = () => {
+
+        fetchOnlineShopOrderOverpaymentList();
 
         if (searchByTransactionId) {
             if (!/^\d+$/.test(String(transactionId)) || Number(transactionId) < 1) {
@@ -237,6 +261,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
             ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByIdV2(Number(transactionId))
                 .then(response => {
                     setShopOrderTransaction(response.data);
+                    fetchAccountingSummaries(response.data?.data || []);
                     const transactionDate = response.data?.data?.[0]?.date;
                     if (transactionDate) {
                         setCustomerOrderDate(current => ({ ...current, date: moment(transactionDate).format('YYYY-MM-DD') }));
@@ -268,10 +293,26 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                 console.log("fetchOnlineShopOrderTransactionList :", response.data)
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
+                fetchAccountingSummaries(response.data?.data || []);
             })
             .catch(e => {
                 console.log("error", e)
 
+            });
+    }
+
+    const fetchOnlineShopOrderOverpaymentList = () => {
+        ShopOrderTransactionService.fetchOnlineShopOrderOverpaymentListV2()
+            .then(response => {
+                const overpayments = Array.isArray(response.data?.data) ? response.data.data : [];
+                setOverpaymentsByTransactionId(overpayments.reduce((indexedOverpayments, overpayment) => {
+                    indexedOverpayments[String(overpayment.transaction_id)] = overpayment;
+                    return indexedOverpayments;
+                }, {}));
+            })
+            .catch(error => {
+                setOverpaymentsByTransactionId({});
+                console.log("Unable to load online order overpayments", error);
             });
     }
 
@@ -467,6 +508,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                 .then(response => {
                     console.log("data: ", response.data);
                     setShopOrderTransaction(response.data);
+                    fetchOnlineShopOrderOverpaymentList();
                     fetchExpensesList();
                     setSubmitLoadingAdd(false);
                     setIsAddDisabled(false);
@@ -774,9 +816,6 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
 
     const money = (value) => numberFormat(value || 0);
 
-    const totalPaidToday = (shopOrderTransaction.total_paid || 0) + (shopOrderTransaction.total_paid_prev || 0);
-    const totalCashToday = (shopOrderTransaction.total_cash || 0) + (shopOrderTransaction.total_cash_prev || 0);
-    const totalOnlineToday = (shopOrderTransaction.total_online || 0) + (shopOrderTransaction.total_online_prev || 0);
     const totalReportExpenses = expensesMandatory.total_expense || expensesMandatory.total_expenses || 0;
     const netProfit = (discountLoss.total_amount || 0) + (shopOrderTransaction.total_profit || 0) - totalReportExpenses + (spoilage.total_cost || 0);
 
@@ -790,6 +829,135 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
         if (status === 1) return "Completed";
         if (status === 2) return "Pending";
         return "Cancelled";
+    };
+
+    const hasLegacyPayments = (transaction) => Array.isArray(transaction.mode_of_payment) && transaction.mode_of_payment.length > 0;
+
+    const centralSummaryFor = (transaction) => accountingSummaries[String(transaction.id)];
+
+    const centralPaymentLinesFor = (transaction) => {
+        const summary = centralSummaryFor(transaction);
+        if (!summary || !Array.isArray(summary.data)) return [];
+
+        return summary.data
+            .filter((payment) => payment.status === "posted")
+            .flatMap((payment) => (payment.lines || []).map((line) => ({
+                ...line,
+                paymentId: payment.id,
+            })));
+    };
+
+    const overpaymentFor = (transaction) => {
+        const apiOverpayment = overpaymentsByTransactionId[String(transaction.id)];
+        if (apiOverpayment) return apiOverpayment;
+
+        const legacyPayments = Array.isArray(transaction.mode_of_payment) ? transaction.mode_of_payment : [];
+        const displayedPayments = legacyPayments.length > 0 ? legacyPayments : centralPaymentLinesFor(transaction);
+        const totalAccount = displayedPayments.reduce((total, payment) => total + Number(payment.amount || 0), 0);
+        const totalAmount = Number(transaction.shop_order_transaction_total_price || 0);
+
+        if (totalAccount <= totalAmount) return null;
+
+        return {
+            transaction_id: transaction.id,
+            date: transaction.date,
+            total_amount: totalAmount,
+            total_account: totalAccount,
+            refund_amount: Math.round((totalAccount - totalAmount) * 100) / 100,
+        };
+    };
+
+    const centralPaymentLabelParts = (line) => {
+        const account = line.financial_account || {};
+        const institutionName = String(account.institution?.name || "").trim();
+        let accountName = String(account.name || "").trim();
+
+        if (institutionName && accountName.toLowerCase().startsWith(`${institutionName.toLowerCase()} - `)) {
+            accountName = accountName.slice(institutionName.length + 3).trim();
+        }
+        if (institutionName && accountName.toLowerCase().startsWith(`${institutionName.toLowerCase()} `)) {
+            accountName = accountName.slice(institutionName.length + 1).trim();
+        }
+
+        return [
+            line.payment_method?.name,
+            institutionName,
+            accountName,
+            account.masked_account_number || account.account_number,
+        ].filter((value) => value !== undefined && value !== null && String(value).trim() !== "");
+    };
+
+    const centralFallbackPaymentLines = shopOrderTransaction.data
+        .filter((transaction) => !hasLegacyPayments(transaction))
+        .flatMap((transaction) => {
+            const summary = centralSummaryFor(transaction);
+            if (!Array.isArray(summary?.data)) return [];
+
+            return summary.data
+                .filter((payment) => payment.status === "posted")
+                .flatMap((payment) => {
+                    const lines = Array.isArray(payment.lines) ? payment.lines : [];
+                    const lineTotal = lines.reduce((total, line) => total + Number(line.amount || 0), 0);
+                    const netPayment = Math.max(0, Number(payment.amount || 0) - Number(payment.refunded_amount || 0));
+
+                    return lines.map((line) => ({
+                        ...line,
+                        paymentId: payment.id,
+                        paymentDate: payment.payment_date,
+                        netAmount: lineTotal > 0 ? netPayment * (Number(line.amount || 0) / lineTotal) : 0,
+                    }));
+                });
+        });
+
+    const centralPaymentBreakdown = Array.from(
+        centralFallbackPaymentLines.reduce((breakdown, line) => {
+            const key = `${line.financial_account_id || line.financial_account?.id || "account"}-${line.payment_method_id || line.payment_method?.id || "method"}`;
+            const current = breakdown.get(key) || { key, line, totalAmount: 0, totalCount: 0, confirmedCount: 0 };
+            current.totalAmount += Number(line.netAmount || 0);
+            current.totalCount += 1;
+            if (line.confirmed_at) current.confirmedCount += 1;
+            breakdown.set(key, current);
+            return breakdown;
+        }, new Map()).values()
+    ).filter((payment) => payment.totalAmount > 0);
+
+    const selectedReportDate = moment(customerOrderDate.date).format("YYYY-MM-DD");
+    const centralCurrentLines = centralFallbackPaymentLines.filter((line) => (
+        moment(line.paymentDate).isValid() && moment(line.paymentDate).format("YYYY-MM-DD") === selectedReportDate
+    ));
+    const centralPostLines = centralFallbackPaymentLines.filter((line) => (
+        moment(line.paymentDate).isValid() && moment(line.paymentDate).format("YYYY-MM-DD") > selectedReportDate
+    ));
+    const centralCurrentPaid = centralCurrentLines.reduce((total, line) => total + Number(line.netAmount || 0), 0);
+    const centralPostPaid = centralPostLines.reduce((total, line) => total + Number(line.netAmount || 0), 0);
+    const centralCashToday = centralCurrentLines
+        .filter((line) => line.payment_method?.type === "cash")
+        .reduce((total, line) => total + Number(line.netAmount || 0), 0);
+    const centralOnlineToday = centralCurrentPaid - centralCashToday;
+    const totalPaidToday = Number(shopOrderTransaction.total_paid || 0) + Number(shopOrderTransaction.total_paid_prev || 0) + centralCurrentPaid;
+    const totalCashToday = Number(shopOrderTransaction.total_cash || 0) + Number(shopOrderTransaction.total_cash_prev || 0) + centralCashToday;
+    const totalOnlineToday = Number(shopOrderTransaction.total_online || 0) + Number(shopOrderTransaction.total_online_prev || 0) + centralOnlineToday;
+    const legacyPaymentBreakdown = Array.isArray(shopOrderTransaction.payment) ? shopOrderTransaction.payment : [];
+
+    const displayedPaymentStatus = (transaction) => {
+        if (hasLegacyPayments(transaction) || !centralSummaryFor(transaction)?.invoice) {
+            return {
+                className: paymentStatusClass(transaction.status),
+                label: paymentStatusLabel(transaction.status),
+            };
+        }
+
+        const centralStatus = centralSummaryFor(transaction).invoice.status;
+        const statuses = {
+            paid: { className: "status-pill status-success", label: "Completed" },
+            partially_paid: { className: "status-pill status-warning", label: "Partially Paid" },
+            unpaid: { className: "status-pill status-warning", label: "Pending" },
+            partially_refunded: { className: "status-pill status-warning", label: "Partial Refund" },
+            refunded: { className: "status-pill status-danger", label: "Refunded" },
+            cancelled: { className: "status-pill status-danger", label: "Cancelled" },
+        };
+
+        return statuses[centralStatus] || { className: "status-pill status-warning", label: centralStatus || "Pending" };
     };
 
     const pickupStatusClass = (isPickup) => isPickup === 1 ? "status-pill status-success" : "status-pill status-warning";
@@ -874,6 +1042,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
             transaction.shop_order_transaction_total_quantity,
             transaction.shop_order_transaction_total_price,
             getTransactionCategoryTags(transaction).join(" "),
+            overpaymentFor(transaction) ? "overpayment refund needed" : "",
         ].some((value) => String(value ?? '').toLowerCase().includes(searchTerm)))
         : shopOrderTransaction.data;
 
@@ -998,9 +1167,9 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                     </div>
 
                     <div className="customer-report-payment-list">
-                        {shopOrderTransaction.payment.length == 0 ? (
+                        {legacyPaymentBreakdown.length === 0 && centralPaymentBreakdown.length === 0 ? (
                             <p className="customer-report-muted">No payment data available.</p>
-                        ) : shopOrderTransaction.payment.map((payment) => (
+                        ) : legacyPaymentBreakdown.map((payment) => (
                             <div className="customer-report-payment-row" key={payment.id}>
                                 <div>
                                     <strong>{formatPaymentLabel(payment)}</strong>
@@ -1017,12 +1186,32 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                 </div>
                             </div>
                         ))}
+                        {centralPaymentBreakdown.map((payment) => (
+                            <div className="customer-report-payment-row" key={`accounting-${payment.key}`}>
+                                <div>
+                                    <strong>{centralPaymentLabelParts(payment.line).join(" · ")}</strong>
+                                </div>
+                                <div className="customer-report-payment-actions">
+                                    <Link to={`../shopOrderTransaction/paymentTypeSales/central-${payment.line.financial_account_id || payment.line.financial_account?.id}+${customerOrderDate.date}`}>
+                                        <PageviewIcon color="primary" />
+                                    </Link>
+                                    {payment.confirmedCount === payment.totalCount ? (
+                                        <CheckIcon className="customer-report-icon-success" />
+                                    ) : (
+                                        <Tooltip title={`${payment.totalCount - payment.confirmedCount} payment(s) still need confirmation`}>
+                                            <span><CloseIcon className="customer-report-icon-danger" /></span>
+                                        </Tooltip>
+                                    )}
+                                    <strong>{money(payment.totalAmount)}</strong>
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     <div className="customer-report-mini-grid">
                         <div>
                             <span>Current Paid</span>
-                            <strong>{money(shopOrderTransaction.total_paid)}</strong>
+                            <strong>{money(Number(shopOrderTransaction.total_paid || 0) + centralCurrentPaid)}</strong>
                         </div>
                         <div>
                             <span>Previous Paid</span>
@@ -1032,7 +1221,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                         </div>
                         <div>
                             <span>Post Paid</span>
-                            <strong>{money(shopOrderTransaction.total_paid_outdated)}</strong>
+                            <strong>{money(Number(shopOrderTransaction.total_paid_outdated || 0) + centralPostPaid)}</strong>
                             <Link to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/2`}>Cash</Link>
                             <Link to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/2`}>Online</Link>
                         </div>
@@ -1220,11 +1409,18 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                 const vipCustomers = getTransactionVipCustomers(transaction);
                                 const transactionIsNewCustomer = isNewCustomer(transaction);
                                 const transactionTags = getTransactionCategoryTags(transaction);
+                                const legacyPayments = Array.isArray(transaction.mode_of_payment) ? transaction.mode_of_payment : [];
+                                const centralPaymentLines = hasLegacyPayments(transaction) ? [] : centralPaymentLinesFor(transaction);
+                                const paymentStatus = displayedPaymentStatus(transaction);
+                                const overpayment = overpaymentFor(transaction);
 
                                 return (
                                     <tr
                                         key={transaction.id}
-                                        className={transactionIsNewCustomer ? "customer-report-new-customer-row" : ""}
+                                        className={[
+                                            transactionIsNewCustomer ? "customer-report-new-customer-row" : "",
+                                            overpayment ? "customer-report-overpayment-row" : ""
+                                        ].filter(Boolean).join(" ")}
                                     >
                                         <td className="customer-report-id customer-report-id-cell">
                                             {primaryVipCustomer &&
@@ -1237,6 +1433,13 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                     <span className="customer-report-order-id">#{transaction.id}</span>
                                                     {transaction.delivery_customer_id != 0 &&
                                                         <span className="customer-report-delivery-order-badge">Delivery Order</span>
+                                                    }
+                                                    {overpayment &&
+                                                        <Tooltip title={`Total account ${money(overpayment.total_account)} exceeds the order total ${money(overpayment.total_amount)}. Refund ${money(overpayment.refund_amount)}.`}>
+                                                            <span className="customer-report-overpayment-badge">
+                                                                Refund needed: {money(overpayment.refund_amount)}
+                                                            </span>
+                                                        </Tooltip>
                                                     }
                                                     {vipCustomers.length > 0 &&
                                                     <span className="customer-report-vip-badge-list">
@@ -1280,7 +1483,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                         <td>{transaction.shop_order_transaction_total_quantity != 0 ? transaction.shop_order_transaction_total_quantity : "-"}</td>
                                         <td>
                                             <div className="customer-report-bank-list">
-                                                {transaction.mode_of_payment.map((sot, index) => (
+                                                {legacyPayments.map((sot, index) => (
                                                     <div className="customer-report-payment-account" key={`${transaction.id}-${sot.id || index}-${index}`}>
                                                         <strong>{money(sot.amount)}</strong>
                                                         {getPaymentLabelParts(sot).map((detail, detailIndex) => (
@@ -1288,6 +1491,20 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                         ))}
                                                     </div>
                                                 ))}
+                                                {centralPaymentLines.map((line, index) => (
+                                                    <div className="customer-report-payment-account" key={`${transaction.id}-accounting-${line.id || line.paymentId}-${index}`}>
+                                                        <strong>{money(line.amount)}</strong>
+                                                        {centralPaymentLabelParts(line).map((detail, detailIndex) => (
+                                                            <small key={`${detail}-${detailIndex}`}>{detail}</small>
+                                                        ))}
+                                                    </div>
+                                                ))}
+                                                {overpayment &&
+                                                    <div className="customer-report-overpayment-total">
+                                                        <small>Total account</small>
+                                                        <strong>{money(overpayment.total_account)}</strong>
+                                                    </div>
+                                                }
                                             </div>
                                         </td>
                                         <td className="customer-report-amount">{transaction.shop_order_transaction_total_price != 0 ? money(transaction.shop_order_transaction_total_price) : "-"}</td>
@@ -1302,7 +1519,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                 }
                                             </div>
                                         </td>
-                                        <td><span className={paymentStatusClass(transaction.status)}>{paymentStatusLabel(transaction.status)}</span></td>
+                                        <td><span className={paymentStatus.className}>{paymentStatus.label}</span></td>
                                         <td className="customer-report-pickup-col">
                                             <div className="customer-report-status-action customer-report-pickup-action">
                                                 <span className={pickupStatusClass(transaction.is_pickup)}>{transaction.is_pickup === 1 ? "Done" : "Waiting"}</span>

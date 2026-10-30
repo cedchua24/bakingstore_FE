@@ -6,6 +6,9 @@ import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransa
 import ExpenseTransactionService from "../ExpensesV2/ExpenseTransactionService";
 import ExpenseTypeV2Service from "../ExpensesV2/ExpensesTypeV2Service";
 import DiscountService from "../OtherService/DiscountService";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { mergeDailyReceivedPayments } from "../Accounting/centralSalesReport";
 import ReportBar from "./ReportBar";
 import "./ReportSales.css";
 import "./ReportList.css";
@@ -292,6 +295,23 @@ const ReportList = () => {
                 data: response.data?.data || [],
             };
 
+            let central = { data: [], total_sales: 0 };
+            if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                try {
+                    central = await CentralCustomerPaymentService.paymentReport(
+                        customerOrderDate.dateFrom,
+                        customerOrderDate.dateTo
+                    );
+                } catch (accountingError) {
+                    console.log('Unable to load Central Accounting sales payments', accountingError);
+                }
+            }
+            reportData.data = mergeDailyReceivedPayments(reportData.data, central, {
+                preserveSales: true,
+                preserveCount: true,
+                includeCentralOnly: false,
+            });
+
             const discountLossRows = Array.isArray(discountLossResponse.data?.data)
                 ? discountLossResponse.data.data
                 : [];
@@ -305,7 +325,7 @@ const ReportList = () => {
             const fetchedAllSalesTotal = salesRows.reduce(
                 (total, item) => total + (Number(item.total_sales) || 0),
                 0
-            );
+            ) + Number(central.total_sales || 0);
 
             const expenseResponse =
                 await ExpenseTransactionService.getTotalExpenseWithFilters({

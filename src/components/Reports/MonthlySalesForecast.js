@@ -3,6 +3,9 @@ import LinearProgress from "@mui/material/LinearProgress";
 import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { centralMonthlyTotals, yearRange } from "../Accounting/centralSalesReport";
 import "./MonthlySalesForecast.css";
 
 const currentYear = new Date().getFullYear();
@@ -35,7 +38,31 @@ const MonthlySalesForecast = () => {
             const response = await ShopOrderTransactionService.fetchOnlineShopMonthlySalesForecast({
                 year: Number(requestedYear),
             });
-            setReport(response.data || { data: [], summary: {} });
+            let central = { data: [] };
+            if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                try {
+                    const range = yearRange(Number(requestedYear));
+                    central = await CentralCustomerPaymentService.paymentReport(range.dateFrom, range.dateTo);
+                } catch (accountingError) {
+                    console.log('Unable to load Central Accounting sales payments', accountingError);
+                }
+            }
+            const centralMonths = centralMonthlyTotals(central);
+            const reportData = response.data || { data: [], summary: {} };
+            setReport({
+                ...reportData,
+                data: (reportData.data || []).map((month) => {
+                    const period = month.period || `${requestedYear}-${String(month.month_number).padStart(2, '0')}`;
+                    const centralMonth = centralMonths[period] || {};
+                    return {
+                        ...month,
+                        total_cash: Number(month.total_cash || 0) + Number(centralMonth.cash || 0),
+                        total_online: Number(month.total_online || 0) + Number(centralMonth.online || 0),
+                        total_collected: Number(month.total_cash || 0) + Number(month.total_online || 0)
+                            + Number(centralMonth.sales || 0),
+                    };
+                }),
+            });
             setSelectedYear(Number(requestedYear));
         } catch (requestError) {
             const validationMessage = requestError.response?.data?.errors?.year?.[0];
@@ -62,6 +89,10 @@ const MonthlySalesForecast = () => {
     const forecastMonths = months.filter((month) => month.type === "forecast").length;
     const actualOrders = months.reduce(
         (total, month) => total + (month.type === "actual" ? Number(month.total_count) || 0 : 0),
+        0
+    );
+    const actualCollected = months.reduce(
+        (total, month) => total + (month.type === "actual" ? Number(month.total_collected || 0) : 0),
         0
     );
     const averageMonthlySales = months.length
@@ -197,13 +228,14 @@ const MonthlySalesForecast = () => {
                         <div className="monthly-forecast__table-wrap">
                             <table>
                                 <colgroup>
-                                    <col style={{ width: isAdmin ? "22%" : "26%" }} />
-                                    <col style={{ width: isAdmin ? "18%" : "20%" }} />
-                                    <col style={{ width: isAdmin ? "25%" : "32%" }} />
-                                    {isAdmin && <col style={{ width: "20%" }} />}
-                                    <col style={{ width: isAdmin ? "15%" : "22%" }} />
+                                    <col style={{ width: isAdmin ? "18%" : "22%" }} />
+                                    <col style={{ width: isAdmin ? "15%" : "18%" }} />
+                                    <col style={{ width: isAdmin ? "20%" : "25%" }} />
+                                    <col style={{ width: isAdmin ? "17%" : "20%" }} />
+                                    {isAdmin && <col style={{ width: "17%" }} />}
+                                    <col style={{ width: isAdmin ? "13%" : "15%" }} />
                                 </colgroup>
-                                <thead><tr><th>Month</th><th>Status</th><th>Sales</th>{isAdmin && <th>Profit</th>}<th>Orders</th></tr></thead>
+                                <thead><tr><th>Month</th><th>Status</th><th>Sales</th><th>Collected</th>{isAdmin && <th>Profit</th>}<th>Orders</th></tr></thead>
                                 <tbody>
                                     {months.map((month, index) => {
                                         const previousSales = Number(months[index - 1]?.total_sales) || 0;
@@ -228,12 +260,13 @@ const MonthlySalesForecast = () => {
                                                 {isIncompleteMonth && <small className="monthly-forecast__days-status">{today.getDate()} of {daysInMonth} days recorded · {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining</small>}
                                             </td>
                                             <td className={hasHighestSales ? "monthly-forecast__highest" : ""}>{hasHighestSales && <span className="monthly-forecast__highest-badge">★ Highest</span>}<strong>{money(month.total_sales)}</strong>{month.type === "actual" && change !== null && <small className={`monthly-forecast__change ${change >= 0 ? "is-up" : "is-down"}`}>{change >= 0 ? "↑" : "↓"} {Math.abs(change).toFixed(1)}% vs prior month</small>}</td>
+                                            <td>{month.type === "actual" ? <><strong>{money(month.total_collected)}</strong><small>Legacy + Central Accounting</small></> : <span className="monthly-forecast__not-applicable">Forecast only</span>}</td>
                                             {isAdmin && <td className={hasHighestProfit ? "monthly-forecast__highest" : ""}>{hasHighestProfit && <span className="monthly-forecast__highest-badge">★ Highest</span>}<strong className="monthly-forecast__profit">{money(month.total_profit)}</strong><small>{profitMargin.toFixed(1)}% margin</small></td>}
                                             <td className={hasHighestOrders ? "monthly-forecast__highest" : ""}>{hasHighestOrders && <span className="monthly-forecast__highest-badge">★ Highest</span>}{month.total_count === null ? <span className="monthly-forecast__not-applicable">Forecast only</span> : <><strong>{Number(month.total_count).toLocaleString("en-US")}</strong><small>completed orders</small></>}</td>
                                         </tr>;
                                     })}
                                 </tbody>
-                                <tfoot><tr><td colSpan="2"><strong>{selectedYear} annual total</strong><small>{forecastMonths ? "Actual + projected" : "Recorded results"}</small></td><td><strong>{money(summary.projected_annual_sales)}</strong></td>{isAdmin && <td><strong>{money(summary.projected_annual_profit)}</strong></td>}<td><strong>{actualOrders.toLocaleString("en-US")}</strong><small>actual orders</small></td></tr></tfoot>
+                                <tfoot><tr><td colSpan="2"><strong>{selectedYear} annual total</strong><small>{forecastMonths ? "Actual + projected" : "Recorded results"}</small></td><td><strong>{money(summary.projected_annual_sales)}</strong></td><td><strong>{money(actualCollected)}</strong><small>actual collections</small></td>{isAdmin && <td><strong>{money(summary.projected_annual_profit)}</strong></td>}<td><strong>{actualOrders.toLocaleString("en-US")}</strong><small>actual orders</small></td></tr></tfoot>
                             </table>
                         </div>
                         {forecastMonths > 0 && <p className="monthly-forecast__note">Forecast months use the linear trend from recorded monthly sales. Forecast values are estimates and will be replaced by actual results as the year progresses.</p>}

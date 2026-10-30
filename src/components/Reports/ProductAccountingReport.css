@@ -1,0 +1,15 @@
+.pr-summary.pr-summary--accounting {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.pr-summary .pr-accounting-metric small {
+    display: block;
+    margin-top: 3px;
+    color: var(--pr-muted);
+    font-size: .61rem;
+}
+
+.pr-summary .pr-accounting-metric svg {
+    color: #137052;
+    background: #e8f7f0;
+}

@@ -14,6 +14,9 @@ import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
 import { useLocation } from "react-router-dom";
 import ProductService from "./ProductService.service";
 import ImpactGroupSelect from "../Common/ImpactGroupSelect";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { centralCustomerTotal, monthDateRange } from "../Accounting/centralCustomerReport";
 import "../Reports/ProductReport.css";
 import "../VipCustomer/VIPTransactionHistory.css";
 import "./ProductMonthlySalesHistory.css";
@@ -161,6 +164,7 @@ const ProductMonthlySalesHistory = () => {
     const [visibleMetrics, setVisibleMetrics] = useState({ quantity: true, sales: true, profit: false, profitMargin: false });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [centralCollected, setCentralCollected] = useState(0);
 
     const load = useCallback((selectedMonth, selectedComparisonPage = 0, request = {}) => {
         const requestedGroup = request.impactGroup || "all";
@@ -169,7 +173,21 @@ const ProductMonthlySalesHistory = () => {
         setError("");
         const filters = { comparison_page: selectedComparisonPage, impact_group: "all", limit: 100, ...(requestedSearch ? { search: requestedSearch } : {}), ...(customerId ? { customer_id: customerId } : {}) };
         return ProductService.fetchProductMonthlySales(selectedMonth, filters)
-            .then(response => { setReport(response.data); setAppliedGroup(requestedGroup); setSelectedRecoveryIds([]); })
+            .then(async response => {
+                setReport(response.data);
+                setAppliedGroup(requestedGroup);
+                setSelectedRecoveryIds([]);
+                setCentralCollected(0);
+                if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                    try {
+                        const range = monthDateRange(selectedMonth);
+                        const central = await CentralCustomerPaymentService.paymentReport(range.dateFrom, range.dateTo);
+                        setCentralCollected(customerId ? centralCustomerTotal(central, customerId) : Number(central.total_sales || 0));
+                    } catch (accountingError) {
+                        console.log("Unable to load Central Accounting product-history collections", accountingError);
+                    }
+                }
+            })
             .catch(requestError => {
                 setReport(null);
                 setError(requestError.response?.data?.message || "Unable to load monthly product sales.");
@@ -307,6 +325,11 @@ const ProductMonthlySalesHistory = () => {
                     <p style={styles.label}>Previous 3-month average</p>
                     <p style={styles.value}>{money(report.average_sales)}</p>
                     <div className="product-summary-comparison"><span>Selected month change</span><strong className={gap >= 0 ? "pt-positive" : "pr-negative"}>{gap >= 0 ? "+" : "-"}{money(Math.abs(gap))}</strong></div>
+                </div>
+                <div style={styles.card}>
+                    <p style={styles.label}>Central collected</p>
+                    <p style={styles.value}>{money(centralCollected)}</p>
+                    <div className="product-summary-comparison"><span>Posted receipts less refunds</span><strong>Accounting V2</strong></div>
                 </div>
             </section>
             <section className="pr-summary ct-summary">

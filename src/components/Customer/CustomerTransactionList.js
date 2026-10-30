@@ -7,6 +7,12 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import Tooltip from '@mui/material/Tooltip';
 import { formatPaymentLabel } from "../ShopOrderTransaction/shopOrderPaymentHelpers";
+import useCentralCustomerPaymentSummaries, {
+    centralCustomerPaymentLabel,
+    centralCustomerPaymentLines,
+    centralCustomerPaymentStatus,
+    hasLegacyCustomerPayments,
+} from "../Accounting/useCentralCustomerPaymentSummaries";
 import "./CustomerReportLists.css";
 
 const CustomerTransactionList = () => {
@@ -14,6 +20,7 @@ const CustomerTransactionList = () => {
     const { id } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
+    const { accountingSummaries, loadAccountingSummaries } = useCentralCustomerPaymentSummaries();
 
     const [customerTransactionList, setCustomerTransactionList] = useState({
         data: [],
@@ -50,11 +57,12 @@ const CustomerTransactionList = () => {
             .then(response => {
                 console.log('data', response.data)
                 setCustomerTransactionList(response.data);
+                loadAccountingSummaries(response.data?.data || []);
             })
             .catch(e => {
                 console.log("error", e)
             });
-    }, []);
+    }, [loadAccountingSummaries]);
 
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
@@ -97,6 +105,10 @@ const CustomerTransactionList = () => {
 
     const customerName = [customerTransactionList.customerDetails.first_name, customerTransactionList.customerDetails.last_name]
         .filter(Boolean).join(" ") || "Customer";
+    const centralPaymentTotal = customerTransactionList.data.reduce((total, transaction) => {
+        if (hasLegacyCustomerPayments(transaction)) return total;
+        return total + Number(accountingSummaries[String(transaction.id)]?.total_payment || 0);
+    }, 0);
 
 
     return (
@@ -143,6 +155,12 @@ const CustomerTransactionList = () => {
                     )
                     )
                 }
+                {centralPaymentTotal > 0 &&
+                    <article className="customer-list-metric">
+                        <div><span>Central Accounting</span><CheckIcon style={{ color: 'green' }} /></div>
+                        <strong>{numberFormat(centralPaymentTotal)}</strong>
+                    </article>
+                }
                 <article className="customer-list-metric customer-list-metric--total">
                     <span>Total Amount</span>
                     <strong>{totalSum(customerTransactionList.data)}</strong>
@@ -173,8 +191,16 @@ const CustomerTransactionList = () => {
                         <tbody>
 
                             {
-                                customerTransactionList.data.map((customerTransactionList, index) => (
-                                    <tr key={customerTransactionList.id} style={{ border: "2px solid black" }}>
+                                customerTransactionList.data.map((customerTransactionList, index) => {
+                                    const accountingSummary = accountingSummaries[String(customerTransactionList.id)];
+                                    const centralLines = hasLegacyCustomerPayments(customerTransactionList)
+                                        ? []
+                                        : centralCustomerPaymentLines(accountingSummary);
+                                    const paymentStatus = centralCustomerPaymentStatus(customerTransactionList, accountingSummary);
+                                    const paymentStatusTone = paymentStatus.className === "status-success"
+                                        ? "completed"
+                                        : paymentStatus.className === "status-danger" ? "cancelled" : "pending";
+                                    return <tr key={customerTransactionList.id} style={{ border: "2px solid black" }}>
                                         <td >{customerTransactionList.id}</td>
                                         <td>{customerTransactionList.shop_name}</td>
                                         <td>{customerTransactionList.customer_type}</td>
@@ -188,13 +214,22 @@ const CustomerTransactionList = () => {
                                                 ))}
                                                 </div>
                                             }
+                                            {centralLines.length > 0 &&
+                                                <div className="customer-list-payment-list">
+                                                    {centralLines.map((line, lineIndex) => (
+                                                        <span key={line.id || lineIndex}>
+                                                            <small>{centralCustomerPaymentLabel(line)}</small>{numberFormat(line.amount)}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            }
                                         </td>
 
                                         <td style={{ fontWeight: 'bold', }}>{customerTransactionList.shop_order_transaction_total_price != 0 ? numberFormat(customerTransactionList.shop_order_transaction_total_price) : ""}</td>
                                         <td style={{ fontWeight: 'bold', }}>{customerTransactionList.profit != 0 ? numberFormat(customerTransactionList.profit) : ""}</td>
                                         <td>{customerTransactionList.date}</td>
-                                        <td><span className={`customer-list-status customer-list-status--${customerTransactionList.status === 1 ? "completed" : customerTransactionList.status === 2 ? "pending" : "cancelled"}`}>
-                                            {customerTransactionList.status === 1 ? "COMPLETED" : customerTransactionList.status === 2 ? "PENDING" : "CANCELLED"}
+                                        <td><span className={`customer-list-status customer-list-status--${paymentStatusTone}`}>
+                                            {paymentStatus.label.toUpperCase()}
                                         </span></td>
                                         <td>
                                             <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + customerTransactionList.id}   >
@@ -203,9 +238,8 @@ const CustomerTransactionList = () => {
                                                 </Button>
                                             </Link>
                                         </td>
-                                    </tr>
-                                )
-                                )
+                                    </tr>;
+                                })
                             }
                         </tbody>)}
             </table>

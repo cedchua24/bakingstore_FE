@@ -23,6 +23,9 @@ import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import PrintingTransactionService from './PrintingTransactionService';
 import UserService from '../User/UserService.service';
+import CentralCustomerPaymentService from '../Accounting/CentralCustomerPaymentService';
+import { ACCOUNTING_TOKEN_KEY } from '../Accounting/accountingApi';
+import { centralCustomerPaymentLines } from '../Accounting/useCentralCustomerPaymentSummaries';
 import './EditPrintingTransaction.css';
 
 const dateOnly = (value) => value ? String(value).slice(0, 10) : '';
@@ -87,6 +90,7 @@ const EditPrintingTransaction = () => {
     const [commentSaving, setCommentSaving] = useState(false);
     const [commentError, setCommentError] = useState('');
     const [coordinators, setCoordinators] = useState([]);
+    const [centralPaymentSummary, setCentralPaymentSummary] = useState(null);
     const successAlertRef = useRef(null);
     const isAdmin = Number(localStorage.getItem('role_as')) === 2;
     const completedLocked = transaction?.order_status === 'COMPLETED' && !isAdmin;
@@ -103,9 +107,20 @@ const EditPrintingTransaction = () => {
 
     useEffect(() => {
         PrintingTransactionService.get(id)
-            .then((response) => {
+            .then(async (response) => {
                 const data = response.data?.data ?? response.data;
                 setTransaction(data);
+                setCentralPaymentSummary(null);
+                if (
+                    localStorage.getItem(ACCOUNTING_TOKEN_KEY)
+                    && (!Array.isArray(data.payment_history) || data.payment_history.length === 0)
+                ) {
+                    try {
+                        setCentralPaymentSummary(await CentralCustomerPaymentService.summary(data.shop_order_transaction_id));
+                    } catch (accountingError) {
+                        console.log('Unable to load Central Accounting printing payment', accountingError);
+                    }
+                }
                 setForm({
                     logo: data.logo ?? '',
                     plate: Boolean(Number(data.plate)),
@@ -228,9 +243,26 @@ const EditPrintingTransaction = () => {
     const printingOrders = shopOrders.filter(isPrintingOrder);
     const nonPrintingOrders = shopOrders.filter((order) => !isPrintingOrder(order));
     const overallTotal = shopOrders.reduce((total, order) => total + Number(order.shop_order_total_price || 0), 0);
-    const paymentHistory = Array.isArray(transaction?.payment_history) ? transaction.payment_history : [];
-    const totalPayment = Number(transaction?.total_payment || 0);
-    const balance = Number(transaction?.balance || 0);
+    const legacyPaymentHistory = Array.isArray(transaction?.payment_history) ? transaction.payment_history : [];
+    const centralPaymentHistory = legacyPaymentHistory.length === 0
+        ? centralCustomerPaymentLines(centralPaymentSummary).map((line, index) => ({
+            id: line.id || `central-${index}`,
+            created_at: line.paymentDate,
+            payment_term: line.payment_method?.name,
+            account_name: line.financial_account?.name,
+            account_number: line.financial_account?.masked_account_number,
+            bank_name: line.financial_account?.institution?.name,
+            amount: line.amount,
+            accounting_source: 'Central Accounting',
+        }))
+        : [];
+    const paymentHistory = legacyPaymentHistory.length > 0 ? legacyPaymentHistory : centralPaymentHistory;
+    const totalPayment = legacyPaymentHistory.length > 0
+        ? Number(transaction?.total_payment || 0)
+        : Number(centralPaymentSummary?.total_payment || 0);
+    const balance = legacyPaymentHistory.length > 0 || !centralPaymentSummary?.invoice
+        ? Number(transaction?.balance || 0)
+        : Number(centralPaymentSummary?.balance || 0);
     const fullTransactionTotal = totalPayment + balance;
     const scheduleDurations = [
         ['ORDER → SUPPLIER', daysBetween(form?.order_date, form?.sent_date)],
@@ -546,7 +578,7 @@ const EditPrintingTransaction = () => {
                                             <TableBody>
                                                 {paymentHistory.length ? paymentHistory.map((payment) => <TableRow key={payment.id} hover>
                                                     <TableCell sx={{ pl: { xs: 2, md: 2.5 }, whiteSpace: 'nowrap' }}>{formatDateTime(payment.created_at)}</TableCell>
-                                                    <TableCell><Typography sx={{ fontWeight: 700, fontSize: 14 }}>{[payment.payment_term, payment.account_name].filter(Boolean).join(' · ') || '—'}</Typography>{payment.account_number && String(payment.account_number).trim() !== '0' && <Typography variant="caption" color="text.secondary">{payment.account_number}</Typography>}</TableCell>
+                                                    <TableCell><Typography sx={{ fontWeight: 700, fontSize: 14 }}>{[payment.payment_term, payment.account_name].filter(Boolean).join(' · ') || '—'}</Typography>{payment.account_number && String(payment.account_number).trim() !== '0' && <Typography variant="caption" color="text.secondary">{payment.account_number}</Typography>}{payment.accounting_source && <Typography variant="caption" sx={{ display: 'block', color: '#0f766e', fontWeight: 750 }}>{payment.accounting_source}</Typography>}</TableCell>
                                                     <TableCell>{payment.bank_name || '—'}</TableCell>
                                                     <TableCell align="right" sx={{ pr: { xs: 2, md: 2.5 }, color: '#166534', fontWeight: 850 }}>{formatAmount(payment.amount)}</TableCell>
                                                 </TableRow>) : <TableRow><TableCell colSpan={4} align="center" sx={{ py: 3, color: 'text.secondary' }}>No payment history yet.</TableCell></TableRow>}

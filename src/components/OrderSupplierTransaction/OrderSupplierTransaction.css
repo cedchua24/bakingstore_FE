@@ -2290,10 +2290,22 @@
 .purchase-order-heading p { margin: 5px 0 0; color: rgba(255,255,255,.78); font-size: .84rem; }
 .purchase-order-page .purchase-order-next,
 .purchase-order-page .purchase-order-submit,
-.purchase-order-page .po-add-button { background: var(--po-orchid) !important; border-color: var(--po-orchid) !important; }
+.purchase-order-page .po-add-button {
+    background: var(--po-orchid) !important;
+    border-color: var(--po-orchid) !important;
+    color: #fff !important;
+}
 .purchase-order-page .purchase-order-next:hover,
 .purchase-order-page .purchase-order-submit:hover,
 .purchase-order-page .po-add-button:hover { background: #9d1caf !important; border-color: #9d1caf !important; }
+.purchase-order-page .purchase-order-next.Mui-disabled,
+.purchase-order-page .purchase-order-submit.Mui-disabled,
+.purchase-order-page .po-add-button.Mui-disabled {
+    background: #eaddec !important;
+    border-color: #d7c3da !important;
+    color: #623c68 !important;
+    box-shadow: none;
+}
 .purchase-order-page .MuiLinearProgress-bar { background: var(--po-orchid) !important; }
 .purchase-order-page .po-summary-total,
 .purchase-order-page .po-view-money { color: var(--po-orchid); }

@@ -34,10 +34,17 @@ import LinearProgress from '@mui/material/LinearProgress';
 import { getPrimaryTransactionVipCustomer, getTransactionVipCustomers, getTransactionVipCustomerNames } from "./shopOrderTransactionVipHelpers";
 import { getTransactionCategoryTags } from "./shopOrderTransactionTagHelpers";
 import useActiveShopColor from "../Shop/useActiveShopColor";
+import useCentralCustomerPaymentSummaries, {
+    centralCustomerPaymentLabel,
+    centralCustomerPaymentLines,
+    centralCustomerPaymentStatus,
+    hasLegacyCustomerPayments,
+} from "../Accounting/useCentralCustomerPaymentSummaries";
 import "./CustomerOrderTransactionList.css";
 
 const PendingPickUp = () => {
     const activeShopColor = useActiveShopColor();
+    const { accountingSummaries, loadAccountingSummaries } = useCentralCustomerPaymentSummaries();
 
 
     useEffect(() => {
@@ -198,6 +205,7 @@ const PendingPickUp = () => {
             .then(data => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(data);
+                loadAccountingSummaries(data?.data || []);
                 setSubmitLoading(false);
                 setIsDeliveryDisabled(false);
             })
@@ -295,6 +303,7 @@ const PendingPickUp = () => {
         fetchPendingPickUpWithAccounts()
             .then(data => {
                 setShopOrderTransaction(data);
+                loadAccountingSummaries(data?.data || []);
                 setSubmitLoading(false);
                 setIsDeliveryDisabled(false);
             })
@@ -679,6 +688,12 @@ const PendingPickUp = () => {
                                             const primaryVipCustomer = getPrimaryTransactionVipCustomer(shopOrderTransaction);
                                             const vipCustomers = getTransactionVipCustomers(shopOrderTransaction);
                                             const transactionTags = getTransactionCategoryTags(shopOrderTransaction);
+                                            const legacyPayments = Array.isArray(shopOrderTransaction.mode_of_payment) ? shopOrderTransaction.mode_of_payment : [];
+                                            const accountingSummary = accountingSummaries[String(shopOrderTransaction.id)];
+                                            const centralPaymentLines = hasLegacyCustomerPayments(shopOrderTransaction)
+                                                ? []
+                                                : centralCustomerPaymentLines(accountingSummary);
+                                            const paymentStatus = centralCustomerPaymentStatus(shopOrderTransaction, accountingSummary);
 
                                             return (
                                                 <tr key={shopOrderTransaction.id} >
@@ -733,9 +748,14 @@ const PendingPickUp = () => {
                                                     <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                                     <td>
                                                         <div className="customer-report-bank-list">
-                                                            {shopOrderTransaction.mode_of_payment.map((sot, index) => (
+                                                            {legacyPayments.map((sot, index) => (
                                                                 <span key={`${shopOrderTransaction.id}-${sot.payment_type_po_id || sot.id || index}-${index}`}>
                                                                     {numberFormat(sot.amount)} <small>{formatPaymentLabel(sot)}</small>
+                                                                </span>
+                                                            ))}
+                                                            {centralPaymentLines.map((line, lineIndex) => (
+                                                                <span key={`${shopOrderTransaction.id}-accounting-${line.id || line.paymentId}-${lineIndex}`}>
+                                                                    {numberFormat(line.amount)} <small>{centralCustomerPaymentLabel(line)}</small>
                                                                 </span>
                                                             ))}
                                                         </div>
@@ -756,7 +776,7 @@ const PendingPickUp = () => {
                                                             </IconButton> : ""
                                                         }
                                                     </td>
-                                                    <td><span className={`status-pill ${shopOrderTransaction.status === 1 ? 'status-success' : shopOrderTransaction.status === 2 ? 'status-warning' : 'status-danger'}`}>{shopOrderTransaction.status === 1 ? 'Completed' : shopOrderTransaction.status === 2 ? 'Pending' : 'Cancelled'}</span></td>
+                                                    <td><span className={`status-pill ${paymentStatus.className}`}>{paymentStatus.label}</span></td>
                                                     <td className="customer-report-pickup-col">
                                                         <div className="customer-report-status-action customer-report-pickup-action">
                                                         <span className={`status-pill ${shopOrderTransaction.is_pickup === 1 ? 'status-success' : 'status-warning'}`}>{shopOrderTransaction.is_pickup === 1 ? 'Done' : 'Waiting'}</span>

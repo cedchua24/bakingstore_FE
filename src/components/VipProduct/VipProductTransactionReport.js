@@ -8,6 +8,8 @@ import EditNoteOutlinedIcon from "@mui/icons-material/EditNoteOutlined";
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import VipProductService from "./VipProductService";
 import VipProductTransactionService from "./VipProductTransactionService";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
 import {
     formatSupplierSentTracking,
     isSentToSupplier,
@@ -329,6 +331,7 @@ const VipProductTransactionReport = () => {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [centralCollected, setCentralCollected] = useState(0);
 
     const fetchReport = useCallback((dateFrom, dateTo) => {
         setLoading(true);
@@ -337,18 +340,31 @@ const VipProductTransactionReport = () => {
             VipProductTransactionService.fetchVipProductLastOrder(id, dateFrom, dateTo),
             VipProductTransactionService.fetchVipTransactionByVipId(id),
         ])
-            .then(([reportResponse, transactionResponse]) => {
+            .then(async ([reportResponse, transactionResponse]) => {
                 const transactionByProduct = new Map(
                     transactionResponse.data.map((transaction) => [
                         Number(transaction.product_id),
                         transaction.id,
                     ])
                 );
-                setProducts(reportResponse.data.map((product) => ({
+                const mappedProducts = reportResponse.data.map((product) => ({
                     ...product,
                     vip_product_transaction_id: product.vip_product_transaction_id
                         || transactionByProduct.get(Number(product.product_id)),
-                })));
+                }));
+                setProducts(mappedProducts);
+                setCentralCollected(0);
+                if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                    try {
+                        const orderIds = [...new Set(mappedProducts.flatMap(product => product.customer_order_ids || []))];
+                        const summaries = await CentralCustomerPaymentService.summaries(orderIds);
+                        setCentralCollected(Object.values(summaries).reduce(
+                            (total, summary) => total + Number(summary?.total_payment || 0), 0
+                        ));
+                    } catch (accountingError) {
+                        console.log("Unable to load Central Accounting VIP product collections", accountingError);
+                    }
+                }
             })
             .catch(() => setError("Unable to fetch VIP Product transactions."))
             .finally(() => setLoading(false));
@@ -524,6 +540,7 @@ const VipProductTransactionReport = () => {
                     ["Stock Warning Products", summary.stockWarnings, "#b45309"],
                     ["Out of Stock Products", summary.outOfStock, "#b42318"],
                     ["Pending Supplier Transactions", summary.pendingTransactions, "#432874"],
+                    ["Central Collected", `₱${formatMoney(centralCollected)}`, "#146c43"],
                 ].map(([label, value, color]) => (
                     <div key={label} style={styles.summaryCard}>
                         <p style={styles.summaryLabel}>{label}</p>

@@ -14,11 +14,16 @@ import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal';
 import Checkbox from '@mui/material/Checkbox';
 import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
 import "./PaymentTypeSales.css";
 
 const PaymentTypeSales = () => {
 
     const { id } = useParams();
+    const valueParam = id.split("+");
+    const isCentralAccounting = valueParam[0].startsWith("central-");
+    const centralFinancialAccountId = isCentralAccounting ? Number(valueParam[0].replace("central-", "")) : null;
+    const routeDate = valueParam[1] || '';
 
 
     useEffect(() => {
@@ -90,6 +95,18 @@ const PaymentTypeSales = () => {
     }
 
     const fetchTransaction = async (id) => {
+        if (isCentralAccounting) {
+            const paymentLine = shopOrderTransaction.data.find((transaction) => Number(transaction.id) === Number(id));
+            if (paymentLine) {
+                setShopOrderTransactionUpdateModal({
+                    id: paymentLine.id,
+                    amount: paymentLine.amount,
+                    is_paid: Number(paymentLine.is_paid),
+                });
+            }
+            return;
+        }
+
         await ModeOfPaymentService.get(id)
             .then(response => {
                 console.log("fetchTransaction", response.data);
@@ -103,8 +120,49 @@ const PaymentTypeSales = () => {
 
 
     const fetchShopOrderTransactionList = () => {
+        if (isCentralAccounting) {
+            CentralCustomerPaymentService.reconciliation(centralFinancialAccountId, routeDate)
+                .then((summary) => {
+                    const transactions = (summary.data || []).map((line) => ({
+                        id: line.id,
+                        transaction_id: line.external_order_id,
+                        shop_order_transaction_id: line.external_order_id,
+                        shop_name: line.branch_name,
+                        customer_type: line.payment_method?.name || 'Customer Payment',
+                        requestor_name: line.customer_name,
+                        amount: line.amount,
+                        shop_order_transaction_total_quantity: '-',
+                        shop_order_transaction_total_price: line.order_total,
+                        date: line.payment_date,
+                        status: line.payment_status === 'posted' ? 1 : 3,
+                        is_paid: line.confirmed_at ? 1 : 0,
+                    }));
+                    const payment = {
+                        id: summary.account?.id,
+                        bank_name: summary.account?.institution?.name,
+                        account_name: summary.account?.name,
+                        account_number: summary.account?.masked_account_number,
+                        total_amount: summary.total_amount,
+                    };
 
-        var valueParam = id.split("+");
+                    setShopOrderTransaction({
+                        data: transactions,
+                        payment,
+                        date: summary.date,
+                        total_price: summary.total_amount,
+                    });
+                    setCount(summary.confirmed_count || 0);
+                    setPaymentDetails((current) => ({
+                        ...current,
+                        paid: Number(summary.confirmed_amount || 0),
+                        nonPaid: Number(summary.total_amount || 0) - Number(summary.confirmed_amount || 0),
+                        count: Number(summary.confirmed_count || 0),
+                    }));
+                })
+                .catch(e => console.log("error", e));
+            return;
+        }
+
         console.log('pieces', valueParam);
         console.log('date', valueParam[1]);
 
@@ -165,6 +223,19 @@ const PaymentTypeSales = () => {
     }
 
     const updateDate = () => {
+        if (isCentralAccounting) {
+            CentralCustomerPaymentService.updateLineConfirmation(
+                shopOrderTransactionUpdateModal.id,
+                Number(shopOrderTransactionUpdateModal.is_paid) === 1
+            )
+                .then(() => {
+                    fetchShopOrderTransactionList();
+                    setOpenPickUp(false);
+                })
+                .catch(e => console.log(e));
+            return;
+        }
+
         ModeOfPaymentService.updatePaidStatus(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
             .then(response => {
                 fetchShopOrderTransactionList();
@@ -175,7 +246,7 @@ const PaymentTypeSales = () => {
             });
     }
 
-    const reportDate = shopOrderTransaction.date || id.split("+")[1];
+    const reportDate = shopOrderTransaction.date || routeDate;
     const totalAmount = Number(shopOrderTransaction.payment.total_amount || 0);
     const paidAmount = Number(paymentDetails.paid || 0);
     const paidCount = filterByPaid(shopOrderTransaction.data).length;
@@ -327,7 +398,7 @@ const PaymentTypeSales = () => {
                             justifyContent: 'center',
                         }}
                     >
-                        <Button variant="primary" onClick={updateDate}>
+                        <Button className="payment-account-sales-submit" variant="primary" onClick={updateDate}>
                             Submit
                         </Button>
                     </Box>

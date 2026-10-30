@@ -62,6 +62,41 @@
 /* Reserve room for optional bank/due-date controls so the action area stays stable. */
 .eet-form-actions { min-height: 650px; }
 
+.eet-submit-area {
+    margin-top: 20px;
+}
+
+.eet-submit-button.btn {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 20px;
+    background: #704399;
+    border-color: #704399;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(112, 67, 153, .2);
+}
+
+.eet-submit-button.btn:hover,
+.eet-submit-button.btn:focus {
+    background: #59347b;
+    border-color: #59347b;
+    color: #fff;
+}
+
+.eet-submit-button.btn:disabled {
+    background: #d8cbe2;
+    border-color: #d8cbe2;
+    color: #654f74;
+    box-shadow: none;
+}
+
+.eet-submit-area .MuiLinearProgress-root {
+    margin-top: 8px;
+    border-radius: 999px;
+}
+
 @media (max-width: 920px) {
     .eet-form-grid { grid-template-columns: 1fr; width: min(100% - 24px, 600px); }
     .eet-form-actions,

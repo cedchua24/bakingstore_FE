@@ -3,6 +3,9 @@ import { Button, Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 import LinearProgress from '@mui/material/LinearProgress';
 import ShopOrderTransactionService from "../ShopOrderTransaction/ShopOrderTransactionService";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { centralAccountBreakdown, mergeDailyReceivedPayments } from "../Accounting/centralSalesReport";
 import ReportSalesChart from "./ReportSalesChart";
 import "./ReportSales.css";
 
@@ -22,6 +25,7 @@ const ReportSales = () => {
         code: '',
         message: '',
     });
+    const [centralPaymentReport, setCentralPaymentReport] = useState({ data: [] });
 
     const dailySales = shopOrderTransaction?.data || [];
 
@@ -129,7 +133,7 @@ const ReportSales = () => {
         return errors;
     };
 
-    const saveOrderTransaction = () => {
+    const saveOrderTransaction = async () => {
         const errors = validate();
         setFormErrors(errors);
         setRequestError("");
@@ -137,20 +141,30 @@ const ReportSales = () => {
         if (Object.keys(errors).length) return;
 
         setSubmitLoadingAdd(true);
-        ShopOrderTransactionService.fetchSalesListV2(customerOrderDate)
-            .then((response) => {
-                setShopOrderTransaction({
-                    ...response.data,
-                    data: response.data?.data || [],
-                });
-                setHasGenerated(true);
-            })
-            .catch(() => {
-                setRequestError("We couldn't generate the report. Please try again.");
-            })
-            .finally(() => {
-                setSubmitLoadingAdd(false);
+        try {
+            const response = await ShopOrderTransactionService.fetchSalesListV2(customerOrderDate);
+            let central = { data: [] };
+            if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                try {
+                    central = await CentralCustomerPaymentService.paymentReport(
+                        customerOrderDate.dateFrom,
+                        customerOrderDate.dateTo
+                    );
+                } catch (accountingError) {
+                    console.log('Unable to load Central Accounting sales payments', accountingError);
+                }
+            }
+            setCentralPaymentReport(central);
+            setShopOrderTransaction({
+                ...response.data,
+                data: mergeDailyReceivedPayments(response.data?.data || [], central),
             });
+            setHasGenerated(true);
+        } catch (requestError) {
+            setRequestError("We couldn't generate the report. Please try again.");
+        } finally {
+            setSubmitLoadingAdd(false);
+        }
     };
 
     const dateRangeLabel = customerOrderDate.dateFrom && customerOrderDate.dateTo
@@ -287,6 +301,16 @@ const ReportSales = () => {
                                         {totals.sales ? `${((totals.online / totals.sales) * 100).toFixed(1)}% of sales` : "0% of sales"}
                                     </small>
                                 </article>
+                                {centralAccountBreakdown(centralPaymentReport).map((account) => (
+                                    <article key={`${account.financial_account_id}-${account.payment_method_id}`}>
+                                        <div>
+                                            <span className="sales-report__payment-dot sales-report__payment-dot--online" />
+                                            <span>{account.payment_method || 'Central Accounting'}</span>
+                                        </div>
+                                        <strong>{numberFormat(account.amount)}</strong>
+                                        <small>{[account.institution_name, account.account_name, account.masked_account_number].filter(Boolean).join(' · ')}</small>
+                                    </article>
+                                ))}
                             </div>
                         )}
                     </section>

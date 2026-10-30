@@ -6,6 +6,9 @@ import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import VipCustomerTransactionService from "./VipCustomerTransactionService";
 import VipCustomerService from "./VipCustomerService";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { centralCustomersById } from "../Accounting/centralCustomerReport";
 
 const formatDateParam = (date) => {
     var year = date.getFullYear();
@@ -291,6 +294,8 @@ const VipTransaction = () => {
     const { id } = useParams();
 
     const [vipTransactionList, setVipTransactionList] = useState([]);
+    const [centralPaymentsByCustomer, setCentralPaymentsByCustomer] = useState({});
+    const [centralOpenOrderSummaries, setCentralOpenOrderSummaries] = useState({});
     const [submitLoadingFetch, setSubmitLoadingFetch] = useState(false);
     const [isAddDisabled, setIsAddDisabled] = useState(false);
     const [formErrors, setFormErrors] = useState({});
@@ -304,8 +309,23 @@ const VipTransaction = () => {
     const fetchVipCustomerLastOrder = useCallback((dateFrom, dateTo) => {
         setSubmitLoadingFetch(true);
         return VipCustomerTransactionService.fetchVipCustomerLastOrder(id, dateFrom, dateTo)
-            .then(response => {
+            .then(async response => {
                 setVipTransactionList(response.data);
+                setCentralPaymentsByCustomer({});
+                setCentralOpenOrderSummaries({});
+                if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                    try {
+                        const draftOrderIds = response.data.flatMap(customer => customer.draft_order_ids || []);
+                        const [report, summaries] = await Promise.all([
+                            CentralCustomerPaymentService.paymentReport(dateFrom, dateTo),
+                            CentralCustomerPaymentService.summaries(draftOrderIds),
+                        ]);
+                        setCentralPaymentsByCustomer(centralCustomersById(report));
+                        setCentralOpenOrderSummaries(summaries);
+                    } catch (accountingError) {
+                        console.log("Unable to load Central Accounting VIP payments", accountingError);
+                    }
+                }
                 setSubmitLoadingFetch(false);
             })
             .catch(e => {
@@ -456,12 +476,21 @@ const VipTransaction = () => {
     const getTotalCompletedPayment = () => {
         return vipTransactionList.reduce((total, vipTransaction) => {
             var totalCompletedPayment = Number(vipTransaction.total_completed_payment || 0);
-            return total + totalCompletedPayment;
+            return total + totalCompletedPayment + Number(centralPaymentsByCustomer[String(vipTransaction.customer_id)] || 0);
         }, 0);
     }
 
+    const getCustomerCompletedPayment = (vipTransaction) => (
+        Number(vipTransaction.total_completed_payment || 0)
+        + Number(centralPaymentsByCustomer[String(vipTransaction.customer_id)] || 0)
+    );
+
     const getOpenTransactionPayment = (vipTransaction) => {
-        return Math.max(Number(vipTransaction.total_open_payment || 0), 0);
+        const centralPayment = (vipTransaction.draft_order_ids || []).reduce(
+            (total, orderId) => total + Number(centralOpenOrderSummaries[String(orderId)]?.total_payment || 0),
+            0
+        );
+        return Math.max(Number(vipTransaction.total_open_payment || 0) + centralPayment, 0);
     }
 
     const getTotalOpenTransactionPayments = () => {
@@ -649,7 +678,7 @@ const VipTransaction = () => {
                                     <td>{formatStatementDate(vipTransaction.last_order_date)}</td>
                                     <td>{renderDaysAgo(vipTransaction.last_order_date)}</td>
                                     <td>{formatNonZeroPrice(vipTransaction.total_order_price)}</td>
-                                    <td>{formatNonZeroPrice(vipTransaction.total_completed_payment)}</td>
+                                    <td>{formatNonZeroPrice(getCustomerCompletedPayment(vipTransaction))}</td>
                                     <td>
                                         <Link to={"/vipNote/" + vipTransaction.vip_customer_transaction_id}>
                                             <Button variant="info" size="sm" style={styles.noteButton}>

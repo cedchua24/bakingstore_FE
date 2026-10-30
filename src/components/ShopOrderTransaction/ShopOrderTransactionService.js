@@ -16,6 +16,12 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionListV2(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListV2", data);
     }
+    fetchOnlineShopOrderOverpaymentListV2() {
+        return this.fetchOnlineShopOrderRefundTransactionListV2();
+    }
+    fetchOnlineShopOrderRefundTransactionListV2(data = {}) {
+        return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderRefundTransactionListV2", data);
+    }
     fetchOnlineShopOrderTransactionListByIdV2(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByIdV2/${id}`);
     }
@@ -170,6 +176,9 @@ class ShopOrderTransactionService {
     }
     updateShopOrderTransactionStatusV2(id, data) {
         return axios.put(`/api/shopOrderTransaction/updateShopOrderTransactionStatusV2/${id}`, data);
+    }
+    updateCentralAccountingStatus(id, data) {
+        return axios.put(`/api/shopOrderTransaction/updateCentralAccountingStatus/${id}`, data);
     }
     updateShopBranchStatus(id, data) {
         return axios.put(`/api/shopOrderTransaction/updateShopBranchStatus/${id}`, data);

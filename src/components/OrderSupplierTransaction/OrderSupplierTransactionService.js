@@ -54,6 +54,11 @@ class OrderSupplierTransactionService {
     setToCompletePaymentTransaction(id) {
         return axios.put(`/api/orderSupplierTransaction/setToCompletePaymentTransaction/${id}`);
     }
+    updateCentralAccountingPaymentStatus(id, paymentStatus) {
+        return axios.put(`/api/orderSupplierTransaction/updateCentralAccountingPaymentStatus/${id}`, {
+            payment_status: paymentStatus,
+        });
+    }
     setToCancelTransaction(id) {
         return axios.put(`/api/orderSupplierTransaction/setToCancelTransaction/${id}`);
     }

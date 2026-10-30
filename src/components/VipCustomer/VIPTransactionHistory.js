@@ -17,6 +17,9 @@ import { useParams } from "react-router-dom";
 import VipCustomerService from "./VipCustomerService";
 import VipCustomerTransactionService from "./VipCustomerTransactionService";
 import ImpactGroupSelect from "../Common/ImpactGroupSelect";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { mergeCentralVipHistory, rollingMonthDateRange } from "../Accounting/centralCustomerReport";
 import "../Reports/ProductReport.css";
 import "./VIPTransactionHistory.css";
 
@@ -136,8 +139,18 @@ const VIPTransactionHistory = () => {
             limit: 100,
             ...(requestedSearch ? { search: requestedSearch } : {}),
         })
-            .then(response => {
-                setReport(response.data);
+            .then(async response => {
+                let mergedReport = response.data;
+                if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                    try {
+                        const range = rollingMonthDateRange(month, 3);
+                        const central = await CentralCustomerPaymentService.paymentReport(range.dateFrom, range.dateTo);
+                        mergedReport = mergeCentralVipHistory(response.data, central);
+                    } catch (accountingError) {
+                        console.log("Unable to load Central Accounting VIP history", accountingError);
+                    }
+                }
+                setReport(mergedReport);
                 const reportMonth = response.data?.report_month?.month || month;
                 setAppliedFilters({ month: reportMonth, impactGroup: requestedImpactGroup, search: requestedSearch });
                 setMonthlyQuota(localStorage.getItem(`vip-monthly-quota-${id}-${reportMonth}`) || "");

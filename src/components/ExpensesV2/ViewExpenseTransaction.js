@@ -5,6 +5,9 @@ import ExpensesTypeV2Service from "./ExpensesTypeV2Service";
 import ExpensesCategoryV2Service from "./ExpensesCategoryV2Service";
 import ExpensesV2Service from "./ExpensesV2Service";
 import ExpenseTransactionService from "./ExpenseTransactionService";
+import CentralExpenseService from "../Accounting/CentralExpenseService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { centralCustomerPaymentLabel } from "../Accounting/useCentralCustomerPaymentSummaries";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import PaymentTermService from "../OtherService/PaymentTermService";
 import UserService from '../User/UserService.service'
@@ -41,6 +44,7 @@ const ViewExpenseTransaction = () => {
     const [deleteId, setDeleteId] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deleteError, setDeleteError] = useState('');
+    const [deleteReason, setDeleteReason] = useState('');
     const [deleteSuccessOpen, setDeleteSuccessOpen] = useState(false);
 
     useEffect(() => {
@@ -51,14 +55,34 @@ const ViewExpenseTransaction = () => {
 
     const handleDelete = async () => {
         if (!isAdmin || deleteId === null || deleteLoading) return;
+        if (!deleteReason.trim()) {
+            setDeleteError('Please enter a reason for deleting this expense.');
+            return;
+        }
         setDeleteLoading(true);
         setDeleteError('');
         try {
+            const expense = expenseTransactionList.find((item) => Number(item.id) === Number(deleteId));
+            const isLegacy = Number(expense?.payment_type_po_id) > 0;
+
+            // V2 accounting records are never hard-deleted. Any posted payment is
+            // voided with a reversing journal entry, then the expense is cancelled.
+            if (!isLegacy) {
+                await CentralExpenseService.cancel(Number(deleteId), deleteReason.trim());
+            }
+
             await ExpenseTransactionService.sanctum();
             await ExpenseTransactionService.delete(deleteId);
             setExpenseTransactionList((items) => items.filter((item) => item.id !== deleteId));
             setDeleteId(null);
-            setValidator({ severity: 'success', message: 'Expense transaction deleted.', isShow: true });
+            setDeleteReason('');
+            setValidator({
+                severity: 'success',
+                message: isLegacy
+                    ? 'Legacy expense transaction deleted.'
+                    : 'Expense deleted from the branch; its Central Accounting record was cancelled and retained for audit.',
+                isShow: true,
+            });
             setDeleteSuccessOpen(true);
         } catch (error) {
             setDeleteError(error.response?.data?.message || 'Unable to delete the expense transaction. Please try again.');
@@ -86,6 +110,7 @@ const ViewExpenseTransaction = () => {
     const [expenseCategoryList, setExpenseCategoryList] = useState([]);
     const [expenseList, setExpenseList] = useState([]);
     const [expenseTransactionList, setExpenseTransactionList] = useState([]);
+    const [accountingSummaries, setAccountingSummaries] = useState({});
     const [requestorList, setRequestorList] = useState([]);
 
     const [expenseTransaction, setExpenseTransaction] = useState({
@@ -136,12 +161,33 @@ const ViewExpenseTransaction = () => {
     const fetchExpenseTransactionList = () => {
         ExpenseTransactionService.searchAllExpenseTransactionList(expenseTransaction)
             .then(response => {
-                setExpenseTransactionList(response.data);
+                const transactions = Array.isArray(response.data) ? response.data : [];
+                setExpenseTransactionList(transactions);
+                loadAccountingSummaries(transactions);
             })
             .catch(e => {
                 console.log("error", e)
             });
     }
+
+    const loadAccountingSummaries = async (transactions) => {
+        const expenseIds = transactions
+            .filter((transaction) => Number(transaction.payment_type_po_id) === 0)
+            .map((transaction) => Number(transaction.id))
+            .filter((expenseId) => Number.isInteger(expenseId) && expenseId > 0);
+
+        if (!localStorage.getItem(ACCOUNTING_TOKEN_KEY) || expenseIds.length === 0) {
+            setAccountingSummaries({});
+            return;
+        }
+
+        try {
+            setAccountingSummaries(await CentralExpenseService.summaries([...new Set(expenseIds)]));
+        } catch (error) {
+            setAccountingSummaries({});
+            console.log('Unable to load Central Accounting expense payments', error);
+        }
+    };
 
     const onChangeType = (e) => {
         setExpenseTransaction({
@@ -302,6 +348,19 @@ const ViewExpenseTransaction = () => {
 
         return acc;
     }, {});
+
+    const centralPaymentLines = (transaction) => {
+        if (Number(transaction.payment_type_po_id) !== 0) return [];
+        const summary = accountingSummaries[String(transaction.id)];
+        if (!Array.isArray(summary?.data)) return [];
+
+        return summary.data
+            .filter((payment) => payment.status === 'posted')
+            .flatMap((payment) => (payment.lines || []).map((line) => ({
+                ...line,
+                paymentId: payment.id,
+            })));
+    };
 
     const totalAmount = expenseTransactionList.reduce((sum, item) => sum + Number(item.amount || 0), 0);
     const receivedCount = expenseTransactionList.filter((item) => Number(item.is_received) === 1).length;
@@ -512,18 +571,24 @@ const ViewExpenseTransaction = () => {
                                             </td>
                                             <td>{numberFormat(data.amount)}</td>
                                             <td>
-                                                {
-                                                    data.payment_type_po_id == 0 ? "—" :
-                                                        data.payment_type_po_id == 1 ? data.bank_name : <>
+                                                {Number(data.payment_type_po_id) !== 0 ? (
+                                                    data.payment_type_po_id == 1 ? data.bank_name : <>
                                                             <strong>{data.payment_term || 'Payment'}</strong>
                                                             <small>{[data.bank_name, data.account_name, data.account_description, data.account_number].filter(Boolean).join(' · ')}</small>
                                                         </>
-                                                }
+                                                ) : centralPaymentLines(data).length > 0 ? (
+                                                    centralPaymentLines(data).map((line) => (
+                                                        <span key={`${line.paymentId}-${line.id}`}>
+                                                            <strong>{line.payment_method?.name || 'Payment'}</strong>
+                                                            <small>{centralCustomerPaymentLabel(line)} · {numberFormat(line.amount)}</small>
+                                                        </span>
+                                                    ))
+                                                ) : "—"}
                                             </td>
                                             <td>{data.details}</td>
                                             <td>
                                                 {
-                                                    data.is_received == 1
+                                                    data.is_received == 1 || centralPaymentLines(data).length > 0
                                                         ? <CheckIcon style={{ color: 'green' }} />
                                                         : <CloseIcon style={{ color: 'red' }} />
                                                 }
@@ -548,7 +613,7 @@ const ViewExpenseTransaction = () => {
                                                         aria-label={`Delete expense transaction ${data.id}`}
                                                         title="Delete expense transaction"
                                                         disabled={deleteLoading}
-                                                        onClick={() => { setDeleteError(''); setDeleteId(data.id); }}
+                                                        onClick={() => { setDeleteError(''); setDeleteReason(''); setDeleteId(data.id); }}
                                                     >
                                                         <DeleteOutlineIcon fontSize="small" />
                                                     </IconButton>
@@ -574,15 +639,29 @@ const ViewExpenseTransaction = () => {
             </div>
             </section>
             </div>
-            <Dialog open={deleteId !== null} onClose={() => { if (!deleteLoading) setDeleteId(null); }} aria-labelledby="delete-expense-title">
+            <Dialog open={deleteId !== null} onClose={() => { if (!deleteLoading) { setDeleteId(null); setDeleteReason(''); } }} aria-labelledby="delete-expense-title">
                 <DialogTitle id="delete-expense-title">Delete expense transaction?</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>Expense transaction #{deleteId} will be deleted. This action cannot be undone.</DialogContentText>
+                    <DialogContentText>
+                        Expense transaction #{deleteId} will be removed from this branch. For Central Accounting V2, its financial history will be cancelled and retained, and posted payments will be reversed.
+                    </DialogContentText>
+                    <TextField
+                        autoFocus
+                        required
+                        fullWidth
+                        multiline
+                        minRows={2}
+                        label="Deletion reason"
+                        value={deleteReason}
+                        onChange={(event) => setDeleteReason(event.target.value)}
+                        sx={{ mt: 2 }}
+                        inputProps={{ maxLength: 255 }}
+                    />
                     {deleteError && <Alert severity="error" sx={{ mt: 2 }}>{deleteError}</Alert>}
                 </DialogContent>
                 <DialogActions>
-                    <Button variant="secondary" disabled={deleteLoading} onClick={() => setDeleteId(null)}>Cancel</Button>
-                    <Button variant="danger" disabled={deleteLoading} onClick={handleDelete}>{deleteLoading ? 'Deleting...' : 'Delete'}</Button>
+                    <Button variant="secondary" disabled={deleteLoading} onClick={() => { setDeleteId(null); setDeleteReason(''); }}>Cancel</Button>
+                    <Button variant="danger" disabled={deleteLoading || !deleteReason.trim()} onClick={handleDelete}>{deleteLoading ? 'Deleting...' : 'Delete and reverse'}</Button>
                 </DialogActions>
             </Dialog>
             <Dialog open={deleteSuccessOpen} onClose={() => setDeleteSuccessOpen(false)} aria-labelledby="delete-expense-success-title">

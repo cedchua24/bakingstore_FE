@@ -4,6 +4,10 @@ import { Link, useParams } from "react-router-dom";
 import LinearProgress from "@mui/material/LinearProgress";
 import VipCustomerService from "./VipCustomerService";
 import VipCustomerTransactionService from "./VipCustomerTransactionService";
+import useCentralCustomerPaymentSummaries, {
+    centralCustomerPaymentLabel,
+    centralCustomerPaymentLines,
+} from "../Accounting/useCentralCustomerPaymentSummaries";
 
 const styles = {
     page: { padding: "18px 22px", backgroundColor: "#f7f9fb", minHeight: "100vh" },
@@ -122,6 +126,7 @@ const formatDate = (value, includeTime = false) => {
 
 const VIPTransactionDebt = () => {
     const { id } = useParams();
+    const { accountingSummaries, loadAccountingSummaries } = useCentralCustomerPaymentSummaries();
     const [debtCustomers, setDebtCustomers] = useState([]);
     const [vipCustomerTemplate, setVipCustomerTemplate] = useState({
         vip_name: "", details: "", vip_color: "",
@@ -137,7 +142,9 @@ const VIPTransactionDebt = () => {
 
         return VipCustomerTransactionService.fetchVipCustomerDebt(id, dateFrom, dateTo)
             .then(response => {
-                setDebtCustomers(Array.isArray(response.data) ? response.data : []);
+                const customers = Array.isArray(response.data) ? response.data : [];
+                setDebtCustomers(customers);
+                loadAccountingSummaries(customers.flatMap(customer => customer.debt_orders || []).map(order => ({ id: order.shop_order_transaction_id })));
             })
             .catch(error => {
                 setDebtCustomers([]);
@@ -145,7 +152,7 @@ const VIPTransactionDebt = () => {
                 console.log("error", error);
             })
             .finally(() => setLoading(false));
-    }, [id]);
+    }, [id, loadAccountingSummaries]);
 
     useEffect(() => {
         fetchPendingBalances();
@@ -154,13 +161,37 @@ const VIPTransactionDebt = () => {
             .catch(error => console.log("error", error));
     }, [fetchPendingBalances, id]);
 
-    const totals = useMemo(() => debtCustomers.reduce((result, customer) => {
+    const displayedDebtCustomers = useMemo(() => debtCustomers.map(customer => {
+        const debtOrders = (customer.debt_orders || []).map(order => {
+            const legacyPayments = Array.isArray(order.payments) ? order.payments : [];
+            const summary = accountingSummaries[String(order.shop_order_transaction_id)];
+            const centralLines = legacyPayments.length === 0 ? centralCustomerPaymentLines(summary) : [];
+            const centralPayment = legacyPayments.length === 0 ? Number(summary?.total_payment || 0) : 0;
+            const totalPayment = Number(order.total_payment || 0) + centralPayment;
+            return {
+                ...order,
+                total_payment: totalPayment,
+                balance: Math.max(Number(order.order_total_price || 0) - totalPayment, 0),
+                central_payment_lines: centralLines,
+            };
+        }).filter(order => Number(order.balance || 0) > 0);
+        return {
+            ...customer,
+            debt_orders: debtOrders,
+            debt_order_count: debtOrders.length,
+            debt_order_total_price: debtOrders.reduce((sum, order) => sum + Number(order.order_total_price || 0), 0),
+            total_payment: debtOrders.reduce((sum, order) => sum + Number(order.total_payment || 0), 0),
+            balance: debtOrders.reduce((sum, order) => sum + Number(order.balance || 0), 0),
+        };
+    }).filter(customer => customer.debt_orders.length > 0), [accountingSummaries, debtCustomers]);
+
+    const totals = useMemo(() => displayedDebtCustomers.reduce((result, customer) => {
         result.orders += Number(customer.debt_order_count || 0);
         result.total += Number(customer.debt_order_total_price || 0);
         result.paid += Number(customer.total_payment || 0);
         result.balance += Number(customer.balance || 0);
         return result;
-    }, { orders: 0, total: 0, paid: 0, balance: 0 }), [debtCustomers]);
+    }, { orders: 0, total: 0, paid: 0, balance: 0 }), [displayedDebtCustomers]);
 
     const onChangeInput = (event) => {
         const { name, value } = event.target;
@@ -208,9 +239,16 @@ const VIPTransactionDebt = () => {
     const dayText = days => `${days} ${days === 1 ? "day" : "days"}`;
 
     const renderPaymentHistory = (order) => {
+        const centralPayments = (order.central_payment_lines || []).map((line, index) => ({
+            id: line.id || `central-${index}`,
+            amount: line.amount,
+            payment_type: centralCustomerPaymentLabel(line),
+            payment_type_description: "Central Accounting",
+            created_at: line.paymentDate,
+        }));
         const payments = Array.isArray(order.payments) && order.payments.length > 0
             ? order.payments
-            : (order.initial_payment ? [{
+            : centralPayments.length > 0 ? centralPayments : (order.initial_payment ? [{
                 ...order.initial_payment,
                 created_at: order.initial_payment.date,
             }] : []);
@@ -294,7 +332,7 @@ const VIPTransactionDebt = () => {
             <div style={styles.summaryGrid}>
                 <div style={styles.summaryCard}>
                     <p style={styles.summaryLabel}>Customers with pending balances</p>
-                    <p style={styles.summaryValue}>{debtCustomers.length}</p>
+                    <p style={styles.summaryValue}>{displayedDebtCustomers.length}</p>
                 </div>
                 <div style={styles.summaryCard}>
                     <p style={styles.summaryLabel}>Pending transactions</p>
@@ -314,14 +352,14 @@ const VIPTransactionDebt = () => {
                 </div>
             </div>
 
-            {!loading && !errorMessage && debtCustomers.length === 0 &&
+            {!loading && !errorMessage && displayedDebtCustomers.length === 0 &&
                 <div style={styles.emptyState}>
                     <h5>No pending balances</h5>
                     <p className="mb-0">All VIP transactions in this date range are fully paid.</p>
                 </div>
             }
 
-            {debtCustomers.map((customer, customerIndex) => (
+            {displayedDebtCustomers.map((customer, customerIndex) => (
                 <section
                     key={customer.vip_customer_transaction_id || customer.customer_id || customerIndex}
                     style={{

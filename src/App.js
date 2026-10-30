@@ -21,6 +21,8 @@ import SpoilageList from "./components/Spoilage/SpoilageList";
 
 
 import CreditCardDueSettings from "./components/Settings/CreditCardDueSettings";
+import AccountingPortal from "./components/Accounting/AccountingPortal";
+import RefundTransactionList from "./components/Accounting/RefundTransactionList";
 
 import ProductListV2 from "./components/Product/ProductListV2";
 import ProductListDisabled from "./components/Product/ProductListDisabled";
@@ -409,6 +411,8 @@ const App = () => {
 
 
           <Route path="/settings/CreditCardDueSettings" element={<CreditCardDueSettings />} />
+          <Route path="/accounting" element={<AccountingPortal />} />
+          <Route path="/accounting/refunds" element={<RefundTransactionList />} />
 
           <Route path="/addProduct" element={<AddProduct />} />
           <Route path="/productList" element={<ProductList />} />

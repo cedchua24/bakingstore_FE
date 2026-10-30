@@ -18,6 +18,9 @@ import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransa
 import SupplierService from '../Supplier/SupplierService.service';
 import CategoryService from '../Category/CategoryService.service';
 import ImpactGroupSelect from '../Common/ImpactGroupSelect';
+import CentralCustomerPaymentService from '../Accounting/CentralCustomerPaymentService';
+import { ACCOUNTING_TOKEN_KEY } from '../Accounting/accountingApi';
+import { centralMonthlyTotals, comparisonRange } from '../Accounting/centralSalesReport';
 import './SalesImpactAnalysis.css';
 
 const currentMonth = () => new Date().toISOString().slice(0, 7);
@@ -27,6 +30,60 @@ const tone = value => Number(value || 0) < 0 ? 'down' : Number(value || 0) > 0 ?
 const unwrap = response => {
     const body = response?.data || {};
     return body.data && !Array.isArray(body.data) ? body.data : body;
+};
+const salesComparison = (current, baseline) => ({
+    sales_difference: Number(current || 0) - Number(baseline || 0),
+    sales_change_percentage: Number(baseline || 0)
+        ? ((Number(current || 0) - Number(baseline || 0)) / Number(baseline)) * 100
+        : null,
+});
+const mergeCentralReceivedSales = (loadedReport, centralReport, month) => {
+    if (loadedReport?.sales_summary?.sales_basis !== 'RECEIVED_PAYMENTS') return loadedReport;
+    const centralMonths = centralMonthlyTotals(centralReport);
+    const selected = new Date(`${month}-01T00:00:00Z`);
+    const monthKey = (monthsAgo) => {
+        const date = new Date(selected);
+        date.setUTCMonth(date.getUTCMonth() - monthsAgo);
+        return date.toISOString().slice(0, 7);
+    };
+    const currentCentral = Number(centralMonths[monthKey(0)]?.sales || 0);
+    const lastCentral = Number(centralMonths[monthKey(1)]?.sales || 0);
+    const averageCentral = [1, 2, 3].reduce(
+        (total, monthsAgo) => total + Number(centralMonths[monthKey(monthsAgo)]?.sales || 0),
+        0
+    ) / 3;
+    const current = Number(loadedReport.sales_summary.current?.total_sales || 0) + currentCentral;
+    const last = Number(loadedReport.sales_summary.last_month?.total_sales || 0) + lastCentral;
+    const average = Number(loadedReport.sales_summary.previous_three_month_average?.total_sales || 0) + averageCentral;
+    const averageGap = current - average;
+    const lastGap = current - last;
+
+    return {
+        ...loadedReport,
+        sales_summary: {
+            ...loadedReport.sales_summary,
+            current: { ...loadedReport.sales_summary.current, total_sales: current },
+            last_month: { ...loadedReport.sales_summary.last_month, total_sales: last },
+            previous_three_month_average: {
+                ...loadedReport.sales_summary.previous_three_month_average,
+                total_sales: average,
+            },
+            vs_last_month: salesComparison(current, last),
+            vs_previous_three_month_average: salesComparison(current, average),
+            trend: averageGap > 0 ? 'HIGHER' : averageGap < 0 ? 'LOWER' : 'UNCHANGED',
+            accounting_basis: 'LEGACY_AND_CENTRAL_ACCOUNTING_RECEIPTS',
+        },
+        why_sales_changed: {
+            ...loadedReport.why_sales_changed,
+            headline: averageGap < 0
+                ? 'Sales are below the previous three-month average.'
+                : averageGap > 0
+                    ? 'Sales are above the previous three-month average.'
+                    : 'Sales match the previous three-month average.',
+            sales_gap_vs_last_month: lastGap,
+            sales_gap_vs_previous_three_month_average: averageGap,
+        },
+    };
 };
 const impactOptions = [
     ['all', 'All results'], ['winning', 'Winning'], ['highest_sales', 'Highest sales'],
@@ -99,20 +156,36 @@ const SalesImpactAnalysis = () => {
     const [selectedRecovery, setSelectedRecovery] = useState([]);
     const [recoveryScope, setRecoveryScope] = useState('product');
 
-    const load = (request = filters) => {
+    const load = async (request = filters) => {
         if (!request.month) return setError('Please choose a report month.');
         setLoading(true);
         setError('');
         const apiFilters = { ...request };
         delete apiFilters.display_limit;
-        ShopOrderTransactionService.fetchMonthlySalesImpactAnalysis({
-            ...apiFilters,
-            limit: 5000,
-            supplier_id: request.supplier_id || null,
-            category_id: request.category_id || null
-        }).then(response => { setReport(unwrap(response)); setSelectedRecovery([]); })
-          .catch(err => setError(err.response?.data?.message || 'Unable to load the sales impact analysis.'))
-          .finally(() => setLoading(false));
+        try {
+            const response = await ShopOrderTransactionService.fetchMonthlySalesImpactAnalysis({
+                ...apiFilters,
+                limit: 5000,
+                supplier_id: request.supplier_id || null,
+                category_id: request.category_id || null
+            });
+            let loadedReport = unwrap(response);
+            if (!request.supplier_id && !request.category_id && localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                try {
+                    const range = comparisonRange(request.month);
+                    const central = await CentralCustomerPaymentService.paymentReport(range.dateFrom, range.dateTo);
+                    loadedReport = mergeCentralReceivedSales(loadedReport, central, request.month);
+                } catch (accountingError) {
+                    console.log('Unable to load Central Accounting sales payments', accountingError);
+                }
+            }
+            setReport(loadedReport);
+            setSelectedRecovery([]);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Unable to load the sales impact analysis.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {

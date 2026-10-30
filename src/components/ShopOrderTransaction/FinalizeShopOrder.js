@@ -10,6 +10,8 @@ import ShopOrderService from "../OtherService/ShopOrderService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import PaymentTermService from "../OtherService/PaymentTermService";
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
 
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -69,10 +71,10 @@ const FinalizeShopOrder = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchPaymentTerms();
         fetchShopOrderTransaction(id);
         fetchShopOrderDTO(id);
-        fetchPaymentTypeByShopTransactionIdV2(id);
+        loadCentralPaymentOptions();
+        fetchCentralPaymentSummary(id);
 
     }, []);
 
@@ -89,6 +91,7 @@ const FinalizeShopOrder = () => {
     const [paymentAccountList, setPaymentAccountList] = useState([]);
     const [selectedPaymentTerm, setSelectedPaymentTerm] = useState(null);
     const [selectedPaymentAccount, setSelectedPaymentAccount] = useState(null);
+    const accountingConnected = Boolean(localStorage.getItem(ACCOUNTING_TOKEN_KEY));
 
     const hasDisplayValue = (value) => {
         const normalizedValue = String(value ?? '').trim();
@@ -237,11 +240,71 @@ const FinalizeShopOrder = () => {
                 setinvoiceSubtotal(subtotal);
                 setinvoiceTaxes(totalPrice - subtotal);
                 setinvoiceTotal(totalPrice);
+                setModeOfPaymentDTO((current) => current.invoice
+                    ? current
+                    : { ...current, data: current.data || [], total_payment: Number(current.total_payment || 0), balance: Number(totalPrice || 0) });
+                setModeOfPayment((current) => ({
+                    ...current,
+                    amount: current.amount > 0 ? current.amount : Number(totalPrice || 0),
+                }));
             })
             .catch(e => {
                 console.log("error", e)
             });
     }
+
+    const accountingErrorMessage = (error) => error.response?.data?.message
+        || Object.values(error.response?.data?.errors || {}).flat()?.[0]
+        || 'Unable to connect to Central Accounting.';
+
+    const syncCentralOrderStatus = async (orderId, balance) => {
+        const status = Number(balance) === 0 ? 1 : 0;
+        try {
+            await ShopOrderTransactionService.updateCentralAccountingStatus(orderId, { status });
+            setShopOrderTransaction((current) => ({ ...current, status }));
+            return true;
+        } catch (_) {
+            return false;
+        }
+    };
+
+    const fetchCentralPaymentSummary = async (orderId) => {
+        if (!accountingConnected) return;
+        try {
+            const paymentSummary = await CentralCustomerPaymentService.summary(orderId);
+            setModeOfPaymentDTO((current) => ({
+                ...paymentSummary,
+                data: Array.isArray(paymentSummary.data) ? paymentSummary.data : [],
+                balance: paymentSummary.balance === null
+                    ? Number(current.balance || orderShopDTO.shopOrderTransaction?.shop_order_transaction_total_price || 0)
+                    : Number(paymentSummary.balance || 0),
+                total_payment: Number(paymentSummary.total_payment || 0),
+            }));
+            if (paymentSummary.balance !== null) {
+                setModeOfPayment((current) => ({ ...current, amount: Number(paymentSummary.balance || 0) }));
+                const synchronized = await syncCentralOrderStatus(orderId, paymentSummary.balance);
+                if (!synchronized) {
+                    setValidator({ severity: 'warning', message: 'Central payment data loaded, but the branch order status could not be synchronized.', isShow: true });
+                }
+            }
+        } catch (error) {
+            setValidator({ severity: 'error', message: accountingErrorMessage(error), isShow: true });
+        }
+    };
+
+    const loadCentralPaymentOptions = async () => {
+        if (!accountingConnected) return;
+        try {
+            const [methods, accounts] = await Promise.all([
+                CentralCustomerPaymentService.paymentMethods(),
+                CentralCustomerPaymentService.accounts(),
+            ]);
+            setPaymentTermList(methods);
+            setPaymentAccountList(accounts);
+        } catch (error) {
+            setValidator({ severity: 'error', message: accountingErrorMessage(error), isShow: true });
+        }
+    };
 
     const fetchPaymentTypeByShopTransactionIdV2 = async (id) => {
         await ModeOfPaymentService.fetchPaymentTypeByShopTransactionIdV2(id)
@@ -290,11 +353,7 @@ const FinalizeShopOrder = () => {
             });
     }
 
-    const savePaymentType = () => {
-        const result = modeOfPaymentDTO.data.find((payment) =>
-            Number(payment.payment_type_po_id ?? payment.payment_type_id) === Number(modeOfPayment.payment_type_id)
-        );
-        console.log('index:', result);
+    const savePaymentType = async () => {
         if (!selectedPaymentTerm) {
             setValidator({
                 severity: 'error',
@@ -307,42 +366,54 @@ const FinalizeShopOrder = () => {
                 message: 'Please choose an account!',
                 isShow: true,
             });
+        } else if (Number(modeOfPayment.amount) <= 0 || Number(modeOfPayment.amount) > Number(modeOfPaymentDTO.balance)) {
+            setValidator({ severity: 'error', message: 'Enter an amount within the remaining balance.', isShow: true });
         } else {
-            // if (result == undefined) { 
             setSubmitLoadingAdd(true);
-            ModeOfPaymentService.sanctum().then(response => {
-                ModeOfPaymentService.create(modeOfPayment)
-                    .then(response => {
-                        fetchPaymentTypeByShopTransactionIdV2(id);
-                        setSubmitLoadingAdd(false);
-                        setValidator({
-                            severity: 'success',
-                            message: 'Sucessfully added!',
-                            isShow: true,
-                        });
-
-                        if (response.data.balance == 0) {
-                            if (shopOrderTransaction.shop_type_id == 3) {
-                                navigate(`/shopOrderTransaction/receiptOrder/${shopOrderTransaction.id}/`);
-                            } else {
-                                navigate('/shopOrderTransaction/shorOrderTransactionList/');
-                            }
-                        }
-                    })
-                    .catch(e => {
-                        setSubmitLoadingAdd(false);
-                        console.log(e);
-                    });
-            });
-            // }
-            //  else {
-            //     setValidator({
-            //         severity: 'error',
-            //         message: 'Please Select other Payment method!',
-            //         isShow: true,
-            //     });
-
-            // }
+            try {
+                const sourceOrder = orderShopDTO.shopOrderTransaction || {};
+                const summary = await CentralCustomerPaymentService.createPayment({
+                    external_branch_id: Number(sourceOrder.shop_id || shopOrderTransaction.shop_id),
+                    branch_name: shopOrderTransaction.shop_name,
+                    external_customer_id: Number(shopOrderTransaction.requestor),
+                    customer_name: shopOrderTransaction.requestor_name,
+                    external_order_id: Number(id),
+                    order_number: `SO-${id}`,
+                    order_date: shopOrderTransaction.date || moment(shopOrderTransaction.created_at).format('YYYY-MM-DD'),
+                    order_total: Number(sourceOrder.shop_order_transaction_total_price || invoiceTotal),
+                    financial_account_id: Number(selectedPaymentAccount.id),
+                    payment_method_id: Number(selectedPaymentTerm.id),
+                    payment_date: modeOfPayment.created_at,
+                    amount: Number(modeOfPayment.amount),
+                    currency: 'PHP',
+                });
+                setModeOfPaymentDTO({
+                    ...summary,
+                    data: Array.isArray(summary.data) ? summary.data : [],
+                    balance: Number(summary.balance || 0),
+                    total_payment: Number(summary.total_payment || 0),
+                });
+                setModeOfPayment((current) => ({ ...current, amount: Number(summary.balance || 0) }));
+                const synchronized = await syncCentralOrderStatus(shopOrderTransaction.id || id, summary.balance);
+                setValidator({
+                    severity: synchronized ? 'success' : 'warning',
+                    message: synchronized
+                        ? 'Payment posted to Central Accounting.'
+                        : 'Payment was posted centrally, but the branch order status could not be synchronized.',
+                    isShow: true,
+                });
+                if (Number(summary.balance) === 0 && synchronized) {
+                    if (Number(shopOrderTransaction.shop_type_id) === 3) {
+                        navigate(`/shopOrderTransaction/receiptOrder/${shopOrderTransaction.id || id}/`);
+                    } else {
+                        navigate('/shopOrderTransaction/shorOrderTransactionList/');
+                    }
+                }
+            } catch (error) {
+                setValidator({ severity: 'error', message: accountingErrorMessage(error), isShow: true });
+            } finally {
+                setSubmitLoadingAdd(false);
+            }
         }
     }
 
@@ -381,22 +452,10 @@ const FinalizeShopOrder = () => {
     const handlePaymentTermChange = (e, value) => {
         setSelectedPaymentTerm(value);
         setSelectedPaymentAccount(null);
-        setPaymentAccountList([]);
         setModeOfPayment((currentPayment) => ({
             ...currentPayment,
             payment_type_id: ''
         }));
-
-        if (value) {
-            PaymentTypePoService.findByCategoryV2(value.id, CUSTOMER_PAYMENT_ACCOUNT_FILTER)
-                .then(response => {
-                    const accounts = Array.isArray(response.data) ? sortPaymentAccounts(response.data) : [];
-                    setPaymentAccountList(accounts);
-                })
-                .catch(e => {
-                    console.log("error", e);
-                });
-        }
     }
 
     const handlePaymentAccountChange = (e, value) => {
@@ -449,15 +508,8 @@ const FinalizeShopOrder = () => {
 
 
     const onChangeAmount = (e) => {
-        console.log(e.target.value)
         setModeOfPayment({ ...modeOfPayment, amount: e.target.value });
-        if (modeOfPaymentDTO.total_payment != 0) {
-            if (Number(e.target.value) > modeOfPaymentDTO.balance) {
-                setErrorStock(true);
-            } else {
-                setErrorStock(false);
-            }
-        }
+        setErrorStock(Number(e.target.value) <= 0 || Number(e.target.value) > Number(modeOfPaymentDTO.balance || 0));
     }
 
 
@@ -522,26 +574,18 @@ const FinalizeShopOrder = () => {
         setDeleteOpenModal(false);
     };
 
-    const deleteOrderTransaction = (deleteId, e) => {
+    const deleteOrderTransaction = async (deleteId, e) => {
         setSubmitLoading(true);
-        console.log("test", modeOfPaymentModal);
-        ModeOfPaymentService.delete(deleteId, modeOfPaymentModal)
-            .then(response => {
-                setSubmitLoading(false);
-                setOpen(false);
-                setDeleteOpenModal(false);
-                window.scrollTo(0, 0);
-                setValidator({
-                    severity: 'success',
-                    message: 'Successfuly Deleted!',
-                    isShow: true,
-                });
-                fetchPaymentTypeByShopTransactionIdV2(id);
-                // window.location.reload();
-            })
-            .catch(e => {
-                console.log('error', e);
-            });
+        try {
+            await CentralCustomerPaymentService.voidPayment(deleteId);
+            await fetchCentralPaymentSummary(id);
+            setDeleteOpenModal(false);
+            setValidator({ severity: 'success', message: 'Payment voided with a central reversal entry.', isShow: true });
+        } catch (error) {
+            setValidator({ severity: 'error', message: accountingErrorMessage(error), isShow: true });
+        } finally {
+            setSubmitLoading(false);
+        }
     }
 
     const updateOrderSupplier = () => {
@@ -646,6 +690,14 @@ const FinalizeShopOrder = () => {
             currency: 'PHP'
         }).format(value).replace(/(\.|,)00$/g, '');
 
+    const formatPaymentDate = (value) => value
+        ? moment.utc(value).format('MMM D, YYYY')
+        : '-';
+
+    const paymentDateKey = (value) => value
+        ? moment.utc(value).format('YYYY-MM-DD')
+        : '';
+
     const currentOrderType = shopOrderTransaction.checker !== 0 ? 'Inter Branch Order' : 'Online Order';
     const isOnlineOrder = shopOrderTransaction.checker === 0;
     const hasBalance = Number(modeOfPaymentDTO.balance || 0) !== 0;
@@ -661,20 +713,58 @@ const FinalizeShopOrder = () => {
             ? `-${row.discount_amount}`
             : '';
 
-    const paymentAccountLabel = (paymentAccount) => paymentAccount
-        ? [paymentAccount.bank_name, paymentAccount.account_name, paymentAccount.account_number]
+    const paymentAccountLabel = (paymentAccount) => {
+        if (!paymentAccount) return '';
+
+        const institutionName = String(paymentAccount.institution?.name || paymentAccount.bank_name || '').trim();
+        let accountName = String(paymentAccount.name || paymentAccount.account_name || '').trim();
+
+        if (institutionName && accountName.toLowerCase() === institutionName.toLowerCase()) {
+            accountName = '';
+        }
+        if (institutionName && accountName.toLowerCase().startsWith(`${institutionName.toLowerCase()} - `)) {
+            accountName = accountName.slice(institutionName.length + 3).trim();
+        }
+        if (institutionName && accountName.toLowerCase().startsWith(`${institutionName.toLowerCase()} `)) {
+            accountName = accountName.slice(institutionName.length + 1).trim();
+        }
+
+        return [
+            institutionName,
+            accountName,
+            paymentAccount.masked_account_number || paymentAccount.account_number,
+        ]
             .filter(hasDisplayValue)
-            .join(' · ')
-        : '';
+            .join(' · ');
+    };
 
     const paymentHistoryLabel = (payment) => {
-        const accountLabel = paymentAccountLabel(payment);
+        const line = payment.lines?.[0];
+        const accountLabel = paymentAccountLabel(line?.financial_account || payment);
         if (accountLabel) {
-            return accountLabel;
+            return `${line?.payment_method?.name ? `${line.payment_method.name} · ` : ''}${accountLabel}`;
         }
 
         return [payment.payment_type, payment.payment_type_description].filter(Boolean).join(' - ');
     };
+
+    const branchPaymentAccounts = paymentAccountList.filter((account) => {
+        if (account.is_company_wide) return true;
+        const sourceOrder = orderShopDTO.shopOrderTransaction || {};
+        return (account.accessible_branches || []).some((branch) =>
+            (branch.legacy_source === `${CentralCustomerPaymentService.source}.shop`
+                && Number(branch.legacy_id) === Number(sourceOrder.shop_id || shopOrderTransaction.shop_id))
+            || String(branch.name || '').trim().toLowerCase() === String(shopOrderTransaction.shop_name || '').trim().toLowerCase()
+        );
+    });
+
+    const compatiblePaymentAccounts = branchPaymentAccounts.filter((account) => {
+        if (!selectedPaymentTerm) return true;
+        if (selectedPaymentTerm.type === 'cash') return account.kind === 'cash';
+        if (selectedPaymentTerm.type === 'e_wallet') return account.kind === 'e_wallet';
+        if (selectedPaymentTerm.type === 'bank_transfer') return ['bank_account', 'checking_account', 'e_wallet'].includes(account.kind);
+        return account.kind !== 'credit_card';
+    });
 
     const transactionVipCustomers = Array.isArray(shopOrderTransaction.vip_customers)
         ? shopOrderTransaction.vip_customers
@@ -1241,7 +1331,16 @@ const FinalizeShopOrder = () => {
                                 </Typography>
                             </Box>
 
-                            {hasBalance &&
+                            {!accountingConnected &&
+                                <Alert
+                                    severity="warning"
+                                    action={<Button color="inherit" size="small" onClick={() => navigate('/accounting')}>Connect</Button>}
+                                >
+                                    Connect Central Accounting before adding or viewing customer payments.
+                                </Alert>
+                            }
+
+                            {hasBalance && accountingConnected &&
                                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(210px, 1fr))' }, gap: 2, alignItems: 'start' }}>
                                     <Autocomplete
                                         fullWidth
@@ -1249,7 +1348,7 @@ const FinalizeShopOrder = () => {
                                         value={selectedPaymentTerm}
                                         id="payment-term-select"
                                         onChange={handlePaymentTermChange}
-                                        getOptionLabel={(option) => option.payment_term || ''}
+                                        getOptionLabel={(option) => option.name || ''}
                                         renderInput={(params) => (
                                             <TextField {...params} label="Payment method" variant="outlined" />
                                         )}
@@ -1258,7 +1357,7 @@ const FinalizeShopOrder = () => {
                                     <Autocomplete
                                         fullWidth
                                         sx={{ gridColumn: '1 / -1' }}
-                                        options={paymentAccountList}
+                                        options={compatiblePaymentAccounts}
                                         value={selectedPaymentAccount}
                                         disabled={!selectedPaymentTerm}
                                         id="payment-account-select"
@@ -1284,7 +1383,7 @@ const FinalizeShopOrder = () => {
                                             type="number"
                                             id="payment-amount"
                                             name="amount"
-                                            max={modeOfPayment.amount}
+                                            max={modeOfPaymentDTO.balance}
                                             onChange={onChangeAmount}
                                             value={modeOfPayment.amount}
                                             error={errorStock}
@@ -1303,7 +1402,7 @@ const FinalizeShopOrder = () => {
 
                                     <Button
                                         variant="contained"
-                                        disabled={errorStock || !selectedPaymentTerm || !selectedPaymentAccount}
+                                        disabled={submitLoadingAdd || errorStock || !selectedPaymentTerm || !selectedPaymentAccount}
                                         onClick={savePaymentType}
                                         size="large"
                                         startIcon={<PaymentIcon />}
@@ -1338,24 +1437,21 @@ const FinalizeShopOrder = () => {
                                                 </TableCell>
                                             </TableRow>
                                         ) : modeOfPaymentDTO.data.map((row) => (
-                                            <TableRow key={row.id} hover>
+                                            <TableRow key={row.id} hover sx={{ opacity: row.status === 'voided' ? 0.55 : 1 }}>
                                                 <TableCell>{paymentHistoryLabel(row)}</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 600 }}>{numberFormat(row.amount)}</TableCell>
                                                 <TableCell align="right">
-                                                    <Typography component="span" color={shopOrderTransaction.date !== row.created_at ? 'warning.main' : 'text.primary'}>
-                                                        {row.created_at}
+                                                    <Typography component="span" color={paymentDateKey(shopOrderTransaction.date) !== paymentDateKey(row.payment_date) ? 'warning.main' : 'text.primary'}>
+                                                        {formatPaymentDate(row.payment_date)}{row.status === 'voided' ? ' · Voided' : ''}
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell align="right">
-                                                    <Tooltip title="Update">
-                                                        <IconButton color="primary" onClick={(e) => handleOpen(row.id, e)}>
-                                                            <UpdateIcon />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="Delete">
-                                                        <IconButton color="error" onClick={() => openDelete(row.id)}>
+                                                    <Tooltip title={row.status === 'voided' ? 'Already voided' : 'Void and reverse'}>
+                                                        <span>
+                                                        <IconButton disabled={row.status !== 'posted'} color="error" onClick={() => openDelete(row.id)}>
                                                             <DeleteIcon />
                                                         </IconButton>
+                                                        </span>
                                                     </Tooltip>
                                                 </TableCell>
                                             </TableRow>
@@ -1446,9 +1542,9 @@ const FinalizeShopOrder = () => {
                     onClose={handleDeleteCloseModal}
                     aria-labelledby="delete-payment-title"
                 >
-                    <DialogTitle id="delete-payment-title">Delete payment?</DialogTitle>
+                    <DialogTitle id="delete-payment-title">Void payment?</DialogTitle>
                     <DialogContent>
-                        <Typography color="text.secondary">This payment entry will be removed from the order.</Typography>
+                        <Typography color="text.secondary">The original payment will remain in the audit trail and a reversal entry will be posted.</Typography>
                         {submitLoading &&
                             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                                 <CircularProgress />
@@ -1458,7 +1554,7 @@ const FinalizeShopOrder = () => {
                     <DialogActions>
                         <Button onClick={handleDeleteCloseModal}>Cancel</Button>
                         <Button color="error" variant="contained" onClick={(e) => deleteOrderTransaction(deleteId, e)} autoFocus>
-                            Delete
+                            Void payment
                         </Button>
                     </DialogActions>
                 </Dialog>

@@ -6,11 +6,13 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
+import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import CompareArrowsRoundedIcon from '@mui/icons-material/CompareArrowsRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
@@ -22,12 +24,17 @@ import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownR
 import KeyboardArrowRightRoundedIcon from '@mui/icons-material/KeyboardArrowRightRounded';
 import ExpensesTypeService from '../ExpensesV2/ExpensesTypeV2Service';
 import ExpenseTransactionService from '../ExpensesV2/ExpenseTransactionService';
+import CentralExpenseService from '../Accounting/CentralExpenseService';
+import ExpensePaymentDetailsDialog from '../Accounting/ExpensePaymentDetailsDialog';
+import { ACCOUNTING_TOKEN_KEY } from '../Accounting/accountingApi';
+import { centralCustomerPaymentLabel } from '../Accounting/useCentralCustomerPaymentSummaries';
 import './MonthlyExpenseComparison.css';
 import './MonthlyExpenseComparisonMonth.css';
 import './MonthlyExpenseComparisonGrouping.css';
 import './MonthlyExpenseCategoryComparison.css';
 import './MonthlyExpenseComparisonTree.css';
 import './MonthlyExpenseAdminPrivacy.css';
+import './ExpensePaymentApiButtons.css';
 
 const money = (value) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 }).format(Number(value || 0));
 const number = (value) => Number(value || 0);
@@ -37,6 +44,14 @@ const pick = (source, keys, fallback = 0) => {
 };
 const selectedIds = (value) => (typeof value === 'string' ? value.split(',') : value).map(Number).filter((id) => id > 0);
 const currentMonth = () => new Date().toLocaleDateString('en-CA').slice(0, 7);
+const monthRange = (month) => {
+    const [year, monthNumber] = String(month || currentMonth()).split('-').map(Number);
+    const lastDay = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
+    return {
+        dateFrom: `${year}-${String(monthNumber).padStart(2, '0')}-01`,
+        dateTo: `${year}-${String(monthNumber).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`,
+    };
+};
 
 const ExpenseChange = ({ current, baseline }) => {
     const difference = current - baseline;
@@ -75,30 +90,79 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
     const [filters, setFilters] = useState({ month: currentMonth(), expense_type_ids: [], expense_category_ids: [], expense_ids: [], chart_of_account_ids: [], approval_statuses: ['APPROVED'], is_received: [] });
     const [types, setTypes] = useState([]);
     const [report, setReport] = useState({ summary: {}, data: [] });
+    const [monthlyTransactions, setMonthlyTransactions] = useState([]);
+    const [accountingSummaries, setAccountingSummaries] = useState({});
     const [activeGroup, setActiveGroup] = useState('ALL');
     const [expandedTypes, setExpandedTypes] = useState({});
     const [expandedCategories, setExpandedCategories] = useState({});
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [paymentDialog, setPaymentDialog] = useState({
+        open: false,
+        loading: false,
+        error: '',
+        transactions: [],
+        summaries: {},
+        title: 'Expense payment details',
+    });
     const shouldMaskHiddenExpenses = !showHiddenExpenses;
+
+    const transactionFilters = (payload) => ({
+        ...payload,
+        ...monthRange(payload.month),
+    });
+
+    const loadAccountingSummaries = async (transactions) => {
+        const expenseIds = transactions
+            .filter((transaction) => Number(transaction.payment_type_po_id) === 0)
+            .map((transaction) => Number(transaction.id))
+            .filter((expenseId) => Number.isInteger(expenseId) && expenseId > 0);
+
+        if (!localStorage.getItem(ACCOUNTING_TOKEN_KEY) || expenseIds.length === 0) {
+            setAccountingSummaries({});
+            return;
+        }
+
+        try {
+            setAccountingSummaries(await CentralExpenseService.summaries([...new Set(expenseIds)]));
+        } catch (summaryError) {
+            setAccountingSummaries({});
+            console.log('Unable to load Central Accounting expense payments', summaryError);
+        }
+    };
 
     const loadReport = (payload = filters) => {
         setLoading(true);
         setError('');
-        return ExpenseTransactionService.getMonthlyExpenseComparisonV2(payload)
-            .then((response) => setReport(response.data || { summary: {}, data: [] }))
+        return Promise.all([
+            ExpenseTransactionService.getMonthlyExpenseComparisonV2(payload),
+            ExpenseTransactionService.searchExpenseTransactionListV2(transactionFilters(payload)),
+        ])
+            .then(([response, transactionResponse]) => {
+                const transactions = Array.isArray(transactionResponse.data) ? transactionResponse.data : [];
+                setReport(response.data || { summary: {}, data: [] });
+                setMonthlyTransactions(transactions);
+                loadAccountingSummaries(transactions);
+            })
             .catch(() => setError('The monthly expense comparison could not be loaded. Please try again.'))
             .finally(() => setLoading(false));
     };
 
     useEffect(() => {
-        Promise.all([ExpensesTypeService.getAll(), ExpenseTransactionService.getMonthlyExpenseComparisonV2(filters)])
-            .then(([typeResponse, reportResponse]) => {
+        Promise.all([
+            ExpensesTypeService.getAll(),
+            ExpenseTransactionService.getMonthlyExpenseComparisonV2(filters),
+            ExpenseTransactionService.searchExpenseTransactionListV2(transactionFilters(filters)),
+        ])
+            .then(([typeResponse, reportResponse, transactionResponse]) => {
                 const loadedTypes = Array.isArray(typeResponse.data) ? typeResponse.data : [];
                 const loadedReport = reportResponse.data || { summary: {}, data: [] };
+                const transactions = Array.isArray(transactionResponse.data) ? transactionResponse.data : [];
                 setTypes(loadedTypes);
                 setReport(loadedReport);
+                setMonthlyTransactions(transactions);
+                loadAccountingSummaries(transactions);
                 if (movementOnly) {
                     const defaultRows = [
                         ...(Array.isArray(loadedReport.increased_expenses) ? loadedReport.increased_expenses : []),
@@ -193,6 +257,100 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
     const previousTotal = number(movementOnly ? movementTotals.previous : pick(summary, ['previous_month_total']));
     const averageTotal = number(movementOnly ? movementTotals.average : pick(summary, ['previous_three_month_average_total', 'three_month_average_total']));
 
+    const legacyPaymentLabel = (transaction) => {
+        if (Number(transaction.payment_type_po_id) === 1) return transaction.bank_name || 'Bank payment';
+        return [transaction.payment_term, transaction.bank_name, transaction.account_name, transaction.account_number]
+            .filter(Boolean)
+            .filter((value, index, values) => values.findIndex(
+                (candidate) => String(candidate).trim().toLowerCase() === String(value).trim().toLowerCase()
+            ) === index)
+            .join(' · ');
+    };
+
+    const paymentAccounts = (expenseId) => {
+        const labels = monthlyTransactions
+            .filter((transaction) => Number(transaction.expense_id) === Number(expenseId))
+            .flatMap((transaction) => {
+                if (Number(transaction.payment_type_po_id) > 0) return [legacyPaymentLabel(transaction)];
+                const summaryForTransaction = accountingSummaries[String(transaction.id)];
+                if (!Array.isArray(summaryForTransaction?.data)) return [];
+                return summaryForTransaction.data
+                    .filter((payment) => payment.status === 'posted')
+                    .flatMap((payment) => (payment.lines || []).map((line) => [
+                        line.payment_method?.name,
+                        centralCustomerPaymentLabel(line),
+                    ].filter(Boolean).join(' · ')));
+            })
+            .filter(Boolean);
+
+        return [...new Set(labels)].join(' / ');
+    };
+
+    const transactionsForExpense = (expenseId) => monthlyTransactions.filter(
+        (transaction) => Number(transaction.expense_id) === Number(expenseId)
+    );
+
+    const hasPaymentRecord = (expenseId) => transactionsForExpense(expenseId).some((transaction) => {
+        if (Number(transaction.payment_type_po_id) > 0) return true;
+        if (Number(transaction.is_received) === 1) return true;
+        const summaryForTransaction = accountingSummaries[String(transaction.id)];
+        return Array.isArray(summaryForTransaction?.data) && summaryForTransaction.data.some(
+            (payment) => Array.isArray(payment.lines) && payment.lines.length > 0
+        );
+    });
+
+    const closePaymentDialog = () => setPaymentDialog((current) => ({ ...current, open: false }));
+
+    const openPaymentDialog = async (item, expenseName) => {
+        setPaymentDialog({
+            open: true,
+            loading: true,
+            error: '',
+            transactions: [],
+            summaries: {},
+            title: `${expenseName} payments · ${currentLabel}`,
+        });
+
+        try {
+            const response = await ExpenseTransactionService.searchExpenseTransactionListV2({
+                ...transactionFilters(filters),
+                expense_ids: [Number(item.expense_id)],
+            });
+            const transactions = Array.isArray(response.data) ? response.data : [];
+            const centralIds = transactions
+                .filter((transaction) => Number(transaction.payment_type_po_id) === 0)
+                .map((transaction) => Number(transaction.id))
+                .filter((id) => Number.isInteger(id) && id > 0);
+            let summaries = {};
+            let detailError = '';
+
+            if (centralIds.length && localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                try {
+                    summaries = await CentralExpenseService.summaries([...new Set(centralIds)]);
+                    setAccountingSummaries((current) => ({ ...current, ...summaries }));
+                } catch (centralError) {
+                    detailError = centralError?.response?.data?.message || 'Central Accounting payment details could not be loaded.';
+                }
+            } else if (centralIds.length) {
+                detailError = 'Connect Central Accounting to view version 2 payment records.';
+            }
+
+            setPaymentDialog((current) => ({
+                ...current,
+                loading: false,
+                error: detailError,
+                transactions,
+                summaries,
+            }));
+        } catch (dialogError) {
+            setPaymentDialog((current) => ({
+                ...current,
+                loading: false,
+                error: dialogError?.response?.data?.message || dialogError.message || 'The expense payments could not be loaded.',
+            }));
+        }
+    };
+
     return <main className={`mec-page ${movementOnly ? 'mec-movement-page' : ''}`}><div className="mec-shell">
         <header className="mec-hero"><div className="mec-hero-icon"><CompareArrowsRoundedIcon /></div><div><span>Financial intelligence</span><h1>{movementOnly ? 'Expense Movement Watch' : 'Monthly Expense Comparison'}</h1><p>{movementOnly ? `Focus on new and changing expenses for ${currentLabel}.` : `Compare ${currentLabel} against ${previousLabel} and the previous three-month average.`}</p></div></header>
         {error && <Alert severity="error" className="mec-alert">{error}</Alert>}
@@ -212,7 +370,7 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
         </section>
         <section className={`mec-signals ${movementOnly ? 'movement-only' : ''}`}>{Object.entries(displayedCategoryMeta).map(([key, meta]) => { const disabled = movementOnly && (key === 'DECREASED' || key === 'MISSING') && !selectedMonthIsComplete; return <button key={key} type="button" disabled={disabled} className={`${meta.className} ${activeGroup === key ? 'active' : ''}`} onClick={() => setActiveGroup(activeGroup === key ? 'ALL' : key)}><i>{meta.icon}</i><span>{meta.label}</span><strong>{disabled ? '—' : number(pick(summary, [`${key.toLowerCase()}_expense_count`], groups[key].length))}</strong></button>; })}</section>
 
-<section className="mec-table-card"><header><div><span>{activeGroup === 'ALL' ? (movementOnly ? 'New and changing expenses' : 'All classifications') : categoryMeta[activeGroup].label}</span><h2>{movementOnly ? 'Expense movement details' : 'Expense comparison details'}</h2><p>Expand an expense type, then a category, to review its expenses.</p></div><div className="mec-table-actions"><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showPercentages} onChange={(event) => setShowPercentages(event.target.checked)} />} label="Show percentages" /><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showHiddenExpenses} disabled={!isAdmin} onChange={(event) => setShowHiddenExpenses(event.target.checked)} />} label="Confidential" /><TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expenses..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></div></header><div className="mec-table-scroll"><table><thead><tr><th>Expense hierarchy</th><th>Classification</th><th>{currentLabel}</th><th>{previousLabel}</th><th>Previous 3-month average</th><th>vs {previousLabel}</th><th>vs 3-month average</th></tr></thead><tbody>
+<section className="mec-table-card"><header><div><span>{activeGroup === 'ALL' ? (movementOnly ? 'New and changing expenses' : 'All classifications') : categoryMeta[activeGroup].label}</span><h2>{movementOnly ? 'Expense movement details' : 'Expense comparison details'}</h2><p>Expand an expense type, then a category, to review its expenses.</p></div><div className="mec-table-actions"><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showPercentages} onChange={(event) => setShowPercentages(event.target.checked)} />} label="Show percentages" /><FormControlLabel className="mec-hide-expenses" control={<Checkbox checked={showHiddenExpenses} disabled={!isAdmin} onChange={(event) => setShowHiddenExpenses(event.target.checked)} />} label="Confidential" /><TextField size="small" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search expenses..." InputProps={{ startAdornment: <InputAdornment position="start"><SearchRoundedIcon /></InputAdornment> }} /></div></header><div className="mec-table-scroll"><table><thead><tr><th>Expense hierarchy</th><th>Classification</th><th>{currentLabel}</th><th>Payment accounts</th><th>{previousLabel}</th><th>Previous 3-month average</th><th>vs {previousLabel}</th><th>vs 3-month average</th></tr></thead><tbody>
             {Object.entries(groupedRows).map(([typeName, type], typeIndex) => {
                 const palette = expenseTypePalettes[typeIndex % expenseTypePalettes.length];
                 const groupStyle = { '--mec-main': palette.main, '--mec-category': palette.category, '--mec-expense': palette.expense, '--mec-border': palette.border, '--mec-text': palette.text };
@@ -222,7 +380,7 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
                 return <React.Fragment key={typeName}>
                     <tr className="mec-type-summary" style={groupStyle}>
                         <td><button type="button" onClick={() => toggleExpanded(setExpandedTypes, typeName)} aria-expanded={typeOpen}>{typeOpen ? <KeyboardArrowDownRoundedIcon /> : <KeyboardArrowRightRoundedIcon />}<span>Expense type</span><strong>{typeName}</strong><small>{type.count} {type.count === 1 ? 'expense' : 'expenses'}</small></button></td>
-                        <td><span className="mec-badge type-total">Type total</span></td><td><b>{money(type.total)}</b></td><td>{money(type.previousTotal)}</td><td>{money(type.averageTotal)}</td><td className={typePreviousDifference >= 0 ? 'positive' : 'negative'}>{money(typePreviousDifference)}{showPercentages && <ExpenseChange current={type.total} baseline={type.previousTotal} />}</td><td className={typeAverageDifference >= 0 ? 'positive' : 'negative'}>{money(typeAverageDifference)}{showPercentages && <ExpenseChange current={type.total} baseline={type.averageTotal} />}</td>
+                        <td><span className="mec-badge type-total">Type total</span></td><td><b>{money(type.total)}</b></td><td /><td>{money(type.previousTotal)}</td><td>{money(type.averageTotal)}</td><td className={typePreviousDifference >= 0 ? 'positive' : 'negative'}>{money(typePreviousDifference)}{showPercentages && <ExpenseChange current={type.total} baseline={type.previousTotal} />}</td><td className={typeAverageDifference >= 0 ? 'positive' : 'negative'}>{money(typeAverageDifference)}{showPercentages && <ExpenseChange current={type.total} baseline={type.averageTotal} />}</td>
                     </tr>
                     {typeOpen && Object.entries(type.categories).map(([categoryName, category], categoryIndex) => {
                         const previousDifference = category.total - category.previousTotal;
@@ -232,20 +390,29 @@ const MonthlyExpenseComparison = ({ movementOnly = false }) => {
                         return <React.Fragment key={`${typeName}-${categoryName}`}>
                             <tr className="mec-category-summary" style={groupStyle}>
                                 <td><button type="button" onClick={() => toggleExpanded(setExpandedCategories, categoryKey)} aria-expanded={categoryOpen}><b>{String(categoryIndex + 1).padStart(2, '0')}</b>{categoryOpen ? <KeyboardArrowDownRoundedIcon /> : <KeyboardArrowRightRoundedIcon />}<span>Category</span><strong>{categoryName}</strong><small>{category.items.length} {category.items.length === 1 ? 'expense' : 'expenses'}</small></button></td>
-                                <td><span className="mec-badge category-total">Category total</span></td><td><b>{money(category.total)}</b></td><td>{money(category.previousTotal)}</td><td>{money(category.averageTotal)}</td><td className={previousDifference >= 0 ? 'positive' : 'negative'}>{money(previousDifference)}{showPercentages && <ExpenseChange current={category.total} baseline={category.previousTotal} />}</td><td className={averageDifference >= 0 ? 'positive' : 'negative'}>{money(averageDifference)}{showPercentages && <ExpenseChange current={category.total} baseline={category.averageTotal} />}</td>
+                                <td><span className="mec-badge category-total">Category total</span></td><td><b>{money(category.total)}</b></td><td /><td>{money(category.previousTotal)}</td><td>{money(category.averageTotal)}</td><td className={previousDifference >= 0 ? 'positive' : 'negative'}>{money(previousDifference)}{showPercentages && <ExpenseChange current={category.total} baseline={category.previousTotal} />}</td><td className={averageDifference >= 0 ? 'positive' : 'negative'}>{money(averageDifference)}{showPercentages && <ExpenseChange current={category.total} baseline={category.averageTotal} />}</td>
                             </tr>
                             {categoryOpen && category.items.map((item, index) => {
                                 const classification = String(pick(item, ['classification', 'comparison_status', 'status'], 'UNCHANGED')).toUpperCase();
                                 const meta = categoryMeta[classification];
                                 const expenseName = Number(item.is_hidden) === 1 && shouldMaskHiddenExpenses ? '***' : pick(item, ['expense_name', 'expense'], 'Unnamed expense');
-                                return <tr className="mec-expense-summary" style={groupStyle} key={item.expense_id || item.id || index}><td><div><i>↳</i><span>Expense</span><strong>{expenseName}</strong></div></td><td><span className={`mec-badge ${meta?.className || 'unchanged'}`}>{meta?.label || 'Unchanged'}</span></td><td><b>{money(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))}</b></td><td>{money(pick(item, ['previous_month_amount', 'previous_amount', 'previous_month_total']))}</td><td>{money(pick(item, ['previous_three_month_average', 'three_month_average', 'average_amount']))}</td><td className={number(pick(item, ['difference_from_previous_month', 'previous_month_difference'])) >= 0 ? 'positive' : 'negative'}>{money(pick(item, ['difference_from_previous_month', 'previous_month_difference']))}{showPercentages && <ExpenseChange current={number(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))} baseline={number(pick(item, ['previous_month_amount', 'previous_amount', 'previous_month_total']))} />}</td><td className={number(pick(item, ['difference_from_three_month_average', 'three_month_average_difference'])) >= 0 ? 'positive' : 'negative'}>{money(pick(item, ['difference_from_three_month_average', 'three_month_average_difference']))}{showPercentages && <ExpenseChange current={number(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))} baseline={number(pick(item, ['previous_three_month_average', 'three_month_average', 'average_amount']))} />}</td></tr>;
+                                return <tr className="mec-expense-summary" style={groupStyle} key={item.expense_id || item.id || index}><td><div><i>↳</i><span>Expense</span><strong>{expenseName}</strong></div></td><td><span className={`mec-badge ${meta?.className || 'unchanged'}`}>{meta?.label || 'Unchanged'}</span></td><td><b>{money(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))}</b></td><td><div className="mec-payment-account"><span>{paymentAccounts(item.expense_id)}</span>{hasPaymentRecord(item.expense_id) && <Tooltip title="Load payment details from the API"><IconButton size="small" type="button" onClick={() => openPaymentDialog(item, expenseName)} aria-label={`View ${expenseName} payment details`}><SearchRoundedIcon fontSize="small" /></IconButton></Tooltip>}</div></td><td>{money(pick(item, ['previous_month_amount', 'previous_amount', 'previous_month_total']))}</td><td>{money(pick(item, ['previous_three_month_average', 'three_month_average', 'average_amount']))}</td><td className={number(pick(item, ['difference_from_previous_month', 'previous_month_difference'])) >= 0 ? 'positive' : 'negative'}>{money(pick(item, ['difference_from_previous_month', 'previous_month_difference']))}{showPercentages && <ExpenseChange current={number(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))} baseline={number(pick(item, ['previous_month_amount', 'previous_amount', 'previous_month_total']))} />}</td><td className={number(pick(item, ['difference_from_three_month_average', 'three_month_average_difference'])) >= 0 ? 'positive' : 'negative'}>{money(pick(item, ['difference_from_three_month_average', 'three_month_average_difference']))}{showPercentages && <ExpenseChange current={number(pick(item, ['current_month_amount', 'current_amount', 'current_month_total']))} baseline={number(pick(item, ['previous_three_month_average', 'three_month_average', 'average_amount']))} />}</td></tr>;
                             })}
                         </React.Fragment>;
                     })}
                 </React.Fragment>;
             })}
-            {!loading && !visibleRows.length && <tr><td colSpan="7"><div className="mec-empty"><CompareArrowsRoundedIcon /><strong>No comparison results</strong><span>Try another filter selection.</span></div></td></tr>}
+            {!loading && !visibleRows.length && <tr><td colSpan="8"><div className="mec-empty"><CompareArrowsRoundedIcon /><strong>No comparison results</strong><span>Try another filter selection.</span></div></td></tr>}
         </tbody></table></div></section>
+        <ExpensePaymentDetailsDialog
+            open={paymentDialog.open}
+            onClose={closePaymentDialog}
+            title={paymentDialog.title}
+            transactions={paymentDialog.transactions}
+            summaries={paymentDialog.summaries}
+            loading={paymentDialog.loading}
+            error={paymentDialog.error}
+        />
     </div></main>;
 };
 

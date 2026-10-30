@@ -12,11 +12,14 @@ import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import CategoryService from '../Category/CategoryService.service';
 import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransactionService';
+import { emptyCollectionSummary, loadCombinedCustomerCollections } from '../Accounting/centralProductAccounting';
 import './ProductReport.css';
+import './ProductAccountingReport.css';
 
 const emptyReport = { data: [], code: '', message: '', id: 0 };
 const money = (value) => new Intl.NumberFormat('en-PH', {
@@ -40,6 +43,8 @@ const ReportCategorySales = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [query, setQuery] = useState('');
+    const [collections, setCollections] = useState(emptyCollectionSummary);
+    const [collectionsLoaded, setCollectionsLoaded] = useState(false);
 
     useEffect(() => {
         Promise.all([
@@ -62,7 +67,7 @@ const ReportCategorySales = () => {
         if (value) setErrors((current) => ({ ...current, [name]: undefined }));
     };
 
-    const runReport = () => {
+    const runReport = async () => {
         const nextErrors = {};
         if (!filters.categoryId) nextErrors.categoryId = 'Category is required.';
         if (!filters.status) nextErrors.status = 'Ranking is required.';
@@ -77,10 +82,20 @@ const ReportCategorySales = () => {
 
         setLoading(true);
         setError('');
-        ShopOrderTransactionService.fetchSalesByCategory(filters)
-            .then((response) => setReport(response.data || emptyReport))
-            .catch(() => setError('The category sales report could not be generated. Please try again.'))
-            .finally(() => setLoading(false));
+        setCollectionsLoaded(false);
+        try {
+            const [reportResponse, collectionSummary] = await Promise.all([
+                ShopOrderTransactionService.fetchSalesByCategory(filters),
+                loadCombinedCustomerCollections(filters.dateFrom, filters.dateTo),
+            ]);
+            setReport(reportResponse.data || emptyReport);
+            setCollections(collectionSummary);
+            setCollectionsLoaded(true);
+        } catch (requestError) {
+            setError('The category sales report could not be generated. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const records = Array.isArray(report.data) ? report.data : [];
@@ -112,11 +127,12 @@ const ReportCategorySales = () => {
 
             {error && <Alert severity="error" sx={{ mt: 3 }}>{error}</Alert>}
 
-            <section className="pr-summary">
+            <section className="pr-summary pr-summary--accounting">
                 <div><PaymentsOutlinedIcon /><div><span>Total sales</span><strong>{money(totalSales)}</strong></div></div>
                 {role === '2' && <div><TrendingUpRoundedIcon /><div><span>Total profit</span><strong>{money(totalProfit)}</strong></div></div>}
                 <div><Inventory2OutlinedIcon /><div><span>Pieces sold</span><strong>{totalUnits.toLocaleString()}</strong></div></div>
                 <div><LeaderboardOutlinedIcon /><div><span>Products</span><strong>{records.length.toLocaleString()}</strong></div></div>
+                {collectionsLoaded && <div className="pr-accounting-metric"><AccountBalanceWalletOutlinedIcon /><div><span>Collected sales</span><strong>{money(collections.total)}</strong><small>Legacy + Central Accounting</small></div></div>}
             </section>
 
             <section className="pr-filter">

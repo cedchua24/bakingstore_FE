@@ -33,6 +33,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import Link from '@mui/material/Link';
 import PrintingTransactionService from './PrintingTransactionService';
 import UserService from '../User/UserService.service';
+import useCentralCustomerPaymentSummaries from '../Accounting/useCentralCustomerPaymentSummaries';
 
 const formatDate = (date) => date ? String(date).slice(0, 10) : '—';
 const elapsedDays = (start, end) => {
@@ -83,26 +84,41 @@ const pickupIcon = (isDone) => <Tooltip title={isDone ? 'Pickup completed' : 'Pi
         {isDone ? <CheckCircleRoundedIcon sx={{ fontSize: 20 }} /> : <ScheduleRoundedIcon sx={{ fontSize: 20 }} />}
     </Box>
 </Tooltip>;
-const paymentIcon = (status) => {
+const paymentIcon = (status, statusLabel = '') => {
     const isCompleted = Number(status) === 1;
     const isPending = Number(status) === 2;
-    if (!isCompleted && !isPending) return '—';
-    return <Tooltip title={isCompleted ? 'Payment completed' : 'Payment pending'} arrow>
-        <Box component="span" aria-label={isCompleted ? 'Payment completed' : 'Payment pending'} sx={{ display: 'inline-flex', p: 0.45, borderRadius: '50%', bgcolor: isCompleted ? '#effcf4' : '#fff8e7', color: isCompleted ? '#168a47' : '#b36b08', border: `1px solid ${isCompleted ? '#a7e4b8' : '#f2d38a'}` }}>
-            {isCompleted ? <CheckCircleRoundedIcon sx={{ fontSize: 20 }} /> : <ScheduleRoundedIcon sx={{ fontSize: 20 }} />}
+    const isRefunded = Number(status) === 0;
+    if (!isCompleted && !isPending && !isRefunded) return '—';
+    const label = statusLabel || (isCompleted ? 'Payment completed' : 'Payment pending');
+    return <Tooltip title={label} arrow>
+        <Box component="span" aria-label={label} sx={{ display: 'inline-flex', p: 0.45, borderRadius: '50%', bgcolor: isCompleted ? '#effcf4' : isRefunded ? '#fff1f2' : '#fff8e7', color: isCompleted ? '#168a47' : isRefunded ? '#b42318' : '#b36b08', border: `1px solid ${isCompleted ? '#a7e4b8' : isRefunded ? '#efb0b0' : '#f2d38a'}` }}>
+            {isCompleted ? <CheckCircleRoundedIcon sx={{ fontSize: 20 }} /> : isRefunded ? <CancelRoundedIcon sx={{ fontSize: 20 }} /> : <ScheduleRoundedIcon sx={{ fontSize: 20 }} />}
         </Box>
     </Tooltip>;
 };
-const orderProgress = (transaction) => <Box sx={{ display: 'grid', gap: 0.5, minWidth: 72 }}>
+const orderProgress = (transaction, accountingSummary) => {
+    const centralStatus = Number(transaction.legacy_payment_count || 0) === 0
+        ? accountingSummary?.invoice?.status
+        : null;
+    const centralLabels = {
+        paid: 'Central Accounting: fully paid',
+        partially_paid: `Central Accounting: partially paid · ${formatAmount(accountingSummary?.balance)} balance`,
+        unpaid: 'Central Accounting: unpaid',
+        partially_refunded: 'Central Accounting: partially refunded',
+        refunded: 'Central Accounting: refunded',
+    };
+    const status = centralStatus ? (centralStatus === 'paid' ? 1 : ['refunded', 'cancelled'].includes(centralStatus) ? 0 : 2) : transaction.payment_status;
+    return <Box sx={{ display: 'grid', gap: 0.5, minWidth: 72 }}>
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.75 }}>
         <Typography variant="caption" sx={{ color: '#526579', fontSize: 10.5, fontWeight: 700 }}>Payment</Typography>
-        {paymentIcon(transaction.payment_status)}
+        {paymentIcon(status, centralLabels[centralStatus])}
     </Box>
     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 0.75 }}>
         <Typography variant="caption" sx={{ color: '#526579', fontSize: 10.5, fontWeight: 700 }}>Pickup</Typography>
         {pickupIcon(Number(transaction.is_pickup) === 1)}
     </Box>
 </Box>;
+};
 const detailIcon = (value) => {
     const icons = {
         NEW: AddCircleOutlineRoundedIcon,
@@ -139,6 +155,7 @@ const productionDetails = (transaction) => <Box sx={{ display: 'grid', gap: 0.35
 </Box>;
 
 const PrintingTransactionList = ({ fixedStatus = null }) => {
+    const { accountingSummaries, loadAccountingSummaries } = useCentralCustomerPaymentSummaries();
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -221,13 +238,15 @@ const PrintingTransactionList = ({ fixedStatus = null }) => {
         })
             .then((response) => {
                 const result = response.data?.data ?? response.data;
-                setTransactions(Array.isArray(result) ? result : []);
+                const list = Array.isArray(result) ? result : [];
+                setTransactions(list);
+                loadAccountingSummaries(list.map(transaction => ({ id: transaction.shop_order_transaction_id })));
             })
             .catch((requestError) => {
                 setError(requestError.response?.data?.message || 'Unable to load printing transactions.');
             })
             .finally(() => setLoading(false));
-    }, [fixedStatus, statusFilter, dateFrom, dateTo, orderDateSort, paymentStatusFilter, pickupFilter, coordinatorFilter]);
+    }, [fixedStatus, statusFilter, dateFrom, dateTo, orderDateSort, paymentStatusFilter, pickupFilter, coordinatorFilter, loadAccountingSummaries]);
 
     useEffect(() => {
         UserService.fetchUserList()
@@ -351,7 +370,7 @@ const PrintingTransactionList = ({ fixedStatus = null }) => {
                                             </TableCell>
                                             <TableCell sx={{ color: '#526579' }}>{transaction.order_coordinator_name || '—'}</TableCell>
                                             <TableCell align="right" sx={{ color: '#173f61', fontWeight: 900 }}>{formatAmount(transaction.shop_order_total_price)}</TableCell>
-                                            <TableCell>{orderProgress(transaction)}</TableCell>
+                                            <TableCell>{orderProgress(transaction, accountingSummaries[String(transaction.shop_order_transaction_id)])}</TableCell>
                                             <TableCell>{productionDetails(transaction)}</TableCell>
                                             <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(transaction.order_date)}</TableCell>
                                             <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(transaction.sent_date)}</TableCell>

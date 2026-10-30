@@ -21,6 +21,10 @@ import ExpensesTypeService from '../ExpensesV2/ExpensesTypeV2Service';
 import ExpensesCategoryService from '../ExpensesV2/ExpensesCategoryV2Service';
 import ExpensesService from '../ExpensesV2/ExpensesV2Service';
 import ExpenseTransactionService from '../ExpensesV2/ExpenseTransactionService';
+import CentralExpenseService from '../Accounting/CentralExpenseService';
+import ExpensePaymentDetailsDialog from '../Accounting/ExpensePaymentDetailsDialog';
+import { ACCOUNTING_TOKEN_KEY } from '../Accounting/accountingApi';
+import { centralCustomerPaymentLabel } from '../Accounting/useCentralCustomerPaymentSummaries';
 import './ReportExpenseTransaction.css';
 import './ReportExpenseConfidential.css';
 
@@ -58,16 +62,29 @@ const ReportExpenseTransaction = () => {
     const [expenseCategories, setExpenseCategories] = useState([]);
     const [expenses, setExpenses] = useState([]);
     const [transactions, setTransactions] = useState([]);
+    const [accountingSummaries, setAccountingSummaries] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [query, setQuery] = useState('');
+    const [paymentDialog, setPaymentDialog] = useState({
+        open: false,
+        loading: false,
+        error: '',
+        transactions: [],
+        summaries: {},
+        title: 'Expense payment details',
+    });
     const shouldMaskHiddenExpenses = !showHiddenExpenses;
 
     const loadTransactions = (requestFilters = filters) => {
         setLoading(true);
         setError('');
         return ExpenseTransactionService.searchExpenseTransactionListV2(requestFilters)
-            .then((response) => setTransactions(Array.isArray(response.data) ? response.data : []))
+            .then((response) => {
+                const loadedTransactions = Array.isArray(response.data) ? response.data : [];
+                setTransactions(loadedTransactions);
+                loadAccountingSummaries(loadedTransactions);
+            })
             .catch(() => setError('The expense transaction report could not be loaded. Please try again.'))
             .finally(() => setLoading(false));
     };
@@ -79,13 +96,34 @@ const ReportExpenseTransaction = () => {
         ])
             .then(([typeResponse, transactionResponse]) => {
                 setExpenseTypes(Array.isArray(typeResponse.data) ? typeResponse.data : []);
-                setTransactions(Array.isArray(transactionResponse.data) ? transactionResponse.data : []);
+                const loadedTransactions = Array.isArray(transactionResponse.data) ? transactionResponse.data : [];
+                setTransactions(loadedTransactions);
+                loadAccountingSummaries(loadedTransactions);
             })
             .catch(() => setError('The expense transaction report could not be loaded. Please try again.'))
             .finally(() => setLoading(false));
         // Load initial data once; filters are submitted explicitly afterward.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const loadAccountingSummaries = async (loadedTransactions) => {
+        const expenseIds = loadedTransactions
+            .filter((transaction) => Number(transaction.payment_type_po_id) === 0)
+            .map((transaction) => Number(transaction.id))
+            .filter((expenseId) => Number.isInteger(expenseId) && expenseId > 0);
+
+        if (!localStorage.getItem(ACCOUNTING_TOKEN_KEY) || expenseIds.length === 0) {
+            setAccountingSummaries({});
+            return;
+        }
+
+        try {
+            setAccountingSummaries(await CentralExpenseService.summaries([...new Set(expenseIds)]));
+        } catch (summaryError) {
+            setAccountingSummaries({});
+            console.log('Unable to load Central Accounting expense payments', summaryError);
+        }
+    };
 
     const updateFilter = (event) => {
         const { name, value } = event.target;
@@ -189,11 +227,28 @@ const ReportExpenseTransaction = () => {
     }, { categories: 0, expenses: 0 }), [groupedTransactions]);
 
     const totalExpenses = transactions.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-    const receivedCount = transactions.filter((item) => Number(item.is_received) === 1).length;
+    const centralPaymentLines = (item) => {
+        if (Number(item.payment_type_po_id) !== 0) return [];
+        const summary = accountingSummaries[String(item.id)];
+        if (!Array.isArray(summary?.data)) return [];
+
+        return summary.data
+            .filter((payment) => payment.status === 'posted')
+            .flatMap((payment) => payment.lines || []);
+    };
+
+    const hasReceivedPayment = (item) => Number(item.is_received) === 1 || centralPaymentLines(item).length > 0;
+    const receivedCount = transactions.filter(hasReceivedPayment).length;
     const pendingCount = transactions.length - receivedCount;
 
     const paymentDetails = (item) => {
-        if (!Number(item.payment_type_po_id)) return '—';
+        if (!Number(item.payment_type_po_id)) {
+            const details = centralPaymentLines(item).map((line) => [
+                line.payment_method?.name,
+                centralCustomerPaymentLabel(line),
+            ].filter(Boolean).join(' · '));
+            return [...new Set(details)].join(' / ');
+        }
         if (Number(item.payment_type_po_id) === 1) return item.bank_name || 'Bank payment';
 
         const isOnlineTransfer = String(item.payment_term || '').trim().toLowerCase() === 'online transfer';
@@ -207,7 +262,7 @@ const ReportExpenseTransaction = () => {
             (candidate) => String(candidate).trim().toLowerCase() === String(value).trim().toLowerCase()
         ) === index);
 
-        return uniqueDetails.length ? uniqueDetails.join(' · ') : item.payment_term || '—';
+        return uniqueDetails.length ? uniqueDetails.join(' · ') : item.payment_term || '';
     };
 
     const accountCode = (item) => {
@@ -232,6 +287,46 @@ const ReportExpenseTransaction = () => {
         return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat('en-US', {
             year: 'numeric', month: 'short', day: '2-digit',
         }).format(date);
+    };
+
+    const closePaymentDialog = () => setPaymentDialog((current) => ({ ...current, open: false }));
+
+    const openPaymentDialog = async (item) => {
+        setPaymentDialog({
+            open: true,
+            loading: true,
+            error: '',
+            transactions: [],
+            summaries: {},
+            title: `Expense #${item.id} payment details`,
+        });
+
+        try {
+            const response = await ExpenseTransactionService.fetchExpenseTransactionById(item.id);
+            const transaction = response.data || item;
+            let summaries = {};
+
+            if (Number(transaction.payment_type_po_id) === 0) {
+                if (!localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                    throw new Error('Connect Central Accounting to view this version 2 payment.');
+                }
+                const summary = await CentralExpenseService.summary(item.id);
+                if (summary) summaries[String(item.id)] = summary;
+            }
+
+            setPaymentDialog((current) => ({
+                ...current,
+                loading: false,
+                transactions: [transaction],
+                summaries,
+            }));
+        } catch (dialogError) {
+            setPaymentDialog((current) => ({
+                ...current,
+                loading: false,
+                error: dialogError?.response?.data?.message || dialogError.message || 'The payment details could not be loaded.',
+            }));
+        }
     };
 
     return (
@@ -301,9 +396,12 @@ const ReportExpenseTransaction = () => {
                                                 <td className="er-money">{money(item.amount)}</td>
                                                 <td className="er-payment">{paymentDetails(item)}</td>
                                                 <td className="er-details">{item.details || '—'}</td>
-                                                <td><span className={`er-received ${Number(item.is_received) === 1 ? 'yes' : 'no'}`}>{Number(item.is_received) === 1 ? 'Received' : 'Pending'}</span></td>
+                                                <td><span className={`er-received ${hasReceivedPayment(item) ? 'yes' : 'no'}`}>{hasReceivedPayment(item) ? 'Received' : 'Pending'}</span></td>
                                                 <td>{formatDate(item.expense_date)}</td>
-                                                <td><Button component={Link} to={`/expensesV2/editExpenseTransaction/${item.id}`} size="small" variant="outlined">{Number(item.is_received) === 1 ? 'View' : 'Update'}</Button></td>
+                                                <td>{hasReceivedPayment(item)
+                                                    ? <Button type="button" onClick={() => openPaymentDialog(item)} size="small" variant="outlined">View</Button>
+                                                    : <Button component={Link} to={`/expensesV2/editExpenseTransaction/${item.id}`} size="small" variant="outlined">Update</Button>}
+                                                </td>
                                             </tr>
                                                         ))}
                                                     </React.Fragment>
@@ -319,6 +417,15 @@ const ReportExpenseTransaction = () => {
                         </table>
                     </div>
                 </section>
+                <ExpensePaymentDetailsDialog
+                    open={paymentDialog.open}
+                    onClose={closePaymentDialog}
+                    title={paymentDialog.title}
+                    transactions={paymentDialog.transactions}
+                    summaries={paymentDialog.summaries}
+                    loading={paymentDialog.loading}
+                    error={paymentDialog.error}
+                />
             </div>
         </main>
     );

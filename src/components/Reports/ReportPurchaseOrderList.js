@@ -31,6 +31,9 @@ import ReceiptLongRoundedIcon from '@mui/icons-material/ReceiptLongRounded';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import ScheduleRoundedIcon from '@mui/icons-material/ScheduleRounded';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import CentralPurchaseOrderPaymentService from '../Accounting/CentralPurchaseOrderPaymentService';
+import { ACCOUNTING_TOKEN_KEY } from '../Accounting/accountingApi';
+import { centralCustomerPaymentLabel } from '../Accounting/useCentralCustomerPaymentSummaries';
 import OrderSupplierTransactionService from '../OrderSupplierTransaction/OrderSupplierTransactionService';
 import SupplierService from '../Supplier/SupplierService.service';
 import './ReportPurchaseOrderList.css';
@@ -145,13 +148,36 @@ const ReportPurchaseOrderList = ({
     const [dateDialog, setDateDialog] = useState({ open: false, id: 0, created_at: '' });
     const [updatingDate, setUpdatingDate] = useState(false);
     const [error, setError] = useState('');
+    const [accountingSummaries, setAccountingSummaries] = useState({});
+
+    const loadAccountingSummaries = useCallback(async (orders = []) => {
+        const orderIds = orders
+            .map((order) => Number(order.id))
+            .filter((orderId) => Number.isInteger(orderId) && orderId > 0);
+
+        if (!localStorage.getItem(ACCOUNTING_TOKEN_KEY) || orderIds.length === 0) {
+            setAccountingSummaries({});
+            return;
+        }
+
+        try {
+            setAccountingSummaries(
+                await CentralPurchaseOrderPaymentService.summaries([...new Set(orderIds)])
+            );
+        } catch (accountingError) {
+            setAccountingSummaries({});
+            console.log('Unable to load Central Accounting purchase-order payments', accountingError);
+        }
+    }, []);
 
     const loadReport = useCallback((dateFilters) => {
         setLoading(true);
         setError('');
         return fetchReport(dateFilters)
-            .then((response) => {
-                setReport(response.data || emptyReport);
+            .then(async (response) => {
+                const nextReport = response.data || emptyReport;
+                setReport(nextReport);
+                await loadAccountingSummaries(Array.isArray(nextReport.data) ? nextReport.data : []);
             })
             .catch(() => {
                 setError('The purchase order report could not be loaded. Please try again.');
@@ -159,7 +185,7 @@ const ReportPurchaseOrderList = ({
             .finally(() => {
                 setLoading(false);
             });
-    }, [fetchReport]);
+    }, [fetchReport, loadAccountingSummaries]);
 
     useEffect(() => {
         loadReport(getRequestFilters({
@@ -509,9 +535,34 @@ const ReportPurchaseOrderList = ({
                                     </tr>
                                 )}
                                 {visibleRows.map((order) => {
-                                    const paymentRows = Array.isArray(order.mode_of_payment)
+                                    const legacyPaymentRows = Array.isArray(order.mode_of_payment)
                                         ? order.mode_of_payment
                                         : [];
+                                    const centralSummary = legacyPaymentRows.length === 0
+                                        ? accountingSummaries[String(order.id)]
+                                        : null;
+                                    const centralPaymentRows = Array.isArray(centralSummary?.data)
+                                        ? centralSummary.data
+                                            .filter((payment) => payment.status === 'posted')
+                                            .flatMap((payment) => (payment.lines || []).map((line) => ({
+                                                id: `central-${payment.id}-${line.id}`,
+                                                bank_name: centralCustomerPaymentLabel(line) || 'Central Accounting',
+                                                amount: line.amount,
+                                                account_description: '',
+                                                account_number: '',
+                                            })))
+                                        : [];
+                                    const paymentRows = legacyPaymentRows.length > 0
+                                        ? legacyPaymentRows
+                                        : centralPaymentRows;
+                                    const centralPaymentStatus = centralSummary?.purchase_order?.status;
+                                    const paymentStatus = legacyPaymentRows.length > 0 || !centralPaymentStatus
+                                        ? (Number(order.payment_status) === 1 ? 'COMPLETED' : 'PENDING')
+                                        : centralPaymentStatus === 'paid'
+                                            ? 'COMPLETED'
+                                            : centralPaymentStatus === 'partially_paid'
+                                                ? 'PARTIALLY_PAID'
+                                                : 'PENDING';
                                     const canDelete = canDeleteOrder(order);
                                     const deliveryCompleted = String(order.status).toUpperCase() === 'COMPLETED';
                                     const supplierProcessingAge =
@@ -581,10 +632,8 @@ const ReportPurchaseOrderList = ({
                                                     </span>
                                                     <span>
                                                         <small>Payment</small>
-                                                        <b className={statusClass(
-                                                            Number(order.payment_status) === 1 ? 'COMPLETED' : 'PENDING'
-                                                        )}>
-                                                            {Number(order.payment_status) === 1 ? 'Completed' : 'Pending'}
+                                                        <b className={statusClass(paymentStatus)}>
+                                                            {formatStatusLabel(paymentStatus)}
                                                         </b>
                                                     </span>
                                                 </div>

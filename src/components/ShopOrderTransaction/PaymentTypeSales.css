@@ -75,6 +75,7 @@
 .payment-account-sales-order-status.status-1 { color: #15803d; }
 .payment-account-sales-order-status.status-2 { color: #b45309; }
 .payment-account-sales-order-status.status-3 { color: #b91c1c; }
+.payment-account-sales-submit { color: #fff !important; }
 
 @media (max-width: 900px) {
     .payment-account-sales-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }

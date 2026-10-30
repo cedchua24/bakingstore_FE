@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useLocation } from 'react-router-dom';
 import { Button, Form } from 'react-bootstrap';
 import CustomerService from "./CustomerService";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { accountingDateRange, centralCustomerTotal } from "../Accounting/centralCustomerReport";
 import "./CustomerReportLists.css";
 
 const CustomerProductList = () => {
@@ -9,6 +12,7 @@ const CustomerProductList = () => {
     const { id } = useParams();
     const location = useLocation();
     const [showProfit, setShowProfit] = useState(false);
+    const [centralCollected, setCentralCollected] = useState(0);
 
     const [sortedProduct, setSortedProduct] = useState({
         data: [],
@@ -37,15 +41,24 @@ const CustomerProductList = () => {
         return payload;
     }
 
-    const fetchCustomerProduct = useCallback((customerId, filters) => {
-        CustomerService.fetchCustomerProduct(buildCustomerProductPayload(customerId, filters))
-            .then(response => {
+    const fetchCustomerProduct = useCallback(async (customerId, filters) => {
+        try {
+            const response = await CustomerService.fetchCustomerProduct(buildCustomerProductPayload(customerId, filters));
                 console.log('data', response.data)
                 setSortedProduct(response.data);
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+            setCentralCollected(0);
+            if (localStorage.getItem(ACCOUNTING_TOKEN_KEY)) {
+                try {
+                    const range = accountingDateRange(filters.dateFrom, filters.dateTo);
+                    const report = await CentralCustomerPaymentService.paymentReport(range.dateFrom, range.dateTo);
+                    setCentralCollected(centralCustomerTotal(report, customerId));
+                } catch (accountingError) {
+                    console.log("Unable to load Central Accounting collections", accountingError);
+                }
+            }
+        } catch (e) {
+            console.log("error", e)
+        }
     }, []);
 
     useEffect(() => {
@@ -110,6 +123,7 @@ const CustomerProductList = () => {
                 <article className="customer-list-metric"><span>Products</span><strong>{sortedProduct.data.length}</strong></article>
                 <article className="customer-list-metric"><span>Units Sold</span><strong>{productTotals.quantity}</strong></article>
                 <article className="customer-list-metric"><span>Sales</span><strong>{numberFormat(productTotals.sales)}</strong></article>
+                {centralCollected > 0 && <article className="customer-list-metric"><span>Central Collected</span><strong>{numberFormat(centralCollected)}</strong></article>}
                 {showProfit && <article className="customer-list-metric customer-list-metric--total"><span>Profit</span><strong>{numberFormat(productTotals.profit)}</strong></article>}
             </section>
             <section className="customer-list-table-card customer-list-table-card--products">

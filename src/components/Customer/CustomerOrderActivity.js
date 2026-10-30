@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { Alert, Button, Form } from "react-bootstrap";
 import { Box, Chip, LinearProgress, Pagination, Stack, Typography } from "@mui/material";
 import CustomerService from "./CustomerService";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { accountingDateRange, centralCustomersById } from "../Accounting/centralCustomerReport";
 
 const PAGE_SIZE = 100;
 const emptyFilters = { search: "", inactive_days_min: "", inactive_days_max: "", last_order_before: "", last_order_from: "", last_order_to: "", amount_min: "", amount_max: "" };
@@ -29,6 +32,7 @@ const CustomerOrderActivity = () => {
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [centralReport, setCentralReport] = useState(null);
 
     const fetchCustomers = useCallback(async (page, activeFilters) => {
         setLoading(true);
@@ -49,6 +53,13 @@ const CustomerOrderActivity = () => {
     }, []);
 
     useEffect(() => { fetchCustomers(1, emptyFilters); }, [fetchCustomers]);
+    useEffect(() => {
+        if (!localStorage.getItem(ACCOUNTING_TOKEN_KEY)) return;
+        const range = accountingDateRange();
+        CentralCustomerPaymentService.paymentReport(range.dateFrom, range.dateTo)
+            .then(setCentralReport)
+            .catch((accountingError) => console.log("Unable to load Central Accounting customer collections", accountingError));
+    }, []);
 
     const filterError = useMemo(() => {
         const min = filters.amount_min === "" ? null : Number(filters.amount_min);
@@ -91,12 +102,14 @@ const CustomerOrderActivity = () => {
     };
     const start = pagination.total ? (pagination.page - 1) * PAGE_SIZE + 1 : 0;
     const end = Math.min(pagination.page * PAGE_SIZE, pagination.total);
+    const centralCollections = centralCustomersById(centralReport);
+    const shownCentralCollected = customers.reduce((total, customer) => total + Number(centralCollections[String(customer.id)] || 0), 0);
 
     return <Box sx={{ px: { xs: 1, md: 2 }, pb: 5 }}>
         <Box sx={{ background: "linear-gradient(135deg, #f4f8fc 0%, #fff 68%)", border: "1px solid #d7e4f2", borderRadius: 3, p: { xs: 2, md: 3 }, mb: 3 }}>
             <Stack direction={{ xs: "column", md: "row" }} justifyContent="space-between" spacing={2} mb={2.5}>
                 <Box><Typography variant="h4" fontWeight={700}>All customer order activity</Typography><Typography color="text.secondary">A complete view of every customer, their total completed orders, sales, and latest purchase activity.</Typography></Box>
-                <Chip label={`${pagination.total.toLocaleString()} customers`} color="primary" variant="outlined" sx={{ alignSelf: { xs: "flex-start", md: "center" }, fontWeight: 600 }} />
+                <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: "flex-start", sm: "center" }}><Chip label={`${pagination.total.toLocaleString()} customers`} color="primary" variant="outlined" sx={{ fontWeight: 600 }} />{centralReport && <Chip label={`Central collected on page: ${money.format(shownCentralCollected)}`} color="success" variant="outlined" sx={{ fontWeight: 600 }} />}</Stack>
             </Stack>
             <Form onSubmit={applyFilters}>
                 <div className="row g-3 align-items-end">
@@ -118,9 +131,9 @@ const CustomerOrderActivity = () => {
         {loading && <LinearProgress color="primary" sx={{ mb: 1 }} />}
         <Box sx={{ border: "1px solid #e4e4e4", borderRadius: 2, overflow: "hidden", bgcolor: "white" }}><Box sx={{ overflowX: "auto" }}>
             <table className="table table-hover align-middle mb-0">
-                <thead style={{ backgroundColor: "#212529", color: "#fff" }}><tr><th style={{ color: "#fff" }}>ID</th><th style={{ color: "#fff" }}>Customer</th><th style={{ color: "#fff" }}>Contact</th><th style={{ color: "#fff" }}>Last Order</th><th className="text-end" style={{ color: "#fff" }}>Orders</th><th className="text-end" style={{ color: "#fff" }}>Lifetime Sales</th><th className="text-center" style={{ color: "#fff" }}>History</th></tr></thead>
+                <thead style={{ backgroundColor: "#212529", color: "#fff" }}><tr><th style={{ color: "#fff" }}>ID</th><th style={{ color: "#fff" }}>Customer</th><th style={{ color: "#fff" }}>Contact</th><th style={{ color: "#fff" }}>Last Order</th><th className="text-end" style={{ color: "#fff" }}>Orders</th><th className="text-end" style={{ color: "#fff" }}>Lifetime Sales</th>{centralReport && <th className="text-end" style={{ color: "#fff" }}>Central Collected</th>}<th className="text-center" style={{ color: "#fff" }}>History</th></tr></thead>
                 <tbody>
-                    {!loading && customers.length === 0 && <tr><td colSpan="7" className="text-center text-muted py-5">No customers match these filters.</td></tr>}
+                    {!loading && customers.length === 0 && <tr><td colSpan={centralReport ? 8 : 7} className="text-center text-muted py-5">No customers match these filters.</td></tr>}
                     {customers.map((customer) => {
                         const hasOrders = customer.has_orders === true || Number(customer.has_orders) === 1 || Number(customer.total_orders ?? 0) > 0;
                         const days = customer.days_since_last_order === null || customer.days_since_last_order === undefined ? null : Number(customer.days_since_last_order);
@@ -131,6 +144,7 @@ const CustomerOrderActivity = () => {
                             <td>{hasOrders ? <><div>{formatDate(customer.last_order_date)}</div><small className={days > 0 ? "text-danger" : "text-success"}>{days === 0 ? "Today" : `${days?.toLocaleString()} ${days === 1 ? "day" : "days"} ago`}</small></> : <Chip label="Never ordered" size="small" variant="outlined" />}</td>
                             <td className="text-end">{Number(customer.total_orders ?? 0).toLocaleString()}</td>
                             <td className="text-end fw-semibold">{money.format(Number(customer.total_sales ?? 0))}</td>
+                            {centralReport && <td className="text-end fw-semibold text-success">{money.format(Number(centralCollections[String(customer.id)] || 0))}</td>}
                             <td><Stack direction="row" spacing={1} justifyContent="center"><Button as={Link} size="sm" variant="outline-primary" to={`/customers/customerTransactionList/${customer.id}`}>Transactions</Button><Button as={Link} size="sm" variant="outline-secondary" to={`/customers/customerProductList/${customer.id}`}>Products</Button></Stack></td>
                         </tr>;
                     })}

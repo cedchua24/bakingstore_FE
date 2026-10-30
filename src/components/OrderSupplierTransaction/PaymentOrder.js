@@ -3,9 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
-import PaymentTypePoService from "../OtherService/PaymentTypePoService";
-import ModeOfPaymentPoService from "../OtherService/ModeOfPaymentPoService";
-import PaymentTermService from "../OtherService/PaymentTermService";
+import ShopService from "../Shop/ShopService";
+import CentralPurchaseOrderPaymentService from "../Accounting/CentralPurchaseOrderPaymentService";
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -44,14 +43,6 @@ import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import "./OrderSupplierTransaction.css";
 
-const SUPPLIER_PAYMENT_ACCOUNT_FILTER = {
-    is_customer: 0,
-    is_supplier: 1,
-    status: 0,
-};
-
-
-
 const PaymentOrder = () => {
 
 
@@ -61,9 +52,9 @@ const PaymentOrder = () => {
     useEffect(() => {
         fetchOrderSupplierTransaction(id);
         fetchByOrderSupplierId(id);
-        // fetchPaymentTypePo();
         fetchPaymentTerm();
-        fetchPaymentTypePoByShopTransactionId(id);
+        fetchPaymentAccounts();
+        fetchCurrentShop();
     }, []);
 
     const style = {
@@ -95,6 +86,8 @@ const PaymentOrder = () => {
 
     const [paymentTermList, setPaymentTermList] = useState([]);
     const [paymentTypePoList, setPaymentTypePoList] = useState([]);
+    const [shop, setShop] = useState({ id: 0, shop_name: '' });
+    const [installmentCount, setInstallmentCount] = useState(1);
     const [errorStock, setErrorStock] = useState(false);
     const [formErrors, setFormErrors] = useState({});
 
@@ -148,7 +141,6 @@ const PaymentOrder = () => {
 
 
     const openDelete = (paymentId) => {
-        if (Number(orderSupplierTransaction.payment_status) === 1) return;
         setDeleteId(paymentId);
         setDeleteOpenModal(true);
     }
@@ -183,74 +175,25 @@ const PaymentOrder = () => {
     }
 
     const updateOrderSupplier = () => {
-        if (Number(orderSupplierTransaction.payment_status) === 1) return;
-        setSubmitLoading(true);
-        if (modeOfPaymentModal.amount > (modeOfPaymentDTO.balance + amount)) {
-            setSubmitLoading(false);
-            setOpen(false);
-            window.scrollTo(0, 0);
-            setValidator({
-                severity: 'error',
-                message: 'Must Less than to Balance',
-                isShow: true,
-            });
-
-        } else {
-            ModeOfPaymentPoService.update(modeOfPaymentModal.id, modeOfPaymentModal)
-                .then(response => {
-                    console.log(response.data);
-                    if (response.data.code == 200) {
-                        setSubmitLoading(false);
-                        setOpen(false);
-                        window.scrollTo(0, 0);
-                        setValidator({
-                            severity: 'success',
-                            message: 'Successfuly Added!',
-                            isShow: true,
-                        });
-                        fetchPaymentTypePoByShopTransactionId(id);
-                    } else if (response.data.code == 400) {
-                        setSubmitLoading(false);
-                        setOpen(false);
-                        window.scrollTo(0, 0);
-                        setValidator({
-                            severity: 'error',
-                            message: response.data.message,
-                            isShow: true,
-                        });
-                    } else {
-                        setSubmitLoading(false);
-                        setOpen(false);
-                        setValidator({
-                            severity: 'error',
-                            message: "Unknown Error",
-                            isShow: true,
-                        });
-                    }
-                })
-                .catch(e => {
-                    console.log(e);
-                });
-        }
+        setOpen(false);
+        setValidator({ severity: 'error', message: 'Posted Accounting payments cannot be edited. Void the payment and enter a corrected payment.', isShow: true });
     }
 
     const fetchModeOfPayment = async (id) => {
-        await ModeOfPaymentPoService.get(id)
-            .then(response => {
-                setModeOfPaymentModal(response.data);
-                setAmount(response.data.amount)
-                console.log(response.data)
-            })
-            .catch(e => {
-                console.log("error", e)
-            });
+        const payment = modeOfPaymentDTO.data.find((row) => Number(row.id) === Number(id));
+        if (payment) {
+            setModeOfPaymentModal(payment);
+            setAmount(payment.amount);
+        }
     }
     const deleteOrderTransaction = (deleteId, e) => {
         if (Number(orderSupplierTransaction.payment_status) === 1) return;
         setSubmitLoading(true);
         console.log("test", modeOfPaymentModal);
-        ModeOfPaymentPoService.delete(deleteId, modeOfPaymentModal)
-            .then(response => {
+        CentralPurchaseOrderPaymentService.voidPayment(deleteId)
+            .then(async response => {
+                await OrderSupplierTransactionService.updateCentralAccountingPaymentStatus(id, 0);
+                setOrderSupplierTransaction(current => ({ ...current, payment_status: 0 }));
                 setSubmitLoading(false);
                 setOpen(false);
                 setDeleteOpenModal(false);
@@ -260,7 +203,7 @@ const PaymentOrder = () => {
                     message: 'Successfuly Deleted!',
                     isShow: true,
                 });
-                fetchPaymentTypePoByShopTransactionId(id);
+                fetchPaymentTypePoByShopTransactionId(id, orderSupplierTransaction.total_transaction_price);
                 // window.location.reload();
             })
             .catch(e => {
@@ -297,46 +240,15 @@ const PaymentOrder = () => {
                 payment_term_id: 0,
                 payment_type_po_id: 0,
             });
+            setInstallmentCount(1);
             return;
         }
-
-        if (value.id == 1) {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
-                payment_term_id: value.id,
-                payment_type_po_id: 0
-            });
-            PaymentTypePoService.findByCategoryV2(value.id, SUPPLIER_PAYMENT_ACCOUNT_FILTER)
-                .then(response => {
-                    const accounts = Array.isArray(response.data) ? response.data : [];
-                    setPaymentTypePoList(accounts);
-                })
-                .catch(e => {
-                    setPaymentTypePoList([]);
-                    console.log("error", e);
-                });
-            return;
-        } else if (value.id == 5) {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
-                payment_term_id: value.id,
-                payment_type_po_id: 2
-            });
-        }
-        else if (value.id == 4 || value.id == 3) {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
-                payment_term_id: value.id,
-                status: 1
-            });
-        }
-        else {
-            setModeOfPaymentPo({
-                ...modeOfPaymentPo,
-                payment_term_id: value.id
-            });
-        }
-        fetchPaymentTypePo(value.id);
+        setModeOfPaymentPo({
+            ...modeOfPaymentPo,
+            payment_term_id: value.id,
+            payment_type_po_id: 0,
+        });
+        if (value.type !== 'credit_card') setInstallmentCount(1);
     }
 
     const onChangeAmount = (e) => {
@@ -351,25 +263,29 @@ const PaymentOrder = () => {
         // }
     }
 
-    const fetchPaymentTypePo = ($id) => {
-        PaymentTypePoService.findByCategory($id)
-            .then(response => {
-                setPaymentTypePoList(response.data);
+    const fetchPaymentTerm = () => {
+        CentralPurchaseOrderPaymentService.paymentMethods()
+            .then(methods => {
+                setPaymentTermList(methods);
             })
             .catch(e => {
                 console.log("error", e)
             });
     }
 
-
-    const fetchPaymentTerm = () => {
-        PaymentTermService.getAll()
-            .then(response => {
-                setPaymentTermList(response.data);
-            })
+    const fetchPaymentAccounts = () => {
+        CentralPurchaseOrderPaymentService.accounts()
+            .then(accounts => setPaymentTypePoList(accounts))
             .catch(e => {
-                console.log("error", e)
+                setPaymentTypePoList([]);
+                console.log("error", e);
             });
+    }
+
+    const fetchCurrentShop = () => {
+        ShopService.fetchShopCurrent()
+            .then(response => setShop(response.data || {}))
+            .catch(e => console.log("error", e));
     }
 
 
@@ -377,6 +293,7 @@ const PaymentOrder = () => {
         await OrderSupplierTransactionService.findById(id)
             .then(response => {
                 setOrderSupplierTransaction(response.data);
+                fetchPaymentTypePoByShopTransactionId(id, response.data.total_transaction_price);
 
                 if (response.data.withTax === 0) {
 
@@ -432,19 +349,17 @@ const PaymentOrder = () => {
             errors.payment_term_id = "Payment Term is Required!";
         }
 
-        if ([1, 2, 3].includes(Number(modeOfPaymentPo.payment_term_id))) {
-            if (modeOfPaymentPo.payment_type_po_id == 0) {
-                errors.payment_type_po_id = "Account is Required!";
-            }
+        if (modeOfPaymentPo.payment_type_po_id == 0) {
+            errors.payment_type_po_id = "Account is Required!";
         }
-
-        if (modeOfPaymentPo.payment_term_id != 4) {
-            if (modeOfPaymentPo.amount == 0) {
-                errors.amount = "Amount is Required!";
-            }
+        if (modeOfPaymentPo.amount == 0) {
+            errors.amount = "Amount is Required!";
         }
         if (modeOfPaymentPo.date == 0) {
             errors.date = "Date is Required!";
+        }
+        if (!shop.id || !shop.shop_name) {
+            errors.payment_term_id = "Current branch could not be identified.";
         }
 
 
@@ -464,52 +379,72 @@ const PaymentOrder = () => {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
             setErrorStock(true);
-            ModeOfPaymentPoService.sanctum().then(response => {
-                ModeOfPaymentPoService.create(modeOfPaymentPo)
-                    .then(response => {
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        setErrorStock(false);
-                        fetchPaymentTypePoByShopTransactionId(id);
-                    })
-                    .catch(e => {
-                        setSubmitLoadingAdd(false);
-                        setIsAddDisabled(false);
-                        setErrorStock(false);
-                        console.log(e);
+            CentralPurchaseOrderPaymentService.createPayment({
+                external_branch_id: Number(shop.id),
+                branch_name: shop.shop_name,
+                external_supplier_id: Number(orderSupplierTransaction.supplier_id),
+                supplier_name: orderSupplierTransaction.supplier_name,
+                external_order_id: Number(id),
+                order_date: dateOnly(orderSupplierTransaction.order_date),
+                order_total: Number(orderSupplierTransaction.total_transaction_price),
+                financial_account_id: Number(modeOfPaymentPo.payment_type_po_id),
+                payment_method_id: Number(modeOfPaymentPo.payment_term_id),
+                payment_date: modeOfPaymentPo.date,
+                amount: Number(modeOfPaymentPo.amount),
+                installment_count: Number(installmentCount || 1),
+                currency: 'PHP',
+            })
+                .then(summary => {
+                    applyCentralPaymentSummary(summary, orderSupplierTransaction.total_transaction_price);
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                    setErrorStock(false);
+                    setMessage(true);
+                })
+                .catch(e => {
+                    setSubmitLoadingAdd(false);
+                    setIsAddDisabled(false);
+                    setErrorStock(false);
+                    setValidator({
+                        severity: 'error',
+                        message: e.response?.data?.message || Object.values(e.response?.data?.errors || {})?.[0]?.[0] || 'Unable to save payment in Central Accounting.',
+                        isShow: true,
                     });
-            });
-            if (modeOfPaymentPo.payment_term_id == 3 || modeOfPaymentPo.payment_term_id == 4) {
-                ModeOfPaymentPoService.sanctum().then(response => {
-                    ModeOfPaymentPoService.updateOnlinePaymentPO(modeOfPaymentPo)
-                        .then(response => {
-                            setSubmitLoadingAdd(false);
-                            setIsAddDisabled(false);
-                            setErrorStock(false);
-                            fetchPaymentTypePoByShopTransactionId(id);
-                        })
-                        .catch(e => {
-                            setSubmitLoadingAdd(false);
-                            setIsAddDisabled(false);
-                            setErrorStock(false);
-                            console.log(e);
-                        });
                 });
-            }
         }
     }
-    const fetchPaymentTypePoByShopTransactionId = (id) => {
+    const applyCentralPaymentSummary = (summary, fallbackTotal = 0) => {
+        const payments = (summary.data || []).flatMap((payment) => (payment.lines || []).map((line) => ({
+            id: payment.id,
+            payment_line_id: line.id,
+            bank_name: line.financial_account?.institution?.name,
+            account_name: line.financial_account?.name,
+            account_holder: line.financial_account?.account_holder,
+            account_number: line.financial_account?.masked_account_number,
+            description: line.financial_account?.description,
+            kind: line.financial_account?.kind,
+            amount: line.amount,
+            payment_date: payment.payment_date,
+            status: payment.status,
+            installment_count: line.installment_count,
+            obligations: line.obligation_charges || [],
+            is_central: true,
+        })));
+        const balance = summary.balance === null || summary.balance === undefined
+            ? Number(fallbackTotal || 0)
+            : Number(summary.balance);
+        setModeOfPaymentDTO({
+            ...summary,
+            data: payments,
+            balance,
+            total_payment: Number(summary.total_payment || 0),
+        });
+        setModeOfPaymentPo(current => ({ ...current, amount: balance }));
+    };
 
-        ModeOfPaymentPoService.fetchPaymentTypePoByShopTransactionId(id)
-            .then(response => {
-                setModeOfPaymentDTO(response.data);
-                console.log('balance', response.data)
-                setModeOfPaymentPo({
-                    ...modeOfPaymentPo,
-                    amount: response.data.balance,
-                });
-
-            })
+    const fetchPaymentTypePoByShopTransactionId = (orderId, fallbackTotal = 0) => {
+        CentralPurchaseOrderPaymentService.summary(orderId)
+            .then(summary => applyCentralPaymentSummary(summary, fallbackTotal))
             .catch(e => {
                 console.log("error", e)
             });
@@ -528,12 +463,48 @@ const PaymentOrder = () => {
         return normalizedValue !== '' && normalizedValue !== '0';
     };
 
-    const paymentAccountLabel = (payment) =>
-        [payment.bank_name, payment.account_name, payment.account_number]
+    const paymentAccountLabel = (payment) => {
+        if (payment.kind === 'credit_card') {
+            const institutionName = String(payment.institution?.name || payment.bank_name || '').trim();
+            let description = String(payment.description || payment.name || payment.account_name || '').trim();
+
+            while (institutionName && description.toLowerCase().startsWith(institutionName.toLowerCase())) {
+                description = description.slice(institutionName.length).replace(/^\s*[-–—·:]?\s*/, '').trim();
+            }
+
+            const primaryLabel = [institutionName, description].filter(hasDisplayValue).join(' - ');
+            return [
+                primaryLabel,
+                payment.account_holder,
+                payment.masked_account_number || payment.account_number,
+            ]
+                .filter(hasDisplayValue)
+                .filter((value, index, entries) => entries.findIndex((candidate) => String(candidate).trim().toLowerCase() === String(value).trim().toLowerCase()) === index)
+                .join(' · ') || 'Payment';
+        }
+
+        return [
+            payment.institution?.name || payment.bank_name,
+            payment.name || payment.account_name,
+            payment.masked_account_number || payment.account_number,
+        ]
             .filter(hasDisplayValue)
+            .filter((value, index, entries) => entries.findIndex((candidate) => String(candidate).trim().toLowerCase() === String(value).trim().toLowerCase()) === index)
             .join(' · ') || 'Payment';
+    };
 
     const isFullyPaid = Number(orderSupplierTransaction.payment_status) === 1;
+    const selectedPaymentMethod = paymentTermList.find((method) => Number(method.id) === Number(modeOfPaymentPo.payment_term_id));
+    const accountKindsByMethod = {
+        cash: ['cash'],
+        bank_transfer: ['bank_account', 'checking_account'],
+        cheque: ['checking_account'],
+        credit_card: ['credit_card'],
+        e_wallet: ['e_wallet'],
+    };
+    const availablePaymentAccounts = paymentTypePoList.filter((account) => (
+        (accountKindsByMethod[selectedPaymentMethod?.type] || []).includes(account.kind)
+    ));
 
 
 
@@ -604,7 +575,7 @@ const PaymentOrder = () => {
                             options={paymentTermList}
                             id="payment-term-select"
                             onChange={handlePaymentTermChange}
-                            getOptionLabel={(option) => option.payment_term || ''}
+                            getOptionLabel={(option) => option.name || ''}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
@@ -616,17 +587,13 @@ const PaymentOrder = () => {
                         />
                     </div>
 
-                    {[1, 2, 3, 4].includes(Number(modeOfPaymentPo.payment_term_id)) && (
+                    {Number(modeOfPaymentPo.payment_term_id) !== 0 && (
                         <div className="po-form-field po-form-field-full">
                             <Autocomplete
-                                options={paymentTypePoList}
+                                options={availablePaymentAccounts}
                                 id="payment-account-select"
                                 onChange={handlePaymentTypeChange}
-                                getOptionLabel={(option) =>
-                                    [option.bank_name, option.account_name, option.account_description, option.account_number]
-                                        .filter(Boolean)
-                                        .join(' · ')
-                                }
+                                getOptionLabel={paymentAccountLabel}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -661,7 +628,7 @@ const PaymentOrder = () => {
                                 <TextField
                                     fullWidth
                                     type="date"
-                                    label={Number(modeOfPaymentPo.payment_term_id) === 3 ? 'Due date' : 'Payment date'}
+                                    label="Payment date"
                                     name="date"
                                     value={modeOfPaymentPo.date || ''}
                                     onChange={onChangeInput}
@@ -670,6 +637,19 @@ const PaymentOrder = () => {
                                     InputLabelProps={{ shrink: true }}
                                 />
                             </div>
+                            {selectedPaymentMethod?.type === 'credit_card' && (
+                                <div className="po-form-field">
+                                    <TextField
+                                        fullWidth
+                                        type="number"
+                                        label="Installments"
+                                        value={installmentCount}
+                                        onChange={(event) => setInstallmentCount(Math.max(1, Number(event.target.value || 1)))}
+                                        inputProps={{ min: 1, max: 60, step: 1 }}
+                                        helperText="Accounting will create the monthly statement due dates."
+                                    />
+                                </div>
+                            )}
                         </>
                     )}
 
@@ -734,22 +714,18 @@ const PaymentOrder = () => {
                             <TableRow key={row.id} hover>
                                 <TableCell>
                                     <strong>{paymentAccountLabel(row)}</strong>
+                                    {row.status === 'voided' && (
+                                        <Typography variant="caption" display="block" color="error.main">Voided</Typography>
+                                    )}
                                 </TableCell>
                                 <TableCell align="right"><strong>{numberFormat(row.amount || 0)}</strong></TableCell>
                                 <TableCell align="right" className={isDifferentFromOrderDate ? 'po-payment-date-mismatch' : undefined}>
-                                    {paymentDate || '—'}
+                                    {dateOnly(paymentDate) || '—'}
                                 </TableCell>
                                 <TableCell align="right">
-                                    <Tooltip title={isFullyPaid ? "Fully paid orders cannot be updated" : "Edit payment"}>
+                                    <Tooltip title={row.status === 'voided' ? "Payment is already voided" : "Void payment"}>
                                         <span>
-                                            <IconButton color="primary" disabled={isFullyPaid} onClick={(e) => handleOpen(row.id, e)}>
-                                                <UpdateIcon />
-                                            </IconButton>
-                                        </span>
-                                    </Tooltip>
-                                    <Tooltip title={isFullyPaid ? "Fully paid orders cannot be deleted" : "Delete payment"}>
-                                        <span>
-                                            <IconButton color="error" disabled={isFullyPaid} onClick={() => openDelete(row.id)}>
+                                            <IconButton color="error" disabled={row.status === 'voided'} onClick={() => openDelete(row.id)}>
                                                 <DeleteIcon />
                                             </IconButton>
                                         </span>
@@ -840,7 +816,7 @@ const PaymentOrder = () => {
                 onClose={handleDeleteCloseModal}
                 aria-labelledby="delete-payment-title"
             >
-                <DialogTitle id="delete-payment-title">Delete this payment?</DialogTitle>
+                <DialogTitle id="delete-payment-title">Void this Accounting payment?</DialogTitle>
                 {submitLoading && (
                     <div className="po-dialog-loading">
                         <CircularProgress size={26} />
@@ -849,7 +825,7 @@ const PaymentOrder = () => {
                 <DialogActions>
                     <Button onClick={handleDeleteCloseModal}>Keep payment</Button>
                     <Button color="error" onClick={(event) => deleteOrderTransaction(deleteId, event)} autoFocus>
-                        Delete payment
+                        Void payment
                     </Button>
                 </DialogActions>
             </Dialog>

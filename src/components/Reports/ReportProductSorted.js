@@ -12,9 +12,12 @@ import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransactionService';
 import SupplierService from '../Supplier/SupplierService.service';
+import { emptyCollectionSummary, loadCombinedCustomerCollections } from '../Accounting/centralProductAccounting';
 import './ProductReport.css';
+import './ProductAccountingReport.css';
 
 const money = value => new Intl.NumberFormat('en-PH', { style:'currency', currency:'PHP' }).format(Number(value || 0));
 
@@ -26,6 +29,8 @@ const ReportProductSorted = () => {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [query, setQuery] = useState('');
+    const [collections, setCollections] = useState(emptyCollectionSummary);
+    const [collectionsLoaded, setCollectionsLoaded] = useState(false);
 
     useEffect(() => {
         ShopOrderTransactionService.fetchSortedProductReport(filters).then(response => setReport(response.data || {data:[]})).catch(error => console.log('error', error));
@@ -37,10 +42,26 @@ const ReportProductSorted = () => {
         setFilters({...filters,[name]:value});
         if (value) setErrors(current => ({...current,[name]:undefined}));
     };
-    const runReport = () => {
+    const runReport = async () => {
         const next = {...(!filters.type&&{type:'Required'}),...(!filters.status&&{status:'Required'}),...(!filters.limit&&{limit:'Required'}),...(!filters.dateFrom&&{dateFrom:'Required'}),...(!filters.dateTo&&{dateTo:'Required'})};
         setErrors(next); if(Object.keys(next).length) return;
-        setLoading(true); ShopOrderTransactionService.fetchSortedProductReport(filters).then(response => setReport(response.data || {data:[]})).catch(error => console.log('error',error)).finally(()=>setLoading(false));
+        setLoading(true);
+        setCollectionsLoaded(false);
+        try {
+            const response = await ShopOrderTransactionService.fetchSortedProductReport(filters);
+            setReport(response.data || {data:[]});
+            try {
+                setCollections(await loadCombinedCustomerCollections(filters.dateFrom, filters.dateTo));
+                setCollectionsLoaded(true);
+            } catch (collectionError) {
+                setCollections(emptyCollectionSummary());
+                console.log('Unable to load ranked product collections', collectionError);
+            }
+        } catch (error) {
+            console.log('error', error);
+        } finally {
+            setLoading(false);
+        }
     };
     const records = Array.isArray(report.data) ? report.data : [];
     const filtered = useMemo(()=>{const q=query.trim().toLowerCase();return q?records.filter(item=>[item.id,item.product_name,item.business_type,item.packaging].some(value=>String(value??'').toLowerCase().includes(q))):records;},[records,query]);
@@ -51,7 +72,7 @@ const ReportProductSorted = () => {
 
     return <main className="pr-page">
         <section className="pr-hero"><div className="pr-hero__icon"><LeaderboardOutlinedIcon /></div><div><span>Sales performance</span><h1>Product Sales Ranking</h1><p>Rank products by quantity or sales amount across a selected reporting period.</p></div></section>
-        <section className="pr-summary"><div><PaymentsOutlinedIcon/><div><span>Total sales</span><strong>{money(sales)}</strong></div></div>{role==='2'&&<div><TrendingUpRoundedIcon/><div><span>Total profit</span><strong>{money(profit)}</strong></div></div>}<div><Inventory2OutlinedIcon/><div><span>Pieces sold</span><strong>{units.toLocaleString()}</strong></div></div></section>
+        <section className="pr-summary pr-summary--accounting"><div><PaymentsOutlinedIcon/><div><span>Total sales</span><strong>{money(sales)}</strong></div></div>{role==='2'&&<div><TrendingUpRoundedIcon/><div><span>Total profit</span><strong>{money(profit)}</strong></div></div>}<div><Inventory2OutlinedIcon/><div><span>Pieces sold</span><strong>{units.toLocaleString()}</strong></div></div>{collectionsLoaded&&<div className="pr-accounting-metric"><AccountBalanceWalletOutlinedIcon/><div><span>Collected sales</span><strong>{money(collections.total)}</strong><small>Legacy + Central Accounting</small></div></div>}</section>
         <section className="pr-filter"><div className="pr-filter__header"><strong>Report filters</strong><span>Configure ranking, sales type, supplier, and reporting period.</span></div><div className="pr-filter__grid">
             <div><FormControl fullWidth size="small" error={Boolean(errors.type)}><InputLabel>Type *</InputLabel><Select name="type" value={filters.type} label="Type *" onChange={update}><MenuItem value="All">All</MenuItem><MenuItem value="WHOLESALE">Wholesale</MenuItem><MenuItem value="RETAIL">Retail</MenuItem></Select></FormControl>{errors.type&&<p className="pr-filter__error">Type is required</p>}</div>
             <div><FormControl fullWidth size="small"><InputLabel>Rank by</InputLabel><Select name="status" value={filters.status} label="Rank by" onChange={update}><MenuItem value={1}>Quantity: highest first</MenuItem><MenuItem value={2}>Quantity: lowest first</MenuItem><MenuItem value={3}>Amount: highest first</MenuItem><MenuItem value={4}>Amount: lowest first</MenuItem></Select></FormControl>{errors.status&&<p className="pr-filter__error">Ranking is required</p>}</div>

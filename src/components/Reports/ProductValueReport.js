@@ -12,9 +12,12 @@ import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalance
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
+import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
 import ProductService from '../Product/ProductService.service';
 import CategoryService from '../Category/CategoryService.service';
+import { loadCentralLiquidBalance } from '../Accounting/centralProductAccounting';
 import './ProductReport.css';
+import './ProductAccountingReport.css';
 
 const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
 
@@ -24,6 +27,7 @@ const ProductValueReport = () => {
     const [report, setReport] = useState({ total_value: {}, data: [] });
     const [loading, setLoading] = useState(false);
     const [query, setQuery] = useState('');
+    const [centralLiquidity, setCentralLiquidity] = useState(null);
 
     const loadReport = selectedCategory => {
         setLoading(true);
@@ -36,6 +40,12 @@ const ProductValueReport = () => {
     useEffect(() => {
         loadReport(0);
         CategoryService.getAll().then(response => setCategories(response.data || [])).catch(error => console.log('error', error));
+        loadCentralLiquidBalance()
+            .then(setCentralLiquidity)
+            .catch(error => {
+                setCentralLiquidity(null);
+                console.log('Unable to load Central Accounting liquid balances', error);
+            });
     }, []);
 
     const products = Array.isArray(report.data) ? report.data : [];
@@ -59,10 +69,11 @@ const ProductValueReport = () => {
             <div><span>Inventory valuation</span><h1>Product Capital Report</h1><p>Review invested capital, selling value, and expected profit across current inventory.</p></div>
         </section>
 
-        <section className="pr-summary">
+        <section className="pr-summary pr-summary--accounting">
             <div><PaymentsOutlinedIcon /><div><span>Current capital</span><strong>{money(capital)}</strong></div></div>
             <div><AccountBalanceWalletOutlinedIcon /><div><span>Capital with profit</span><strong>{money(capitalWithProfit)}</strong></div></div>
             <div><TrendingUpRoundedIcon /><div><span>Expected profit</span><strong>{money(expectedProfit)}</strong></div></div>
+            {centralLiquidity && <div className="pr-accounting-metric"><AccountBalanceOutlinedIcon /><div><span>Central liquid funds</span><strong>{money(centralLiquidity.total)}</strong><small>Cash, bank, checking, and e-wallet accounts</small></div></div>}
         </section>
 
         <section className="pr-filter">

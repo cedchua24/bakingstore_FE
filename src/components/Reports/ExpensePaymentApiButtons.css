@@ -1,0 +1,20 @@
+.mec-payment-account {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 150px;
+}
+
+.mec-payment-account > span {
+    line-height: 1.4;
+}
+
+.mec-payment-account .MuiIconButton-root {
+    flex: 0 0 auto;
+    color: #126dc1;
+    background: #eaf3fc;
+}
+
+.mec-payment-account .MuiIconButton-root:hover {
+    background: #d9ebfb;
+}

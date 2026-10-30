@@ -27,6 +27,8 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import PaymentIcon from '@mui/icons-material/Payment';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { formatPaymentLabel } from "./shopOrderPaymentHelpers";
+import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
+import { centralCustomerPaymentLabel } from "../Accounting/useCentralCustomerPaymentSummaries";
 
 const CompletedShopOrderTransaction = () => {
 
@@ -81,6 +83,18 @@ const CompletedShopOrderTransaction = () => {
         return `${Number(num || 0).toFixed(2)}`;
     }
 
+    const formatCentralPaymentDate = (value) => {
+        if (!value) return '-';
+        const parsed = new Date(value);
+        if (Number.isNaN(parsed.getTime())) return value;
+        return new Intl.DateTimeFormat('en-PH', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            timeZone: 'UTC',
+        }).format(parsed);
+    };
+
 
     const [invoiceSubtotal, setinvoiceSubtotal] = useState(0);
     const [invoiceTaxes, setinvoiceTaxes] = useState(0);
@@ -110,13 +124,60 @@ const CompletedShopOrderTransaction = () => {
 
     const fetchPaymentTypeByShopTransactionIdV2 = async (id) => {
         await ModeOfPaymentService.fetchPaymentTypeByShopTransactionIdV2(id)
-            .then(response => {
+            .then(async response => {
                 const paymentSummary = response.data || {};
-                setModeOfPaymentDTO({
-                    ...paymentSummary,
-                    data: Array.isArray(paymentSummary.data) ? paymentSummary.data : [],
-                    total_payment: Number(paymentSummary.total_payment || 0),
-                });
+                const legacyPayments = Array.isArray(paymentSummary.data) ? paymentSummary.data : [];
+
+                if (legacyPayments.length > 0) {
+                    setModeOfPaymentDTO({
+                        ...paymentSummary,
+                        data: legacyPayments,
+                        total_payment: Number(paymentSummary.total_payment || 0),
+                    });
+                    return;
+                }
+
+                try {
+                    const centralSummary = await CentralCustomerPaymentService.summary(Number(String(id).split("+")[0]));
+                    const centralPayments = (centralSummary.data || [])
+                        .filter((payment) => ['posted', 'voided'].includes(payment.status))
+                        .flatMap((payment) => (payment.lines || []).map((line) => ({
+                            id: `central-${payment.id}-${line.id}`,
+                            account_label: centralCustomerPaymentLabel(line),
+                            created_at: payment.payment_date,
+                            amount: line.amount,
+                            confirmed_at: line.confirmed_at,
+                            is_central: true,
+                            is_voided: payment.status === 'voided',
+                        })));
+                    const centralRefunds = (centralSummary.refunds || [])
+                        .filter((refund) => refund.status === 'posted')
+                        .map((refund) => ({
+                            id: `refund-${refund.id}`,
+                            account_label: centralCustomerPaymentLabel({
+                                financial_account: refund.financial_account,
+                                payment_method: refund.payment_method,
+                            }),
+                            created_at: refund.refund_date,
+                            amount: -Number(refund.amount || 0),
+                            is_central: true,
+                            is_refund: true,
+                        }));
+
+                    setModeOfPaymentDTO({
+                        ...centralSummary,
+                        data: [...centralPayments, ...centralRefunds],
+                        total_payment: Number(centralSummary.total_payment || 0),
+                        is_central: true,
+                    });
+                } catch (centralError) {
+                    console.log("Unable to load Central Accounting payments", centralError);
+                    setModeOfPaymentDTO({
+                        ...paymentSummary,
+                        data: [],
+                        total_payment: Number(paymentSummary.total_payment || 0),
+                    });
+                }
                 console.log('balance', response.data)
 
             })
@@ -291,13 +352,20 @@ const CompletedShopOrderTransaction = () => {
                                         <TableBody>
                                             {modeOfPaymentDTO.data.map((row) => (
                                                 <TableRow key={row.id} hover>
-                                                    <TableCell>{formatPaymentLabel(row)}</TableCell>
+                                                    <TableCell>
+                                                        {row.is_central ? row.account_label : formatPaymentLabel(row)}
+                                                        {row.is_voided && (
+                                                            <Typography variant="caption" display="block" color="error.main">
+                                                                Voided
+                                                            </Typography>
+                                                        )}
+                                                    </TableCell>
                                                     <TableCell align="right">
                                                         <Typography
                                                             component="span"
                                                             sx={{ color: shopOrderTransaction.date != row.created_at ? '#b45309' : 'text.primary' }}
                                                         >
-                                                            {row.created_at}
+                                                            {row.is_central ? formatCentralPaymentDate(row.created_at) : row.created_at}
                                                         </Typography>
                                                     </TableCell>
                                                     <TableCell align="right">{ccyFormat(row.amount)}</TableCell>

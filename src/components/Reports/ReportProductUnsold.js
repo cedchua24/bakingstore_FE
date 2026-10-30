@@ -11,10 +11,13 @@ import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import HistoryToggleOffRoundedIcon from '@mui/icons-material/HistoryToggleOffRounded';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import ProductService from '../Product/ProductService.service';
 import SupplierService from '../Supplier/SupplierService.service';
 import CategoryService from '../Category/CategoryService.service';
+import { emptyCollectionSummary, loadCombinedCustomerCollections } from '../Accounting/centralProductAccounting';
 import './ProductReport.css';
+import './ProductAccountingReport.css';
 
 const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(value || 0));
 const date = value => value ? new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: '2-digit' }).format(new Date(value)) : null;
@@ -33,6 +36,8 @@ const ReportProductUnsold = () => {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [query, setQuery] = useState('');
+    const [collections, setCollections] = useState(emptyCollectionSummary);
+    const [collectionsLoaded, setCollectionsLoaded] = useState(false);
 
     useEffect(() => {
         ProductService.getUnsoldProducts(reportParams(filters)).then(response => setRecords(response.data?.data || [])).catch(error => console.log('error', error));
@@ -41,12 +46,27 @@ const ReportProductUnsold = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const runReport = () => {
+    const runReport = async () => {
         const nextErrors = { ...(!filters.dateFrom && { dateFrom: 'Required' }), ...(!filters.dateTo && { dateTo: 'Required' }) };
         setErrors(nextErrors);
         if (Object.keys(nextErrors).length) return;
         setLoading(true);
-        ProductService.getUnsoldProducts(reportParams(filters)).then(response => setRecords(response.data?.data || [])).catch(error => console.log('error', error)).finally(() => setLoading(false));
+        setCollectionsLoaded(false);
+        try {
+            const response = await ProductService.getUnsoldProducts(reportParams(filters));
+            setRecords(response.data?.data || []);
+            try {
+                setCollections(await loadCombinedCustomerCollections(filters.dateFrom, filters.dateTo));
+                setCollectionsLoaded(true);
+            } catch (collectionError) {
+                setCollections(emptyCollectionSummary());
+                console.log('Unable to load unsold product collections', collectionError);
+            }
+        } catch (error) {
+            console.log('error', error);
+        } finally {
+            setLoading(false);
+        }
     };
     const update = event => setFilters({ ...filters, [event.target.name]: event.target.value });
     const filtered = useMemo(() => { const q = query.trim().toLowerCase(); return q ? records.filter(item => [item.id,item.product_name,item.category_name,item.brand_name].some(value => String(value ?? '').toLowerCase().includes(q))) : records; }, [records, query]);
@@ -55,7 +75,7 @@ const ReportProductUnsold = () => {
 
     return <main className="pr-page">
         <section className="pr-hero"><div className="pr-hero__icon"><HistoryToggleOffRoundedIcon /></div><div><span>Inventory intelligence</span><h1>Unsold Products</h1><p>Find products without recent sales and identify inventory that needs attention.</p></div></section>
-        <section className="pr-summary"><div><Inventory2OutlinedIcon /><div><span>Unsold products</span><strong>{records.length}</strong></div></div><div><PaymentsOutlinedIcon /><div><span>Inventory value</span><strong>{money(totalValue)}</strong></div></div><div><HistoryToggleOffRoundedIcon /><div><span>Never sold</span><strong>{neverSold}</strong></div></div></section>
+        <section className="pr-summary pr-summary--accounting"><div><Inventory2OutlinedIcon /><div><span>Unsold products</span><strong>{records.length}</strong></div></div><div><PaymentsOutlinedIcon /><div><span>Inventory value</span><strong>{money(totalValue)}</strong></div></div><div><HistoryToggleOffRoundedIcon /><div><span>Never sold</span><strong>{neverSold}</strong></div></div>{collectionsLoaded&&<div className="pr-accounting-metric"><AccountBalanceWalletOutlinedIcon/><div><span>Collected in period</span><strong>{money(collections.total)}</strong><small>Legacy + Central Accounting</small></div></div>}</section>
         <section className="pr-filter pu-filter"><div className="pr-filter__header"><strong>Report filters</strong><span>Choose a date range and narrow results by supplier or category.</span></div><div className="pu-filter__fields">
             <FormControl size="small"><InputLabel>Supplier</InputLabel><Select name="supplier_id" value={filters.supplier_id} label="Supplier" onChange={update}><MenuItem value="">All suppliers</MenuItem>{suppliers.map(item => <MenuItem key={item.id} value={item.id}>{item.supplier_name}</MenuItem>)}</Select></FormControl>
             <FormControl size="small"><InputLabel>Category</InputLabel><Select name="category_id" value={filters.category_id} label="Category" onChange={update}><MenuItem value="">All categories</MenuItem>{categories.map(item => <MenuItem key={item.id} value={item.id}>{item.category_name}</MenuItem>)}</Select></FormControl>

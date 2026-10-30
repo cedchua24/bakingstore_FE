@@ -252,6 +252,8 @@ export default function PersistentDrawerLeft() {
         setOpen8(!open8);
     };
 
+    const [openAccounting, setOpenAccounting] = React.useState(false);
+
     const [open9, setOpen9] = React.useState(false);
     const handleClick9 = () => {
         setOpen9(!open9);
@@ -578,6 +580,19 @@ export default function PersistentDrawerLeft() {
             "name": "Payment Account List",
             "url": "/poPaymentTypeList",
             "icon": <ListIcon />
+        }
+    ]);
+
+    const [accountingList] = useState([
+        {
+            "name": "Central Accounting",
+            "url": "/accounting",
+            "icon": <AccountBalanceIcon />
+        },
+        {
+            "name": "Refunds",
+            "url": "/accounting/refunds",
+            "icon": <MoneyOffIcon />
         }
     ]);
 
@@ -1831,6 +1846,32 @@ export default function PersistentDrawerLeft() {
                                         <ListItemIcon>
                                             {nav.icon}
                                         </ListItemIcon>
+                                        <ListItemText primary={nav.name} sx={{ color: "black" }} />
+                                    </ListItemButton>
+                                </ListItem>
+                            ))}
+                        </List>
+                    </Collapse>
+                </List>
+
+                <List
+                    sx={{ width: '100%', maxWidth: 380, bgcolor: 'background.paper' }}
+                    component="nav"
+                    aria-label="Accounting"
+                >
+                    <ListItemButton onClick={() => setOpenAccounting((current) => !current)}>
+                        <ListItemIcon>
+                            <PriceCheckIcon color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary="Accounting" />
+                        {openAccounting ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={openAccounting} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {accountingList.map((nav) => (
+                                <ListItem key={nav.name} component={Link} href={nav.url} disablePadding>
+                                    <ListItemButton sx={{ pl: 6 }}>
+                                        <ListItemIcon>{nav.icon}</ListItemIcon>
                                         <ListItemText primary={nav.name} sx={{ color: "black" }} />
                                     </ListItemButton>
                                 </ListItem>

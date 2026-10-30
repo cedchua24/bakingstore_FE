@@ -841,6 +841,64 @@
     white-space: nowrap;
 }
 
+.customer-report-overpayment-row td {
+    background: #fff7f7;
+}
+
+.customer-report-table .customer-report-overpayment-row td:last-child {
+    background: #fff7f7;
+}
+
+.customer-report-overpayment-row td:first-child {
+    box-shadow: inset 5px 0 0 #d92d20;
+}
+
+.customer-report-table tbody .customer-report-overpayment-row:hover td,
+.customer-report-table tbody .customer-report-overpayment-row:hover td:last-child {
+    background: #ffeded;
+}
+
+.customer-report-overpayment-badge {
+    display: inline-flex !important;
+    align-items: center;
+    width: fit-content;
+    min-height: 22px;
+    padding: 4px 8px;
+    border: 1px solid #f04438;
+    border-radius: 999px;
+    background: #d92d20;
+    color: #fff !important;
+    font-size: 9px !important;
+    font-weight: 900;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 5px 12px rgba(217, 45, 32, .24);
+    cursor: help;
+}
+
+.customer-report-overpayment-total {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-top: 4px;
+    padding: 5px 7px;
+    border: 1px solid #fda29b;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.customer-report-overpayment-total small {
+    color: #b42318;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.customer-report-overpayment-total strong {
+    color: #b42318;
+}
+
 .report-delivery-table {
     min-width: 1420px;
     margin-bottom: 0;
