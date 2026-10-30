@@ -180,7 +180,7 @@ const ProductSoldToday = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const productSales = Array.isArray(sortedQuantity.data) ? sortedQuantity.data : [];
 

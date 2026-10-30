@@ -25,7 +25,7 @@ const profitMargin = (profit, sales) => {
     const salesAmount = Number(sales || 0);
     return salesAmount > 0 ? (Number(profit || 0) / salesAmount) * 100 : 0;
 };
-const profitMarginLabel = (profit, sales) => `${number(profitMargin(profit, sales))}%`;
+const profitMarginLabel = (profit, sales) => `${profitMargin(profit, sales).toFixed(2)}%`;
 const soldQuantity = (quantity, pieces) => {
     const totalPieces = Number(pieces || 0);
     return totalPieces !== 0 ? totalPieces : Number(quantity || 0);

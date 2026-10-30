@@ -26,11 +26,11 @@ const compactDate = (value) => {
 
 const itemDescription = (row) => {
     const discount = row.discount === "PERCENTAGE"
-        ? `Disc ${row.discount_percentage}% - ${row.discount_amount}`
-        : row.discount === "AMOUNT" ? `Disc - ${row.discount_amount}` : "";
+        ? `Disc ${Number(row.discount_percentage || 0).toFixed(2)}% - ${Number(row.discount_amount || 0).toFixed(2)}`
+        : row.discount === "AMOUNT" ? `Disc - ${Number(row.discount_amount || 0).toFixed(2)}` : "";
     const unitWeight = Number(row.quantity) ? Number(row.weight) / Number(row.quantity) : 0;
     const weight = unitWeight
-        ? `${Number.isInteger(unitWeight) ? unitWeight : Number(unitWeight.toPrecision(2))}${row.variation || ""}`
+        ? `${unitWeight.toFixed(2)}${row.variation || ""}`
         : "";
     const packaging = row.business_type === "WHOLESALE"
         ? [row.packaging, weight && `${weight} x ${row.quantity}`].filter(Boolean).join(" · ")

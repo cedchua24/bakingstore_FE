@@ -254,13 +254,11 @@ const StockWarning = (props) => {
         }
 
         if (currentProduct.quantity === 1) {
-            return `${currentProduct.weight}${currentProduct.variation || ''}`;
+            return `${Number(currentProduct.weight || 0).toFixed(2)}${currentProduct.variation || ''}`;
         }
 
         const unitWeight = currentProduct.weight / currentProduct.quantity;
-        const formattedUnitWeight = Number.isInteger(unitWeight)
-            ? unitWeight
-            : unitWeight.toPrecision(2);
+        const formattedUnitWeight = Number(unitWeight || 0).toFixed(2);
 
         return `${currentProduct.quantity} × ${formattedUnitWeight}${currentProduct.variation || ''}`;
     };
@@ -281,7 +279,7 @@ const StockWarning = (props) => {
         }, {});
 
         const formattedTotals = Object.entries(totalsByUnit).map(([unit, amount]) =>
-            `${amount.toLocaleString()}${unit ? ` ${unit}` : ''}`
+            `${Number.isInteger(amount) ? amount.toLocaleString() : amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${unit ? ` ${unit}` : ''}`
         );
 
         return formattedTotals.length > 0 ? formattedTotals.join(' + ') : 'Not specified';

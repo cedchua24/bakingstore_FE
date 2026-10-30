@@ -116,7 +116,7 @@ const PurchaseOrderList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const isZeroOrderTotal = (value) => {
         const numericValue = typeof value === 'string'

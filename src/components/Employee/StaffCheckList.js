@@ -325,7 +325,7 @@ const StaffCheckList = () => {
                                             {grade ? (
                                                 <span className={`staff-checklist-grade staff-checklist-grade--${grade.className}`}>
                                                     <span>{grade.icon}</span>
-                                                    <strong>{checkListItem.grade}</strong>
+                                                    <strong>{Number(checkListItem.grade || 0).toFixed(2)}</strong>
                                                     {grade.label}
                                                 </span>
                                             ) : <span className="staff-checklist-table__muted">—</span>}
@@ -334,7 +334,7 @@ const StaffCheckList = () => {
                                             {checkerGrade ? (
                                                 <span className={`staff-checklist-grade staff-checklist-grade--${checkerGrade.className}`}>
                                                     <span>{checkerGrade.icon}</span>
-                                                    <strong>{checkListItem.grade_checker}</strong>
+                                                    <strong>{Number(checkListItem.grade_checker || 0).toFixed(2)}</strong>
                                                 </span>
                                             ) : <span className="staff-checklist-table__muted">—</span>}
                                         </td>

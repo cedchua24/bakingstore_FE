@@ -63,9 +63,9 @@ const MarkUpNewPrice = () => {
 
     const formatPackage = product => {
         if (product.quantity == null || product.weight == null) return product.packaging || 'Package not specified';
-        if (Number(product.quantity) === 1) return `${product.weight}${product.variation || ''}`;
+        if (Number(product.quantity) === 1) return `${Number(product.weight || 0).toFixed(2)}${product.variation || ''}`;
         const unitWeight = Number(product.weight) / Number(product.quantity);
-        return `${product.quantity} × ${Number.isInteger(unitWeight) ? unitWeight : unitWeight.toPrecision(2)}${product.variation || ''} / ${product.packaging || 'package'}`;
+        return `${product.quantity} × ${unitWeight.toFixed(2)}${product.variation || ''} / ${product.packaging || 'package'}`;
     };
 
     return (
@@ -161,7 +161,7 @@ const MarkUpNewPrice = () => {
                                         <td>
                                             <span className={difference >= 0 ? 'markup-new-change markup-new-change--up' : 'markup-new-change markup-new-change--down'}>
                                                 {difference >= 0 ? '+' : ''}{formatMoney(difference)}
-                                                <small>{percentage >= 0 ? '+' : ''}{percentage.toFixed(1)}%</small>
+                                                <small>{percentage >= 0 ? '+' : ''}{percentage.toFixed(2)}%</small>
                                             </span>
                                         </td>
                                         <td>

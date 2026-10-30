@@ -54,7 +54,7 @@ const ReportBar = ({ transactionList, showProfit = false }) => {
         new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "PHP",
-            maximumFractionDigits: 0,
+            maximumFractionDigits: 2,
         }).format(Number(value || 0));
 
     const compactCurrency = (value) =>
@@ -62,7 +62,7 @@ const ReportBar = ({ transactionList, showProfit = false }) => {
             style: "currency",
             currency: "PHP",
             notation: "compact",
-            maximumFractionDigits: 1,
+            maximumFractionDigits: 2,
         }).format(Number(value || 0));
 
     const peakDay = useMemo(() => {

@@ -7,7 +7,7 @@ import ShopOrderTransactionService from '../ShopOrderTransaction/ShopOrderTransa
 import './ProductReport.css';
 
 const money = value => Number(value || 0).toLocaleString('en-PH', { style:'currency', currency:'PHP' });
-const number = value => Number(value || 0).toLocaleString('en-PH', { maximumFractionDigits:1 });
+const number = value => Number(value || 0).toLocaleString('en-PH', { maximumFractionDigits: 2 });
 const pick = (item, keys, fallback=0) => keys.find(key => item?.[key] !== undefined) ? item[keys.find(key => item?.[key] !== undefined)] : fallback;
 const periodValues = (item, key) => {
     const period = item?.[key] || {};
@@ -23,7 +23,7 @@ const ImpactCell = ({ value={} }) => {
     const quantity = Number(pick(value,['quantity_impact'],0));
     const percentage = Number(pick(value,['sales_change_percentage','percentage_change'],0));
     const negative = sales < 0 || quantity < 0;
-    return <div className="pci-impact"><strong className={negative?'pr-negative':'pt-positive'}>{sales>0?'+':''}{money(sales)}</strong><span className={negative?'pr-negative':'pt-positive'}>{quantity>0?'+':''}{number(quantity)} Box</span><em className={`pt-change ${percentage<0?'pt-change--down':'pt-change--up'}`}>{percentage>0?'+':''}{number(percentage)}%</em></div>;
+    return <div className="pci-impact"><strong className={negative?'pr-negative':'pt-positive'}>{sales>0?'+':''}{money(sales)}</strong><span className={negative?'pr-negative':'pt-positive'}>{quantity>0?'+':''}{number(quantity)} Box</span><em className={`pt-change ${percentage<0?'pt-change--down':'pt-change--up'}`}>{percentage>0?'+':''}{Number(percentage || 0).toFixed(2)}%</em></div>;
 };
 
 const ProductCustomerImpact = () => {

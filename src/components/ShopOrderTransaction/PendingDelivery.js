@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../utils/numberFormat";
 import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
@@ -489,7 +490,7 @@ const PendingDelivery = () => {
                                     <td><strong>{transaction.shop_name}</strong><span>{transaction.customer_type}</span></td>
                                     <td><strong>{transaction.requestor_name}</strong>{transaction.store_name && <span>{transaction.store_name.toUpperCase()}</span>}</td>
                                     <td>{transaction.shop_order_transaction_total_quantity}</td>
-                                    <td><div className="customer-report-bank-list">{(transaction.mode_of_payment || []).map((payment, index) => <span key={payment.id || index}>{payment.amount}<small>{formatPaymentLabel(payment)}</small></span>)}</div></td>
+                                    <td><div className="customer-report-bank-list">{(transaction.mode_of_payment || []).map((payment, index) => <span key={payment.id || index}>{formatCurrency(payment.amount)}<small>{formatPaymentLabel(payment)}</small></span>)}</div></td>
                                     <td><strong>{transaction.shop_order_transaction_total_price}</strong></td>
                                     <td>{transaction.date}<IconButton size="small"><UpdateIcon color="primary" onClick={(e) => handleOpen(transaction.id, e)} /></IconButton></td>
                                     <td><span className={`status-pill ${transaction.status === 1 ? 'status-success' : transaction.status === 2 ? 'status-warning' : 'status-danger'}`}>{transaction.status === 1 ? 'Completed' : transaction.status === 2 ? 'Pending' : 'Cancelled'}</span></td>

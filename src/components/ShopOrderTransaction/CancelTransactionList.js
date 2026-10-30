@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../utils/numberFormat";
 import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
@@ -349,10 +350,10 @@ const CancelTransactionList = () => {
                                 <td>{shopOrderTransaction.customer_type}</td>
                                 <td>{shopOrderTransaction.requestor_name}</td>
                                 <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                <td>{shopOrderTransaction.total_cash}</td>
-                                <td>{shopOrderTransaction.total_online}</td>
+                                <td>{formatCurrency(shopOrderTransaction.total_cash)}</td>
+                                <td>{formatCurrency(shopOrderTransaction.total_online)}</td>
                                 <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.shop_order_transaction_total_price}</td>
-                                <td style={{ fontWeight: 'bold', }}>{shopOrderTransaction.profit}</td>
+                                <td style={{ fontWeight: 'bold', }}>{formatCurrency(shopOrderTransaction.profit)}</td>
                                 <td>{shopOrderTransaction.date}</td>
                                 <td>{shopOrderTransaction.status === 1 ? <p style={{ fontWeight: 'bold', color: 'green', }}>COMPLETED</p>
                                     : shopOrderTransaction.status === 2 ? <p style={{ fontWeight: 'bold', color: 'orange', }}>PENDING</p> :

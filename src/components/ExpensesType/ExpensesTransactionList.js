@@ -41,7 +41,7 @@ const ExpensesTransactionList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
     return (
@@ -62,7 +62,7 @@ const ExpensesTransactionList = () => {
                         expenseTransaction.data.map((expenses, index) => (
                             <tr key={expenses.id} >
                                 <td>{expenses.id}</td>
-                                <td>{expenses.amount}</td>
+                                <td>{numberFormat(expenses.amount)}</td>
                                 <td>{expenses.details}</td>
                                 <td>{expenses.date}</td>
 

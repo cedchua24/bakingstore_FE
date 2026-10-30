@@ -66,7 +66,7 @@ const PayCreditCardHistory = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
     return (
@@ -113,13 +113,13 @@ const PayCreditCardHistory = () => {
 
 
                             <TableCell style={{ fontWeight: 'bold' }}>Due Amount:</TableCell>
-                            <TableCell align="right">{creditCardDue.amount}</TableCell>
+                            <TableCell align="right">{numberFormat(creditCardDue.amount)}</TableCell>
 
                             <TableCell style={{ fontWeight: 'bold' }}>Minimum Amount:</TableCell>
                             <TableCell align="right">{creditCardDue.min_amount}</TableCell>
 
                             <TableCell style={{ fontWeight: 'bold' }}>Penalty:</TableCell>
-                            <TableCell align="right">{creditCardDue.interest_amount}</TableCell>
+                            <TableCell align="right">{numberFormat(creditCardDue.interest_amount)}</TableCell>
 
 
                         </TableRow>

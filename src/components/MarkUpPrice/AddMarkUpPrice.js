@@ -67,17 +67,15 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
 
         if (quantity > 1) {
             const unitWeight = totalWeight / quantity;
-            const formattedUnitWeight = Number.isInteger(unitWeight)
-                ? unitWeight
-                : Number(unitWeight.toFixed(2));
-            return `${totalWeight}${variation} | ${quantity} × ${formattedUnitWeight}${variation}`;
+            const formattedUnitWeight = unitWeight.toFixed(2);
+            return `${totalWeight.toFixed(2)}${variation} | ${quantity} × ${formattedUnitWeight}${variation}`;
         }
 
         const packaging = product.packaging || '';
         const isDuplicatePackaging = packaging
             && variation
             && packaging.trim().toLowerCase() === variation.trim().toLowerCase();
-        return `${totalWeight}${variation}${packaging && !isDuplicatePackaging ? ` · ${packaging}` : ''}`;
+        return `${totalWeight.toFixed(2)}${variation}${packaging && !isDuplicatePackaging ? ` · ${packaging}` : ''}`;
     };
 
     const getProductLabel = product => {

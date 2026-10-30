@@ -771,7 +771,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const money = (value) => numberFormat(value || 0);
 
@@ -1350,7 +1350,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                         </IconButton>
                                                     </Tooltip>
                                                 )}
-                                                {transaction.shop_order_transaction_total_quantity != 0 && transaction.delivery_customer_id != 0 && (
+                                                {transaction.delivery_customer_id != 0 && (
                                                     Number(transaction.is_pickup) === 1 ? (
                                                         <Tooltip title="Delivery receipt">
                                                             <IconButton component={Link} to={"../shopOrderTransaction/deliveryReceipt/" + transaction.id} size="small">

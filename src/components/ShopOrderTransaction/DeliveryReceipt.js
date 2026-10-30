@@ -186,7 +186,7 @@ const DeliveryReceipt = () => {
                                             <td>
                                                 <strong>{item.product_name || "Unnamed item"}</strong>
                                                 {item.business_type !== "WHOLESALE" && item.weight && item.quantity
-                                                    ? <small>{Number(item.weight) / Number(item.quantity)}{item.variation || ""}</small>
+                                                    ? <small>{(Number(item.weight || 0) / Math.max(Number(item.quantity || 0), 1)).toFixed(2)}{item.variation || ""}</small>
                                                     : null}
                                             </td>
                                             <td>{firstValue(item.unit, item.packaging, "-")}</td>

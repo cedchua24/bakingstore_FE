@@ -90,7 +90,7 @@ const ShorOrderTransactionList = () => {
 
     const numberFormat = (value) => new Intl.NumberFormat('en-US', {
         style: 'currency', currency: 'PHP',
-    }).format(Number(value || 0)).replace(/(\.|,)00$/g, '');
+    }).format(Number(value || 0));
 
     const rows = Array.isArray(shopOrderTransaction.data) ? shopOrderTransaction.data : [];
     const totalSales = rows.reduce((sum, row) => sum + Number(row.shop_order_transaction_total_price || 0), 0);
