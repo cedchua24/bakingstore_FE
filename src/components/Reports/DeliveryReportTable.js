@@ -7,7 +7,7 @@ import UpdateIcon from "@mui/icons-material/Update";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getPaymentLabelParts } from "../ShopOrderTransaction/shopOrderPaymentHelpers";
 
-const money = (value) => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 }).format(Number(value || 0));
+const money = (value) => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 }).format(Number(value || 0));
 
 const DeliveryReportTable = ({ transactions = [], role, date, onDate, onPickup, onDelivery, onDeleteDelivery, onCancel }) => (
     <section className="customer-report-table-card">

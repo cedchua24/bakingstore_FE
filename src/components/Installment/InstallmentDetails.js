@@ -725,7 +725,7 @@ const InstallmentDetails = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -783,8 +783,8 @@ const InstallmentDetails = () => {
                                         <TableCell align="right">{row.bank_name === null ? "" : row.bank_name + " " + row.account_description}</TableCell>
                                         <TableCell align="right">{row.account_name}</TableCell>
                                         <TableCell align="right">{row.account_number}</TableCell>
-                                        <TableCell>{row.amount_due}</TableCell>
-                                        <TableCell>{row.amount}</TableCell>
+                                        <TableCell>{numberFormat(row.amount_due)}</TableCell>
+                                        <TableCell>{numberFormat(row.amount)}</TableCell>
                                         <TableCell align="right">{row.penalty}</TableCell>
 
                                         <TableCell align="right">{row.status == 1 ? <><CheckIcon style={{ color: 'green', }} /></> : <><CloseIcon style={{ color: 'red', }} /></>}</TableCell>
@@ -980,10 +980,10 @@ const InstallmentDetails = () => {
 
                             <TableRow key={installmentDetails.id}>
                                 <TableCell>{installmentDetails.id}</TableCell>
-                                <TableCell align="right">{installmentDetails.amount}</TableCell>
-                                <TableCell align="right">{installmentDetails.interest}</TableCell>
-                                <TableCell align="right">{installmentDetails.interest - installmentDetails.amount}</TableCell>
-                                <TableCell align="right">{installmentDetails.interest_monthly}</TableCell>
+                                <TableCell align="right">{numberFormat(installmentDetails.amount)}</TableCell>
+                                <TableCell align="right">{numberFormat(installmentDetails.interest)}</TableCell>
+                                <TableCell align="right">{numberFormat(installmentDetails.interest - installmentDetails.amount)}</TableCell>
+                                <TableCell align="right">{numberFormat(installmentDetails.interest_monthly)}</TableCell>
 
 
                                 <Dialog

@@ -454,7 +454,7 @@ const PaymentOrder = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const dateOnly = (value) => value ? String(value).split('T')[0].split(' ')[0] : '';
 
@@ -787,7 +787,7 @@ const PaymentOrder = () => {
                         </TableRow>
                         <TableRow className="po-payment-calculation-row">
                             <TableCell>Tax</TableCell>
-                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
+                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(2)} %`}</TableCell>
                             <TableCell align="right">{numberFormat(invoiceTaxes)}</TableCell>
                         </TableRow>
                         <TableRow className="po-grand-total-row">

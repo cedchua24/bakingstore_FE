@@ -193,7 +193,7 @@ const ShopBranchReportList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const totalSum = (numbers) => {
         // numbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);

@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../utils/numberFormat";
 import React, { useState, useEffect } from "react";
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
@@ -114,9 +115,9 @@ const ViewTransaction = () => {
                         productList.map((product, index) => (
                             <tr key={product.id} >
                                 <td>{product.id}</td>
-                                <td>₱ {product.price}.00</td>
+                                <td>{formatCurrency(product.price)}</td>
                                 <td>{product.quantity}</td>
-                                <td>₱ {product.total_price}.00</td>
+                                <td>{formatCurrency(product.total_price)}</td>
                                 <td>{product.created_at}</td>
                                 <td>
                                     <Link variant="primary" to={"/completedOrder/" + product.order_supplier_transaction_id}   >

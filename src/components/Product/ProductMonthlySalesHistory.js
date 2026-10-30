@@ -31,7 +31,7 @@ const profitMargin = (profit, sales) => {
     if (salesAmount === 0) return 0;
     return (Number(profit || 0) / salesAmount) * 100;
 };
-const profitMarginLabel = (profit, sales) => `${number(profitMargin(profit, sales))}%`;
+const profitMarginLabel = (profit, sales) => `${profitMargin(profit, sales).toFixed(2)}%`;
 // `quantity_sold` is a total piece count. Convert it into complete packages
 // plus the remaining loose pieces, matching ProductTrendComparison.
 const soldQuantity = (quantity, pieces) => {

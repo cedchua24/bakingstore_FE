@@ -42,7 +42,7 @@ const InstallmentPromo = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -78,11 +78,11 @@ const InstallmentPromo = () => {
                                 <td >{paymentTerm.account_name}</td>
                                 <td >{paymentTerm.account_number}</td>
                                 <td >{paymentTerm.supplier_name}</td>
-                                <td>{paymentTerm.amount}</td>
-                                <td>{paymentTerm.interest - paymentTerm.amount}</td>
-                                <td>{paymentTerm.interest}</td>
+                                <td>{numberFormat(paymentTerm.amount)}</td>
+                                <td>{numberFormat(paymentTerm.interest - paymentTerm.amount)}</td>
+                                <td>{numberFormat(paymentTerm.interest)}</td>
                                 <td>{paymentTerm.number_of_months}</td>
-                                <td>{paymentTerm.interest_monthly}</td>
+                                <td>{numberFormat(paymentTerm.interest_monthly)}</td>
                                 <td>{paymentTerm.start_date}</td>
                                 <td>{paymentTerm.status == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>

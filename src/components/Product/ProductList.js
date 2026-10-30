@@ -194,13 +194,11 @@ const ProductList = () => {
         }
 
         if (Number(product.quantity) === 1) {
-            return `${product.weight}${product.variation || ''} ${product.packaging || ''}`.trim();
+            return `${Number(product.weight || 0).toFixed(2)}${product.variation || ''} ${product.packaging || ''}`.trim();
         }
 
         const unitWeight = Number(product.weight) / Number(product.quantity);
-        const formattedWeight = Number.isInteger(unitWeight)
-            ? unitWeight
-            : unitWeight.toPrecision(2);
+        const formattedWeight = Number(unitWeight || 0).toFixed(2);
         return `${product.quantity} × ${formattedWeight}${product.variation || ''} / ${product.packaging || 'package'}`;
     };
 

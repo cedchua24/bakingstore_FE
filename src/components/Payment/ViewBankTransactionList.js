@@ -39,7 +39,7 @@ const ViewBankTransactionList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -89,7 +89,7 @@ const ViewBankTransactionList = () => {
                             <tr key={paymentTerm.id}  >
                                 <td >{paymentTerm.id}</td>
                                 <td >{paymentTerm.supplier_name}</td>
-                                <td>{paymentTerm.amount}</td>
+                                <td>{numberFormat(paymentTerm.amount)}</td>
                                 <td>{paymentTerm.date}</td>
 
 

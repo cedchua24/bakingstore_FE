@@ -87,7 +87,7 @@ const VIPCustomerHistoryGraph = () => {
                         barLabel={item => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", notation: "compact", maximumFractionDigits: 2 }).format(Number(item.value || 0))}
                         series={[{ dataKey: metric, label: metric === "sales" ? "Paid sales" : "Profit", valueFormatter: money }]}
                         xAxis={[{ scaleType: "band", dataKey: "month", colorMap: { type: "ordinal", values: chartData.map(item => item.month), colors } }]}
-                        yAxis={[{ min: 0, width: 85, valueFormatter: value => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", notation: "compact", maximumFractionDigits: 1 }).format(Number(value || 0)) }]}
+                        yAxis={[{ min: 0, width: 85, valueFormatter: value => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", notation: "compact", maximumFractionDigits: 2 }).format(Number(value || 0)) }]}
                         sx={{
                             "& .MuiChartsGrid-line": { stroke: "#e5e7eb", strokeDasharray: "4 4" },
                             "& .MuiBarLabel-root": { fill: "#ffffff", fontSize: 12, fontWeight: 800 },

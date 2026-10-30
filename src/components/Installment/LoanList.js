@@ -110,7 +110,7 @@ const LoanList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -147,7 +147,7 @@ const LoanList = () => {
                                 <td >{paymentTerm.bank_name == null ? paymentTerm.b_bank_name : paymentTerm.bank_name + " " + paymentTerm.account_description}</td>
                                 <td >{paymentTerm.account_name}</td>
                                 <td >{paymentTerm.account_number}</td>
-                                <td>{paymentTerm.amount}</td>
+                                <td>{numberFormat(paymentTerm.amount)}</td>
                                 <td>{paymentTerm.start_date}</td>
                                 <td>{paymentTerm.status == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>

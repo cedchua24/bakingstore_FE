@@ -48,7 +48,7 @@ const WarehouseStock = () => {
                                 <td>{warehouseStock.id}</td>
                                 <td>{warehouseStock.product_name}</td>
                                 <td>{warehouseStock.category_name}</td>
-                                <td>{warehouseStock.weight}x{warehouseStock.quantity}kg</td>
+                                <td>{Number(warehouseStock.weight || 0).toFixed(2)}x{warehouseStock.quantity}kg</td>
                                 <td>{warehouseStock.branch_stock_transaction}</td>
                                 <td>
                                     <Link variant="primary" to={"/showTransaction/" + warehouseStock.id}   >

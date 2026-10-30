@@ -176,7 +176,7 @@ const PrintShopBranch = () => {
                                                 <td>{itemOffset + index + 1}</td>
                                                 <td>
                                                     <strong>{item.product_name || "Unnamed item"}</strong>
-                                                    {item.business_type !== "WHOLESALE" && unitWeight > 0 && <small>{Number(unitWeight.toPrecision(3))}{item.variation || ""}</small>}
+                                                    {item.business_type !== "WHOLESALE" && unitWeight > 0 && <small>{unitWeight.toFixed(2)}{item.variation || ""}</small>}
                                                 </td>
                                                 <td>{firstValue(item.unit, item.packaging, "-")}</td>
                                                 <td>{item.shop_order_quantity || 0}</td>

@@ -76,7 +76,7 @@ const ViewChequeDueList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const formatStatementDate = (date) => {
         var d = new Date(date);
@@ -169,7 +169,7 @@ const ViewChequeDueList = () => {
                                 <td>{orderTransaction.bank_name + " " + orderTransaction.account_description}</td>
                                 <td>{orderTransaction.account_number}</td>
                                 <td>{numberFormat(orderTransaction.amount)}</td>
-                                <td>{orderTransaction.interest_amount}</td>
+                                <td>{numberFormat(orderTransaction.interest_amount)}</td>
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
                                     {orderTransaction.status != 1 &&

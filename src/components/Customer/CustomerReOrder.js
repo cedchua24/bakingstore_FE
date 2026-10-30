@@ -8,7 +8,7 @@ import CustomerCommentModal from "./CustomerCommentModal";
 
 const PAGE_SIZE = 100;
 const emptyFilters = { search: "", reordered_from: "", reordered_to: "", amount_min: "", amount_max: "" };
-const money = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 });
+const money = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 });
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "2-digit" });
 
 function normalizeResponse(response) {
@@ -137,7 +137,7 @@ const CustomerReOrder = () => {
         <div className="row g-3 mb-3">
             <div className="col-12 col-md-4"><Box sx={{ border: "1px solid #e4e4e4", borderRadius: 2, p: 2, bgcolor: "white" }}><Typography variant="body2" color="text.secondary">Customers on this page</Typography><Typography variant="h5" fontWeight={700}>{customers.length.toLocaleString()}</Typography></Box></div>
             <div className="col-12 col-md-4"><Box sx={{ border: "1px solid #e4e4e4", borderRadius: 2, p: 2, bgcolor: "white" }}><Typography variant="body2" color="text.secondary">Reorder revenue on this page</Typography><Typography variant="h5" fontWeight={700}>{money.format(pageStats.reorderRevenue)}</Typography></Box></div>
-            <div className="col-12 col-md-4"><Box sx={{ border: "1px solid #e4e4e4", borderRadius: 2, p: 2, bgcolor: "white" }}><Typography variant="body2" color="text.secondary">Average order gap</Typography><Typography variant="h5" fontWeight={700}>{pageStats.averageDays.toFixed(1)} days</Typography></Box></div>
+            <div className="col-12 col-md-4"><Box sx={{ border: "1px solid #e4e4e4", borderRadius: 2, p: 2, bgcolor: "white" }}><Typography variant="body2" color="text.secondary">Average order gap</Typography><Typography variant="h5" fontWeight={700}>{pageStats.averageDays.toFixed(2)} days</Typography></Box></div>
         </div>
 
         {error && <Alert variant="danger" dismissible onClose={() => setError("")}>{error}</Alert>}

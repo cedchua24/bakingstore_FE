@@ -13,14 +13,14 @@ const currentYear = new Date().getFullYear();
 const money = (value) => new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
 }).format(Number(value) || 0);
 
 const compactMoney = (value) => new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP",
     notation: "compact",
-    maximumFractionDigits: 1,
+    maximumFractionDigits: 2,
 }).format(Number(value) || 0);
 
 const MonthlySalesForecast = () => {
@@ -186,7 +186,7 @@ const MonthlySalesForecast = () => {
                         <div className="monthly-forecast__chart-insights">
                             <div><span>Monthly average</span><strong>{money(averageMonthlySales)}</strong></div>
                             <div><span>Highest month</span><strong>{peakMonth?.month || "—"}</strong><small>{peakMonth ? money(peakMonth.total_sales) : "No data"}</small></div>
-                            <div><span>{forecastMonths ? "Year-end outlook" : "First to last month"}</span><strong className={outlookChange >= 0 ? "is-positive" : "is-negative"}>{outlookChange >= 0 ? "+" : ""}{outlookChange.toFixed(1)}%</strong><small>{forecastMonths ? `from ${lastActualMonth?.month || "latest actual"} to December` : "change across the year"}</small></div>
+                            <div><span>{forecastMonths ? "Year-end outlook" : "First to last month"}</span><strong className={outlookChange >= 0 ? "is-positive" : "is-negative"}>{outlookChange >= 0 ? "+" : ""}{outlookChange.toFixed(2)}%</strong><small>{forecastMonths ? `from ${lastActualMonth?.month || "latest actual"} to December` : "change across the year"}</small></div>
                         </div>
                         <div className="monthly-forecast__chart" aria-label={`Monthly sales chart for ${selectedYear}`}>
                             <svg className="monthly-forecast__trend-line" viewBox="0 0 1200 200" preserveAspectRatio="none" aria-hidden="true">
@@ -259,9 +259,14 @@ const MonthlySalesForecast = () => {
                                                 <span className={`monthly-forecast__status monthly-forecast__status--${isIncompleteMonth ? "progress" : month.type}`}>{isIncompleteMonth ? "In progress" : month.type}</span>
                                                 {isIncompleteMonth && <small className="monthly-forecast__days-status">{today.getDate()} of {daysInMonth} days recorded · {daysRemaining} {daysRemaining === 1 ? "day" : "days"} remaining</small>}
                                             </td>
+<<<<<<< Updated upstream
                                             <td className={hasHighestSales ? "monthly-forecast__highest" : ""}>{hasHighestSales && <span className="monthly-forecast__highest-badge">★ Highest</span>}<strong>{money(month.total_sales)}</strong>{month.type === "actual" && change !== null && <small className={`monthly-forecast__change ${change >= 0 ? "is-up" : "is-down"}`}>{change >= 0 ? "↑" : "↓"} {Math.abs(change).toFixed(1)}% vs prior month</small>}</td>
                                             <td>{month.type === "actual" ? <><strong>{money(month.total_collected)}</strong><small>Legacy + Central Accounting</small></> : <span className="monthly-forecast__not-applicable">Forecast only</span>}</td>
                                             {isAdmin && <td className={hasHighestProfit ? "monthly-forecast__highest" : ""}>{hasHighestProfit && <span className="monthly-forecast__highest-badge">★ Highest</span>}<strong className="monthly-forecast__profit">{money(month.total_profit)}</strong><small>{profitMargin.toFixed(1)}% margin</small></td>}
+=======
+                                            <td className={hasHighestSales ? "monthly-forecast__highest" : ""}>{hasHighestSales && <span className="monthly-forecast__highest-badge">★ Highest</span>}<strong>{money(month.total_sales)}</strong>{month.type === "actual" && change !== null && <small className={`monthly-forecast__change ${change >= 0 ? "is-up" : "is-down"}`}>{change >= 0 ? "↑" : "↓"} {Math.abs(change).toFixed(2)}% vs prior month</small>}</td>
+                                            {isAdmin && <td className={hasHighestProfit ? "monthly-forecast__highest" : ""}>{hasHighestProfit && <span className="monthly-forecast__highest-badge">★ Highest</span>}<strong className="monthly-forecast__profit">{money(month.total_profit)}</strong><small>{profitMargin.toFixed(2)}% margin</small></td>}
+>>>>>>> Stashed changes
                                             <td className={hasHighestOrders ? "monthly-forecast__highest" : ""}>{hasHighestOrders && <span className="monthly-forecast__highest-badge">★ Highest</span>}{month.total_count === null ? <span className="monthly-forecast__not-applicable">Forecast only</span> : <><strong>{Number(month.total_count).toLocaleString("en-US")}</strong><small>completed orders</small></>}</td>
                                         </tr>;
                                     })}

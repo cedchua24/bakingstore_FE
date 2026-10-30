@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../utils/numberFormat";
 import React from 'react'
 import { Button } from 'react-bootstrap';
 import { Link } from "react-router-dom";
@@ -39,7 +40,7 @@ const ExpensesList = (props) => {
                             <tr key={expenses.id} >
                                 <td>{expenses.id}</td>
                                 <td>{expenses.expenses_name}</td>
-                                <td>{expenses.amount}</td>
+                                <td>{formatCurrency(expenses.amount)}</td>
                                 <td>{expenses.details}</td>
                                 <td>{expenses.date}</td>
                                 <td>
@@ -61,7 +62,7 @@ const ExpensesList = (props) => {
                     <tr >
                         <td></td>
                         <td style={{ fontWeight: 'bold', }}>Total Amount: </td>
-                        <td style={{ fontWeight: 'bold', }}>₱ {expensesMandatoryList.total_expenses}</td>
+                        <td style={{ fontWeight: 'bold', }}>{formatCurrency(expensesMandatoryList.total_expenses)}</td>
                         <td></td>
                     </tr>
                 </tbody>
@@ -76,7 +77,7 @@ const ExpensesList = (props) => {
                     <tr >
                         <td></td>
                         <td style={{ fontWeight: 'bold', }}>Grand Total: </td>
-                        <td style={{ fontWeight: 'bold', }}>₱ {expensesMandatoryList.total_expenses}</td>
+                        <td style={{ fontWeight: 'bold', }}>{formatCurrency(expensesMandatoryList.total_expenses)}</td>
                         <td></td>
                     </tr>
                 </tbody>

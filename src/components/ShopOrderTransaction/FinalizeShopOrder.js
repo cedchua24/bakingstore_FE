@@ -688,7 +688,7 @@ const FinalizeShopOrder = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const formatPaymentDate = (value) => value
         ? moment.utc(value).format('MMM D, YYYY')
@@ -704,13 +704,13 @@ const FinalizeShopOrder = () => {
     const canFinalize = !isOnlineOrder || !hasBalance;
 
     const itemDescription = (row) => row.business_type === 'WHOLESALE'
-        ? `${row.packaging || ''} (${row.weight / row.quantity}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
-        : `(${Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}${row.variation})`;
+        ? `${row.packaging || ''} (${(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
+        : `(${(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}${row.variation})`;
 
     const discountText = (row) => row.discount === 'PERCENTAGE'
-        ? `${row.discount_percentage}%, -${row.discount_amount}`
+        ? `${Number(row.discount_percentage || 0).toFixed(2)}%, -${Number(row.discount_amount || 0).toFixed(2)}`
         : row.discount === 'AMOUNT'
-            ? `-${row.discount_amount}`
+            ? `-${Number(row.discount_amount || 0).toFixed(2)}`
             : '';
 
     const paymentAccountLabel = (paymentAccount) => {
@@ -967,7 +967,7 @@ const FinalizeShopOrder = () => {
                                 {modeOfPaymentDTO.data.map((row) => (
                                     <TableRow key={row.id}>
                                         <TableCell>{paymentHistoryLabel(row)}</TableCell>
-                                        <TableCell align="right">{row.amount}</TableCell>
+                                        <TableCell align="right">{numberFormat(row.amount)}</TableCell>
                                         <TableCell align="right">{shopOrderTransaction.date != row.created_at ? <p style={{ color: 'orange', }}>{row.created_at}</p> : row.created_at}</TableCell>
                                         <TableCell align="right">
                                             <Tooltip title="Update">
@@ -1011,7 +1011,7 @@ const FinalizeShopOrder = () => {
                                 ))}
                                 <TableRow>
                                     <TableCell colSpan={1} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                                    <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
+                                    <TableCell align="right" style={{ fontWeight: 'bold', }}>{numberFormat(modeOfPaymentDTO.total_payment)}</TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
@@ -1036,12 +1036,12 @@ const FinalizeShopOrder = () => {
                                 <TableRow key={row.id}>
                                     <TableCell>{row.product_name}{
                                         row.business_type === 'WHOLESALE' ? <></>
-                                            : < >({Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}{row.variation}) </>
+                                            : < >({(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}{row.variation}) </>
                                     }</TableCell>
                                     <TableCell align="right">{row.shop_order_quantity}</TableCell>
                                     <TableCell align="right">{row.unit}</TableCell>
                                     <TableCell align="right">{numberFormat(row.fixed_price)}</TableCell>
-                                    <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : ''}</TableCell>
+                                    <TableCell align="right">{row.discount == 'PERCENTAGE' ? Number(row.discount_percentage || 0).toFixed(2) + '%' + ', ' + '-' + Number(row.discount_amount || 0).toFixed(2) : row.discount == 'AMOUNT' ? '-' + Number(row.discount_amount || 0).toFixed(2) : ''}</TableCell>
                                     <TableCell align="right">{numberFormat(row.shop_order_price)}</TableCell>
                                     <TableCell align="right">{numberFormat(row.shop_order_total_price)}</TableCell>
                                 </TableRow>
@@ -1054,7 +1054,7 @@ const FinalizeShopOrder = () => {
                             </TableRow>
                             {/* <TableRow>
                             <TableCell>Tax</TableCell>
-                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
+                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(2)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
                         </TableRow> */}
                             <TableRow>

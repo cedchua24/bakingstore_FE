@@ -52,7 +52,7 @@ const CustomerListTransaction = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(Number(value) || 0).replace(/(\.|,)00$/g, '');
+        }).format(Number(value) || 0);
 
     const totalSum = (numbers) => {
         return numberFormat(numbers.reduce((acc, { total_balance }) => acc + (Number(total_balance) || 0), 0));

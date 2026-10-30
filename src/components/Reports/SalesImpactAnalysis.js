@@ -24,8 +24,8 @@ import { centralMonthlyTotals, comparisonRange } from '../Accounting/centralSale
 import './SalesImpactAnalysis.css';
 
 const currentMonth = () => new Date().toISOString().slice(0, 7);
-const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(Number(value || 0));
-const percent = value => value === null || value === undefined ? 'N/A' : `${Number(value) >= 0 ? '+' : ''}${Number(value).toFixed(1)}%`;
+const money = value => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 2 }).format(Number(value || 0));
+const percent = value => value === null || value === undefined ? 'N/A' : `${Number(value) >= 0 ? '+' : ''}${Number(value).toFixed(2)}%`;
 const tone = value => Number(value || 0) < 0 ? 'down' : Number(value || 0) > 0 ? 'up' : 'flat';
 const unwrap = response => {
     const body = response?.data || {};

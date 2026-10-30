@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../utils/numberFormat";
 import React, { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import { Button, Form, Alert } from 'react-bootstrap';
@@ -85,7 +86,7 @@ const SupplierProductList = () => {
                                 <tr key={supplier.id} >
                                     <td>{supplier.id}</td>
                                     <td>{supplier.supplier_name}</td>
-                                    <td>{supplier.price}</td>
+                                    <td>{formatCurrency(supplier.price)}</td>
                                 </tr>
                             )
                             )

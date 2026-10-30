@@ -222,13 +222,13 @@ const ProductTrendComparison = () => {
                             <strong>{comparison.amount === null ? 'Unavailable' : `${comparison.amount > 0 ? '+' : comparison.amount < 0 ? '−' : ''}${money(Math.abs(comparison.amount))}`}</strong>
                             <span>{comparison.amount > 0 ? 'Sales increase' : comparison.amount < 0 ? 'Sales decrease' : 'Sales change'}</span>
                         </div>
-                        <div className="pt-comparison__quantity"><span>Quantity change</span><strong className={comparison.percent > 0 ? 'is-positive' : comparison.percent < 0 ? 'is-negative' : ''}>{comparison.percent > 0 ? '+' : ''}{comparison.percent.toFixed(1)}%</strong></div>
+                        <div className="pt-comparison__quantity"><span>Quantity change</span><strong className={comparison.percent > 0 ? 'is-positive' : comparison.percent < 0 ? 'is-negative' : ''}>{comparison.percent > 0 ? '+' : ''}{comparison.percent.toFixed(2)}%</strong></div>
                     </section>)}
                     {trend.projection && <section className="pt-forecast">
                         <header>{trend.projection.projected ? 'Month-end forecast' : 'Final output'}</header>
                         <div className="pt-forecast__metrics"><div><span>Sales</span><strong>{money(trend.projection.sales)}</strong></div><div><span>Quantity</span><strong title={soldQuantityTitle(trend.projection.pieces, piecesPerPackage, packaging)}>{projectedLabel}</strong></div></div>
                         {trend.projection.projected && <p>Based on current daily sales</p>}
-                        <footer><span className={`pt-forecast__status pt-forecast__status--${trend.assessment.toLowerCase().replace(' ', '-')}`}>{trend.assessment}</span><span><strong>{trend.attainment.toFixed(1)}%</strong> of average quantity</span></footer>
+                        <footer><span className={`pt-forecast__status pt-forecast__status--${trend.assessment.toLowerCase().replace(' ', '-')}`}>{trend.assessment}</span><span><strong>{trend.attainment.toFixed(2)}%</strong> of average quantity</span></footer>
                     </section>}
                 </div></td><td className="pt-graph-cell"><IconButton component="a" href={`/productMonthlySalesHistory/product/${item.product_id || item.id}?month=${filters.month}&source=trend`} target="_blank" rel="noopener noreferrer" color="primary" size="small" title={`View comparison graph for ${name}`}><BarChartRoundedIcon fontSize="small"/></IconButton><IconButton component="a" href={`/reports/productTrendComparison/product/${item.product_id || item.id}/customer-impact?${impactParams.toString()}`} target="_blank" rel="noopener noreferrer" color="secondary" size="small" title={`View customer impact for ${name}`}><VisibilityRoundedIcon fontSize="small"/></IconButton></td></tr>;
             })}

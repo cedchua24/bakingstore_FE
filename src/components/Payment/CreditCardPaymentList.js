@@ -13,7 +13,7 @@ import "./CreditCardPaymentList.css";
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
     style: "currency",
     currency: "PHP",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
 });
 
 const CreditCardPaymentList = () => {

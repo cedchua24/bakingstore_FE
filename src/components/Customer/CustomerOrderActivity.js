@@ -9,7 +9,7 @@ import { accountingDateRange, centralCustomersById } from "../Accounting/central
 
 const PAGE_SIZE = 100;
 const emptyFilters = { search: "", inactive_days_min: "", inactive_days_max: "", last_order_before: "", last_order_from: "", last_order_to: "", amount_min: "", amount_max: "" };
-const money = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 });
+const money = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 });
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "2-digit" });
 
 function normalizeResponse(response) {

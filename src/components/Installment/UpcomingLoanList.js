@@ -111,7 +111,7 @@ const UpcomingLoanList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -141,8 +141,8 @@ const UpcomingLoanList = () => {
                             <tr key={paymentTerm.id}  >
                                 <td >{paymentTerm.id}</td>
                                 <td >{paymentTerm.due_date}</td>
-                                <td >{paymentTerm.amount_due}</td>
-                                <td >{paymentTerm.amount}</td>
+                                <td >{numberFormat(paymentTerm.amount_due)}</td>
+                                <td >{numberFormat(paymentTerm.amount)}</td>
                                 <td >{paymentTerm.penalty}</td>
                                 <td >{paymentTerm.status == 1 ? <><CheckIcon style={{ color: 'green', }} /></> : <><CloseIcon style={{ color: 'red', }} /></>}</td>
                                 <td>

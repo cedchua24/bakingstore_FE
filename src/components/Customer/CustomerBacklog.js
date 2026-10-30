@@ -11,7 +11,7 @@ import { getAuthUserIdFromCookie } from "../User/authSession";
 
 const PAGE_SIZE = 100;
 const emptyFilters = { search: "", dateFrom: "", required_amount: "" };
-const money = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 });
+const money = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 2 });
 const dateFormatter = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "2-digit" });
 
 function normalizeResponse(response, requestedPage) {

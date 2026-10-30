@@ -148,7 +148,7 @@ const CustomerSalesHistory = () => {
                     label: `Grouped by ${history.group_by}`,
                     colorMap: { type: "ordinal", values: rows.map((item) => item.label), colors: salesColors },
                   }]}
-                  yAxis={[{ width: 80, valueFormatter: (value) => new Intl.NumberFormat("en-PH", { notation: "compact", maximumFractionDigits: 1 }).format(value) }]}
+                  yAxis={[{ width: 80, valueFormatter: (value) => new Intl.NumberFormat("en-PH", { notation: "compact", maximumFractionDigits: 2 }).format(value) }]}
                   sx={{
                     "& .MuiBarLabel-root": { fill: "#fff", fontSize: 12, fontWeight: 800 },
                     "& .MuiChartsGrid-line": { stroke: "#d9dee7" },

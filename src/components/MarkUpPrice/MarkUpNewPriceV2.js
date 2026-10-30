@@ -236,7 +236,7 @@ const MarkUpNewPriceV2 = () => {
                                     <div className={`markup-v2__primary-difference ${primaryDifference >= 0 ? "is-up" : "is-down"}`}>
                                         <span>Price change</span>
                                         <strong>{primaryDifference >= 0 ? "+" : ""}{money(primaryDifference)}</strong>
-                                        <small>{primaryPercentage == null ? "No percentage" : `${primaryPercentage >= 0 ? "+" : ""}${number(primaryPercentage)}%`}</small>
+                                        <small>{primaryPercentage == null ? "No percentage" : `${primaryPercentage >= 0 ? "+" : ""}${Number(primaryPercentage).toFixed(2)}%`}</small>
                                     </div>
                                     <div className="markup-v2__primary-stock">
                                         <span>Old stock remaining</span>
@@ -297,7 +297,7 @@ const MarkUpNewPriceV2 = () => {
                                                 <div><span>Saved markup cost</span><strong>{money(savedCost)}</strong></div>
                                                 <div className={difference >= 0 ? "markup-v2__difference is-up" : "markup-v2__difference is-down"}>
                                                     <span>Cost difference</span><strong>{difference >= 0 ? "+" : ""}{money(difference)}</strong>
-                                                    <small>{percentage == null ? "No percentage" : `${percentage >= 0 ? "+" : ""}${number(percentage)}%`}</small>
+                                                    <small>{percentage == null ? "No percentage" : `${percentage >= 0 ? "+" : ""}${Number(percentage).toFixed(2)}%`}</small>
                                                 </div>
                                                 <div><span>Current selling price</span><strong className="markup-selling-price">{money(markup.new_price)}</strong></div>
                                                 <Link

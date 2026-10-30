@@ -85,7 +85,7 @@ const CustomerProductList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const customerName = [sortedProduct.customerDetails.first_name, sortedProduct.customerDetails.last_name]
         .filter(Boolean).join(" ") || "Customer";
