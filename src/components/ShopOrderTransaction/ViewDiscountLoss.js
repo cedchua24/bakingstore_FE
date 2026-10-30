@@ -85,7 +85,7 @@ const ViewDiscountLoss = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -135,7 +135,7 @@ const ViewDiscountLoss = () => {
                                 <td>{shopOrderTransaction.product_name}</td>
                                 <td>{shopOrderTransaction.so_discount_amount}</td>
                                 <td>{shopOrderTransaction.shop_order_quantity}</td>
-                                <td>{shopOrderTransaction.discount_amount}</td>
+                                <td>{numberFormat(shopOrderTransaction.discount_amount)}</td>
                                 <td>{shopOrderTransaction.loss_amount}</td>
                                 <td>{shopOrderTransaction.business_type}</td>
                                 <td>{shopOrderTransaction.date}</td>

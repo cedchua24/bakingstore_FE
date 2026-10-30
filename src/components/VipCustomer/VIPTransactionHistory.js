@@ -383,18 +383,18 @@ const VIPTransactionHistory = () => {
         return <div style={{ minWidth: 180 }}>
             <div>
                 <span style={{ ...styles.cellSalesLabel, marginBottom: 3 }}>Vs last month</span>
-                <strong style={{ color: comparisonColor(lastMonthChange) }}>{lastMonthChange >= 0 ? "+" : ""}{lastMonthChange.toFixed(1)}%</strong>
+                <strong style={{ color: comparisonColor(lastMonthChange) }}>{lastMonthChange >= 0 ? "+" : ""}{lastMonthChange.toFixed(2)}%</strong>
             </div>
             <div style={{ marginTop: 7, paddingTop: 6, borderTop: "1px solid #cbd5e1" }}>
                 <span style={{ ...styles.cellSalesLabel, marginBottom: 3 }}>Vs 3-month average</span>
-                <strong style={{ color: comparisonColor(averageChange) }}>{averageChange >= 0 ? "+" : ""}{averageChange.toFixed(1)}%</strong>
+                <strong style={{ color: comparisonColor(averageChange) }}>{averageChange >= 0 ? "+" : ""}{averageChange.toFixed(2)}%</strong>
             </div>
             {elapsedDays > 0 && <div style={{ marginTop: 7, paddingTop: 6, borderTop: "2px solid #cbd5e1" }}>
                 <span style={{ ...styles.cellSalesLabel, marginBottom: 3 }}>{reportMonth === thisMonth ? "Projected month-end sales" : "Final sales"}</span>
                 <strong style={{ display: "block", color: "#1d4ed8" }}>{money(projected)}</strong>
                 {reportMonth === thisMonth && <>
                     <span style={{ display: "inline-flex", marginTop: 5, padding: "4px 8px", borderRadius: 999, color: projectionStatus.color, background: projectionStatus.background, fontSize: 10, fontWeight: 900 }}>{projectionStatus.label}</span>
-                    <span style={{ display: "block", marginTop: 3, color: projectionStatus.color, fontSize: 10, fontWeight: 800 }}>{attainment.toFixed(1)}% of 3-month average</span>
+                    <span style={{ display: "block", marginTop: 3, color: projectionStatus.color, fontSize: 10, fontWeight: 800 }}>{attainment.toFixed(2)}% of 3-month average</span>
                 </>}
             </div>}
         </div>;
@@ -477,7 +477,7 @@ const VIPTransactionHistory = () => {
             <section className={`vip-report-verdict vip-report-verdict--${reportVerdict.tone}`}>
                 <div className="vip-report-verdict__icon">{netSalesVsLastMonth >= 0 ? <TrendingUpRoundedIcon/> : <TrendingDownRoundedIcon/>}</div>
                 <div><span>Report verdict · versus last month · as of {asOfLabel}</span><h4>{reportVerdict.label}</h4><p>{reportVerdict.message}</p><p className="vip-report-verdict__action"><b>Recommended action:</b> Recover {money(decliningNeededForLastMonth)} from declining customers and contact {customersInGroup("missing").length} missing customers.</p></div>
-                <div className="vip-report-verdict__numbers"><strong>{signedMoney(netSalesVsLastMonth)}</strong>{isCurrentReportMonth && <><small>{monthCompletion.toFixed(0)}% of month elapsed</small><em><b>{signedMoney(projectedNetVsLastMonth)}</b> projected month-end vs last month</em></>}</div>
+                <div className="vip-report-verdict__numbers"><strong>{signedMoney(netSalesVsLastMonth)}</strong>{isCurrentReportMonth && <><small>{monthCompletion.toFixed(2)}% of month elapsed</small><em><b>{signedMoney(projectedNetVsLastMonth)}</b> projected month-end vs last month</em></>}</div>
             </section>
             <div className="pci-benchmark-note"><strong>Primary impact benchmark</strong><span>Winning, declining, and missing verdicts compare the selected month with last month.</span><InfoOutlinedIcon className="vip-benchmark-info" titleAccess="All impact groups, summary amounts, and the overall verdict use last month as the comparison benchmark."/></div>
 
@@ -626,7 +626,7 @@ const VIPTransactionHistory = () => {
                                     min: 0,
                                     width: 80,
                                     valueFormatter: value => new Intl.NumberFormat("en-PH", {
-                                        style: "currency", currency: "PHP", notation: "compact", maximumFractionDigits: 1,
+                                        style: "currency", currency: "PHP", notation: "compact", maximumFractionDigits: 2,
                                     }).format(Number(value || 0)),
                                 }]}
                                 sx={{

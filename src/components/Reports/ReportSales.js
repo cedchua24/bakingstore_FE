@@ -97,7 +97,7 @@ const ReportSales = () => {
         new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'PHP',
-            maximumFractionDigits: 0,
+            maximumFractionDigits: 2,
         }).format(Number(value || 0));
 
     const formatDate = (date) =>
@@ -274,7 +274,7 @@ const ReportSales = () => {
                                     </div>
                                     <strong>{numberFormat(totals.cash)}</strong>
                                     <small>
-                                        {totals.sales ? `${((totals.cash / totals.sales) * 100).toFixed(1)}% of sales` : "0% of sales"}
+                                        {totals.sales ? `${((totals.cash / totals.sales) * 100).toFixed(2)}% of sales` : "0.00% of sales"}
                                     </small>
                                 </article>
                                 <article>
@@ -284,7 +284,7 @@ const ReportSales = () => {
                                     </div>
                                     <strong>{numberFormat(totals.online)}</strong>
                                     <small>
-                                        {totals.sales ? `${((totals.online / totals.sales) * 100).toFixed(1)}% of sales` : "0% of sales"}
+                                        {totals.sales ? `${((totals.online / totals.sales) * 100).toFixed(2)}% of sales` : "0.00% of sales"}
                                     </small>
                                 </article>
                             </div>
@@ -333,7 +333,7 @@ const ReportSales = () => {
                                 <div className="sales-report__forecast-progress-header">
                                     <div>
                                         <span>Monthly target progress</span>
-                                        <strong>{forecast.progress.toFixed(1)}%</strong>
+                                        <strong>{forecast.progress.toFixed(2)}%</strong>
                                     </div>
                                     <p>
                                         {numberFormat(forecast.monthSales)} of {numberFormat(forecast.target)}

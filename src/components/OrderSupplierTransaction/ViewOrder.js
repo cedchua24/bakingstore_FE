@@ -274,7 +274,7 @@ const ViewOrder = () => {
                                 </TableRow>
                                 <TableRow className="po-payment-calculation-row">
                                     <TableCell>Tax</TableCell>
-                                    <TableCell>{`${(TAX_RATE * 100).toFixed(0)}%`}</TableCell>
+                                    <TableCell>{`${(TAX_RATE * 100).toFixed(2)}%`}</TableCell>
                                     <TableCell align="right">{currency(totals.tax)}</TableCell>
                                 </TableRow>
                                 <TableRow className="po-grand-total-row">

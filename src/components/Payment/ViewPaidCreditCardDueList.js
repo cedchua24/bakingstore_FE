@@ -85,7 +85,7 @@ const ViewPaidCreditCardDueList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
     const formatStatementDate = (date) => {
@@ -137,7 +137,7 @@ const ViewPaidCreditCardDueList = () => {
                                 <td>{numberFormat(orderTransaction.min_amount)} </td>
                                 <td>{numberFormat(orderTransaction.amount)}</td>
                                 <td>{numberFormat(orderTransaction.amount_paid)}</td>
-                                <td>{orderTransaction.interest_amount}</td>
+                                <td>{numberFormat(orderTransaction.interest_amount)}</td>
                                 <td>{orderTransaction.is_installment === 1 ? <CheckIcon style={{ color: 'black', }} /> : <CloseIcon style={{ color: 'black', }} />}</td>
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>

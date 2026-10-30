@@ -640,7 +640,7 @@ const InstallmentOrder = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -824,8 +824,8 @@ const InstallmentOrder = () => {
                                 {installmentPaymentList.data.map((row) => (
                                     <TableRow key={row.id}>
                                         <TableCell align="right">{row.due_date}</TableCell>
-                                        <TableCell>{row.amount_due}</TableCell>
-                                        <TableCell>{row.amount}</TableCell>
+                                        <TableCell>{numberFormat(row.amount_due)}</TableCell>
+                                        <TableCell>{numberFormat(row.amount)}</TableCell>
                                         <TableCell align="right">{row.penalty}</TableCell>
 
                                         <TableCell align="right">{row.status == 1 ? <><CheckIcon style={{ color: 'green', }} /></> : <><CloseIcon style={{ color: 'red', }} /></>}</TableCell>
@@ -948,10 +948,10 @@ const InstallmentOrder = () => {
                                 {installmentDetails.data.map((row) => (
                                     <TableRow key={row.id}>
                                         <TableCell>{row.number_of_months}</TableCell>
-                                        <TableCell align="right">{row.amount}</TableCell>
-                                        <TableCell align="right">{row.interest - row.amount}</TableCell>
-                                        <TableCell align="right">{row.interest}</TableCell>
-                                        <TableCell align="right">{row.interest_monthly}</TableCell>
+                                        <TableCell align="right">{numberFormat(row.amount)}</TableCell>
+                                        <TableCell align="right">{numberFormat(row.interest - row.amount)}</TableCell>
+                                        <TableCell align="right">{numberFormat(row.interest)}</TableCell>
+                                        <TableCell align="right">{numberFormat(row.interest_monthly)}</TableCell>
                                         <TableCell align="right">{row.start_date}</TableCell>
                                         <TableCell align="right">
 
@@ -1021,7 +1021,7 @@ const InstallmentOrder = () => {
                                 <TableRow key={row.id}>
                                     <TableCell>{row.bank_name}{" - " + row.account_name} {"" + row.account_description}{" - " + row.account_number}</TableCell>
                                     <TableCell align="right">{row.is_installment == 1 ? "Installment" : row.payment_term}</TableCell>
-                                    <TableCell align="right">{row.amount}</TableCell>
+                                    <TableCell align="right">{numberFormat(row.amount)}</TableCell>
 
 
                                 </TableRow>
@@ -1029,7 +1029,7 @@ const InstallmentOrder = () => {
                             ))}
                             <TableRow>
                                 <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                                <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold', }}>{numberFormat(modeOfPaymentDTO.total_payment)}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -1054,13 +1054,13 @@ const InstallmentOrder = () => {
                             <TableRow key={row.id}>
                                 <TableCell>{row.bank_name}{" - " + row.account_name} {"" + row.account_description}{" - " + row.account_number}</TableCell>
                                 <TableCell align="right">{row.payment_term}</TableCell>
-                                <TableCell align="right">{row.amount}</TableCell>
+                                <TableCell align="right">{numberFormat(row.amount)}</TableCell>
                             </TableRow>
 
                         ))}
                         <TableRow>
                             <TableCell colSpan={2} style={{ fontWeight: 'bold', }}>Grand Total</TableCell>
-                            <TableCell align="right" style={{ fontWeight: 'bold', }}>₱ {modeOfPaymentDTO.total_payment}</TableCell>
+                            <TableCell align="right" style={{ fontWeight: 'bold', }}>{numberFormat(modeOfPaymentDTO.total_payment)}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
@@ -1088,8 +1088,8 @@ const InstallmentOrder = () => {
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
-                                <TableCell align="right">{row.price}</TableCell>
-                                <TableCell align="right">{row.total_price}</TableCell>
+                                <TableCell align="right">{numberFormat(row.price)}</TableCell>
+                                <TableCell align="right">{numberFormat(row.total_price)}</TableCell>
                             </TableRow>
                         ))}
 
@@ -1100,7 +1100,7 @@ const InstallmentOrder = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell>Tax</TableCell>
-                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
+                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(2)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
                         </TableRow>
                         <TableRow>

@@ -300,7 +300,7 @@ const PayCreditCard = ({ chequeMode = false }) => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -357,7 +357,7 @@ const PayCreditCard = ({ chequeMode = false }) => {
                                 <TableCell align="right">{creditCardDueDetails.min_amount}</TableCell>
 
                                 <TableCell style={{ fontWeight: 'bold' }}>Penalty:</TableCell>
-                                <TableCell align="right">{creditCardDueDetails.interest_amount}</TableCell>
+                                <TableCell align="right">{numberFormat(creditCardDueDetails.interest_amount)}</TableCell>
 
 
                             </TableRow>
@@ -370,7 +370,7 @@ const PayCreditCard = ({ chequeMode = false }) => {
                         <TableBody>
                             <TableRow >
                                 <TableCell style={{ fontWeight: 'bold' }}>Due Amount:</TableCell>
-                                <TableCell align="right">{creditCardDue.amount - creditCardDue.amount_paid}</TableCell>
+                                <TableCell align="right">{numberFormat(creditCardDue.amount - creditCardDue.amount_paid)}</TableCell>
                             </TableRow>
                         </TableBody>
                     </Table>

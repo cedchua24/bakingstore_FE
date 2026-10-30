@@ -150,7 +150,7 @@ const PaymentTypePrev = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const updateDate = () => {
         ModeOfPaymentService.updatePaidStatus(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
@@ -229,8 +229,8 @@ const PaymentTypePrev = () => {
                                         <td>{formatPaymentLabel(shopOrderTransaction)}</td>
                                         <td style={{ fontWeight: 'bold', }}>{numberFormat(shopOrderTransaction.amount)}</td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
-                                        <td>{shopOrderTransaction.total_cash}</td>
-                                        <td>{shopOrderTransaction.total_online}</td>
+                                        <td>{numberFormat(shopOrderTransaction.total_cash)}</td>
+                                        <td>{numberFormat(shopOrderTransaction.total_online)}</td>
                                         <td >{shopOrderTransaction.shop_order_transaction_total_price}</td>
                                         <td>{shopOrderTransaction.date != id.split("+")[1] ? <p style={{ color: 'orange', }}>{shopOrderTransaction.date}</p> : shopOrderTransaction.date}</td>
 

@@ -31,9 +31,7 @@ const formatPackage = (record, isRetail = false) => {
 
     const quantity = Math.max(Number(record.quantity) || 1, 1);
     const unitWeight = (Number(record.weight) || 0) / quantity;
-    const formattedWeight = Number.isInteger(unitWeight)
-        ? unitWeight
-        : Number(unitWeight.toFixed(2));
+    const formattedWeight = unitWeight.toFixed(2);
 
     if (isRetail) return `${formattedWeight}${record.variation || ""} per piece`;
 
@@ -51,7 +49,7 @@ const PriceHistoryCard = ({ record, type, paired = false }) => {
     const sellingPrice = Number(record.new_price) || 0;
     const profit = sellingPrice - supplierPrice;
     const markup = record.mark_up_option === "PERCENTAGE"
-        ? `${record.mark_up_price}%`
+        ? `${Number(record.mark_up_price || 0).toFixed(2)}%`
         : money.format(Number(record.mark_up_price) || 0);
 
     return (

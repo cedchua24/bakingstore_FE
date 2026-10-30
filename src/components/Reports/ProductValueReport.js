@@ -50,8 +50,8 @@ const ProductValueReport = () => {
             .some(value => String(value ?? '').toLowerCase().includes(search)));
     }, [products, query]);
     const packageLabel = item => Number(item.quantity) === 1
-        ? `${item.weight}${item.variation || ''}`
-        : `${item.quantity} × ${(Number(item.weight || 0) / Number(item.quantity || 1)).toPrecision(2)}${item.variation || ''}`;
+        ? `${Number(item.weight || 0).toFixed(2)}${item.variation || ''}`
+        : `${item.quantity} × ${(Number(item.weight || 0) / Number(item.quantity || 1)).toFixed(2)}${item.variation || ''}`;
 
     return <main className="pr-page">
         <section className="pr-hero">

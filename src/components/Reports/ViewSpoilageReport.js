@@ -38,7 +38,7 @@ const ViewSpoilageReport = (props) => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const covertDateString = (day) => {
         var d = new Date(day);

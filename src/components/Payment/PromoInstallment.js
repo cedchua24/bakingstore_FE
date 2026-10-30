@@ -283,7 +283,7 @@ const PromoInstallment = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -341,7 +341,7 @@ const PromoInstallment = () => {
                                 <TableCell align="right">{creditCardDueDetails.min_amount}</TableCell>
 
                                 <TableCell style={{ fontWeight: 'bold' }}>Penalty:</TableCell>
-                                <TableCell align="right">{creditCardDueDetails.interest_amount}</TableCell>
+                                <TableCell align="right">{numberFormat(creditCardDueDetails.interest_amount)}</TableCell>
 
 
                             </TableRow>
@@ -361,16 +361,16 @@ const PromoInstallment = () => {
                                 <TableCell align="right">{installmentDetails.number_of_months}</TableCell>
 
                                 <TableCell style={{ fontWeight: 'bold' }}>Amount Loan</TableCell>
-                                <TableCell align="right">{installmentDetails.amount}</TableCell>
+                                <TableCell align="right">{numberFormat(installmentDetails.amount)}</TableCell>
 
                                 <TableCell style={{ fontWeight: 'bold' }}>Amount With Interest:</TableCell>
-                                <TableCell align="right">{installmentDetails.interest_amount}</TableCell>
+                                <TableCell align="right">{numberFormat(installmentDetails.interest_amount)}</TableCell>
 
                                 <TableCell style={{ fontWeight: 'bold' }}>Interest:</TableCell>
-                                <TableCell align="right">{installmentDetails.total_interest}</TableCell>
+                                <TableCell align="right">{numberFormat(installmentDetails.total_interest)}</TableCell>
 
                                 <TableCell style={{ fontWeight: 'bold' }}>Monthly Payment:</TableCell>
-                                <TableCell align="right">{installmentDetails.interest_monthly}</TableCell>
+                                <TableCell align="right">{numberFormat(installmentDetails.interest_monthly)}</TableCell>
 
 
                             </TableRow>
@@ -507,8 +507,8 @@ const PromoInstallment = () => {
                                         <td>{paymentHistory.id}</td>
                                         <td>{numberFormat(paymentHistory.min_amount)} </td>
                                         <td>{numberFormat(paymentHistory.amount)} </td>
-                                        <td>{paymentHistory.amount_paid}</td>
-                                        <td>{paymentHistory.interest_amount}</td>
+                                        <td>{numberFormat(paymentHistory.amount_paid)}</td>
+                                        <td>{numberFormat(paymentHistory.interest_amount)}</td>
                                         <td>{paymentHistory.due_date}</td>
                                         <td>{paymentHistory.status == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
 

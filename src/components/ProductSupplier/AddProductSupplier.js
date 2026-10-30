@@ -201,9 +201,7 @@ const AddProductSupplier = (props) => {
                                     ? option.weight / option.quantity
                                     : 0;
 
-                                const formattedWeight = Number.isInteger(weightPerPiece)
-                                    ? weightPerPiece
-                                    : weightPerPiece.toFixed(2);
+                                const formattedWeight = Number(weightPerPiece || 0).toFixed(2);
 
                                 return `${option.product_name} - (${formattedWeight}${option.variation} x ${option.quantity})`;
                             }}

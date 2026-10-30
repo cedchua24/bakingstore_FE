@@ -89,7 +89,7 @@ const ViewOrderSupplierTransaction = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -156,13 +156,13 @@ const ViewOrderSupplierTransaction = () => {
 
 
                             <TableCell style={{ fontWeight: 'bold' }}>Due Amount:</TableCell>
-                            <TableCell align="right">{creditCardDue.amount}</TableCell>
+                            <TableCell align="right">{numberFormat(creditCardDue.amount)}</TableCell>
 
                             <TableCell style={{ fontWeight: 'bold' }}>Minimum Amount:</TableCell>
                             <TableCell align="right">{creditCardDue.min_amount}</TableCell>
 
                             <TableCell style={{ fontWeight: 'bold' }}>Penalty:</TableCell>
-                            <TableCell align="right">{creditCardDue.interest_amount}</TableCell>
+                            <TableCell align="right">{numberFormat(creditCardDue.interest_amount)}</TableCell>
 
 
                         </TableRow>
@@ -198,7 +198,7 @@ const ViewOrderSupplierTransaction = () => {
                                 <td>{numberFormat(orderTransaction.min_amount)} </td>
                                 <td>{orderTransaction.amount_paid > 0 && orderTransaction.amount_paid < orderTransaction.amount ? <><p style={{ textDecoration: 'line-through', color: 'red', }}>{numberFormat(orderTransaction.amount)}</p><p >{numberFormat(orderTransaction.amount - orderTransaction.amount_paid)}</p></> : numberFormat(orderTransaction.amount)}</td>
                                 <td>{numberFormat(orderTransaction.amount_paid)}</td>
-                                <td>{orderTransaction.interest_amount}</td>
+                                <td>{numberFormat(orderTransaction.interest_amount)}</td>
                                 <td>{formatStatementDate(orderTransaction.due_date)}</td>
                                 <td>{orderTransaction.is_installment === 1 ? <CheckIcon style={{ color: 'black', }} /> : <CloseIcon style={{ color: 'black', }} />}</td>
                                 <td>{orderTransaction.status === 1 ? <CheckIcon style={{ color: 'green', }} /> : orderTransaction.status === 2 ? "" : <CloseIcon style={{ color: 'red', }} />}</td>

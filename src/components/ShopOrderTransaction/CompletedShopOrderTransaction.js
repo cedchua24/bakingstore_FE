@@ -337,7 +337,7 @@ const CompletedShopOrderTransaction = () => {
                                                 <TableCell sx={{ fontWeight: 600 }}>{row.product_name}</TableCell>
                                                 <TableCell align="right">{row.shop_order_quantity}</TableCell>
                                                 <TableCell align="right">{ccyFormat(row.shop_order_price)}</TableCell>
-                                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? row.discount_percentage + '%' + ', ' + '-' + row.discount_amount : row.discount == 'AMOUNT' ? '-' + row.discount_amount : '-'}</TableCell>
+                                                <TableCell align="right">{row.discount == 'PERCENTAGE' ? ccyFormat(row.discount_percentage) + '%' + ', ' + '-' + ccyFormat(row.discount_amount) : row.discount == 'AMOUNT' ? '-' + ccyFormat(row.discount_amount) : '-'}</TableCell>
                                                 <TableCell align="right" sx={{ fontWeight: 700 }}>{ccyFormat(row.shop_order_total_price)}</TableCell>
                                             </TableRow>
                                         ))}
@@ -364,7 +364,7 @@ const CompletedShopOrderTransaction = () => {
                                 <Typography sx={{ fontWeight: 700 }}>PHP {ccyFormat(invoiceSubtotal)}</Typography>
                             </Stack>
                             <Stack direction="row" justifyContent="space-between" spacing={2}>
-                                <Typography color="text.secondary">Tax ({`${(TAX_RATE * 100).toFixed(0)}%`})</Typography>
+                                <Typography color="text.secondary">Tax ({`${(TAX_RATE * 100).toFixed(2)}%`})</Typography>
                                 <Typography sx={{ fontWeight: 700 }}>PHP {ccyFormat(invoiceTaxes)}</Typography>
                             </Stack>
                             <Divider />

@@ -41,7 +41,7 @@ const InstallmentPaymentList = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
 
@@ -74,7 +74,7 @@ const InstallmentPaymentList = () => {
                                 <td >{paymentTerm.account_name}</td>
                                 <td >{paymentTerm.account_number}</td>
                                 <td >{paymentTerm.supplier_name}</td>
-                                <td>{paymentTerm.amount}</td>
+                                <td>{numberFormat(paymentTerm.amount)}</td>
                                 <td>{paymentTerm.date}</td>
                                 <td>{paymentTerm.status == 1 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>

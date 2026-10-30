@@ -115,9 +115,9 @@ const OutOfStockReturn = () => {
 
     const formatPackage = (product) => {
         if (product.quantity == null || product.weight == null) return product.packaging || 'Package not specified';
-        if (Number(product.quantity) === 1) return `${product.weight}${product.variation || ''}`;
+        if (Number(product.quantity) === 1) return `${Number(product.weight || 0).toFixed(2)}${product.variation || ''}`;
         const unitWeight = Number(product.weight) / Number(product.quantity);
-        return `${product.quantity} × ${Number.isInteger(unitWeight) ? unitWeight : unitWeight.toPrecision(2)}${product.variation || ''} / ${product.packaging || 'package'}`;
+        return `${product.quantity} × ${unitWeight.toFixed(2)}${product.variation || ''} / ${product.packaging || 'package'}`;
     };
 
     const modalStyle = {

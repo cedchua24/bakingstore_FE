@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../utils/numberFormat";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
@@ -349,15 +350,15 @@ const AddRTS = (props) => {
                                         <td>{product.product_name}</td>
                                         <td>{product.brand_name}</td>
                                         <td>{product.category_name}</td>
-                                        <td>₱ {product.price}.00</td>
+                                        <td>{formatCurrency(product.price)}</td>
                                         <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock}</p>
                                             : <p >{product.stock}</p>}
                                         </td>
                                         <td>{product.stock < product.stock_warning ? <p style={{ fontWeight: 'bold', color: 'red', }}>{product.stock_pc}</p>
                                             : <p >{product.stock_pc}</p>}
                                         </td>
-                                        <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
-                                            : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
+                                        <td>{product.quantity === 1 ? <p >{Number(product.weight || 0).toFixed(2)}{product.variation}</p>
+                                            : <p >{product.quantity}x{(Number(product.weight || 0) / Math.max(Number(product.quantity || 0), 1)).toFixed(2)}{product.variation}</p>}
                                         </td>
                                         <td>
                                             <IconButton className="add-rts-action" aria-label={`Return ${product.product_name}`}>

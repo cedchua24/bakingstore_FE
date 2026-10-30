@@ -248,7 +248,7 @@ const ProductListV2 = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
 
     return (
@@ -399,8 +399,8 @@ const ProductListV2 = () => {
                                         <td>{product.category_name}</td>
                                         <td>{numberFormat(product.price)}</td>
                                         {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                        <td>{product.quantity === 1 ? <p >{product.weight}{product.variation}</p>
-                                            : <p >{product.quantity}x{Number.isInteger(product.weight / product.quantity) ? (product.weight / product.quantity) : (product.weight / product.quantity).toPrecision(2)}{product.variation}</p>}
+                                        <td>{product.quantity === 1 ? <p >{Number(product.weight || 0).toFixed(2)}{product.variation}</p>
+                                            : <p >{product.quantity}x{(Number(product.weight || 0) / Math.max(Number(product.quantity || 0), 1)).toFixed(2)}{product.variation}</p>}
                                         </td>
                                         <td>{product.stock}</td>
                                         <td>{product.stock_pc}</td>

@@ -155,11 +155,11 @@ const StockList = () => {
             return 'Package not specified';
         }
         if (Number(currentProduct.quantity) === 1) {
-            return `${currentProduct.weight}${currentProduct.variation || ''}`;
+            return `${Number(currentProduct.weight || 0).toFixed(2)}${currentProduct.variation || ''}`;
         }
 
         const unitWeight = Number(currentProduct.weight) / Number(currentProduct.quantity);
-        return `${currentProduct.quantity} × ${Number.isInteger(unitWeight) ? unitWeight : unitWeight.toPrecision(2)}${currentProduct.variation || ''}`;
+        return `${currentProduct.quantity} × ${unitWeight.toFixed(2)}${currentProduct.variation || ''}`;
     };
 
     const sumPendingOrderQuantities = (pendingOrders) => {
@@ -173,7 +173,7 @@ const StockList = () => {
         }, {});
 
         const totals = Object.entries(totalsByUnit).map(([unit, amount]) =>
-            `${amount.toLocaleString()}${unit ? ` ${unit}` : ''}`
+            `${Number.isInteger(amount) ? amount.toLocaleString() : amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${unit ? ` ${unit}` : ''}`
         );
         return totals.length ? totals.join(' + ') : 'Not specified';
     };

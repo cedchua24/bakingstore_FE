@@ -60,8 +60,14 @@ const MarkUpPriceList = ({
     const formatMoney = value => new Intl.NumberFormat('en-PH', {
         style: 'currency',
         currency: 'PHP',
+        minimumFractionDigits: 2,
         maximumFractionDigits: 2
     }).format(Number(value || 0));
+
+    const formatDecimal = value => {
+        const number = Number(value);
+        return Number.isFinite(number) ? number.toFixed(2) : '0.00';
+    };
 
     const formatProfitMargin = record => {
         const sellingPrice = Number(record.new_price || 0);
@@ -71,9 +77,14 @@ const MarkUpPriceList = ({
         return `${((profit / sellingPrice) * 100).toFixed(2)}%`;
     };
 
-    const getVariantLabel = record => record.business_type === 'WHOLESALE'
-        ? `${record.weight / Math.max(record.quantity, 1)}${record.variation || ''} × ${record.quantity} ${record.packaging || ''}`
-        : `${Number(record.weight / Math.max(record.quantity, 1)).toPrecision(2)}${record.variation || ''}`;
+    const getVariantLabel = record => {
+        const unitWeight = Number(record.weight || 0) / Math.max(Number(record.quantity || 0), 1);
+        const formattedWeight = formatDecimal(unitWeight);
+
+        return record.business_type === 'WHOLESALE'
+            ? `${formattedWeight}${record.variation || ''} × ${record.quantity} ${record.packaging || ''}`
+            : `${formattedWeight}${record.variation || ''}`;
+    };
 
     const applyReplacementCost = record => {
         if (replacementProductPrice == null) return record;
@@ -89,6 +100,17 @@ const MarkUpPriceList = ({
         return { ...record, price: newBasePrice, profit, new_price: newBasePrice + profit };
     };
 
+    const prepareMarkupForEditing = record => {
+        const adjustedRecord = applyReplacementCost(record);
+        const adjustment = Math.round(Number(adjustedRecord.mark_up_price || 0));
+        const price = Number(adjustedRecord.price || 0);
+        const profit = adjustedRecord.mark_up_option === 'PERCENTAGE'
+            ? price / 100 * adjustment
+            : adjustment;
+
+        return { ...adjustedRecord, mark_up_price: adjustment, profit, new_price: price + profit };
+    };
+
     const openEditor = (id, groupRecords = []) => {
         setLoading(true);
         setMessage('');
@@ -99,7 +121,7 @@ const MarkUpPriceList = ({
         if (pairedRecords.length) {
             Promise.all(pairedRecords.map(record => MarkUpPriceService.get(record.id)))
                 .then(responses => {
-                    setPairedMarkups(responses.map(response => applyReplacementCost(response.data)));
+                    setPairedMarkups(responses.map(response => prepareMarkupForEditing(response.data)));
                     setOpen(true);
                 })
                 .catch(error => console.log("error", error))
@@ -110,7 +132,7 @@ const MarkUpPriceList = ({
         MarkUpPriceService.get(id)
             .then(response => {
                 setPairedMarkups([]);
-                setMarkup(applyReplacementCost(response.data));
+                setMarkup(prepareMarkupForEditing(response.data));
                 setOpen(true);
             })
             .catch(error => console.log("error", error))
@@ -128,6 +150,7 @@ const MarkUpPriceList = ({
     };
 
     const changeAdjustment = value => {
+        if (value !== '' && !/^\d+$/.test(value)) return;
         const adjustment = Number(value || 0);
         const profit = markup.mark_up_option === 'PERCENTAGE'
             ? (Number(markup.price || 0) / 100) * adjustment
@@ -141,6 +164,7 @@ const MarkUpPriceList = ({
     };
 
     const changePairedAdjustment = (id, value) => {
+        if (value !== '' && !/^\d+$/.test(value)) return;
         setPairedMarkups(current => current.map(record => {
             if (record.id !== id) return record;
             const adjustment = Number(value || 0);
@@ -149,6 +173,10 @@ const MarkUpPriceList = ({
                 : adjustment;
             return { ...record, mark_up_price: adjustment, profit, new_price: Number(record.price || 0) + profit };
         }));
+    };
+
+    const preventNonIntegerInput = event => {
+        if (['.', ',', 'e', 'E', '-', '+'].includes(event.key)) event.preventDefault();
     };
 
     const saveUpdate = () => {
@@ -232,9 +260,7 @@ const MarkUpPriceList = ({
                                             <small className="markup-list-group-meta">
                                                 Product #{group.productId || record.id} · {group.records.length} configuration{group.records.length === 1 ? '' : 's'}
                                             </small>
-                                            <small>#{record.id} · {record.business_type === 'WHOLESALE'
-                                                ? `${record.weight / Math.max(record.quantity, 1)}${record.variation} × ${record.quantity} ${record.packaging || ''}`
-                                                : `${Number(record.weight / Math.max(record.quantity, 1)).toPrecision(2)}${record.variation}`}</small>
+                                            <small>#{record.id} · {getVariantLabel(record)}</small>
                                         </div>
                                     </div>
                                 </td>
@@ -261,7 +287,7 @@ const MarkUpPriceList = ({
                                 </td>
                                 <td>
                                     <strong className={highlightMetric === 'markup' ? 'markup-ranking-highlight' : ''}>{record.mark_up_option === 'PERCENTAGE'
-                                        ? `${record.mark_up_price}%`
+                                        ? `${formatDecimal(record.mark_up_price)}%`
                                         : formatMoney(record.mark_up_price)}</strong>
                                 </td>
                                 {!hideProfit && <td><span className="markup-profit">+ {formatMoney(Number(record.new_price) - Number(record.price))}</span></td>}
@@ -313,6 +339,8 @@ const MarkUpPriceList = ({
                                     label={record.mark_up_option === 'PERCENTAGE' ? 'Markup percentage' : 'Markup amount'}
                                     value={record.mark_up_price || ''}
                                     onChange={event => changePairedAdjustment(record.id, event.target.value)}
+                                    onKeyDown={preventNonIntegerInput}
+                                    inputProps={{ min: 1, step: 1, inputMode: 'numeric', pattern: '[0-9]*' }}
                                     InputProps={{
                                         startAdornment: record.mark_up_option === 'AMOUNT'
                                             ? <InputAdornment position="start">₱</InputAdornment>
@@ -345,6 +373,8 @@ const MarkUpPriceList = ({
                             label={markup.mark_up_option === 'PERCENTAGE' ? 'Markup percentage' : 'Markup amount'}
                             value={markup.mark_up_price || ''}
                             onChange={event => changeAdjustment(event.target.value)}
+                            onKeyDown={preventNonIntegerInput}
+                            inputProps={{ min: 1, step: 1, inputMode: 'numeric', pattern: '[0-9]*' }}
                             InputProps={{
                                 startAdornment: markup.mark_up_option === 'AMOUNT'
                                     ? <InputAdornment position="start">₱</InputAdornment>

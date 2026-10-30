@@ -1,3 +1,4 @@
+import { formatCurrency } from "../../utils/numberFormat";
 import React, { useState, useEffect } from "react";
 import { useParams } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
@@ -174,8 +175,8 @@ const CompletedOrder = () => {
                             <TableRow key={row.id}>
                                 <TableCell>{row.product_name}</TableCell>
                                 <TableCell align="right">{row.quantity}</TableCell>
-                                <TableCell align="right">{row.price}</TableCell>
-                                <TableCell align="right">{row.total_price}</TableCell>
+                                <TableCell align="right">{formatCurrency(row.price)}</TableCell>
+                                <TableCell align="right">{formatCurrency(row.total_price)}</TableCell>
                             </TableRow>
                         ))}
 
@@ -186,7 +187,7 @@ const CompletedOrder = () => {
                         </TableRow>
                         <TableRow>
                             <TableCell>Tax</TableCell>
-                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(0)} %`}</TableCell>
+                            <TableCell align="right">{`${(TAX_RATE * 100).toFixed(2)} %`}</TableCell>
                             <TableCell align="right">{ccyFormat(invoiceTaxes)}</TableCell>
                         </TableRow>
                         <TableRow>

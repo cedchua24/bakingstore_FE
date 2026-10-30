@@ -852,13 +852,13 @@ const AddProductCustomerOrderTransaction = () => {
         new Intl.NumberFormat('en-us', {
             style: 'currency',
             currency: 'PHP'
-        }).format(value).replace(/(\.|,)00$/g, '');
+        }).format(value);
 
     const productUnitWeight = (product) => {
         const weight = Number(product.weight || 0);
         const quantity = Number(product.quantity || 1);
         const unitWeight = weight / quantity;
-        return Number.isInteger(unitWeight) ? unitWeight : Number(unitWeight.toFixed(3));
+        return unitWeight.toFixed(2);
     };
 
     const productSizeLabel = (product) => {
@@ -918,13 +918,13 @@ const AddProductCustomerOrderTransaction = () => {
         : Number(product.stock_pc ?? product.stock ?? 0);
 
     const itemDescription = (row) => row.business_type === 'WHOLESALE'
-        ? `${row.packaging} (${row.weight / row.quantity}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
-        : `(${Number.isInteger(row.weight / row.quantity) ? (row.weight / row.quantity) : (row.weight / row.quantity).toPrecision(2)}${row.variation})`;
+        ? `${row.packaging} (${(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
+        : `(${(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}${row.variation})`;
 
     const discountText = (row) => row.discount === 'PERCENTAGE'
-        ? `${row.discount_percentage}%, -${row.discount_amount}`
+        ? `${Number(row.discount_percentage || 0).toFixed(2)}%, -${Number(row.discount_amount || 0).toFixed(2)}`
         : row.discount === 'AMOUNT'
-            ? `-${row.discount_amount}`
+            ? `-${Number(row.discount_amount || 0).toFixed(2)}`
             : '';
 
     const currentOrderType = shopOrderTransaction.checker !== 0 ? 'Inter Branch Order' : 'Online Order';
@@ -1445,7 +1445,7 @@ const AddProductCustomerOrderTransaction = () => {
                         {orderShopDTO.shopOrderList.map((row) => (
                             <Typography key={row.id} variant="body2">
                                 {row.shop_order_quantity} x {numberFormat(row.shop_order_price)} - {row.product_name} {itemDescription(row)}
-                                {row.discount === 'PERCENTAGE' ? `, Disc ${row.discount_percentage}% -${row.discount_amount}` : row.discount === 'AMOUNT' ? `, Disc -${row.discount_amount}` : ''} = {numberFormat(row.shop_order_total_price)}
+                                {row.discount === 'PERCENTAGE' ? `, Disc ${Number(row.discount_percentage || 0).toFixed(2)}% -${Number(row.discount_amount || 0).toFixed(2)}` : row.discount === 'AMOUNT' ? `, Disc -${Number(row.discount_amount || 0).toFixed(2)}` : ''} = {numberFormat(row.shop_order_total_price)}
                             </Typography>
                         ))}
                     </Stack>

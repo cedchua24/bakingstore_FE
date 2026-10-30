@@ -214,7 +214,7 @@ const ReportList = () => {
         new Intl.NumberFormat("en-US", {
             style: "currency",
             currency: "PHP",
-            maximumFractionDigits: 0,
+            maximumFractionDigits: 2,
         }).format(Number(value || 0));
 
     const formatDate = (date) =>
@@ -690,7 +690,7 @@ const ReportList = () => {
                                     <div className="sales-report__forecast-progress-header">
                                         <div>
                                             <span>Gross profit progress</span>
-                                            <strong>{profitForecast.progress.toFixed(1)}%</strong>
+                                            <strong>{profitForecast.progress.toFixed(2)}%</strong>
                                         </div>
                                         <p>
                                             {numberFormat(totalProfit)} of{" "}

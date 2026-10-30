@@ -46,7 +46,7 @@ const ExpenseChange = ({ current, baseline }) => {
         ? '0.0% · No change'
         : percentage === null
             ? 'New expense · No prior baseline'
-            : `${difference > 0 ? '−' : '+'}${percentage.toFixed(1)}% · Expense ${direction}`;
+            : `${difference > 0 ? '−' : '+'}${percentage.toFixed(2)}% · Expense ${direction}`;
 
     return <small className={`mec-expense-change ${direction}`}>{label}</small>;
 };
