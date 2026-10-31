@@ -64,6 +64,14 @@ const MarkUpPriceList = ({
         maximumFractionDigits: 2
     }).format(Number(value || 0));
 
+    const toWholeMoney = value => Math.round(Number(value || 0));
+    const formatWholeMoney = value => new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(toWholeMoney(value));
+
     const formatDecimal = value => {
         const number = Number(value);
         return Number.isFinite(number) ? number.toFixed(2) : '0.00';
@@ -90,25 +98,25 @@ const MarkUpPriceList = ({
         if (replacementProductPrice == null) return record;
 
         const newBasePrice = record.business_type === "RETAIL"
-            ? Number(replacementProductPrice) / Math.max(Number(replacementPiecesPerPack || 1), 1)
-            : Number(replacementProductPrice);
+            ? Math.ceil(Number(replacementProductPrice) / Math.max(Number(replacementPiecesPerPack || 1), 1))
+            : toWholeMoney(replacementProductPrice);
         const adjustment = Number(record.mark_up_price || 0);
         const profit = record.mark_up_option === "PERCENTAGE"
-            ? newBasePrice / 100 * adjustment
+            ? toWholeMoney(newBasePrice / 100 * adjustment)
             : adjustment;
 
-        return { ...record, price: newBasePrice, profit, new_price: newBasePrice + profit };
+        return { ...record, price: newBasePrice, profit, new_price: toWholeMoney(newBasePrice + profit) };
     };
 
     const prepareMarkupForEditing = record => {
         const adjustedRecord = applyReplacementCost(record);
         const adjustment = Math.round(Number(adjustedRecord.mark_up_price || 0));
-        const price = Number(adjustedRecord.price || 0);
+        const price = toWholeMoney(adjustedRecord.price);
         const profit = adjustedRecord.mark_up_option === 'PERCENTAGE'
-            ? price / 100 * adjustment
+            ? toWholeMoney(price / 100 * adjustment)
             : adjustment;
 
-        return { ...adjustedRecord, mark_up_price: adjustment, profit, new_price: price + profit };
+        return { ...adjustedRecord, price, mark_up_price: adjustment, profit, new_price: toWholeMoney(price + profit) };
     };
 
     const openEditor = (id, groupRecords = []) => {
@@ -153,13 +161,13 @@ const MarkUpPriceList = ({
         if (value !== '' && !/^\d+$/.test(value)) return;
         const adjustment = Number(value || 0);
         const profit = markup.mark_up_option === 'PERCENTAGE'
-            ? (Number(markup.price || 0) / 100) * adjustment
+            ? toWholeMoney((Number(markup.price || 0) / 100) * adjustment)
             : adjustment;
         setMarkup(current => ({
             ...current,
             mark_up_price: adjustment,
             profit,
-            new_price: Number(current.price || 0) + profit
+            new_price: toWholeMoney(Number(current.price || 0) + profit)
         }));
     };
 
@@ -169,9 +177,9 @@ const MarkUpPriceList = ({
             if (record.id !== id) return record;
             const adjustment = Number(value || 0);
             const profit = record.mark_up_option === 'PERCENTAGE'
-                ? Number(record.price || 0) / 100 * adjustment
+                ? toWholeMoney(Number(record.price || 0) / 100 * adjustment)
                 : adjustment;
-            return { ...record, mark_up_price: adjustment, profit, new_price: Number(record.price || 0) + profit };
+            return { ...record, mark_up_price: adjustment, profit, new_price: toWholeMoney(Number(record.price || 0) + profit) };
         }));
     };
 
@@ -182,7 +190,14 @@ const MarkUpPriceList = ({
     const saveUpdate = () => {
         setLoading(true);
         const replacements = pairedMarkups.length ? pairedMarkups : [markup];
-        Promise.all(replacements.map(record => MarkUpPriceService.replace(record)))
+        const wholeNumberReplacements = replacements.map(record => ({
+            ...record,
+            price: toWholeMoney(record.price),
+            mark_up_price: Math.round(Number(record.mark_up_price || 0)),
+            profit: toWholeMoney(record.profit),
+            new_price: toWholeMoney(record.new_price)
+        }));
+        Promise.all(wholeNumberReplacements.map(record => MarkUpPriceService.replace(record)))
             .then(response => {
                 const failedResponse = response.find(item => item.data?.code === 400);
                 if (failedResponse) {
@@ -332,7 +347,7 @@ const MarkUpPriceList = ({
                         {pairedMarkups.length ? pairedMarkups.map(record => (
                             <Box key={record.id} sx={{ display: 'grid', gap: 1.25, p: 1.5, border: '1px solid #e5e7eb', borderRadius: 2 }}>
                                 <strong>{record.business_type}</strong>
-                                <TextField fullWidth disabled label="Supplier price" value={formatMoney(record.price)} />
+                                <TextField fullWidth disabled label="Supplier price" value={formatWholeMoney(record.price)} />
                                 <TextField
                                     fullWidth
                                     type="number"
@@ -351,12 +366,12 @@ const MarkUpPriceList = ({
                                     }}
                                 />
                                 <div className="markup-modal__result">
-                                    <span>New selling price</span><strong>{formatMoney(record.new_price)}</strong>
+                                    <span>New selling price</span><strong>{formatWholeMoney(record.new_price)}</strong>
                                 </div>
                             </Box>
                         )) : <>
                         <TextField fullWidth disabled label="Product" value={markup.product_name || ''} />
-                        <TextField fullWidth disabled label="Supplier price" value={formatMoney(markup.price)} />
+                        <TextField fullWidth disabled label="Supplier price" value={formatWholeMoney(markup.price)} />
                         <TextField
                             select
                             fullWidth
@@ -385,7 +400,7 @@ const MarkUpPriceList = ({
                             }}
                         />
                         <div className="markup-modal__result">
-                            <span>New selling price</span><strong>{formatMoney(markup.new_price)}</strong>
+                            <span>New selling price</span><strong>{formatWholeMoney(markup.new_price)}</strong>
                         </div>
                         </>}
                     </div>

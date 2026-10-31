@@ -50,7 +50,6 @@ import LinearProgress from '@mui/material/LinearProgress';
 import "./CustomerOrderTransactionList.css";
 
 const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
-
     const { id } = useParams();
     useEffect(() => {
         if (!searchByTransactionId) {
@@ -1090,31 +1089,31 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                             />
                         </Form.Group>
                     ) : <>
-                    <Form.Group controlId="customerOrderReportDate">
-                        <Form.Label>Date</Form.Label>
-                        <Form.Control type="date" name="date" value={customerOrderDate.date} onChange={onChangeInput} />
-                    </Form.Group>
-                    <FormControl className="customer-report-status-select" size="small">
-                        <InputLabel id="customer-order-status-label">Status</InputLabel>
-                        <Select
-                            labelId="customer-order-status-label"
-                            id="customer-order-status"
-                            value={status}
-                            label="Status"
-                            name="status"
-                            onChange={onChangeInput}
-                            disabled
-                        >
-                            <MenuItem value={0}>All Status</MenuItem>
-                            <MenuItem disabled value=""><em>Payment Status</em></MenuItem>
-                            <MenuItem value="1">COMPLETED</MenuItem>
-                            <MenuItem value="2">PENDING</MenuItem>
-                            <MenuItem value="3">CANCELLED</MenuItem>
-                            <MenuItem disabled value=""><em>Rider Status</em></MenuItem>
-                            <MenuItem value="5">DONE</MenuItem>
-                            <MenuItem value="4">WAITING</MenuItem>
-                        </Select>
-                    </FormControl>
+                        <Form.Group controlId="customerOrderReportDate">
+                            <Form.Label>Date</Form.Label>
+                            <Form.Control type="date" name="date" value={customerOrderDate.date} onChange={onChangeInput} />
+                        </Form.Group>
+                        <FormControl className="customer-report-status-select" size="small">
+                            <InputLabel id="customer-order-status-label">Status</InputLabel>
+                            <Select
+                                labelId="customer-order-status-label"
+                                id="customer-order-status"
+                                value={status}
+                                label="Status"
+                                name="status"
+                                onChange={onChangeInput}
+                                disabled
+                            >
+                                <MenuItem value={0}>All Status</MenuItem>
+                                <MenuItem disabled value=""><em>Payment Status</em></MenuItem>
+                                <MenuItem value="1">COMPLETED</MenuItem>
+                                <MenuItem value="2">PENDING</MenuItem>
+                                <MenuItem value="3">CANCELLED</MenuItem>
+                                <MenuItem disabled value=""><em>Rider Status</em></MenuItem>
+                                <MenuItem value="5">DONE</MenuItem>
+                                <MenuItem value="4">WAITING</MenuItem>
+                            </Select>
+                        </FormControl>
                     </>}
                     <Button variant="light" onClick={saveOrderTransaction} disabled={isAddDisabled}>
                         Find
@@ -1429,19 +1428,19 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                     style={{ backgroundColor: primaryVipCustomer.vip_color || '#6c757d' }}
                                                 ></span>
                                             }
-                                                <span className="customer-report-id-stack">
-                                                    <span className="customer-report-order-id">#{transaction.id}</span>
-                                                    {transaction.delivery_customer_id != 0 &&
-                                                        <span className="customer-report-delivery-order-badge">Delivery Order</span>
-                                                    }
-                                                    {overpayment &&
-                                                        <Tooltip title={`Total account ${money(overpayment.total_account)} exceeds the order total ${money(overpayment.total_amount)}. Refund ${money(overpayment.refund_amount)}.`}>
-                                                            <span className="customer-report-overpayment-badge">
-                                                                Refund needed: {money(overpayment.refund_amount)}
-                                                            </span>
-                                                        </Tooltip>
-                                                    }
-                                                    {vipCustomers.length > 0 &&
+                                            <span className="customer-report-id-stack">
+                                                <span className="customer-report-order-id">#{transaction.id}</span>
+                                                {transaction.delivery_customer_id != 0 &&
+                                                    <span className="customer-report-delivery-order-badge">Delivery Order</span>
+                                                }
+                                                {overpayment &&
+                                                    <Tooltip title={`Total account ${money(overpayment.total_account)} exceeds the order total ${money(overpayment.total_amount)}. Refund ${money(overpayment.refund_amount)}.`}>
+                                                        <span className="customer-report-overpayment-badge">
+                                                            Refund needed: {money(overpayment.refund_amount)}
+                                                        </span>
+                                                    </Tooltip>
+                                                }
+                                                {vipCustomers.length > 0 &&
                                                     <span className="customer-report-vip-badge-list">
                                                         {vipCustomers.map((vipCustomer, index) => (
                                                             <Tooltip
