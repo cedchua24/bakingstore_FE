@@ -1,5 +1,5 @@
 .thermal-receipt-page { min-height: 100vh; padding: 18px 10px; background: #eef1f5; color: #000; font-family: Arial, Helvetica, sans-serif; }
-.thermal-receipt { --receipt-gutter: 4mm; display: flex; flex-direction: column; box-sizing: border-box; width: 80mm; min-height: 180mm; margin: 0 auto 16px; padding: var(--receipt-gutter); background: #fff; box-shadow: 0 8px 25px rgba(0, 0, 0, .12); font-size: 10pt; }
+.thermal-receipt { --receipt-gutter: 4mm; display: flex; flex-direction: column; box-sizing: border-box; width: 80mm; min-height: 210mm; margin: 0 auto 16px; padding: var(--receipt-gutter); background: #fff; box-shadow: 0 8px 25px rgba(0, 0, 0, .12); font-size: 10pt; }
 .thermal-receipt > * { box-sizing: border-box; width: 100%; }
 .thermal-receipt-header { padding-bottom: 9px; border-bottom: 1px dashed #000; text-align: center; }
 .thermal-receipt-header h1 { margin: 0 0 4px; font-size: 13pt; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
@@ -35,10 +35,11 @@
 .thermal-receipt-state { min-height: 60vh; display: flex; align-items: center; justify-content: center; gap: 12px; }
 
 @media print {
-    @page thermalReceipt { size: 80mm 180mm; margin: 0; }
+    @page thermalReceipt { size: 80mm 210mm; margin: 0; }
     body:not(.tracked-print-authorized) .thermal-receipt-page { display: none !important; }
+    .receipt-route-shell { page: thermalReceipt; }
     .thermal-receipt-page { page: thermalReceipt; width: 80mm; min-height: 0; margin: 0; padding: 0; background: #fff; }
-    .thermal-receipt { width: 80mm; height: 180mm; min-height: 180mm; margin: 0; padding: var(--receipt-gutter); box-shadow: none; break-after: page; page-break-after: always; overflow: hidden; }
+    .thermal-receipt { width: 80mm; height: 210mm; min-height: 210mm; margin: 0; padding: var(--receipt-gutter); box-shadow: none; break-after: page; page-break-after: always; overflow: hidden; }
     .thermal-receipt:last-of-type { break-after: auto; page-break-after: auto; }
     .thermal-receipt-items tr { break-inside: avoid; page-break-inside: avoid; }
     .hide-on-print { display: none !important; }

@@ -35,25 +35,41 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
 
     const getProductId = product => product?.id ?? product?.product_id ?? 0;
     const getProductName = product => product?.product_name ?? product?.name ?? '';
-    const supplierPrice = Number(selectedProduct?.price ?? selectedProduct?.supplier_price ?? 0);
+    const updateWholeNumber = (value, setValue, setFieldError) => {
+        if (value !== '' && !/^\d+$/.test(value)) return;
+        setValue(value);
+        setFieldError('');
+    };
+    const preventNonIntegerInput = event => {
+        if (['.', ',', 'e', 'E', '-', '+'].includes(event.key)) event.preventDefault();
+    };
+    const toWholeMoney = value => Math.round(Number(value || 0));
+    const supplierPrice = toWholeMoney(selectedProduct?.price ?? selectedProduct?.supplier_price ?? 0);
     const productQuantity = Number(selectedProduct?.quantity ?? 1);
     const hasRetailPrice = productQuantity > 1;
     const retailSupplierPrice = Math.ceil(supplierPrice / Math.max(productQuantity, 1));
     const numericMarkup = Number(markupValue || 0);
     const profit = markupOption === 'PERCENTAGE'
-        ? (supplierPrice / 100) * numericMarkup
+        ? toWholeMoney((supplierPrice / 100) * numericMarkup)
         : numericMarkup;
-    const newPrice = supplierPrice + profit;
+    const newPrice = toWholeMoney(supplierPrice + profit);
     const numericRetailMarkup = Number(retailValue || 0);
     const retailProfit = retailOption === 'PERCENTAGE'
-        ? (retailSupplierPrice / 100) * numericRetailMarkup
+        ? toWholeMoney((retailSupplierPrice / 100) * numericRetailMarkup)
         : numericRetailMarkup;
-    const retailNewPrice = Math.ceil(retailSupplierPrice + retailProfit);
+    const retailNewPrice = toWholeMoney(retailSupplierPrice + retailProfit);
 
     const formatMoney = value => new Intl.NumberFormat('en-PH', {
         style: 'currency',
         currency: 'PHP',
         maximumFractionDigits: 2
+    }).format(Number(value || 0));
+
+    const formatWholeMoney = value => new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
     }).format(Number(value || 0));
 
     const getPackageDetails = product => {
@@ -81,7 +97,7 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
     const getProductLabel = product => {
         const packageDetails = getPackageDetails(product);
         const stock = product.stock == null ? '' : ` · Stock: ${product.stock}`;
-        return `${getProductName(product)}${packageDetails ? ` · ${packageDetails}` : ''} · ${formatMoney(product.price ?? product.supplier_price)}${stock}`;
+        return `${getProductName(product)}${packageDetails ? ` · ${packageDetails}` : ''} · ${formatWholeMoney(product.price ?? product.supplier_price)}${stock}`;
     };
 
     const saveMarkUpPrice = event => {
@@ -100,12 +116,20 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
             setMarkupError('Enter a markup greater than zero.');
             return;
         }
+        if (!Number.isInteger(numericMarkup)) {
+            setMarkupError('Markup must be a whole number.');
+            return;
+        }
         if (hasRetailPrice && !retailOption) {
             setRetailError('Choose a retail markup method.');
             return;
         }
         if (hasRetailPrice && numericRetailMarkup <= 0) {
             setRetailError('Enter a retail markup greater than zero.');
+            return;
+        }
+        if (hasRetailPrice && !Number.isInteger(numericRetailMarkup)) {
+            setRetailError('Retail markup must be a whole number.');
             return;
         }
 
@@ -225,7 +249,7 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
                                     <div><h3>Whole package markup</h3><p>Set the selling price for the complete package.</p></div>
                                 </div>
                                 <div className="markup-pricing-panel__base">
-                                    <span>Supplier price</span><strong>{formatMoney(supplierPrice)}</strong>
+                                    <span>Supplier price</span><strong>{formatWholeMoney(supplierPrice)}</strong>
                                 </div>
                                 <div className="markup-whole-fields">
                                     <TextField
@@ -251,10 +275,9 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
                                         label={markupOption === 'PERCENTAGE' ? 'Markup percentage' : 'Markup amount'}
                                         value={markupValue}
                                         disabled={!markupOption}
-                                        onChange={event => {
-                                            setMarkupValue(event.target.value);
-                                            setMarkupError('');
-                                        }}
+                                        onChange={event => updateWholeNumber(event.target.value, setMarkupValue, setMarkupError)}
+                                        onKeyDown={preventNonIntegerInput}
+                                        inputProps={{ min: 1, step: 1, inputMode: 'numeric', pattern: '[0-9]*' }}
                                         error={Boolean(markupError)}
                                         helperText={markupError}
                                         InputProps={{
@@ -280,7 +303,7 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
                                         <div><h3>Retail markup</h3><p>Set the selling price for one individual unit.</p></div>
                                     </div>
                                     <div className="markup-pricing-panel__base">
-                                        <span>Price per unit</span><strong>{formatMoney(retailSupplierPrice)}</strong>
+                                        <span>Price per unit</span><strong>{formatWholeMoney(retailSupplierPrice)}</strong>
                                     </div>
                                     <div className="markup-whole-fields">
                                         <TextField
@@ -306,10 +329,9 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
                                             label={retailOption === 'PERCENTAGE' ? 'Retail markup percentage' : 'Retail markup amount'}
                                             value={retailValue}
                                             disabled={!retailOption}
-                                            onChange={event => {
-                                                setRetailValue(event.target.value);
-                                                setRetailError('');
-                                            }}
+                                            onChange={event => updateWholeNumber(event.target.value, setRetailValue, setRetailError)}
+                                            onKeyDown={preventNonIntegerInput}
+                                            inputProps={{ min: 1, step: 1, inputMode: 'numeric', pattern: '[0-9]*' }}
                                             error={Boolean(retailError)}
                                             helperText={retailError}
                                             InputProps={{

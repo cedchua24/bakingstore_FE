@@ -1,5 +1,5 @@
 import React, { Component, useState, useEffect } from "react";
-import { BrowserRouter as Router, Navigate, Redirect, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Navigate, Redirect, Routes, Route, Link, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import "./components/ExpensesV2/ExpenseTheme.css";
@@ -355,8 +355,10 @@ import ExpenseMovementWatch from "./components/Reports/ExpenseMovementWatch";
 const App = () => {
 
   const [items, setItems] = useState('');
+  const location = useLocation();
   const isAuthenticated = hasValidAuthSession();
   const canRegisterUsers = Number(localStorage.getItem('role_as')) === 2;
+  const isReceiptOrderPage = location.pathname.startsWith('/shopOrderTransaction/receiptOrder/');
 
   useEffect(() => scheduleSessionExpiration(() => {
     clearAuthSession();
@@ -394,13 +396,15 @@ const App = () => {
   }
 
   return (
-    <div>
+    <div className={isReceiptOrderPage ? 'receipt-route-shell' : undefined}>
       {/* <NavBar /> */}
-      <NewNavBar />
-      <br></br>
-      <br></br>
-      <br></br>
-      <div className="container mt-3">
+      {!isReceiptOrderPage && <>
+        <NewNavBar />
+        <br />
+        <br />
+        <br />
+      </>}
+      <div className={isReceiptOrderPage ? undefined : 'container mt-3'}>
         <Routes>
           {/* <Route path="/" element={<UserLogin />} /> */}
           <Route
