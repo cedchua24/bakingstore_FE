@@ -48,8 +48,6 @@ import LinearProgress from '@mui/material/LinearProgress';
 import "./CustomerOrderTransactionList.css";
 
 const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
-    const showPrintReceiptAction = false;
-
     const { id } = useParams();
     useEffect(() => {
         if (!searchByTransactionId) {
@@ -1340,7 +1338,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                                                         <VisibilityOutlinedIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
-                                                {showPrintReceiptAction && transaction.shop_order_transaction_total_quantity != 0 && (
+                                                {transaction.shop_order_transaction_total_quantity != 0 && (
                                                     <Tooltip title={Number(transaction.print_count) > 0 ? `Print receipt (${transaction.print_count} recorded)` : "Print receipt"}>
                                                         <IconButton component={Link} to={"../shopOrderTransaction/receiptOrder/" + transaction.id} size="small">
                                                             <Badge badgeContent={Number(transaction.print_count)} invisible={!(Number(transaction.print_count) > 0)} max={999}
