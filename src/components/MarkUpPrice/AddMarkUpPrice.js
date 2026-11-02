@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import MarkUpPriceService from "./MarkUpPriceService.service";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -83,15 +84,15 @@ const AddMarkUpPrice = ({ products, onSaved }) => {
 
         if (quantity > 1) {
             const unitWeight = totalWeight / quantity;
-            const formattedUnitWeight = unitWeight.toFixed(2);
-            return `${totalWeight.toFixed(2)}${variation} | ${quantity} × ${formattedUnitWeight}${variation}`;
+            const formattedUnitWeight = formatDecimal(unitWeight);
+            return `${formatDecimal(totalWeight)}${variation} | ${quantity} × ${formattedUnitWeight}${variation}`;
         }
 
         const packaging = product.packaging || '';
         const isDuplicatePackaging = packaging
             && variation
             && packaging.trim().toLowerCase() === variation.trim().toLowerCase();
-        return `${totalWeight.toFixed(2)}${variation}${packaging && !isDuplicatePackaging ? ` · ${packaging}` : ''}`;
+        return `${formatDecimal(totalWeight)}${variation}${packaging && !isDuplicatePackaging ? ` · ${packaging}` : ''}`;
     };
 
     const getProductLabel = product => {

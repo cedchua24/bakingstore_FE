@@ -6,6 +6,7 @@ import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
 import MarkUpPriceService from "../MarkUpPrice/MarkUpPriceService.service";
 import PrintingTransactionService from "../PrintingTransaction/PrintingTransactionService";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
@@ -858,7 +859,7 @@ const AddProductCustomerOrderTransaction = () => {
         const weight = Number(product.weight || 0);
         const quantity = Number(product.quantity || 1);
         const unitWeight = weight / quantity;
-        return unitWeight.toFixed(2);
+        return formatDecimal(unitWeight);
     };
 
     const productSizeLabel = (product) => {
@@ -918,8 +919,8 @@ const AddProductCustomerOrderTransaction = () => {
         : Number(product.stock_pc ?? product.stock ?? 0);
 
     const itemDescription = (row) => row.business_type === 'WHOLESALE'
-        ? `${row.packaging} (${(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
-        : `(${(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}${row.variation})`;
+        ? `${row.packaging} (${formatDecimal(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1))}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
+        : `(${formatDecimal(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1))}${row.variation})`;
 
     const discountText = (row) => row.discount === 'PERCENTAGE'
         ? `${Number(row.discount_percentage || 0).toFixed(2)}%, -${Number(row.discount_amount || 0).toFixed(2)}`

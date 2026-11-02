@@ -8,6 +8,7 @@ import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import WarehouseOutlinedIcon from "@mui/icons-material/WarehouseOutlined";
 import CircularProgress from "@mui/material/CircularProgress";
 import MarkUpPriceServiceService from "./MarkUpPriceService.service";
+import { formatDecimal } from "../../utils/numberFormat";
 import "./MarkUpPrice.css";
 
 const money = new Intl.NumberFormat("en-PH", {
@@ -31,7 +32,7 @@ const formatPackage = (record, isRetail = false) => {
 
     const quantity = Math.max(Number(record.quantity) || 1, 1);
     const unitWeight = (Number(record.weight) || 0) / quantity;
-    const formattedWeight = unitWeight.toFixed(2);
+    const formattedWeight = formatDecimal(unitWeight);
 
     if (isRetail) return `${formattedWeight}${record.variation || ""} per piece`;
 

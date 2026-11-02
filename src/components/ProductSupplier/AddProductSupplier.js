@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import ProductSupplierService from "./ProductSupplierService";
 import ProductService from "../Product/ProductService.service";
 import SupplierService from "../Supplier/SupplierService.service";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -201,7 +202,7 @@ const AddProductSupplier = (props) => {
                                     ? option.weight / option.quantity
                                     : 0;
 
-                                const formattedWeight = Number(weightPerPiece || 0).toFixed(2);
+                                const formattedWeight = formatDecimal(weightPerPiece);
 
                                 return `${option.product_name} - (${formattedWeight}${option.variation} x ${option.quantity})`;
                             }}

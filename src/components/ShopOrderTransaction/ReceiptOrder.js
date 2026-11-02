@@ -5,6 +5,7 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
+import { formatDecimal } from "../../utils/numberFormat";
 import "./ReceiptOrder.css";
 
 // Keep enough room for long, wrapped product names in the printer's actual
@@ -30,7 +31,7 @@ const itemDescription = (row) => {
         : row.discount === "AMOUNT" ? `Disc - ${Number(row.discount_amount || 0).toFixed(2)}` : "";
     const unitWeight = Number(row.quantity) ? Number(row.weight) / Number(row.quantity) : 0;
     const weight = unitWeight
-        ? `${unitWeight.toFixed(2)}${row.variation || ""}`
+        ? `${formatDecimal(unitWeight)}${row.variation || ""}`
         : "";
     const packaging = row.business_type === "WHOLESALE"
         ? [row.packaging, weight && `${weight} x ${row.quantity}`].filter(Boolean).join(" · ")

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import ProductService from "../Product/ProductService.service";
 import CategoryService from "../Category/CategoryService.service";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
@@ -63,9 +64,9 @@ const MarkUpNewPrice = () => {
 
     const formatPackage = product => {
         if (product.quantity == null || product.weight == null) return product.packaging || 'Package not specified';
-        if (Number(product.quantity) === 1) return `${Number(product.weight || 0).toFixed(2)}${product.variation || ''}`;
+        if (Number(product.quantity) === 1) return `${formatDecimal(product.weight)}${product.variation || ''}`;
         const unitWeight = Number(product.weight) / Number(product.quantity);
-        return `${product.quantity} × ${unitWeight.toFixed(2)}${product.variation || ''} / ${product.packaging || 'package'}`;
+        return `${product.quantity} × ${formatDecimal(unitWeight)}${product.variation || ''} / ${product.packaging || 'package'}`;
     };
 
     return (

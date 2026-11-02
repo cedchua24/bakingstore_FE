@@ -7,6 +7,7 @@ import CategoryServiceService from "../Category/CategoryService.service";
 import SupplierServiceService from "../Supplier/SupplierService.service";
 import OutOfStockUpdateService from "../OtherService/OutOfStockUpdateService";
 import { getAuthUserIdFromCookie } from '../User/authSession';
+import { formatDecimal } from "../../utils/numberFormat";
 
 import Autocomplete from '@mui/material/Autocomplete';
 import Modal from '@mui/material/Modal';
@@ -155,11 +156,11 @@ const StockList = () => {
             return 'Package not specified';
         }
         if (Number(currentProduct.quantity) === 1) {
-            return `${Number(currentProduct.weight || 0).toFixed(2)}${currentProduct.variation || ''}`;
+            return `${formatDecimal(currentProduct.weight)}${currentProduct.variation || ''}`;
         }
 
         const unitWeight = Number(currentProduct.weight) / Number(currentProduct.quantity);
-        return `${currentProduct.quantity} × ${unitWeight.toFixed(2)}${currentProduct.variation || ''}`;
+        return `${currentProduct.quantity} × ${formatDecimal(unitWeight)}${currentProduct.variation || ''}`;
     };
 
     const sumPendingOrderQuantities = (pendingOrders) => {

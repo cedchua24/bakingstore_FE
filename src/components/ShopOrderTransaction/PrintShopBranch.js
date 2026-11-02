@@ -6,6 +6,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import ShopOrderTransactionService from "./ShopOrderTransactionService";
 import ShopOrderService from "../OtherService/ShopOrderService";
 import ShopService from "../Shop/ShopService";
+import { formatDecimal } from "../../utils/numberFormat";
 import "./PrintShopBranch.css";
 
 const ITEMS_PER_PAGE = 15;
@@ -176,7 +177,7 @@ const PrintShopBranch = () => {
                                                 <td>{itemOffset + index + 1}</td>
                                                 <td>
                                                     <strong>{item.product_name || "Unnamed item"}</strong>
-                                                    {item.business_type !== "WHOLESALE" && unitWeight > 0 && <small>{unitWeight.toFixed(2)}{item.variation || ""}</small>}
+                                                    {item.business_type !== "WHOLESALE" && unitWeight > 0 && <small>{formatDecimal(unitWeight)}{item.variation || ""}</small>}
                                                 </td>
                                                 <td>{firstValue(item.unit, item.packaging, "-")}</td>
                                                 <td>{item.shop_order_quantity || 0}</td>

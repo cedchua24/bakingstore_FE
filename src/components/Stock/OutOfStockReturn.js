@@ -5,6 +5,7 @@ import ProductServiceService from "../Product/ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
 import CustomerService from "../Customer/CustomerService";
 import OutOfStockUpdateService from "../OtherService/OutOfStockUpdateService";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -115,9 +116,9 @@ const OutOfStockReturn = () => {
 
     const formatPackage = (product) => {
         if (product.quantity == null || product.weight == null) return product.packaging || 'Package not specified';
-        if (Number(product.quantity) === 1) return `${Number(product.weight || 0).toFixed(2)}${product.variation || ''}`;
+        if (Number(product.quantity) === 1) return `${formatDecimal(product.weight)}${product.variation || ''}`;
         const unitWeight = Number(product.weight) / Number(product.quantity);
-        return `${product.quantity} × ${unitWeight.toFixed(2)}${product.variation || ''} / ${product.packaging || 'package'}`;
+        return `${product.quantity} × ${formatDecimal(unitWeight)}${product.variation || ''} / ${product.packaging || 'package'}`;
     };
 
     const modalStyle = {

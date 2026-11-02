@@ -1,4 +1,4 @@
-import { formatCurrency } from "../../utils/numberFormat";
+import { formatCurrency, formatDecimal } from "../../utils/numberFormat";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
@@ -250,8 +250,8 @@ const NoStockWarning = (props) => {
                                     : <p >{product.stock_pc}</p>}
                                 </td>
                                 {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                <td>{product.quantity === 1 ? <p >{Number(product.weight || 0).toFixed(2)}{product.variation}</p>
-                                    : <p >{product.quantity}x{(Number(product.weight || 0) / Math.max(Number(product.quantity || 0), 1)).toFixed(2)}{product.variation}</p>}
+                                <td>{product.quantity === 1 ? <p >{formatDecimal(product.weight)}{product.variation}</p>
+                                    : <p >{product.quantity}x{formatDecimal(Number(product.weight || 0) / Math.max(Number(product.quantity || 0), 1))}{product.variation}</p>}
                                 </td>
                                 <td>{product.stock_warning}</td>
                                 <td>
