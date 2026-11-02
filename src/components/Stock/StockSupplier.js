@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import ProductServiceService from "../Product/ProductService.service";
 import SupplierService from "../Supplier/SupplierService.service";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
@@ -75,11 +76,11 @@ const StockSupplier = () => {
             return 'Package not specified';
         }
         if (Number(product.quantity) === 1) {
-            return `${Number(product.weight || 0).toFixed(2)}${product.variation || ''}`;
+            return `${formatDecimal(product.weight)}${product.variation || ''}`;
         }
 
         const unitWeight = Number(product.weight) / Number(product.quantity);
-        return `${product.quantity} × ${unitWeight.toFixed(2)}${product.variation || ''}`;
+        return `${product.quantity} × ${formatDecimal(unitWeight)}${product.variation || ''}`;
     };
 
     const sumPendingOrderQuantities = (pendingOrders) => {

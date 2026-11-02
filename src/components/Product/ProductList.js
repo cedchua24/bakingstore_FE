@@ -5,6 +5,7 @@ import ProductServiceService from "./ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
 import SupplierServiceService from "../Supplier/SupplierService.service";
 import OrderSupplierServiceService from "../OrderSupplierTransaction/OrderSupplierServiceService";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
@@ -194,11 +195,11 @@ const ProductList = () => {
         }
 
         if (Number(product.quantity) === 1) {
-            return `${Number(product.weight || 0).toFixed(2)}${product.variation || ''} ${product.packaging || ''}`.trim();
+            return `${formatDecimal(product.weight)}${product.variation || ''} ${product.packaging || ''}`.trim();
         }
 
         const unitWeight = Number(product.weight) / Number(product.quantity);
-        const formattedWeight = Number(unitWeight || 0).toFixed(2);
+        const formattedWeight = formatDecimal(unitWeight);
         return `${product.quantity} × ${formattedWeight}${product.variation || ''} / ${product.packaging || 'package'}`;
     };
 
