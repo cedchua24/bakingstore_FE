@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import MarkUpPriceService from "./MarkUpPriceService.service";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -71,11 +72,6 @@ const MarkUpPriceList = ({
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
     }).format(toWholeMoney(value));
-
-    const formatDecimal = value => {
-        const number = Number(value);
-        return Number.isFinite(number) ? number.toFixed(2) : '0.00';
-    };
 
     const formatProfitMargin = record => {
         const sellingPrice = Number(record.new_price || 0);

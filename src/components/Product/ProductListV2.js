@@ -4,6 +4,7 @@ import ProductTransactionService from "../OtherService/ProductTransactionService
 import BrandServiceService from "../Brand/BrandService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
 import SupplierService from "../Supplier/SupplierService.service";
+import { formatDecimal } from "../../utils/numberFormat";
 import { Form } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
@@ -399,8 +400,8 @@ const ProductListV2 = () => {
                                         <td>{product.category_name}</td>
                                         <td>{numberFormat(product.price)}</td>
                                         {/* <td>{product.weight}x{product.quantity}kg</td> */}
-                                        <td>{product.quantity === 1 ? <p >{Number(product.weight || 0).toFixed(2)}{product.variation}</p>
-                                            : <p >{product.quantity}x{(Number(product.weight || 0) / Math.max(Number(product.quantity || 0), 1)).toFixed(2)}{product.variation}</p>}
+                                        <td>{product.quantity === 1 ? <p >{formatDecimal(product.weight)}{product.variation}</p>
+                                            : <p >{product.quantity}x{formatDecimal(Number(product.weight || 0) / Math.max(Number(product.quantity || 0), 1))}{product.variation}</p>}
                                         </td>
                                         <td>{product.stock}</td>
                                         <td>{product.stock_pc}</td>

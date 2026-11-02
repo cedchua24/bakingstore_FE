@@ -5,6 +5,7 @@ import Alert from '@mui/material/Alert';
 import OrderSupplierTransactionService from "./OrderSupplierTransactionService";
 import OrderSupplierService from "./OrderSupplierServiceService";
 import ProductSupplierService from "../ProductSupplier/ProductSupplierService";
+import { formatDecimal } from "../../utils/numberFormat";
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -688,7 +689,7 @@ const AddProductOrderSupplierTransaction = () => {
                             onChange={handleInputChange}
                             groupBy={(product) => product.category_name}
                             isOptionEqualToValue={(option, selected) => option.product_id === selected.product_id}
-                            getOptionLabel={(product) => `${product.product_name} - ${Number(product.weight || 0).toFixed(2)}kg (₱${Number(product.price || 0).toFixed(2)}) | Stock: ${product.stock}`}
+                            getOptionLabel={(product) => `${product.product_name} - ${formatDecimal(product.weight)}kg (₱${Number(product.price || 0).toFixed(2)}) | Stock: ${product.stock}`}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}

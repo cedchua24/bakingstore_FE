@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ProductServiceService from "../Product/ProductService.service";
 import CategoryServiceService from "../Category/CategoryService.service";
 import SupplierServiceService from "../Supplier/SupplierService.service";
+import { formatDecimal } from "../../utils/numberFormat";
 
 import IconButton from '@mui/material/IconButton';
 import Modal from '@mui/material/Modal';
@@ -254,11 +255,11 @@ const StockWarning = (props) => {
         }
 
         if (currentProduct.quantity === 1) {
-            return `${Number(currentProduct.weight || 0).toFixed(2)}${currentProduct.variation || ''}`;
+            return `${formatDecimal(currentProduct.weight)}${currentProduct.variation || ''}`;
         }
 
         const unitWeight = currentProduct.weight / currentProduct.quantity;
-        const formattedUnitWeight = Number(unitWeight || 0).toFixed(2);
+        const formattedUnitWeight = formatDecimal(unitWeight);
 
         return `${currentProduct.quantity} × ${formattedUnitWeight}${currentProduct.variation || ''}`;
     };

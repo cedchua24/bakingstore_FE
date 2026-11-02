@@ -10,6 +10,7 @@ import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import { formatDecimal } from '../../utils/numberFormat';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import CategoryServiceService from '../Category/CategoryService.service';
@@ -149,7 +150,7 @@ const ProductManagementList = ({ title, description, eyebrow, fetchProducts, mod
                                 return <tr key={product.id}>
                                     <td><div className="pm-product"><strong>{product.product_name}</strong><span>#{product.id} · {product.packaging || 'No packaging'}</span></div></td>
                                     <td><span className="pm-category-pill">{product.category_name || 'Uncategorized'}</span><small>{product.brand_name || 'No brand'}</small></td>
-                                    <td><strong>{money(product.price)}</strong><small>{product.quantity === 1 ? `${Number(product.weight || 0).toFixed(2)}${product.variation || ''}` : `${product.quantity} × ${(Number(product.weight || 0) / Math.max(Number(product.quantity || 0), 1)).toFixed(2)}${product.variation || ''}`}</small></td>
+                                    <td><strong>{money(product.price)}</strong><small>{product.quantity === 1 ? `${formatDecimal(product.weight)}${product.variation || ''}` : `${product.quantity} × ${formatDecimal(Number(product.weight || 0) / Math.max(Number(product.quantity || 0), 1))}${product.variation || ''}`}</small></td>
                                     <td><div className="pm-stock"><span><b>{product.stock ?? 0}</b> wholesale</span><span><b>{product.stock_pc ?? 0}</b> pieces</span><small>{money(Number(product.price || 0) * Number(product.stock || 0))} value</small></div></td>
                                     <td><span className={`pm-status ${product.disabled === 0 ? 'pm-status--active' : 'pm-status--disabled'}`}>{product.disabled === 0 ? 'Active' : 'Disabled'}</span></td>
                                     <td>{mode === 'expiration' ? <span className={expiringSoon ? 'pm-expiration pm-expiration--soon' : 'pm-expiration'}>{formatDate(product.expiration)}</span> : <span className="pm-note">{product.note || 'No note'}</span>}</td>

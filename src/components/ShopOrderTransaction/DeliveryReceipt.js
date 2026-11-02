@@ -10,6 +10,7 @@ import UserService from "../User/UserService.service";
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
 import ShopService from "../Shop/ShopService";
 import { getPaymentLabelParts } from "./shopOrderPaymentHelpers";
+import { formatDecimal } from "../../utils/numberFormat";
 import "./DeliveryReceipt.css";
 
 const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && String(value).trim() !== "") || "";
@@ -186,7 +187,7 @@ const DeliveryReceipt = () => {
                                             <td>
                                                 <strong>{item.product_name || "Unnamed item"}</strong>
                                                 {item.business_type !== "WHOLESALE" && item.weight && item.quantity
-                                                    ? <small>{(Number(item.weight || 0) / Math.max(Number(item.quantity || 0), 1)).toFixed(2)}{item.variation || ""}</small>
+                                                    ? <small>{formatDecimal(Number(item.weight || 0) / Math.max(Number(item.quantity || 0), 1))}{item.variation || ""}</small>
                                                     : null}
                                             </td>
                                             <td>{firstValue(item.unit, item.packaging, "-")}</td>

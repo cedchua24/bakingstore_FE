@@ -10,6 +10,7 @@ import TextField from '@mui/material/TextField';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import { formatDecimal } from '../../utils/numberFormat';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import TrendingUpRoundedIcon from '@mui/icons-material/TrendingUpRounded';
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
@@ -60,8 +61,8 @@ const ProductValueReport = () => {
             .some(value => String(value ?? '').toLowerCase().includes(search)));
     }, [products, query]);
     const packageLabel = item => Number(item.quantity) === 1
-        ? `${Number(item.weight || 0).toFixed(2)}${item.variation || ''}`
-        : `${item.quantity} × ${(Number(item.weight || 0) / Number(item.quantity || 1)).toFixed(2)}${item.variation || ''}`;
+        ? `${formatDecimal(item.weight)}${item.variation || ''}`
+        : `${item.quantity} × ${formatDecimal(Number(item.weight || 0) / Number(item.quantity || 1))}${item.variation || ''}`;
 
     return <main className="pr-page">
         <section className="pr-hero">

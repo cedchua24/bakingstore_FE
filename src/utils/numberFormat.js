@@ -3,7 +3,10 @@ const numericValue = value => {
     return Number.isFinite(number) ? number : 0;
 };
 
-export const formatDecimal = value => numericValue(value).toFixed(2);
+export const formatDecimal = value => {
+    const number = numericValue(value);
+    return number >= 1 && Number.isInteger(number) ? number.toFixed(0) : number.toFixed(2);
+};
 
 export const formatCurrency = value => new Intl.NumberFormat('en-PH', {
     style: 'currency',

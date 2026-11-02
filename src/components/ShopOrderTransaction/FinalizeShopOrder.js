@@ -10,8 +10,12 @@ import ShopOrderService from "../OtherService/ShopOrderService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import PaymentTermService from "../OtherService/PaymentTermService";
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
+<<<<<<< Updated upstream
 import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
 import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+=======
+import { formatDecimal } from "../../utils/numberFormat";
+>>>>>>> Stashed changes
 
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
@@ -704,8 +708,8 @@ const FinalizeShopOrder = () => {
     const canFinalize = !isOnlineOrder || !hasBalance;
 
     const itemDescription = (row) => row.business_type === 'WHOLESALE'
-        ? `${row.packaging || ''} (${(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
-        : `(${(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}${row.variation})`;
+        ? `${row.packaging || ''} (${formatDecimal(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1))}${row.variation}${row.quantity === 1 ? '' : ' x ' + row.quantity})`
+        : `(${formatDecimal(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1))}${row.variation})`;
 
     const discountText = (row) => row.discount === 'PERCENTAGE'
         ? `${Number(row.discount_percentage || 0).toFixed(2)}%, -${Number(row.discount_amount || 0).toFixed(2)}`
@@ -1036,7 +1040,7 @@ const FinalizeShopOrder = () => {
                                 <TableRow key={row.id}>
                                     <TableCell>{row.product_name}{
                                         row.business_type === 'WHOLESALE' ? <></>
-                                            : < >({(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1)).toFixed(2)}{row.variation}) </>
+                                            : < >({formatDecimal(Number(row.weight || 0) / Math.max(Number(row.quantity || 0), 1))}{row.variation}) </>
                                     }</TableCell>
                                     <TableCell align="right">{row.shop_order_quantity}</TableCell>
                                     <TableCell align="right">{row.unit}</TableCell>
