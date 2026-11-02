@@ -10,12 +10,9 @@ import ShopOrderService from "../OtherService/ShopOrderService";
 import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import PaymentTermService from "../OtherService/PaymentTermService";
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
-<<<<<<< Updated upstream
 import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
 import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
-=======
 import { formatDecimal } from "../../utils/numberFormat";
->>>>>>> Stashed changes
 
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
