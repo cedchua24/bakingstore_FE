@@ -5,11 +5,14 @@ import TextField from '@mui/material/TextField';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
 import VipCustomerService from "./VipCustomerService";
 import VipCustomerTransactionService from "./VipCustomerTransactionService";
 import CustomerService from "../Customer/CustomerService";
 
 const AddVipCustomerTransaction = (props) => {
+
+    const canAddVipCustomer = [2, 3].includes(Number(localStorage.getItem('role_as')));
 
     useEffect(() => {
         fetchVipCustomerTemplateList();
@@ -114,6 +117,10 @@ const AddVipCustomerTransaction = (props) => {
     }
 
     const saveVipCustomerTransaction = () => {
+        if (!canAddVipCustomer) {
+            return;
+        }
+
         const errors = validate();
         setFormErrors(errors);
 
@@ -288,11 +295,18 @@ const AddVipCustomerTransaction = (props) => {
                     />
                 </Form.Group>
 
-                <Button variant="primary"
-                    disabled={isAddDisabled}
-                    onClick={saveVipCustomerTransaction}>
-                    Submit
-                </Button>
+                <Tooltip
+                    title="Only administrators can add VIP customers."
+                    disableHoverListener={canAddVipCustomer}
+                >
+                    <span style={{ display: 'inline-block' }}>
+                        <Button variant="primary"
+                            disabled={!canAddVipCustomer || isAddDisabled}
+                            onClick={saveVipCustomerTransaction}>
+                            Submit
+                        </Button>
+                    </span>
+                </Tooltip>
                 <br></br>
                 <br></br>
                 {submitLoadingAdd &&
