@@ -12,7 +12,7 @@ import CustomerService from "../Customer/CustomerService";
 
 const AddVipCustomerTransaction = (props) => {
 
-    const canAddVipCustomer = [2, 3].includes(Number(localStorage.getItem('role_as')));
+    const canAddVipCustomer = Number(localStorage.getItem('role_as')) === 2;
 
     useEffect(() => {
         fetchVipCustomerTemplateList();

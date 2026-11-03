@@ -5,7 +5,7 @@ import AddVipCustomerTransaction from "./AddVipCustomerTransaction";
 
 const VipCustomerTransaction = () => {
 
-    const canManageVipCustomers = [2, 3].includes(Number(localStorage.getItem('role_as')));
+    const canManageVipCustomers = Number(localStorage.getItem('role_as')) === 2;
 
     useEffect(() => {
         fetchVipCustomerTransactionList();
