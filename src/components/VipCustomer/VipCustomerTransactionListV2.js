@@ -9,6 +9,8 @@ import Alert from '@mui/material/Alert';
 
 const VipCustomerTransactionListV2 = () => {
 
+    const canManageVipCustomers = [2, 3].includes(Number(localStorage.getItem('role_as')));
+
     useEffect(() => {
         fetchVipCustomerTransactionList();
         fetchVipCustomerTemplateList();
@@ -97,6 +99,10 @@ const VipCustomerTransactionListV2 = () => {
     }
 
     const deleteVipCustomerTransaction = (id, e) => {
+        if (!canManageVipCustomers) {
+            return;
+        }
+
         const index = vipCustomerTransactionList.findIndex(vipCustomerTransaction => vipCustomerTransaction.id === id);
         const newVipCustomerTransactionList = [...vipCustomerTransactionList];
         newVipCustomerTransactionList.splice(index, 1);
@@ -143,6 +149,7 @@ const VipCustomerTransactionListV2 = () => {
             <VipCustomerTransactionList
                 vipCustomerTransactionList={vipCustomerTransactionList}
                 deleteVipCustomerTransaction={deleteVipCustomerTransaction}
+                canDelete={canManageVipCustomers}
             />
         </div>
     )

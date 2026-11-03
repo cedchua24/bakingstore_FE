@@ -5,6 +5,8 @@ import AddVipCustomerTransaction from "./AddVipCustomerTransaction";
 
 const VipCustomerTransaction = () => {
 
+    const canManageVipCustomers = [2, 3].includes(Number(localStorage.getItem('role_as')));
+
     useEffect(() => {
         fetchVipCustomerTransactionList();
     }, []);
@@ -26,6 +28,10 @@ const VipCustomerTransaction = () => {
     }
 
     const deleteVipCustomerTransaction = (id, e) => {
+        if (!canManageVipCustomers) {
+            return;
+        }
+
         const index = vipCustomerTransactionList.findIndex(vipCustomerTransaction => vipCustomerTransaction.id === id);
         const newVipCustomerTransactionList = [...vipCustomerTransactionList];
         newVipCustomerTransactionList.splice(index, 1);
@@ -47,6 +53,7 @@ const VipCustomerTransaction = () => {
             <VipCustomerTransactionList
                 vipCustomerTransactionList={vipCustomerTransactionList}
                 deleteVipCustomerTransaction={deleteVipCustomerTransaction}
+                canDelete={canManageVipCustomers}
             />
         </div>
     )
