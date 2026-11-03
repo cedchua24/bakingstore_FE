@@ -2,11 +2,13 @@ import React from 'react'
 import { Button } from 'react-bootstrap';
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import Tooltip from '@mui/material/Tooltip';
 
 const VipCustomerTransactionList = (props) => {
 
     const vipCustomerTransactionList = props.vipCustomerTransactionList;
     const deleteVipCustomerTransaction = props.deleteVipCustomerTransaction;
+    const canDelete = props.canDelete === true;
 
     return (
         <div>
@@ -34,9 +36,20 @@ const VipCustomerTransactionList = (props) => {
                                 <td>{vipCustomerTransaction.details}</td>
                                 <td>{Number(vipCustomerTransaction.status) === 0 ? <CheckIcon style={{ color: 'green', }} /> : <CloseIcon style={{ color: 'red', }} />}</td>
                                 <td>
-                                    <Button variant="danger" onClick={(e) => deleteVipCustomerTransaction(vipCustomerTransaction.id, e)} >
-                                        Delete
-                                    </Button>
+                                    <Tooltip
+                                        title="Only administrators can delete VIP customers."
+                                        disableHoverListener={canDelete}
+                                    >
+                                        <span style={{ display: 'inline-block' }}>
+                                            <Button
+                                                variant="danger"
+                                                disabled={!canDelete}
+                                                onClick={(e) => deleteVipCustomerTransaction(vipCustomerTransaction.id, e)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </span>
+                                    </Tooltip>
                                 </td>
                             </tr>
                         ))
