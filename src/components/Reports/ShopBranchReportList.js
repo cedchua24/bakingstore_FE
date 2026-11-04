@@ -67,6 +67,12 @@ const renderStatusOption = (value) => {
     );
 };
 
+const isCompletedStatus = (status) => (
+    Number(status) === 1
+    || status === true
+    || String(status).toUpperCase() === 'COMPLETED'
+);
+
 const ShopBranchReportList = () => {
     const isAdmin = Number(localStorage.getItem('role_as')) === 2;
 
@@ -78,6 +84,13 @@ const ShopBranchReportList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [search, setSearch] = useState('');
+    const [openDate, setOpenDate] = useState(false);
+    const [dateSaving, setDateSaving] = useState(false);
+    const [dateError, setDateError] = useState('');
+    const [dateUpdate, setDateUpdate] = useState({ id: 0, date: '' });
+    const [statusSaving, setStatusSaving] = useState(false);
+    const [statusError, setStatusError] = useState('');
+    const [completedOnSubmit, setCompletedOnSubmit] = useState(false);
 
     const [shopOrderTransaction, setShopOrderTransaction] = useState({
         data: [],
@@ -105,16 +118,20 @@ const ShopBranchReportList = () => {
 
 
     const handleClosePickUp = () => {
+        if (statusSaving) return;
         setOpenPickUp(false);
         setStatusEditLocked(false);
+        setStatusError('');
     };
     const [openPickUp, setOpenPickUp] = React.useState(false);
     const [statusEditLocked, setStatusEditLocked] = useState(false);
 
     const handleOpenPickUp = (id, status) => {
-        const completedLocked = Number(status) === 1 && !isAdmin;
+        const completedLocked = isCompletedStatus(status) && !isAdmin;
         setStatusEditLocked(completedLocked);
         if (completedLocked) return;
+        setStatusError('');
+        setCompletedOnSubmit(isCompletedStatus(status));
         setOpenPickUp(true);
         fetchTransaction(id)
     }
@@ -123,6 +140,7 @@ const ShopBranchReportList = () => {
         await ShopOrderTransactionService.get(id)
             .then(response => {
                 setShopOrderTransactionUpdateModal(response.data);
+                setCompletedOnSubmit(isCompletedStatus(response.data?.status));
             })
             .catch(e => {
                 console.log("error", e)
@@ -134,6 +152,7 @@ const ShopBranchReportList = () => {
 
         console.log("error", e.target.checked)
         if (e.target.type === 'checkbox') {
+            setCompletedOnSubmit(e.target.checked);
             if (e.target.checked === true) {
                 setShopOrderTransactionUpdateModal({ ...shopOrderTransactionUpdateModal, status: 1 });
             } else {
@@ -144,24 +163,97 @@ const ShopBranchReportList = () => {
         }
     }
 
+    const setDisplayedTransactionDate = (transactionId, date) => {
+        setShopOrderTransaction(current => ({
+            ...current,
+            data: Array.isArray(current.data)
+                ? current.data.map(transaction => (
+                    String(transaction.id) === String(transactionId)
+                        ? { ...transaction, date }
+                        : transaction
+                ))
+                : current.data,
+        }));
+    };
 
-    const updateDate = () => {
+
+    const updateStatus = async () => {
         if (statusEditLocked) return;
-        ShopOrderTransactionService.updateShopBranchStatus(shopOrderTransactionUpdateModal.id, shopOrderTransactionUpdateModal)
-            .then(response => {
-                fetchShopOrderTransactionList(customerOrderDate);
-                setOpenPickUp(false);
-            })
-            .catch(e => {
-                console.log(e);
-            });
+        const transactionId = shopOrderTransactionUpdateModal.id;
+        const completingTransaction = completedOnSubmit;
+        const completionDate = formatDateInput(new Date());
+
+        setStatusSaving(true);
+        setStatusError('');
+
+        try {
+            await ShopOrderTransactionService.updateShopBranchStatus(transactionId, shopOrderTransactionUpdateModal);
+
+            if (completingTransaction) {
+                await ShopOrderTransactionService.updateDate(transactionId, {
+                    date: completionDate,
+                });
+            }
+
+            await fetchShopOrderTransactionList(customerOrderDate);
+            if (completingTransaction) {
+                setDisplayedTransactionDate(transactionId, completionDate);
+            }
+            setOpenPickUp(false);
+        } catch (e) {
+            setStatusError(
+                completingTransaction
+                    ? 'The status or completion date could not be updated. Please try again.'
+                    : 'The transaction status could not be updated. Please try again.'
+            );
+            console.log(e);
+        } finally {
+            setStatusSaving(false);
+        }
     }
+
+    const handleOpenDate = (row) => {
+        setDateError('');
+        setDateUpdate({
+            id: row.id,
+            date: String(row.date || '').slice(0, 10),
+        });
+        setOpenDate(true);
+    };
+
+    const handleCloseDate = () => {
+        if (dateSaving) return;
+        setOpenDate(false);
+        setDateError('');
+    };
+
+    const updateTransactionDate = () => {
+        if (!dateUpdate.date) {
+            setDateError('Please select a date.');
+            return;
+        }
+
+        setDateSaving(true);
+        setDateError('');
+
+        // Keep this action date-only so no other transaction field can be changed.
+        ShopOrderTransactionService.updateDate(dateUpdate.id, { date: dateUpdate.date })
+            .then(async () => {
+                await fetchShopOrderTransactionList(customerOrderDate);
+                setDisplayedTransactionDate(dateUpdate.id, dateUpdate.date);
+                setOpenDate(false);
+            })
+            .catch(() => {
+                setDateError('The transaction date could not be updated. Please try again.');
+            })
+            .finally(() => setDateSaving(false));
+    };
 
 
     const fetchShopOrderTransactionList = (dateRange) => {
         setLoading(true);
         setError('');
-        ShopOrderTransactionService.fetchShopOrderTransactionListReportByDateV2(buildReportFilters(dateRange))
+        return ShopOrderTransactionService.fetchShopOrderTransactionListReportByDateV2(buildReportFilters(dateRange))
             .then(response => {
                 // setShopOrderTransactionList(response.data);
                 setShopOrderTransaction(response.data);
@@ -302,7 +394,7 @@ const ShopBranchReportList = () => {
                             <thead>
                                 <tr>
                                     <th>ID</th><th>Shop</th><th>Quantity</th><th>Total amount</th><th>Profit</th>
-                                    <th>Requestor</th><th>Checker</th><th>Date</th><th>Status</th><th>Actions</th>
+                                    <th>Requestor</th><th>Checker</th><th>Completion date</th><th>Status</th><th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -320,7 +412,16 @@ const ShopBranchReportList = () => {
                                         <td className="shop-report-profit">{numberFormat(row.profit)}</td>
                                         <td>{row.requestor_name || '—'}</td>
                                         <td>{row.checker_name || '—'}</td>
-                                        <td>{row.date}</td>
+                                        <td>
+                                            <div className="shop-report-date-cell">
+                                                <span>{row.date}</span>
+                                                <Tooltip title="Update completion date">
+                                                    <IconButton size="small" onClick={() => handleOpenDate(row)} aria-label={`Update completion date for transaction ${row.id}`}>
+                                                        <UpdateIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </div>
+                                        </td>
                                         <td>
                                             <div className="shop-report-status-cell">
                                                 <span className={`shop-report-status status-${statusLabel(row.status).toLowerCase()}`}>{statusLabel(row.status)}</span>
@@ -363,6 +464,38 @@ const ShopBranchReportList = () => {
 
             <Modal
                 keepMounted
+                open={openDate}
+                onClose={handleCloseDate}
+                aria-labelledby="update-transaction-date-title"
+            >
+                <Box sx={style}>
+                    <Typography id="update-transaction-date-title" variant="h6" component="h2" sx={{ mb: 2 }}>
+                        Update completion date
+                    </Typography>
+
+                    {dateError && <Alert severity="error" sx={{ mb: 2 }}>{dateError}</Alert>}
+
+                    <TextField
+                        label="Completion date"
+                        type="date"
+                        value={dateUpdate.date}
+                        onChange={(event) => setDateUpdate(current => ({ ...current, date: event.target.value }))}
+                        InputLabelProps={{ shrink: true }}
+                        disabled={dateSaving}
+                        fullWidth
+                    />
+
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
+                        <Button variant="outlined" onClick={handleCloseDate} disabled={dateSaving}>Cancel</Button>
+                        <Button variant="contained" onClick={updateTransactionDate} disabled={dateSaving || !dateUpdate.date}>
+                            {dateSaving ? 'Saving…' : 'Save date'}
+                        </Button>
+                    </Box>
+                </Box>
+            </Modal>
+
+            <Modal
+                keepMounted
                 open={openPickUp}
                 onClose={handleClosePickUp}
                 aria-labelledby="keep-mounted-modal-title"
@@ -373,13 +506,15 @@ const ShopBranchReportList = () => {
                         Update transaction status
                     </Typography>
 
+                    {statusError && <Alert severity="error" sx={{ my: 2 }}>{statusError}</Alert>}
+
                     <Form.Group className="mb-3" controlId="formBasicEmail">
                         <Form.Label>Completed Transaction ? </Form.Label>
 
                         <Checkbox
-                            checked={shopOrderTransactionUpdateModal.status !== 2}
+                            checked={completedOnSubmit}
                             onChange={onChangePaymentTypeStatus}
-                            disabled={statusEditLocked}
+                            disabled={statusEditLocked || statusSaving}
                             inputProps={{ 'aria-label': 'controlled' }}
                         />
                     </Form.Group>
@@ -398,8 +533,8 @@ const ShopBranchReportList = () => {
                             justifyContent: 'center',
                         }}
                     >
-                        <Button variant="contained" onClick={updateDate} disabled={statusEditLocked}>
-                            Save status
+                        <Button variant="contained" onClick={updateStatus} disabled={statusEditLocked || statusSaving}>
+                            {statusSaving ? 'Saving…' : 'Save status'}
                         </Button>
                     </Box>
                 </Box>

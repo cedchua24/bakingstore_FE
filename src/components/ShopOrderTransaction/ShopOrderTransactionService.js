@@ -195,6 +195,9 @@ class ShopOrderTransactionService {
     update(id, data) {
         return axios.put(`/api/shopOrderTransaction/${id}`, data);
     }
+    updateDate(id, data) {
+        return axios.put(`/api/shopOrderTransaction/updateDate/${id}`, data);
+    }
     delete(brand) {
         return axios.delete(`/api/shopOrderTransaction/${brand}`);
     }

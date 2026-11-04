@@ -46,7 +46,9 @@
 .shop-report-id { color: #9a551d; font-weight: 800; }
 .shop-report-money { color: #30363d !important; font-weight: 700; white-space: nowrap; }
 .shop-report-profit { color: #176332 !important; font-weight: 750; white-space: nowrap; }
-.shop-report-status-cell, .shop-report-actions { display: flex; align-items: center; gap: 6px; }
+.shop-report-date-cell, .shop-report-status-cell, .shop-report-actions { display: flex; align-items: center; gap: 6px; }
+.shop-report-date-cell { white-space: nowrap; }
+.shop-report-date-cell .MuiIconButton-root { color: #1976d2; }
 .shop-report-status { padding: 5px 8px; font-size: .65rem; font-weight: 850; letter-spacing: .035em; border-radius: 999px; }
 .status-completed { color: #176332; background: #e7f6ec; }
 .status-pending { color: #93600d; background: #fff4d9; }
