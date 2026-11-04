@@ -36,6 +36,13 @@ const ShorOrderTransactionList = () => {
     const [openStatus, setOpenStatus] = useState(false);
     const [statusEditLocked, setStatusEditLocked] = useState(false);
     const [statusTransaction, setStatusTransaction] = useState({ id: 0, status: 2 });
+    const [completedOnSubmit, setCompletedOnSubmit] = useState(false);
+    const [statusSaving, setStatusSaving] = useState(false);
+    const [statusError, setStatusError] = useState('');
+    const [openDate, setOpenDate] = useState(false);
+    const [dateSaving, setDateSaving] = useState(false);
+    const [dateError, setDateError] = useState('');
+    const [dateUpdate, setDateUpdate] = useState({ id: 0, date: '' });
 
     const modalStyle = {
         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -50,7 +57,7 @@ const ShorOrderTransactionList = () => {
     const fetchShopOrderTransactionList = (date) => {
         setLoading(true);
         setError('');
-        ShopOrderTransactionService.fetchShopOrderTransactionListByDate(date)
+        return ShopOrderTransactionService.fetchShopOrderTransactionListByDate(date)
             .then((response) => setShopOrderTransaction(response.data))
             .catch(() => setError('The inter branch orders could not be loaded. Please try again.'))
             .finally(() => setLoading(false));
@@ -59,14 +66,18 @@ const ShorOrderTransactionList = () => {
     const saveOrderTransaction = () => fetchShopOrderTransactionList(shopOrderDate.date || today);
 
     const closeStatus = () => {
+        if (statusSaving) return;
         setOpenStatus(false);
         setStatusEditLocked(false);
+        setStatusError('');
     };
 
     const openStatusEditor = (row) => {
         const completedLocked = Number(row.status) === 1 && !isAdmin;
         setStatusEditLocked(completedLocked);
         if (completedLocked) return;
+        setStatusError('');
+        setCompletedOnSubmit(Number(row.status) === 1);
         setStatusTransaction({ id: row.id, status: Number(row.status) });
         setOpenStatus(true);
         ShopOrderTransactionService.get(row.id)
@@ -75,17 +86,77 @@ const ShorOrderTransactionList = () => {
     };
 
     const changeStatus = (event) => {
+        setCompletedOnSubmit(event.target.checked);
         setStatusTransaction((current) => ({ ...current, status: event.target.checked ? 1 : 2 }));
     };
 
-    const saveStatus = () => {
+    const openDateEditor = (row) => {
+        setDateError('');
+        setDateUpdate({
+            id: row.id,
+            date: String(row.date || '').slice(0, 10),
+        });
+        setOpenDate(true);
+    };
+
+    const closeDateEditor = () => {
+        if (dateSaving) return;
+        setOpenDate(false);
+        setDateError('');
+    };
+
+    const saveDate = async () => {
+        if (!dateUpdate.date) {
+            setDateError('Please select a date.');
+            return;
+        }
+
+        setDateSaving(true);
+        setDateError('');
+
+        try {
+            await ShopOrderTransactionService.updateDate(dateUpdate.id, { date: dateUpdate.date });
+            await fetchShopOrderTransactionList(shopOrderDate.date || today);
+            setOpenDate(false);
+        } catch (e) {
+            setDateError('The transaction date could not be updated. Please try again.');
+        } finally {
+            setDateSaving(false);
+        }
+    };
+
+    const saveStatus = async () => {
         if (statusEditLocked) return;
-        ShopOrderTransactionService.updateShopBranchStatus(statusTransaction.id, statusTransaction)
-            .then(() => {
-                closeStatus();
-                fetchShopOrderTransactionList(shopOrderDate.date || today);
-            })
-            .catch(() => setError('The transaction status could not be updated.'));
+        const transactionId = statusTransaction.id;
+        const statusPayload = {
+            ...statusTransaction,
+            status: completedOnSubmit ? 1 : 2,
+        };
+
+        setStatusSaving(true);
+        setStatusError('');
+
+        try {
+            await ShopOrderTransactionService.updateShopBranchStatus(transactionId, statusPayload);
+
+            if (completedOnSubmit) {
+                await ShopOrderTransactionService.updateDate(transactionId, {
+                    date: moment().format("YYYY-MM-DD"),
+                });
+            }
+
+            await fetchShopOrderTransactionList(shopOrderDate.date || today);
+            setOpenStatus(false);
+            setStatusEditLocked(false);
+        } catch (e) {
+            setStatusError(
+                completedOnSubmit
+                    ? 'The status or completion date could not be updated. Please try again.'
+                    : 'The transaction status could not be updated. Please try again.'
+            );
+        } finally {
+            setStatusSaving(false);
+        }
     };
 
     const numberFormat = (value) => new Intl.NumberFormat('en-US', {
@@ -111,7 +182,7 @@ const ShorOrderTransactionList = () => {
                     <span className="shop-report-header-icon"><ReceiptLongRoundedIcon /></span>
                     <div>
                         <span>Inter Branch Orders</span>
-                        <h1>Transactions</h1>
+                        <h1>Inter Branch Orders</h1>
                         <p>Review daily branch orders, sales, profit, and transaction status.</p>
                     </div>
                 </header>
@@ -150,7 +221,7 @@ const ShorOrderTransactionList = () => {
                     </div>
                     <div className="shop-report-table-scroll">
                         <table>
-                            <thead><tr><th>ID</th><th>Shop</th><th>Quantity</th><th>Total amount</th><th>Profit</th><th>Requestor</th><th>Checker</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                            <thead><tr><th>ID</th><th>Shop</th><th>Quantity</th><th>Total amount</th><th>Profit</th><th>Requestor</th><th>Checker</th><th>Completion date</th><th>Status</th><th>Actions</th></tr></thead>
                             <tbody>
                                 {!loading && visibleRows.length === 0 && (
                                     <tr><td colSpan="10"><div className="shop-report-empty"><Inventory2OutlinedIcon /><strong>No branch orders found</strong><span>Try selecting another transaction date.</span></div></td></tr>
@@ -164,7 +235,17 @@ const ShorOrderTransactionList = () => {
                                         <td>{row.shop_order_transaction_total_quantity}</td>
                                         <td className="shop-report-money">{numberFormat(row.shop_order_transaction_total_price)}</td>
                                         <td className="shop-report-profit">{numberFormat(row.profit)}</td>
-                                        <td>{row.requestor_name || '—'}</td><td>{row.checker_name || '—'}</td><td>{row.date}</td>
+                                        <td>{row.requestor_name || '—'}</td><td>{row.checker_name || '—'}</td>
+                                        <td>
+                                            <div className="shop-report-date-cell">
+                                                <span>{row.date}</span>
+                                                <Tooltip title="Update completion date">
+                                                    <IconButton size="small" onClick={() => openDateEditor(row)} aria-label={`Update completion date for transaction ${row.id}`}>
+                                                        <UpdateIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </div>
+                                        </td>
                                         <td><div className="shop-report-status-cell"><span className={`shop-report-status status-${statusLabel(row.status).toLowerCase()}`}>{statusLabel(row.status)}</span><Tooltip title={completedLocked ? "Completed transactions can only be changed by an administrator" : "Update status"}><span><IconButton size="small" disabled={completedLocked} onClick={() => openStatusEditor(row)}><UpdateIcon fontSize="small" /></IconButton></span></Tooltip></div></td>
                                         <td><div className="shop-report-actions">
                                             <Tooltip title="View"><IconButton component={Link} to={`../shopOrderTransaction/completedShopOrderTransaction/${row.id}`}><VisibilityOutlinedIcon /></IconButton></Tooltip>
@@ -194,16 +275,41 @@ const ShorOrderTransactionList = () => {
                     </div>
                 </section>
 
+                <Modal open={openDate} onClose={closeDateEditor} aria-labelledby="transaction-date-title">
+                    <Box sx={modalStyle}>
+                        <Typography id="transaction-date-title" variant="h6" component="h2" sx={{ mb: 2 }}>Update completion date</Typography>
+                        {dateError && <Alert severity="error" sx={{ mb: 2 }}>{dateError}</Alert>}
+                        <TextField
+                            label="Completion date"
+                            type="date"
+                            value={dateUpdate.date}
+                            onChange={(event) => setDateUpdate((current) => ({ ...current, date: event.target.value }))}
+                            InputLabelProps={{ shrink: true }}
+                            disabled={dateSaving}
+                            fullWidth
+                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 3 }}>
+                            <Button variant="outlined" onClick={closeDateEditor} disabled={dateSaving}>Cancel</Button>
+                            <Button variant="contained" onClick={saveDate} disabled={dateSaving || !dateUpdate.date}>
+                                {dateSaving ? 'Saving…' : 'Save date'}
+                            </Button>
+                        </Box>
+                    </Box>
+                </Modal>
+
                 <Modal open={openStatus} onClose={closeStatus} aria-labelledby="transaction-status-title">
                     <Box sx={modalStyle}>
                         <Typography id="transaction-status-title" variant="h6" component="h2">Update transaction status</Typography>
+                        {statusError && <Alert severity="error" sx={{ my: 2 }}>{statusError}</Alert>}
                         <Form.Group className="mb-3">
                             <Form.Label>Completed Transaction ? </Form.Label>
-                            <Checkbox checked={Number(statusTransaction.status) !== 2} onChange={changeStatus} disabled={statusEditLocked} inputProps={{ 'aria-label': 'Completed transaction' }} />
+                            <Checkbox checked={completedOnSubmit} onChange={changeStatus} disabled={statusEditLocked || statusSaving} inputProps={{ 'aria-label': 'Completed transaction' }} />
                         </Form.Group>
                         {statusEditLocked && <Alert severity="info" sx={{ mb: 2 }}>This transaction is completed. Only an administrator can change its status.</Alert>}
                         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                            <Button variant="contained" onClick={saveStatus} disabled={statusEditLocked}>Save status</Button>
+                            <Button variant="contained" onClick={saveStatus} disabled={statusEditLocked || statusSaving}>
+                                {statusSaving ? 'Saving…' : 'Save status'}
+                            </Button>
                         </Box>
                     </Box>
                 </Modal>

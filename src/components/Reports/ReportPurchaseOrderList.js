@@ -81,6 +81,7 @@ const getCurrentMonthFilters = () => {
     return {
         dateFrom: formatDateInput(new Date(year, month, 1)),
         dateTo: formatDateInput(new Date(year, month + 1, 0)),
+        dateField: 'order_date',
         supplier_id: '',
         status: '',
         payment_status: '',
@@ -93,6 +94,9 @@ const getRequestFilters = (filters) => {
 
     if (filters?.dateFrom) requestFilters.dateFrom = filters.dateFrom;
     if (filters?.dateTo) requestFilters.dateTo = filters.dateTo;
+    if (filters?.dateField === 'order_date' || filters?.dateField === 'updated_at') {
+        requestFilters.dateField = filters.dateField;
+    }
     if (filters?.supplier_id) requestFilters.supplier_id = filters.supplier_id;
     if (filters?.status) requestFilters.status = filters.status;
     if (filters?.approval_status) requestFilters.approval_status = filters.approval_status;
@@ -221,6 +225,7 @@ const ReportPurchaseOrderList = ({
     const totalOrders = rows.length;
     const reportTotal = Number(report.total_sales || 0)
         || rows.reduce((sum, row) => sum + Number(row.total_transaction_price || 0), 0);
+    const selectedDateLabel = filters.dateField === 'updated_at' ? 'Received date' : 'Order date';
 
     const applyFilters = () => {
         const errors = {};
@@ -323,7 +328,18 @@ const ReportPurchaseOrderList = ({
                     </div>
                     <div className="po-report-filter-grid">
                         <TextField
-                            label="Date from"
+                            select
+                            label="Date type"
+                            value={filters.dateField}
+                            onChange={(event) => setFilters({ ...filters, dateField: event.target.value })}
+                            helperText="Choose which date to filter"
+                            fullWidth
+                        >
+                            <MenuItem value="order_date">Order date</MenuItem>
+                            <MenuItem value="updated_at">Received date</MenuItem>
+                        </TextField>
+                        <TextField
+                            label={`${selectedDateLabel} from`}
                             type="date"
                             value={filters.dateFrom}
                             onChange={(event) => setFilters({ ...filters, dateFrom: event.target.value })}
@@ -333,7 +349,7 @@ const ReportPurchaseOrderList = ({
                             fullWidth
                         />
                         <TextField
-                            label="Date to"
+                            label={`${selectedDateLabel} to`}
                             type="date"
                             value={filters.dateTo}
                             onChange={(event) => setFilters({ ...filters, dateTo: event.target.value })}
