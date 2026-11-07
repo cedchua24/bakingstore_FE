@@ -829,13 +829,13 @@ export default function PersistentDrawerLeft() {
 
     const [salesReportList, setSalesReportList] = useState([
         {
-            "name": "Transaction List",
+            "name": "Transaction Profitability",
             "url": "/reports/reportsList",
             "icon": <ReceiptIcon />,
             "roles": [2, 3]
         },
         {
-            "name": "Sales List",
+            "name": "Payments Received",
             "url": "/reports/reportSales",
             "icon": <PriceCheckIcon />,
             "roles": [2, 3]

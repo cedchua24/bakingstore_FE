@@ -63,8 +63,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
     const [transactionIdError, setTransactionIdError] = useState('');
 
     const [customerOrderDate, setCustomerOrderDate] = useState({
-        date: id,
-        status: 0
+        date: id
     });
 
     const [searchExpense, setSearchExpense] = useState({
@@ -134,14 +133,13 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
         code: '',
         message: '',
         total_sales: 0,
-        total_sales_completed: 0,
-        total_paid_prev: 0,
-        total_online_prev: 0,
-        total_cash_prev: 0,
-        total_paid_oudated: 0,
-        total_online_outdated: 0,
-        total_cash_outdated: 0,
-        total_paid_: 0
+        total_paid_inside_period: 0,
+        total_paid_outside_period: 0,
+        total_paid_inside_period_count: 0,
+        total_paid_outside_period_count: 0,
+        total_received: 0,
+        total_post_paid: 0,
+        total_paid_outdated: 0
     });
 
     const [shopOrderTransactionUpdate, setShopOrderTransactionUpdate] = useState({
@@ -242,7 +240,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                     }
                 })
                 .catch(error => {
-                    setShopOrderTransaction(current => ({ ...current, data: [], payment: [], total_count: 0 }));
+                    setShopOrderTransaction(current => ({ ...current, data: [], total_count: 0 }));
                     setTransactionIdError(
                         error.response?.status === 404
                             ? `Transaction #${transactionId} was not found.`
@@ -262,7 +260,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
         console.log('role_as: ', localStorage.getItem('role_as'));
         console.log("customerOrderDate :", customerOrderDate)
         // console.log('date', new Date().toLocaleDateString().replace("/", "-"));
-        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2(customerOrderDate)
+        ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2({ date: customerOrderDate.date })
             .then(response => {
                 console.log("fetchOnlineShopOrderTransactionList :", response.data)
                 // setShopOrderTransactionList(response.data);
@@ -462,7 +460,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
             setSubmitLoadingAdd(true);
             setIsAddDisabled(true);
             // ShopOrderTransactionService.fetchOnlineShopOrderTransactionListByStatus(customerOrderDate)
-            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2(customerOrderDate)
+            ShopOrderTransactionService.fetchOnlineShopOrderTransactionListV2({ date: customerOrderDate.date })
                 .then(response => {
                     console.log("data: ", response.data);
                     setShopOrderTransaction(response.data);
@@ -773,9 +771,17 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
 
     const money = (value) => numberFormat(value || 0);
 
-    const totalPaidToday = (shopOrderTransaction.total_paid || 0) + (shopOrderTransaction.total_paid_prev || 0);
-    const totalCashToday = (shopOrderTransaction.total_cash || 0) + (shopOrderTransaction.total_cash_prev || 0);
-    const totalOnlineToday = (shopOrderTransaction.total_online || 0) + (shopOrderTransaction.total_online_prev || 0);
+    const paidInsidePeriod = Number(shopOrderTransaction.total_paid_inside_period) || 0;
+    const paidOutsidePeriod = Number(shopOrderTransaction.total_paid_outside_period) || 0;
+    const paidInsidePeriodCount = Number(shopOrderTransaction.total_paid_inside_period_count) || 0;
+    const paidOutsidePeriodCount = Number(shopOrderTransaction.total_paid_outside_period_count) || 0;
+    const totalReceived = Number(
+        shopOrderTransaction.total_received ?? (paidInsidePeriod + paidOutsidePeriod)
+    ) || 0;
+    const totalPostPaid = Number(
+        shopOrderTransaction.total_post_paid ?? shopOrderTransaction.total_paid_outdated
+    ) || 0;
+    const totalReceivedCount = paidInsidePeriodCount + paidOutsidePeriodCount;
     const totalReportExpenses = expensesMandatory.total_expense || expensesMandatory.total_expenses || 0;
     const netProfit = (discountLoss.total_amount || 0) + (shopOrderTransaction.total_profit || 0) - totalReportExpenses + (spoilage.total_cost || 0);
 
@@ -964,17 +970,11 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                     <strong>{shopOrderTransaction.total_count || 0}</strong>
                 </article>
                 {showFinancialAmounts && (
-                    <>
-                        <article className="customer-report-kpi">
-                            <span>Completed Sales</span>
-                            <strong>{money(shopOrderTransaction.total_sales_completed)}</strong>
-                        </article>
-                        <article className="customer-report-kpi">
-                            <span>Paid Today</span>
-                            <strong>{money(totalPaidToday)}</strong>
-                            <small>{money(totalCashToday)} cash / {money(totalOnlineToday)} online</small>
-                        </article>
-                    </>
+                    <article className="customer-report-kpi customer-report-kpi-received">
+                        <span>Total Received</span>
+                        <strong>{money(totalReceived)}</strong>
+                        <small>{totalReceivedCount} payment{totalReceivedCount === 1 ? "" : "s"} received on this day</small>
+                    </article>
                 )}
                 <article className="customer-report-kpi customer-report-photo-card">
                     <img src="/mapi_blossom.jpg" alt="Mapi Blossom" />
@@ -988,7 +988,7 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
             </section>
 
             {showFinancialAmounts && <section className="customer-report-summary-grid">
-                <article className="customer-report-panel">
+                <article className="customer-report-panel customer-report-payment-panel">
                     <div className="customer-report-panel-header">
                         <div>
                             <p className="customer-report-eyebrow">Collection</p>
@@ -997,45 +997,69 @@ const CustomerOrderTransactionList = ({ searchByTransactionId = false }) => {
                     </div>
 
                     <div className="customer-report-payment-list">
-                        {shopOrderTransaction.payment.length == 0 ? (
-                            <p className="customer-report-muted">No payment data available.</p>
+                        {!Array.isArray(shopOrderTransaction.payment) || shopOrderTransaction.payment.length === 0 ? (
+                            <p className="customer-report-muted">No payment method data available.</p>
                         ) : shopOrderTransaction.payment.map((payment) => (
-                            <div className="customer-report-payment-row" key={payment.id}>
+                            <div className="customer-report-payment-row" key={payment.payment_type_po_id || payment.id}>
                                 <div>
                                     <strong>{formatPaymentLabel(payment)}</strong>
                                 </div>
                                 <div className="customer-report-payment-actions">
-                                    <Link to={"../shopOrderTransaction/paymentTypeSales/" + (payment.payment_type_po_id || payment.id) + "+" + customerOrderDate.date}>
+                                    <Link to={`../shopOrderTransaction/paymentTypeSales/${payment.payment_type_po_id || payment.id}+${customerOrderDate.date}`}>
                                         <PageviewIcon color="primary" />
                                     </Link>
-                                    {payment.total_paid_count != payment.total_count ?
-                                        <Tooltip title={"Need to double-check all transactions in " + formatPaymentLabel(payment)}>
+                                    {payment.total_paid_count != payment.total_count ? (
+                                        <Tooltip title={`Need to double-check all transactions in ${formatPaymentLabel(payment)}`}>
                                             <span><CloseIcon className="customer-report-icon-danger" /></span>
-                                        </Tooltip> : <CheckIcon className="customer-report-icon-success" />}
+                                        </Tooltip>
+                                    ) : (
+                                        <CheckIcon className="customer-report-icon-success" />
+                                    )}
                                     <strong>{money(payment.total_amount)}</strong>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="customer-report-mini-grid">
-                        <div>
-                            <span>Current Paid</span>
-                            <strong>{money(shopOrderTransaction.total_paid)}</strong>
-                        </div>
-                        <div>
-                            <span>Previous Paid</span>
-                            <strong>{money(shopOrderTransaction.total_paid_prev)}</strong>
-                            <Link to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/1`}>Cash</Link>
-                            <Link to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/1`}>Online</Link>
-                        </div>
-                        <div>
-                            <span>Post Paid</span>
-                            <strong>{money(shopOrderTransaction.total_paid_outdated)}</strong>
-                            <Link to={`../shopOrderTransaction/paymentTypePrev/1/${customerOrderDate.date}/2`}>Cash</Link>
-                            <Link to={`../shopOrderTransaction/paymentTypePrev/2/${customerOrderDate.date}/2`}>Online</Link>
-                        </div>
+                    <div className="customer-report-timing-heading">
+                        <strong>Payment Timing</strong>
+                        <span>How received payments relate to order dates</span>
                     </div>
+
+                    <div className="customer-report-mini-grid">
+                        <div className="customer-report-mini-card-inside">
+                            <span>Same-Day Orders</span>
+                            <strong>{money(paidInsidePeriod)}</strong>
+                            <small>{paidInsidePeriodCount} payment{paidInsidePeriodCount === 1 ? "" : "s"} · order and payment dates match</small>
+                        </div>
+                        <Link
+                            className="customer-report-mini-card-link customer-report-mini-card-outside"
+                            to={`/shopOrderTransaction/paidOutsideDate/${customerOrderDate.date}`}
+                            aria-label={`View ${paidOutsidePeriodCount} other-date transactions`}
+                        >
+                            <span>Other-Date Orders</span>
+                            <strong>{money(paidOutsidePeriod)}</strong>
+                            <small>{paidOutsidePeriodCount} payment{paidOutsidePeriodCount === 1 ? "" : "s"} · older or future orders paid on this day</small>
+                            <em>View transactions →</em>
+                        </Link>
+                    </div>
+                    <p className="customer-report-payment-equation">
+                        Total Received = Same-Day Orders + Other-Date Orders paid on the selected day
+                    </p>
+
+                    {totalPostPaid > 0 && <div className="customer-report-post-paid">
+                        <div>
+                            <span>Collected Later · Post Paid</span>
+                            <small>
+                                Orders dated {moment(customerOrderDate.date).format("MMM D, YYYY")} that were paid after that date
+                            </small>
+                        </div>
+                        <div className="customer-report-post-paid-total">
+                            <strong>{money(totalPostPaid)}</strong>
+                            <span>Not included in Total Received</span>
+                        </div>
+                    </div>}
+
                 </article>
 
                 <article className="customer-report-panel">

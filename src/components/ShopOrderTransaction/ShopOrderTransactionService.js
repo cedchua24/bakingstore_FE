@@ -16,6 +16,9 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionListV2(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListV2", data);
     }
+    fetchOnlineShopOrderTransactionPaidOutsideDateV2(data) {
+        return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionPaidOutsideDateV2", data);
+    }
     fetchOnlineShopOrderTransactionListByIdV2(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByIdV2/${id}`);
     }
@@ -104,6 +107,9 @@ class ShopOrderTransactionService {
     }
     fetchOnlineShopOrderTransactionListReportByDate(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReportByDate", data);
+    }
+    fetchOnlineShopOrderTransactionListReportByDateV2(data) {
+        return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReportByDateV2", data);
     }
     fetchOnlineShopMonthlySalesForecast(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopMonthlySalesForecast", data);

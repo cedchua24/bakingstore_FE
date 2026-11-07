@@ -56,6 +56,8 @@
 .shop-report-actions { white-space: nowrap; }
 .shop-report-actions .MuiIconButton-root { color: #6a737e; border: 1px solid #e2e5e9; border-radius: 9px; }
 .shop-report-actions .MuiIconButton-root.shop-report-update-action { color: #9a501a; border-color: #d7a47f; }
+.shop-report-actions .MuiIconButton-root.shop-report-delete-action { color: #c62828; border-color: #ef9a9a; }
+.shop-report-actions .MuiIconButton-root.shop-report-delete-action.Mui-disabled { color: #b8bec5; border-color: #e2e5e9; }
 .shop-report-actions .MuiButton-root { color: #9a501a; border-color: #d7a47f; border-radius: 8px; text-transform: none; }
 .shop-report-empty { display: flex; align-items: center; flex-direction: column; gap: 4px; padding: 40px; color: #8a929d; text-align: center; }
 .shop-report-empty svg { margin-bottom: 6px; color: #c0c5cb; font-size: 34px; }

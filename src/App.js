@@ -162,6 +162,8 @@ import PrintingTransactionList from "./components/PrintingTransaction/PrintingTr
 import EditPrintingTransaction from "./components/PrintingTransaction/EditPrintingTransaction";
 import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrder";
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
+import PaymentReceivedList from "./components/ShopOrderTransaction/PaymentReceivedList";
+import PaidOutsideTransactionList from "./components/ShopOrderTransaction/PaidOutsideTransactionList";
 import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
 import ProductSoldToday from "./components/dashboard/ProductSoldToday";
 import EmployeePerformance from "./components/dashboard/EmployeePerformance";
@@ -691,6 +693,24 @@ const App = () => {
               localStorage.getItem('auth_token')
                 // items !== null
                 ? <CustomerOrderTransactionList />
+                : <UserLogin />
+            }
+          />
+          <Route
+            exact
+            path="/shopOrderTransaction/paymentReceived/:date"
+            element={
+              localStorage.getItem('auth_token')
+                ? <PaymentReceivedList />
+                : <UserLogin />
+            }
+          />
+          <Route
+            exact
+            path="/shopOrderTransaction/paidOutsideDate/:date"
+            element={
+              localStorage.getItem('auth_token')
+                ? <PaidOutsideTransactionList />
                 : <UserLogin />
             }
           />
