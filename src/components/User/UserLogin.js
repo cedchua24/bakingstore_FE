@@ -12,7 +12,22 @@ import {
     getEnvironmentColor,
 } from "../Shop/databaseEnvironment";
 
+<<<<<<< Updated upstream
 const UserLogin = () => {
+=======
+const raisonPhotos = [
+    {
+        src: `${process.env.PUBLIC_URL}/raison/raison-champion-1.png`,
+        alt: "Raison holding his championship trophy and award",
+    },
+    {
+        src: `${process.env.PUBLIC_URL}/raison/raison-champion-2.png`,
+        alt: "Raison celebrating his championship win on stage",
+    },
+];
+
+const UserLogin = ({ showLoginForm = true }) => {
+>>>>>>> Stashed changes
     const activeShopColor = useActiveShopColor();
     const [sessionExpired, setSessionExpired] = useState(
         () => new URLSearchParams(window.location.search).get("reason") === "session-expired"
@@ -24,6 +39,11 @@ const UserLogin = () => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+<<<<<<< Updated upstream
+=======
+    const [activeRaisonPhoto, setActiveRaisonPhoto] = useState(0);
+    const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+>>>>>>> Stashed changes
 
     useEffect(() => {
         if (sessionExpired) {
@@ -31,6 +51,30 @@ const UserLogin = () => {
         }
     }, [sessionExpired]);
 
+<<<<<<< Updated upstream
+=======
+    useEffect(() => {
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (isCarouselPaused || prefersReducedMotion) return undefined;
+
+        const timer = window.setInterval(() => {
+            setActiveRaisonPhoto((current) => (current + 1) % raisonPhotos.length);
+        }, 4500);
+
+        return () => window.clearInterval(timer);
+    }, [isCarouselPaused]);
+
+    const showPreviousRaisonPhoto = () => {
+        setActiveRaisonPhoto((current) =>
+            (current - 1 + raisonPhotos.length) % raisonPhotos.length
+        );
+    };
+
+    const showNextRaisonPhoto = () => {
+        setActiveRaisonPhoto((current) => (current + 1) % raisonPhotos.length);
+    };
+
+>>>>>>> Stashed changes
     const updateField = (event) => {
         const { name, value } = event.target;
         setCredentials((current) => ({ ...current, [name]: value }));
@@ -115,6 +159,7 @@ const UserLogin = () => {
 
     return (
         <main
+<<<<<<< Updated upstream
             className="login-page"
             style={{ "--shop-color": activeShopColor || "#4f2d23" }}
         >
@@ -122,6 +167,69 @@ const UserLogin = () => {
                 <div className="login-brand-mark" aria-hidden="true">
                     <span>☕</span>
                     <span>📦</span>
+=======
+            className={`login-page${showLoginForm ? "" : " celebration-only"}`}
+            style={{
+                "--shop-color": activeShopColor || "#4f2d23",
+                "--celebration-background": `url(${process.env.PUBLIC_URL}/raison/raison-champion-1.png)`,
+            }}
+        >
+            <section className="login-overview" aria-labelledby="login-heading">
+                <div
+                    className="login-celebration-carousel"
+                    aria-label="Raison championship photos"
+                    onMouseEnter={() => setIsCarouselPaused(true)}
+                    onMouseLeave={() => setIsCarouselPaused(false)}
+                    onFocus={() => setIsCarouselPaused(true)}
+                    onBlur={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget)) {
+                            setIsCarouselPaused(false);
+                        }
+                    }}
+                >
+                    <div className="login-celebration-slides">
+                        {raisonPhotos.map((photo, index) => (
+                            <img
+                                key={photo.src}
+                                className={index === activeRaisonPhoto ? "active" : ""}
+                                src={photo.src}
+                                alt={index === activeRaisonPhoto ? photo.alt : ""}
+                                aria-hidden={index !== activeRaisonPhoto}
+                                loading={index === 0 ? "eager" : "lazy"}
+                            />
+                        ))}
+                    </div>
+
+                    <button
+                        className="login-carousel-arrow previous"
+                        type="button"
+                        onClick={showPreviousRaisonPhoto}
+                        aria-label="Show previous Raison photo"
+                    >
+                        ‹
+                    </button>
+                    <button
+                        className="login-carousel-arrow next"
+                        type="button"
+                        onClick={showNextRaisonPhoto}
+                        aria-label="Show next Raison photo"
+                    >
+                        ›
+                    </button>
+
+                    <div className="login-carousel-dots" aria-label="Choose a Raison photo">
+                        {raisonPhotos.map((photo, index) => (
+                            <button
+                                key={photo.src}
+                                className={index === activeRaisonPhoto ? "active" : ""}
+                                type="button"
+                                onClick={() => setActiveRaisonPhoto(index)}
+                                aria-label={`Show Raison photo ${index + 1}`}
+                                aria-current={index === activeRaisonPhoto ? "true" : undefined}
+                            />
+                        ))}
+                    </div>
+>>>>>>> Stashed changes
                 </div>
                 <span className="login-eyebrow">Internal business system</span>
                 <h1 id="login-heading">Operations, all in one place.</h1>
@@ -130,11 +238,21 @@ const UserLogin = () => {
                     expenses, and business reporting.
                 </p>
 
+<<<<<<< Updated upstream
                 <div className="login-module-grid" aria-label="System modules">
                     <div><span aria-hidden="true">▦</span> POS & sales</div>
                     <div><span aria-hidden="true">□</span> Inventory</div>
                     <div><span aria-hidden="true">↗</span> Purchase orders</div>
                     <div><span aria-hidden="true">⌁</span> Reports & accounts</div>
+=======
+                <div className="login-welcome-copy">
+                    <span className="login-eyebrow">Celebrating our champion</span>
+                    <h1 id="login-heading">Congratulations, Raison!</h1>
+                    <p>
+                        Your MDR family is proud of your championship achievement.
+                        Your discipline, hard work, and dedication inspire us all.
+                    </p>
+>>>>>>> Stashed changes
                 </div>
             </section>
 

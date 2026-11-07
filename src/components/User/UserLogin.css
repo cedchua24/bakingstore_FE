@@ -16,6 +16,57 @@
     overflow: hidden;
 }
 
+<<<<<<< Updated upstream
+=======
+.login-page::before {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    inset: 0;
+    background-color: #5a070b;
+    background-image: var(--celebration-background);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.login-page::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.76);
+}
+
+.login-page.celebration-only {
+    left: 50%;
+    grid-template-columns: 1fr;
+    width: calc(100vw - 2rem);
+    max-width: 1600px;
+    min-height: calc(100vh - 180px);
+    margin-top: 1.5rem;
+    transform: translateX(-50%);
+}
+
+.login-page.celebration-only::after {
+    background: rgba(30, 9, 7, 0.32);
+}
+
+.celebration-only .login-overview {
+    min-height: calc(100vh - 180px);
+    padding: 3rem;
+}
+
+.celebration-only .login-celebration-carousel {
+    width: min(100%, 350px);
+}
+
+.celebration-only .login-celebration-slides {
+    height: min(46vh, 440px);
+    min-height: 360px;
+}
+
+>>>>>>> Stashed changes
 .login-overview {
     position: relative;
     display: flex;
@@ -40,7 +91,84 @@
     border-radius: 50%;
 }
 
+<<<<<<< Updated upstream
 .login-brand-mark {
+=======
+.login-celebration-carousel {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 320px);
+}
+
+.login-celebration-slides {
+    position: relative;
+    height: 390px;
+    overflow: hidden;
+    border: 3px solid rgba(255, 220, 166, 0.82);
+    border-radius: 22px;
+    background: #151716;
+    box-shadow: 0 20px 42px rgba(16, 4, 3, 0.38);
+}
+
+.login-celebration-slides img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    inset: 0;
+    object-fit: cover;
+    object-position: center 28%;
+    opacity: 0;
+    transform: scale(1.025);
+    transition: opacity 650ms ease, transform 4.5s ease;
+}
+
+.login-celebration-slides img.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.login-carousel-arrow {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    display: grid;
+    width: 38px;
+    height: 38px;
+    padding: 0 0 4px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(20, 11, 8, 0.62);
+    font-size: 2rem;
+    line-height: 1;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%);
+    transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.login-carousel-arrow:hover,
+.login-carousel-arrow:focus-visible {
+    color: #fff;
+    background: rgba(83, 35, 20, 0.92);
+    transform: translateY(-50%) scale(1.06);
+}
+
+.login-carousel-arrow.previous {
+    left: -19px;
+}
+
+.login-carousel-arrow.next {
+    right: -19px;
+}
+
+.login-carousel-dots {
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    bottom: 14px;
+    left: 0;
+>>>>>>> Stashed changes
     display: flex;
     width: fit-content;
     margin-bottom: 1.5rem;
@@ -345,10 +473,37 @@
     }
 
     .login-overview h1 {
+<<<<<<< Updated upstream
         font-size: 2.2rem;
+=======
+        font-size: 2rem;
+    }
+
+    .login-celebration-slides {
+        height: 350px;
+    }
+
+    .login-carousel-arrow.previous {
+        left: 10px;
+    }
+
+    .login-carousel-arrow.next {
+        right: 10px;
+>>>>>>> Stashed changes
     }
 
     .login-password-rules ul {
         grid-template-columns: 1fr;
     }
 }
+<<<<<<< Updated upstream
+=======
+
+@media (prefers-reduced-motion: reduce) {
+    .login-celebration-slides img,
+    .login-carousel-arrow,
+    .login-carousel-dots button {
+        transition: none;
+    }
+}
+>>>>>>> Stashed changes

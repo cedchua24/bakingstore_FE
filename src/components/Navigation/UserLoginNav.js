@@ -25,7 +25,12 @@ const UserLoginNav = () => {
             });
     }, []);
 
+<<<<<<< Updated upstream
     const isLoginPage = location.pathname === "/" || location.pathname === "/login";
+=======
+    const isLoginPage = location.pathname === "/staff-login";
+    const isCelebrationPage = location.pathname === "/" || location.pathname === "/login";
+>>>>>>> Stashed changes
 
     return (
         <header className="public-nav" style={{ "--shop-color": shopColor }}>
@@ -40,6 +45,16 @@ const UserLoginNav = () => {
 
                 <nav className="public-nav-actions" aria-label="Account navigation">
                     <Link
+<<<<<<< Updated upstream
+=======
+                        className={`public-nav-link${isCelebrationPage ? " active" : ""}`}
+                        to="/login"
+                        aria-current={isCelebrationPage ? "page" : undefined}
+                    >
+                        Raison
+                    </Link>
+                    <Link
+>>>>>>> Stashed changes
                         className={`public-nav-link${isLoginPage ? " active" : ""}`}
                         to="/login"
                         aria-current={isLoginPage ? "page" : undefined}
