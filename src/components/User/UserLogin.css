@@ -24,7 +24,7 @@
     z-index: -2;
     inset: 0;
     background-color: #5a070b;
-    background-image: var(--graduates-background);
+    background-image: var(--celebration-background);
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
@@ -57,11 +57,11 @@
     padding: 3rem;
 }
 
-.celebration-only .login-graduate-carousel {
+.celebration-only .login-celebration-carousel {
     width: min(100%, 350px);
 }
 
-.celebration-only .login-graduate-slides {
+.celebration-only .login-celebration-slides {
     height: min(46vh, 440px);
     min-height: 360px;
 }
@@ -96,13 +96,13 @@
     border-radius: 50%;
 }
 
-.login-graduate-carousel {
+.login-celebration-carousel {
     position: relative;
     z-index: 1;
     width: min(100%, 320px);
 }
 
-.login-graduate-slides {
+.login-celebration-slides {
     position: relative;
     height: 390px;
     overflow: hidden;
@@ -112,7 +112,7 @@
     box-shadow: 0 20px 42px rgba(16, 4, 3, 0.38);
 }
 
-.login-graduate-slides img {
+.login-celebration-slides img {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -124,7 +124,7 @@
     transition: opacity 650ms ease, transform 4.5s ease;
 }
 
-.login-graduate-slides img.active {
+.login-celebration-slides img.active {
     opacity: 1;
     transform: scale(1);
 }
@@ -468,7 +468,7 @@
         font-size: 2rem;
     }
 
-    .login-graduate-slides {
+    .login-celebration-slides {
         height: 350px;
     }
 
@@ -486,7 +486,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .login-graduate-slides img,
+    .login-celebration-slides img,
     .login-carousel-arrow,
     .login-carousel-dots button {
         transition: none;

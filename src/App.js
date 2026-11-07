@@ -384,7 +384,6 @@ const App = () => {
         <div className="container mt-3">
           <Routes>
             <Route path="/login" element={<UserLogin showLoginForm={false} />} />
-            <Route path="/graduates" element={<Navigate to="/login" replace />} />
             <Route path="/staff-login" element={<UserLogin />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/userRegistration" element={<Navigate to="/login" replace />} />
