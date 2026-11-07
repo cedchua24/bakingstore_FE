@@ -342,6 +342,202 @@
     background: #4f46e5;
 }
 
+.sales-report__payment-period {
+    margin-top: 16px;
+    padding: 20px 24px;
+    border: 1px solid #99f6e4;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f0fdfa, #ecfeff);
+    box-shadow: inset 4px 0 0 #14b8a6;
+}
+
+.sales-report__payment-period-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.sales-report__payment-period-heading h3 {
+    margin: 2px 0 5px;
+    color: var(--report-ink);
+    font-size: 1.05rem;
+}
+
+.sales-report__payment-period-heading p {
+    margin-bottom: 0;
+    color: var(--report-muted);
+    font-size: 0.8rem;
+}
+
+.sales-report__payment-period-heading > span {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    color: #0f766e;
+    border-radius: 999px;
+    background: #ccfbf1;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.sales-report__payment-period-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.sales-report__payment-period-grid article {
+    padding: 15px 17px;
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.sales-report__payment-period-grid article.is-total {
+    border-color: #a5b4fc;
+    background: linear-gradient(135deg, #312e81, #4f46e5);
+}
+
+.sales-report__payment-period-grid article.is-outside {
+    border-color: #fcd34d;
+    background: #fffbeb;
+}
+
+.sales-report__payment-period-grid span,
+.sales-report__payment-period-grid strong,
+.sales-report__payment-period-grid small {
+    display: block;
+}
+
+.sales-report__payment-period-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.sales-report__payment-period-label span {
+    color: #0f766e;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.sales-report__payment-period-label b {
+    padding: 3px 7px;
+    color: #0f766e;
+    border-radius: 999px;
+    background: #ccfbf1;
+    font-size: 0.66rem;
+    white-space: nowrap;
+}
+
+.sales-report__payment-period-grid .is-total span,
+.sales-report__payment-period-grid .is-total strong,
+.sales-report__payment-period-grid .is-total small {
+    color: #ffffff;
+}
+
+.sales-report__payment-period-grid .is-total small {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.sales-report__payment-period-grid .is-total b {
+    color: #312e81;
+    background: #ffffff;
+}
+
+.sales-report__payment-period-grid strong {
+    margin: 4px 0 2px;
+    color: var(--report-ink);
+    font-size: 1.35rem;
+}
+
+.sales-report__payment-period-grid small {
+    color: var(--report-muted);
+    font-size: 0.76rem;
+    line-height: 1.4;
+}
+
+.sales-report__payment-reconciliation {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border: 1px solid;
+    border-radius: 10px;
+}
+
+.sales-report__payment-reconciliation > span {
+    display: grid;
+    flex: 0 0 23px;
+    width: 23px;
+    height: 23px;
+    color: #ffffff;
+    border-radius: 50%;
+    font-weight: 850;
+    place-items: center;
+}
+
+.sales-report__payment-reconciliation strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.8rem;
+}
+
+.sales-report__payment-reconciliation p {
+    margin: 0;
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
+.sales-report__payment-reconciliation.is-reconciled {
+    color: #047857;
+    border-color: #a7f3d0;
+    background: #ecfdf5;
+}
+
+.sales-report__payment-reconciliation.is-reconciled > span {
+    background: #10b981;
+}
+
+.sales-report__payment-reconciliation.has-difference {
+    color: #b45309;
+    border-color: #fcd34d;
+    background: #fffbeb;
+}
+
+.sales-report__payment-reconciliation.has-difference > span {
+    background: #f59e0b;
+}
+
+.sales-report__payment-notes {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #99f6e4;
+}
+
+.sales-report__payment-notes summary {
+    color: #0f766e;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.sales-report__payment-notes ul {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0 0;
+    padding-left: 20px;
+    color: var(--report-muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+}
+
 .sales-report__chart-card,
 .sales-report__table-card,
 .sales-report__forecast-card {
@@ -702,6 +898,31 @@
     border-collapse: collapse;
 }
 
+.sales-report__daily-table {
+    min-width: 620px;
+}
+
+.sales-report__daily-table tfoot th,
+.sales-report__daily-table tfoot td {
+    padding: 17px 16px;
+    color: #312e81;
+    border-top: 2px solid #6366f1;
+    background: #eef2ff;
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+.sales-report__daily-table tfoot th {
+    letter-spacing: 0.05em;
+    text-align: left;
+    text-transform: uppercase;
+}
+
+.sales-report__daily-table tfoot strong {
+    color: #312e81;
+    font-size: 1rem;
+}
+
 .sales-report__table th {
     padding: 12px 16px;
     color: #666e81;
@@ -830,6 +1051,15 @@
     .sales-report__payment-breakdown article > small {
         grid-column: 1 / -1;
         padding-left: 18px;
+    }
+
+    .sales-report__payment-period-heading {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .sales-report__payment-period-grid {
+        grid-template-columns: 1fr;
     }
 
     .sales-report__filter-card,

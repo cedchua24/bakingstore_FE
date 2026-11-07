@@ -26,8 +26,6 @@ const ReportList = () => {
     const [totalDiscountLoss, setTotalDiscountLoss] = useState(0);
     const [includeDiscounts, setIncludeDiscounts] = useState(false);
     const [discountedSales, setDiscountedSales] = useState(0);
-    const [allSalesTotal, setAllSalesTotal] = useState(0);
-    const [useProfitabilitySales, setUseProfitabilitySales] = useState(false);
     const [customerOrderDate, setCustomerOrderDate] = useState({
         dateFrom: "",
         dateTo: "",
@@ -38,17 +36,55 @@ const ReportList = () => {
         message: "",
         total_expenses: 0,
     });
+    const [allTransactionProjection, setAllTransactionProjection] = useState({
+        data: [],
+        total_sales: 0,
+        total_profit: 0,
+        total_count: 0,
+    });
 
     const isAdmin = String(role) === "2";
     const dailyOrders = shopOrderTransaction?.data || [];
+    const allDailyOrders = allTransactionProjection?.data || [];
+    const fullyPaidOrdersByDate = new Map(dailyOrders.map((order) => [order.date, order]));
+    const dailyOrderComparison = allDailyOrders.map((allOrder) => {
+        const fullyPaidOrder = fullyPaidOrdersByDate.get(allOrder.date);
+        const allCount = Number(allOrder.total_count || 0);
+        const fullyPaidCount = Number(fullyPaidOrder?.total_count || 0);
+
+        return {
+            date: allOrder.date,
+            totalCount: allCount,
+            fullyPaidCount,
+            notFullyPaidCount: Math.max(allCount - fullyPaidCount, 0),
+            totalSales: Number(fullyPaidOrder?.total_sales || 0),
+            totalProfit: Number(fullyPaidOrder?.total_profit || 0),
+        };
+    });
+    const dailyOrderTotals = dailyOrders.reduce(
+        (totals, order) => ({
+            sales: totals.sales + Number(order.total_sales || 0),
+            profit: totals.profit + Number(order.total_profit || 0),
+        }),
+        { sales: 0, profit: 0 }
+    );
     const reportedTotalSales = Number(shopOrderTransaction.total_sales || 0);
-    const baseTotalSales = useProfitabilitySales ? reportedTotalSales : allSalesTotal;
+    const baseTotalSales = reportedTotalSales;
     const excludedSales = includeDiscounts ? discountedSales : 0;
     const totalSales = Math.max(baseTotalSales - excludedSales, 0);
     // These sales have no profit, so excluding them only changes the margin denominator.
     const totalProfit = Number(shopOrderTransaction.total_profit || 0);
     const totalExpenses = Number(shopOrderTransaction.total_expenses || 0);
     const totalTransactions = Number(shopOrderTransaction.total_count || 0);
+    const potentialSales = Number(allTransactionProjection.total_sales || 0);
+    const potentialProfit = Number(allTransactionProjection.total_profit || 0);
+    const potentialTransactions = Number(allTransactionProjection.total_count || 0);
+    const potentialProfitMargin = potentialSales
+        ? (potentialProfit / potentialSales) * 100
+        : 0;
+    const pendingSalesOpportunity = Math.max(potentialSales - reportedTotalSales, 0);
+    const pendingProfitOpportunity = Math.max(potentialProfit - totalProfit, 0);
+    const pendingTransactions = Math.max(potentialTransactions - totalTransactions, 0);
     const netProfit = totalProfit - totalExpenses;
     const averageTransactions = dailyOrders.length
         ? Math.floor(totalTransactions / dailyOrders.length)
@@ -279,14 +315,16 @@ const ReportList = () => {
         try {
             const [
                 response,
-                salesResponse,
+                allTransactionsResponse,
                 discountLossResponse,
                 discountSummaryResponse,
             ] = await Promise.all([
                 ShopOrderTransactionService.fetchOnlineShopOrderTransactionListReportByDate(
                     customerOrderDate
                 ),
-                ShopOrderTransactionService.fetchSalesListV2(customerOrderDate),
+                ShopOrderTransactionService.fetchOnlineShopOrderTransactionListReportByDateV2(
+                    customerOrderDate
+                ),
                 DiscountService.fetchDiscountLossReport(customerOrderDate),
                 DiscountService.fetchDiscountSummary(customerOrderDate),
             ]);
@@ -319,14 +357,6 @@ const ReportList = () => {
                 (total, item) => total + (Number(item.loss_amount) || 0),
                 0
             );
-            const salesRows = Array.isArray(salesResponse.data?.data)
-                ? salesResponse.data.data
-                : [];
-            const fetchedAllSalesTotal = salesRows.reduce(
-                (total, item) => total + (Number(item.total_sales) || 0),
-                0
-            ) + Number(central.total_sales || 0);
-
             const expenseResponse =
                 await ExpenseTransactionService.getTotalExpenseWithFilters({
                     ...customerOrderDate,
@@ -340,7 +370,10 @@ const ReportList = () => {
             };
 
             setShopOrderTransaction(reportData);
-            setAllSalesTotal(fetchedAllSalesTotal);
+            setAllTransactionProjection({
+                ...allTransactionsResponse.data,
+                data: allTransactionsResponse.data?.data || [],
+            });
             setTotalDiscountLoss(discountLossTotal);
             setDiscountedSales(
                 Math.max(Number(discountSummaryResponse.data?.shop_order_total_price) || 0, 0)
@@ -358,9 +391,9 @@ const ReportList = () => {
         <main className="sales-report profit-report">
             <header className="sales-report__hero">
                 <div>
-                    <p className="sales-report__eyebrow">Reports / Online orders</p>
-                    <h1>Order profitability</h1>
-                    <p>Review sales, expenses, profit, and payment performance in one place.</p>
+                    <p className="sales-report__eyebrow">Reports / Transaction profitability</p>
+                    <h1>Transaction profitability report</h1>
+                    <p>Audit sales and profit from transactions whose order dates fall within the selected period.</p>
                 </div>
                 <div className="sales-report__period">
                     <span>Reporting period</span>
@@ -370,8 +403,8 @@ const ReportList = () => {
 
             <section className="sales-report__filter-card" aria-label="Report filters">
                 <div className="sales-report__filter-copy">
-                    <h2>Generate report</h2>
-                    <p>Select the order dates you want to analyze.</p>
+                    <h2>Choose reporting period</h2>
+                    <p>Only transactions with an original order date inside this range are included.</p>
                 </div>
                 <Form className="sales-report__filters">
                     <Form.Group>
@@ -412,7 +445,10 @@ const ReportList = () => {
                 </Form>
                 <div className="profit-report__expense-types">
                     <div className="profit-report__expense-types-heading">
-                        <strong>Included expense types</strong>
+                        <div>
+                            <strong>Expenses deducted from gross profit</strong>
+                            <small>Only approved expenses from the selected types affect net profit.</small>
+                        </div>
                         <span>
                             {expenseTypesLoading
                                 ? "Loading expense types..."
@@ -436,19 +472,6 @@ const ReportList = () => {
                 </div>
                 <div className="profit-report__expense-types">
                     <Form.Check
-                        id="report-use-profitability-sales"
-                        type="checkbox"
-                        label="Show only sales included in this profitability report"
-                        checked={useProfitabilitySales}
-                        onChange={(event) => setUseProfitabilitySales(event.target.checked)}
-                        disabled={submitLoadingAdd}
-                    />
-                    <small>
-                        By default, total sales uses all recorded sales from the Sales report.
-                    </small>
-                </div>
-                <div className="profit-report__expense-types">
-                    <Form.Check
                         id="report-include-discounts"
                         type="checkbox"
                         label="Remove sales from orders with no profit"
@@ -457,8 +480,8 @@ const ReportList = () => {
                         disabled={submitLoadingAdd}
                     />
                     <small>
-                        When checked, these orders are removed from total sales so the profit margin
-                        only uses sales that earned a profit.
+                        Recommended: keeps the margin focused on sales that generated profit. The orders
+                        remain visible in the adjustment details below.
                     </small>
                 </div>
                 {formErrors.dateRange && (
@@ -474,11 +497,33 @@ const ReportList = () => {
                         <div className="sales-report__summary-heading">
                             <div>
                                 <p className="sales-report__eyebrow">At a glance</p>
-                                <h2>Performance highlights</h2>
+                                <h2>Realized profitability</h2>
+                                <p className="profit-report__section-description">
+                                    Actual results from fully paid online orders in the selected order-date range.
+                                </p>
                             </div>
                             <span className="profit-report__days">
                                 {dailyOrders.length} reporting {dailyOrders.length === 1 ? "day" : "days"}
                             </span>
+                        </div>
+
+                        <div className="profit-report__basis" aria-label="Report calculation basis">
+                            <div>
+                                <span>Report scope</span>
+                                <strong>Order dates inside selected period</strong>
+                            </div>
+                            <div>
+                                <span>Sales basis</span>
+                                <strong>Fully paid orders</strong>
+                            </div>
+                            <div>
+                                <span>Margin basis</span>
+                                <strong>{includeDiscounts ? "Zero-profit sales excluded" : "All fully paid sales"}</strong>
+                            </div>
+                            <div>
+                                <span>Expense basis</span>
+                                <strong>{selectedExpenseTypeIds.length} approved expense {selectedExpenseTypeIds.length === 1 ? "type" : "types"}</strong>
+                            </div>
                         </div>
 
                         <div className="profit-report__metrics">
@@ -490,21 +535,17 @@ const ReportList = () => {
                                 </small>
                                 <div className="profit-report__sales-details">
                                     <small>
-                                        <span>Sales source</span>
-                                        <b>
-                                            {useProfitabilitySales
-                                                ? "Profitability report only"
-                                                : "All recorded sales"}
-                                        </b>
+                                        <span>Calculation basis</span>
+                                        <b>Fully paid profitability orders</b>
                                     </small>
                                     {includeDiscounts && (
                                         <>
                                             <small>
-                                                <span>Sales before adjustment</span>
+                                                <span>Fully paid sales before adjustment</span>
                                                 <b>{numberFormat(baseTotalSales)}</b>
                                             </small>
                                             <small>
-                                                <span>Less sales with no profit</span>
+                                                <span>Less zero-profit order sales</span>
                                                 <b>− {numberFormat(excludedSales)}</b>
                                             </small>
                                         </>
@@ -538,6 +579,12 @@ const ReportList = () => {
                             )}
                         </div>
 
+                        <div className="profit-report__subsection-heading">
+                            <div>
+                                <h3>Sales adjustments</h3>
+                                <p>Amounts shown for transparency when reviewing the margin calculation.</p>
+                            </div>
+                        </div>
                         <div className="profit-report__deductions" aria-label="Sales deductions">
                             <article>
                                 <span>Total discount loss</span>
@@ -572,6 +619,50 @@ const ReportList = () => {
                             )}
                         </div>
 
+                        <section
+                            className="profit-report__fully-paid"
+                            aria-label="Fully paid transaction projection"
+                        >
+                            <div className="profit-report__fully-paid-heading">
+                                <div>
+                                    <p className="sales-report__eyebrow">Payment opportunity</p>
+                                    <h3>If every in-period transaction is fully paid</h3>
+                                    <p>
+                                        A forward-looking scenario using every order in the selected range.
+                                        It is not included in the realized results above.
+                                    </p>
+                                </div>
+                                <span>{potentialTransactions.toLocaleString("en-US")} transactions</span>
+                            </div>
+
+                            <div className="profit-report__fully-paid-grid">
+                                <article>
+                                    <span>Potential total sales</span>
+                                    <strong>{numberFormat(potentialSales)}</strong>
+                                    <small>
+                                        {numberFormat(pendingSalesOpportunity)} more than realized fully paid sales
+                                    </small>
+                                </article>
+                                {isAdmin && (
+                                    <article>
+                                        <span>Potential gross profit</span>
+                                        <strong>{numberFormat(potentialProfit)}</strong>
+                                        <b className="profit-report__fully-paid-margin">
+                                            {potentialProfitMargin.toFixed(2)}% potential profit margin
+                                        </b>
+                                        <small>
+                                            +{numberFormat(pendingProfitOpportunity)} additional gross profit
+                                        </small>
+                                    </article>
+                                )}
+                                <article>
+                                    <span>Transactions awaiting completion</span>
+                                    <strong>{pendingTransactions.toLocaleString("en-US")}</strong>
+                                    <small>Included only in this scenario, not in realized results</small>
+                                </article>
+                            </div>
+                        </section>
+
                         {isAdmin && (
                             <section className="profit-report__analysis" aria-label="Business analysis">
                                 <div className="profit-report__analysis-heading">
@@ -601,7 +692,13 @@ const ReportList = () => {
                                 </div>
 
                                 <details className="profit-report__analysis-details">
-                                    <summary>View monthly sales levels and owner split</summary>
+                                    <summary>
+                                        <span className="profit-report__analysis-details-icon" aria-hidden="true">↗</span>
+                                        <span className="profit-report__analysis-details-copy">
+                                            <strong>Explore monthly sales levels &amp; owner split</strong>
+                                            <small>Click to view projections, profit levels, and estimated owner shares</small>
+                                        </span>
+                                    </summary>
                                     <p className="profit-report__levels-intro">
                                         At the current {profitMargin.toFixed(2)}% gross margin and approximately{" "}
                                         {wholeNumberFormat(totalExpenses)} in included expenses, the sales levels are:
@@ -761,9 +858,8 @@ const ReportList = () => {
                                     </div>
 
                                     <div
-                                        className={`sales-report__forecast-status ${
-                                            profitForecast.isOnTrack ? "is-on-track" : "is-behind"
-                                        }`}
+                                        className={`sales-report__forecast-status ${profitForecast.isOnTrack ? "is-on-track" : "is-behind"
+                                            }`}
                                     >
                                         <span>{profitForecast.isOnTrack ? "✓" : "!"}</span>
                                         <div>
@@ -802,8 +898,17 @@ const ReportList = () => {
                     )}
 
                     <section className="sales-report__chart-card">
+                        <div className="profit-report__content-heading">
+                            <div>
+                                <p className="sales-report__eyebrow">Daily trend</p>
+                                <h2>Sales and gross profit by order date</h2>
+                                <p>Use the chart to spot stronger days and changes in gross margin.</p>
+                            </div>
+                        </div>
                         {includeDiscounts && (
-                            <p>Daily figures are before excluding {numberFormat(excludedSales)} in zero-profit sales.</p>
+                            <p className="profit-report__chart-note">
+                                Daily chart values are shown before excluding {numberFormat(excludedSales)} in zero-profit sales.
+                            </p>
                         )}
                         <ReportBar transactionList={shopOrderTransaction} showProfit={isAdmin} />
                     </section>
@@ -812,43 +917,73 @@ const ReportList = () => {
                         <div className="sales-report__section-heading">
                             <div>
                                 <p className="sales-report__eyebrow">Order history</p>
-                                <h2>Daily online orders</h2>
+                                <h2>Transaction summary by order date</h2>
+                                <p className="profit-report__section-description">
+                                    Each row summarizes in-period orders for one date. Open the daily ledger to audit individual sales and profit.
+                                </p>
                             </div>
-                            <span>{dailyOrders.length} results</span>
+                            <span>{dailyOrderComparison.length} results</span>
                         </div>
 
-                        {dailyOrders.length ? (
+                        {dailyOrderComparison.length ? (
                             <div className="sales-report__table-wrap">
                                 <table className="sales-report__table profit-report__table">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
-                                            <th>Cash</th>
-                                            <th>Online</th>
-                                            <th>Total sales</th>
-                                            {isAdmin && <th>Total profit</th>}
+                                            <th>Total transactions</th>
+                                            <th>Fully paid</th>
+                                            <th>Not yet fully paid</th>
+                                            <th>Fully paid sales</th>
+                                            {isAdmin && <th>Fully paid profit</th>}
                                             <th aria-label="Actions" />
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {dailyOrders.map((order, index) => (
+                                        {dailyOrderComparison.map((order, index) => (
                                             <tr key={`${order.date}-${index}`}>
                                                 <td><strong>{formatDate(order.date)}</strong></td>
-                                                <td>{numberFormat(order.total_cash)}</td>
-                                                <td>{numberFormat(order.total_online)}</td>
-                                                <td><strong>{numberFormat(order.total_sales)}</strong></td>
-                                                {isAdmin && <td>{numberFormat(order.total_profit)}</td>}
+                                                <td><strong>{order.totalCount.toLocaleString("en-US")}</strong></td>
+                                                <td>
+                                                    <span className="profit-report__count profit-report__count--paid">
+                                                        {order.fullyPaidCount.toLocaleString("en-US")}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span className={`profit-report__count ${order.notFullyPaidCount
+                                                            ? "profit-report__count--pending"
+                                                            : "profit-report__count--clear"
+                                                        }`}>
+                                                        {order.notFullyPaidCount.toLocaleString("en-US")}
+                                                    </span>
+                                                </td>
+                                                <td><strong>{numberFormat(order.totalSales)}</strong></td>
+                                                {isAdmin && <td>{numberFormat(order.totalProfit)}</td>}
                                                 <td>
                                                     <Link
                                                         className="sales-report__view-link"
                                                         to={`/shopOrderTransaction/customerOrderTransactionList/${order.date}`}
+                                                        title="Open individual transactions with sales and profit details"
                                                     >
-                                                        View transactions →
+                                                        Open daily ledger →
                                                     </Link>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Total</th>
+                                            <td><strong>{potentialTransactions.toLocaleString("en-US")}</strong></td>
+                                            <td><strong>{totalTransactions.toLocaleString("en-US")}</strong></td>
+                                            <td><strong>{pendingTransactions.toLocaleString("en-US")}</strong></td>
+                                            <td><strong>{numberFormat(dailyOrderTotals.sales)}</strong></td>
+                                            {isAdmin && (
+                                                <td><strong>{numberFormat(dailyOrderTotals.profit)}</strong></td>
+                                            )}
+                                            <td aria-label="No action" />
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         ) : (

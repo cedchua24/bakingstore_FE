@@ -454,7 +454,7 @@ const ProductList = () => {
                                                         ? (
                                                             <Link
                                                                 className="price-history-po-link"
-                                                                to={`/orderSupplierApproval/${purchaseOrderId}`}
+                                                                to={`/addProductOrderSupplierTransaction/${purchaseOrderId}`}
                                                             >
                                                                 #{purchaseOrderId}
                                                             </Link>

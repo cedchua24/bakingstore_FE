@@ -5,6 +5,12 @@ import moment from "moment";
 import Alert from '@mui/material/Alert';
 import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
 import TextField from '@mui/material/TextField';
@@ -14,6 +20,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
@@ -43,6 +50,8 @@ const ShorOrderTransactionList = () => {
     const [dateSaving, setDateSaving] = useState(false);
     const [dateError, setDateError] = useState('');
     const [dateUpdate, setDateUpdate] = useState({ id: 0, date: '' });
+    const [deleteId, setDeleteId] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     const modalStyle = {
         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -138,24 +147,30 @@ const ShorOrderTransactionList = () => {
 
         try {
             await ShopOrderTransactionService.updateShopBranchStatus(transactionId, statusPayload);
-
-            if (completedOnSubmit) {
-                await ShopOrderTransactionService.updateDate(transactionId, {
-                    date: moment().format("YYYY-MM-DD"),
-                });
-            }
-
             await fetchShopOrderTransactionList(shopOrderDate.date || today);
             setOpenStatus(false);
             setStatusEditLocked(false);
         } catch (e) {
-            setStatusError(
-                completedOnSubmit
-                    ? 'The status or completion date could not be updated. Please try again.'
-                    : 'The transaction status could not be updated. Please try again.'
-            );
+            setStatusError('The transaction status could not be updated. Please try again.');
         } finally {
             setStatusSaving(false);
+        }
+    };
+
+    const deleteTransaction = async () => {
+        if (deleteId === null || deleting) return;
+
+        setDeleting(true);
+        setError('');
+
+        try {
+            await ShopOrderTransactionService.delete(deleteId);
+            setDeleteId(null);
+            await fetchShopOrderTransactionList(shopOrderDate.date || today);
+        } catch (e) {
+            setError('The transaction could not be deleted. Please try again.');
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -228,6 +243,7 @@ const ShorOrderTransactionList = () => {
                                 )}
                                 {visibleRows.map((row) => {
                                     const completedLocked = Number(row.status) === 1 && !isAdmin;
+                                    const canDelete = Number(row.shop_order_transaction_total_price) === 0;
                                     return (
                                     <tr key={row.id}>
                                         <td><span className="shop-report-id">#{row.id}</span></td>
@@ -266,6 +282,18 @@ const ShorOrderTransactionList = () => {
                                                     <EditOutlinedIcon />
                                                 </IconButton>
                                             </Tooltip>
+                                            <Tooltip title={canDelete ? 'Delete transaction' : 'Remove all products before deleting this transaction'}>
+                                                <span>
+                                                    <IconButton
+                                                        onClick={() => setDeleteId(row.id)}
+                                                        disabled={!canDelete || deleting}
+                                                        className="shop-report-delete-action"
+                                                        aria-label={`Delete transaction ${row.id}`}
+                                                    >
+                                                        <DeleteOutlineRoundedIcon />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
                                         </div></td>
                                     </tr>
                                     );
@@ -274,6 +302,25 @@ const ShorOrderTransactionList = () => {
                         </table>
                     </div>
                 </section>
+
+                <Dialog
+                    open={deleteId !== null}
+                    onClose={() => !deleting && setDeleteId(null)}
+                    aria-labelledby="delete-transaction-title"
+                >
+                    <DialogTitle id="delete-transaction-title">Delete transaction?</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Transaction #{deleteId} will be permanently deleted. This action cannot be undone.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setDeleteId(null)} disabled={deleting}>Cancel</Button>
+                        <Button color="error" variant="contained" onClick={deleteTransaction} disabled={deleting} autoFocus>
+                            {deleting ? <CircularProgress size={20} color="inherit" /> : 'Delete'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
                 <Modal open={openDate} onClose={closeDateEditor} aria-labelledby="transaction-date-title">
                     <Box sx={modalStyle}>

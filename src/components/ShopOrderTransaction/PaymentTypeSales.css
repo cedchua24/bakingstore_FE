@@ -13,10 +13,28 @@
     gap: 24px;
 }
 
-.payment-account-sales-hero { margin-bottom: 24px; }
+.payment-account-sales-hero {
+    margin-bottom: 24px;
+}
+
 .payment-account-sales-hero h1,
-.payment-account-sales-table-heading h2 { margin: 4px 0; font-weight: 800; }
-.payment-account-sales-hero p { margin: 0; color: #667085; }
+.payment-account-sales-table-heading h2 {
+    margin: 4px 0;
+    font-weight: 800;
+}
+
+.payment-account-sales-hero h1 {
+    max-width: 900px;
+    color: #172033;
+    font-size: clamp(28px, 3vw, 42px);
+    line-height: 1.12;
+}
+
+.payment-account-sales-hero p {
+    margin: 0;
+    color: #667085;
+}
+
 .payment-account-sales-eyebrow,
 .payment-account-sales-table-heading span {
     color: #b45309;
@@ -37,10 +55,23 @@
     font-weight: 800;
     white-space: nowrap;
 }
+
 .payment-account-sales-status svg,
-.payment-account-sales-confirmation svg { font-size: 18px; }
-.is-complete, .is-confirmed { background: #dcfce7; color: #166534; }
-.is-pending, .is-unconfirmed { background: #fef3c7; color: #92400e; }
+.payment-account-sales-confirmation svg {
+    font-size: 18px;
+}
+
+.is-complete,
+.is-confirmed {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.is-pending,
+.is-unconfirmed {
+    background: #fef3c7;
+    color: #92400e;
+}
 
 .payment-account-sales-metrics {
     display: grid;
@@ -48,6 +79,7 @@
     gap: 16px;
     margin-bottom: 24px;
 }
+
 .payment-account-sales-metrics article,
 .payment-account-sales-table-card {
     background: #fff;
@@ -55,35 +87,159 @@
     border-radius: 14px;
     box-shadow: 0 8px 24px rgba(16, 24, 40, .05);
 }
-.payment-account-sales-metrics article { padding: 20px; }
-.payment-account-sales-metrics span,
-.payment-account-sales-metrics small { display: block; color: #667085; }
-.payment-account-sales-metrics strong { display: block; margin: 8px 0 4px; font-size: 24px; }
-.payment-account-sales-metrics .is-balanced { border-color: #86efac; }
-.payment-account-sales-metrics .has-discrepancy { border-color: #fca5a5; }
 
-.payment-account-sales-table-card { overflow: hidden; }
-.payment-account-sales-table-heading { padding: 20px 24px; border-bottom: 1px solid #e4e7ec; }
-.payment-account-sales-table-heading strong { color: #475467; }
-.payment-account-sales-table-wrap { overflow-x: auto; }
-.payment-account-sales-table { min-width: 1080px; margin: 0; }
-.payment-account-sales-table thead th { background: #f8fafc; color: #344054; border-bottom: 1px solid #d0d5dd; padding: 14px 12px; }
-.payment-account-sales-table tbody td { padding: 14px 12px; vertical-align: middle; }
-.payment-account-sales-amount { font-weight: 800; }
-.payment-account-sales-empty { padding: 48px !important; text-align: center; color: #667085; }
-.payment-account-sales-order-status { font-weight: 800; text-transform: capitalize; }
-.payment-account-sales-order-status.status-1 { color: #15803d; }
-.payment-account-sales-order-status.status-2 { color: #b45309; }
-.payment-account-sales-order-status.status-3 { color: #b91c1c; }
-.payment-account-sales-submit { color: #fff !important; }
+.payment-account-sales-metrics article {
+    padding: 20px;
+}
+
+.payment-account-sales-metrics span,
+.payment-account-sales-metrics small {
+    display: block;
+    color: #667085;
+}
+
+.payment-account-sales-metrics strong {
+    display: block;
+    margin: 8px 0 4px;
+    font-size: 24px;
+}
+
+.payment-account-sales-metrics .is-balanced {
+    border-color: #86efac;
+}
+
+.payment-account-sales-metrics .has-discrepancy {
+    border-color: #fca5a5;
+}
+
+.payment-account-sales-table-card {
+    overflow: hidden;
+}
+
+.payment-account-sales-table-heading {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e4e7ec;
+}
+
+.payment-account-sales-table-heading strong {
+    color: #475467;
+}
+
+.payment-account-sales-table-wrap {
+    overflow-x: auto;
+}
+
+.payment-account-sales-table {
+    min-width: 1180px;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.payment-account-sales-table thead th {
+    padding: 12px 11px;
+    border-bottom: 1px solid #cfd6df;
+    background: #f8fafc;
+    color: #344054;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.payment-account-sales-table tbody td {
+    padding: 13px 11px;
+    border-bottom-color: #e7ebf0;
+    vertical-align: middle;
+}
+
+.payment-account-sales-table th:not(:last-child),
+.payment-account-sales-table td:not(:last-child) {
+    border-right: 1px solid #edf0f4;
+}
+
+.payment-account-sales-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.payment-account-sales-table tbody tr:hover td {
+    background: #fbfcfe;
+}
+
+.payment-account-sales-table th:nth-child(6),
+.payment-account-sales-table td:nth-child(6),
+.payment-account-sales-table th:nth-child(7),
+.payment-account-sales-table td:nth-child(7),
+.payment-account-sales-table th:nth-child(8),
+.payment-account-sales-table td:nth-child(8) {
+    text-align: right;
+}
+
+.payment-account-sales-amount {
+    font-weight: 800;
+}
+
+.payment-account-sales-empty {
+    padding: 48px !important;
+    text-align: center;
+    color: #667085;
+}
+
+.payment-account-sales-order-status {
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.payment-account-sales-order-status.status-1 {
+    color: #15803d;
+}
+
+.payment-account-sales-order-status.status-2 {
+    color: #b45309;
+}
+
+.payment-account-sales-order-status.status-3 {
+    color: #b91c1c;
+}
+
+.payment-account-sales-date-changed {
+    color: #b45309;
+    font-weight: 700;
+}
+
+.payment-account-sales-confirmation-cell {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+
+.payment-account-sales-confirmation-cell .MuiIconButton-root {
+    width: 30px;
+    height: 30px;
+    padding: 4px;
+}
 
 @media (max-width: 900px) {
-    .payment-account-sales-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .payment-account-sales-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 600px) {
-    .payment-account-sales-page { padding: 20px 12px 36px; }
-    .payment-account-sales-hero { align-items: flex-start; flex-direction: column; }
-    .payment-account-sales-metrics { grid-template-columns: 1fr; }
-    .payment-account-sales-table-heading { align-items: flex-start; flex-direction: column; }
+    .payment-account-sales-page {
+        padding: 20px 12px 36px;
+    }
+
+    .payment-account-sales-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .payment-account-sales-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-account-sales-table-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
