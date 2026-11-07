@@ -317,6 +317,7 @@ const EditProduct = () => {
                       name="weight"
                       value={product.weight}
                       onChange={updateField}
+                      disabled={!isAdmin}
                     />
                   </Form.Group>
 
@@ -328,6 +329,7 @@ const EditProduct = () => {
                       name="quantity"
                       value={product.quantity}
                       onChange={updateField}
+                      disabled={!isAdmin}
                     />
                   </Form.Group>
                 </div>

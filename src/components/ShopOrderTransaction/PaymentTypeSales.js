@@ -181,6 +181,7 @@ const PaymentTypeSales = () => {
     const paidCount = filterByPaid(shopOrderTransaction.data).length;
     const transactionCount = shopOrderTransaction.data.length;
     const isReconciled = paidCount === transactionCount && paidAmount === totalAmount;
+    const paymentMethodLabel = formatPaymentLabel(shopOrderTransaction.payment) || 'Payment Method';
     const numberFormat = (value) => new Intl.NumberFormat('en-PH', {
         style: 'currency',
         currency: 'PHP',
@@ -193,8 +194,8 @@ const PaymentTypeSales = () => {
             <header className="payment-account-sales-hero">
                 <div>
                     <span className="payment-account-sales-eyebrow">Payment reconciliation</span>
-                    <h1>Account Sales</h1>
-                    <p>{formatPaymentLabel(shopOrderTransaction.payment) || 'Account'} · {reportDate || 'Today'}</p>
+                    <h1>{paymentMethodLabel}</h1>
+                    <p>Payment method activity · {reportDate || 'Today'}</p>
                 </div>
                 <div className={`payment-account-sales-status ${isReconciled ? 'is-complete' : 'is-pending'}`}>
                     {isReconciled ? <CheckIcon /> : <CloseIcon />}
@@ -204,9 +205,9 @@ const PaymentTypeSales = () => {
 
             <section className="payment-account-sales-metrics">
                 <article>
-                    <span>Account total</span>
+                    <span>Payment method total</span>
                     <strong>{numberFormat(totalAmount)}</strong>
-                    <small>{formatPaymentLabel(shopOrderTransaction.payment) || '—'}</small>
+                    <small>Received through this account</small>
                 </article>
                 <article>
                     <span>Confirmed records</span>
@@ -229,7 +230,7 @@ const PaymentTypeSales = () => {
                 <div className="payment-account-sales-table-heading">
                     <div>
                         <span>Transactions</span>
-                        <h2>Account payment records</h2>
+                        <h2>Payment records</h2>
                     </div>
                     <strong>{transactionCount} {transactionCount === 1 ? 'record' : 'records'}</strong>
                 </div>
@@ -268,19 +269,25 @@ const PaymentTypeSales = () => {
                                         <td className="payment-account-sales-amount">{numberFormat(shopOrderTransaction.amount)}</td>
                                         <td>{shopOrderTransaction.shop_order_transaction_total_quantity}</td>
                                         <td>{numberFormat(shopOrderTransaction.shop_order_transaction_total_price)}</td>
-                                        <td>{shopOrderTransaction.date != reportDate ? <p style={{ color: 'orange', }}>{shopOrderTransaction.date}</p> : shopOrderTransaction.date}</td>
+                                        <td>
+                                            <span className={shopOrderTransaction.date != reportDate ? 'payment-account-sales-date-changed' : ''}>
+                                                {shopOrderTransaction.date}
+                                            </span>
+                                        </td>
 
                                         <td><span className={`payment-account-sales-order-status status-${shopOrderTransaction.status}`}>
                                             {Number(shopOrderTransaction.status) === 1 ? 'Completed' : Number(shopOrderTransaction.status) === 2 ? 'Pending' : 'Cancelled'}
                                         </span></td>
                                         <td>
-                                            <span className={`payment-account-sales-confirmation ${Number(shopOrderTransaction.is_paid) === 1 ? 'is-confirmed' : 'is-unconfirmed'}`}>
-                                                {Number(shopOrderTransaction.is_paid) === 1 ? <CheckIcon /> : <CloseIcon />}
-                                                {Number(shopOrderTransaction.is_paid) === 1 ? 'Confirmed' : 'Unconfirmed'}
-                                            </span>
-                                            <IconButton size="small" title="Update confirmation">
-                                                <UpdateIcon color="primary" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)} />
-                                            </IconButton>
+                                            <div className="payment-account-sales-confirmation-cell">
+                                                <span className={`payment-account-sales-confirmation ${Number(shopOrderTransaction.is_paid) === 1 ? 'is-confirmed' : 'is-unconfirmed'}`}>
+                                                    {Number(shopOrderTransaction.is_paid) === 1 ? <CheckIcon /> : <CloseIcon />}
+                                                    {Number(shopOrderTransaction.is_paid) === 1 ? 'Confirmed' : 'Unconfirmed'}
+                                                </span>
+                                                <IconButton size="small" title="Update confirmation" onClick={(e) => handleOpenPickUp(shopOrderTransaction.id, e)}>
+                                                    <UpdateIcon color="primary" />
+                                                </IconButton>
+                                            </div>
                                         </td>
                                         <td>
                                             <Link variant="primary" to={"../shopOrderTransaction/completedShopOrderTransaction/" + shopOrderTransaction.shop_order_transaction_id}   >

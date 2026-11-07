@@ -1,0 +1,291 @@
+.paid-outside-page {
+    min-height: 100vh;
+    padding: 24px;
+    background: #f2f5f8;
+    color: #172033;
+}
+
+.paid-outside-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 26px 28px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #172033, #28516f);
+    color: #fff;
+    box-shadow: 0 12px 30px rgba(23, 32, 51, 0.14);
+}
+
+.paid-outside-hero p,
+.paid-outside-hero h1 {
+    margin: 0;
+}
+
+.paid-outside-hero p,
+.paid-outside-card-heading p {
+    color: #f4c96b;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.paid-outside-hero h1 {
+    margin: 5px 0 3px;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.paid-outside-hero span {
+    color: #d9e3ec;
+    font-size: 13px;
+}
+
+.paid-outside-hero .btn {
+    color: #172033;
+    font-weight: 700;
+}
+
+.paid-outside-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin: 18px 0;
+}
+
+.paid-outside-summary article {
+    padding: 16px 18px;
+    border: 1px solid #e1e8ef;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.paid-outside-summary article.is-total {
+    border-color: #b8d9c5;
+    background: #f1fbf4;
+}
+
+.paid-outside-summary span,
+.paid-outside-summary strong {
+    display: block;
+}
+
+.paid-outside-summary span {
+    color: #667085;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.paid-outside-summary strong {
+    margin-top: 5px;
+    font-size: 22px;
+}
+
+.paid-outside-card {
+    overflow: hidden;
+    border: 1px solid #dce4ec;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 7px 20px rgba(23, 32, 51, 0.06);
+}
+
+.paid-outside-card-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px 20px;
+}
+
+.paid-outside-card-heading p,
+.paid-outside-card-heading h2 {
+    margin: 0;
+}
+
+.paid-outside-card-heading p {
+    color: #a15a13;
+}
+
+.paid-outside-card-heading h2 {
+    margin-top: 3px;
+    font-size: 19px;
+}
+
+.paid-outside-tools {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.paid-outside-tools .form-control {
+    width: 240px;
+}
+
+.paid-outside-tools span {
+    color: #667085;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.paid-outside-table-wrap {
+    overflow-x: auto;
+}
+
+.paid-outside-table {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.paid-outside-table th {
+    padding: 11px 10px;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    background: #172033;
+    color: #fff;
+    font-size: 10px;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.paid-outside-table td {
+    padding: 12px 10px;
+    border-right: 1px solid #e4eaf0;
+    border-bottom: 1px solid #e4eaf0;
+    vertical-align: top;
+}
+
+.paid-outside-table th:last-child,
+.paid-outside-table td:last-child {
+    border-right: 0;
+}
+
+.paid-outside-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.paid-outside-table td > strong,
+.paid-outside-table td > small,
+.paid-outside-accounts strong,
+.paid-outside-accounts small {
+    display: block;
+}
+
+.paid-outside-table td > small,
+.paid-outside-accounts small {
+    margin-top: 2px;
+    color: #667085;
+    font-size: 10px;
+}
+
+.paid-outside-accounts {
+    display: grid;
+    gap: 6px;
+}
+
+.paid-outside-account-entry {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 190px;
+}
+
+.paid-outside-account-entry small {
+    margin: 0;
+}
+
+.paid-outside-account-entry strong {
+    color: #08783f;
+    white-space: nowrap;
+}
+
+.paid-outside-order-link {
+    color: #064d78;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.paid-outside-status {
+    display: inline-flex;
+    padding: 4px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.paid-outside-status.is-completed {
+    background: #e4f7ec;
+    color: #08783f;
+}
+
+.paid-outside-status.is-pending {
+    background: #fff3d6;
+    color: #966000;
+}
+
+.paid-outside-status.is-cancelled {
+    background: #fde8e8;
+    color: #b42318;
+}
+
+.paid-outside-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.paid-outside-actions a {
+    padding: 4px 7px;
+    border: 1px solid #cdd9e4;
+    border-radius: 5px;
+    color: #28516f;
+    font-size: 10px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.paid-outside-actions a:hover {
+    background: #eef4f8;
+}
+
+.paid-outside-empty,
+.paid-outside-error {
+    padding: 30px !important;
+    color: #667085;
+    text-align: center;
+}
+
+.paid-outside-error {
+    margin-top: 18px;
+    border: 1px solid #f0b7b7;
+    border-radius: 10px;
+    background: #fff1f1;
+    color: #a52a2a;
+}
+
+@media (max-width: 800px) {
+    .paid-outside-page {
+        padding: 14px;
+    }
+
+    .paid-outside-hero,
+    .paid-outside-card-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .paid-outside-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .paid-outside-tools {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .paid-outside-tools .form-control {
+        width: 100%;
+    }
+}

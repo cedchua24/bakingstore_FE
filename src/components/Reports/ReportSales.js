@@ -24,7 +24,6 @@ const ReportSales = () => {
     });
 
     const dailySales = shopOrderTransaction?.data || [];
-
     const totals = useMemo(
         () => dailySales.reduce(
             (summary, day) => ({
@@ -38,10 +37,29 @@ const ReportSales = () => {
         [dailySales]
     );
 
+    const paymentPeriodTotals = {
+        inside: Number(shopOrderTransaction.total_paid_inside_period) || 0,
+        outside: Number(shopOrderTransaction.total_paid_outside_period) || 0,
+        insideCount: Number(shopOrderTransaction.total_paid_inside_period_count) || 0,
+        outsideCount: Number(shopOrderTransaction.total_paid_outside_period_count) || 0,
+    };
+    const totalReceived = Number(
+        shopOrderTransaction.total_received ?? shopOrderTransaction.total_sales ?? totals.sales
+    ) || 0;
+    const insidePaymentShare = totalReceived
+        ? (paymentPeriodTotals.inside / totalReceived) * 100
+        : 0;
+    const outsidePaymentShare = totalReceived
+        ? (paymentPeriodTotals.outside / totalReceived) * 100
+        : 0;
+    const paymentTotalsReconcile = Math.abs(
+        totalReceived - paymentPeriodTotals.inside - paymentPeriodTotals.outside
+    ) < 0.01;
+
     const averageTransactions = dailySales.length
         ? Math.floor(totals.transactions / dailySales.length)
         : 0;
-    const averageSales = dailySales.length ? totals.sales / dailySales.length : 0;
+    const averageSales = dailySales.length ? totalReceived / dailySales.length : 0;
 
     const forecast = useMemo(() => {
         const referenceDate = customerOrderDate.dateTo
@@ -161,9 +179,9 @@ const ReportSales = () => {
         <main className="sales-report">
             <header className="sales-report__hero">
                 <div>
-                    <p className="sales-report__eyebrow">Reports / Sales</p>
-                    <h1>Sales performance</h1>
-                    <p>Track revenue, payment mix, and transaction volume over time.</p>
+                    <p className="sales-report__eyebrow">Reports / Payments received</p>
+                    <h1>Money received</h1>
+                    <p>Track actual payments by payment date and see when the related orders were created.</p>
                 </div>
                 <div className="sales-report__period">
                     <span>Reporting period</span>
@@ -174,7 +192,7 @@ const ReportSales = () => {
             <section className="sales-report__filter-card" aria-label="Report filters">
                 <div className="sales-report__filter-copy">
                     <h2>Generate report</h2>
-                    <p>Select the date range you want to analyze.</p>
+                    <p>Select the payment dates you want to audit.</p>
                 </div>
                 <Form className="sales-report__filters">
                     <Form.Group>
@@ -224,7 +242,7 @@ const ReportSales = () => {
                         <div className="sales-report__summary-heading">
                             <div>
                                 <p className="sales-report__eyebrow">At a glance</p>
-                                <h2>Performance highlights</h2>
+                                <h2>Received-payment summary</h2>
                             </div>
                             <button
                                 type="button"
@@ -239,19 +257,19 @@ const ReportSales = () => {
 
                         <div className="sales-report__metrics">
                         <article className="sales-metric sales-metric--primary">
-                            <span>Total sales</span>
-                            <strong>{numberFormat(totals.sales)}</strong>
-                            <small>Across {dailySales.length} reporting {dailySales.length === 1 ? "day" : "days"}</small>
+                            <span>Total received</span>
+                            <strong>{numberFormat(totalReceived)}</strong>
+                            <small>All payments recorded within the selected payment dates</small>
                         </article>
                         <article className="sales-metric sales-metric--transactions">
-                            <span>Avg. transactions / day</span>
+                            <span>Avg. paid orders / day</span>
                             <strong>{averageTransactions.toLocaleString('en-US')}</strong>
-                            <small>{totals.transactions.toLocaleString('en-US')} total transactions</small>
+                            <small>{totals.transactions.toLocaleString('en-US')} orders received at least one payment</small>
                         </article>
                         <article className="sales-metric sales-metric--average">
-                            <span>Avg. sales / reporting day</span>
+                            <span>Avg. amount received / day</span>
                             <strong>{numberFormat(averageSales)}</strong>
-                            <small>Based on {dailySales.length} days with sales records</small>
+                            <small>Based on {dailySales.length} days with recorded payments</small>
                         </article>
                         {forecast.isUnfinishedMonth && (
                             <article className="sales-metric sales-metric--forecast">
@@ -274,7 +292,7 @@ const ReportSales = () => {
                                     </div>
                                     <strong>{numberFormat(totals.cash)}</strong>
                                     <small>
-                                        {totals.sales ? `${((totals.cash / totals.sales) * 100).toFixed(2)}% of sales` : "0.00% of sales"}
+                                        {totalReceived ? `${((totals.cash / totalReceived) * 100).toFixed(2)}% of receipts` : "0.00% of receipts"}
                                     </small>
                                 </article>
                                 <article>
@@ -284,11 +302,76 @@ const ReportSales = () => {
                                     </div>
                                     <strong>{numberFormat(totals.online)}</strong>
                                     <small>
-                                        {totals.sales ? `${((totals.online / totals.sales) * 100).toFixed(2)}% of sales` : "0.00% of sales"}
+                                        {totalReceived ? `${((totals.online / totalReceived) * 100).toFixed(2)}% of receipts` : "0.00% of receipts"}
                                     </small>
                                 </article>
                             </div>
                         )}
+
+                        <section
+                            className="sales-report__payment-period"
+                            aria-label="Payment period breakdown"
+                        >
+                            <div className="sales-report__payment-period-heading">
+                                <div>
+                                    <p className="sales-report__eyebrow">Payment timing</p>
+                                    <h3>Where the received money came from</h3>
+                                    <p>
+                                        Payment date decides whether money appears in this report. Order date
+                                        only classifies the payment as inside or outside the selected range.
+                                    </p>
+                                </div>
+                                <span>Payment-date basis</span>
+                            </div>
+                            <div className="sales-report__payment-period-grid">
+                                <article className="is-total">
+                                    <div className="sales-report__payment-period-label">
+                                        <span>Total money received</span>
+                                        <b>100%</b>
+                                    </div>
+                                    <strong>{numberFormat(totalReceived)}</strong>
+                                    <small>Inside-period payments plus outside-period payments</small>
+                                </article>
+                                <article>
+                                    <div className="sales-report__payment-period-label">
+                                        <span>Orders placed inside period</span>
+                                        <b>{insidePaymentShare.toFixed(2)}%</b>
+                                    </div>
+                                    <strong>{numberFormat(paymentPeriodTotals.inside)}</strong>
+                                    <small>
+                                        {paymentPeriodTotals.insideCount.toLocaleString("en-US")} {paymentPeriodTotals.insideCount === 1 ? "order was" : "orders were"} created and paid within the selected dates
+                                    </small>
+                                </article>
+                                <article className="is-outside">
+                                    <div className="sales-report__payment-period-label">
+                                        <span>Orders placed outside period</span>
+                                        <b>{outsidePaymentShare.toFixed(2)}%</b>
+                                    </div>
+                                    <strong>{numberFormat(paymentPeriodTotals.outside)}</strong>
+                                    <small>
+                                        {paymentPeriodTotals.outsideCount.toLocaleString("en-US")} {paymentPeriodTotals.outsideCount === 1 ? "order was" : "orders were"} created outside but paid within the selected dates
+                                    </small>
+                                </article>
+                            </div>
+                            <div className={`sales-report__payment-reconciliation ${paymentTotalsReconcile ? "is-reconciled" : "has-difference"}`}>
+                                <span aria-hidden="true">{paymentTotalsReconcile ? "✓" : "!"}</span>
+                                <div>
+                                    <strong>{paymentTotalsReconcile ? "Totals reconciled" : "Totals need review"}</strong>
+                                    <p>
+                                        {numberFormat(paymentPeriodTotals.inside)} from inside-period orders + {numberFormat(paymentPeriodTotals.outside)} from outside-period orders = {numberFormat(totalReceived)} total received.
+                                    </p>
+                                </div>
+                            </div>
+                            <details className="sales-report__payment-notes">
+                                <summary>How this report counts payments</summary>
+                                <ul>
+                                    <li><strong>Included:</strong> the payment date falls within the selected range.</li>
+                                    <li><strong>Inside period:</strong> both the order date and payment date fall within the range.</li>
+                                    <li><strong>Outside period:</strong> the payment date is inside the range, but the order date is outside.</li>
+                                    <li><strong>No double counting:</strong> total received already includes both groups. Do not add outside-period payments again.</li>
+                                </ul>
+                            </details>
+                        </section>
                     </section>
 
                     <section className="sales-report__forecast-card" aria-label="Monthly sales forecast">
@@ -423,13 +506,11 @@ const ReportSales = () => {
 
                         {dailySales.length ? (
                             <div className="sales-report__table-wrap">
-                                <table className="sales-report__table">
+                                <table className="sales-report__table sales-report__daily-table">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
                                             <th>Transactions</th>
-                                            <th>Cash</th>
-                                            <th>Online</th>
                                             <th>Total sales</th>
                                             <th><span className="visually-hidden">Actions</span></th>
                                         </tr>
@@ -439,8 +520,6 @@ const ReportSales = () => {
                                             <tr key={day.date}>
                                                 <td><strong>{formatDate(day.date)}</strong></td>
                                                 <td>{Number(day.total_count || 0).toLocaleString('en-US')}</td>
-                                                <td>{numberFormat(day.total_cash)}</td>
-                                                <td>{numberFormat(day.total_online)}</td>
                                                 <td><strong>{numberFormat(day.total_sales)}</strong></td>
                                                 <td>
                                                     <Link
@@ -453,6 +532,14 @@ const ReportSales = () => {
                                             </tr>
                                         ))}
                                     </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th>Total</th>
+                                            <td><strong>{totals.transactions.toLocaleString("en-US")}</strong></td>
+                                            <td><strong>{numberFormat(totalReceived)}</strong></td>
+                                            <td aria-label="No action" />
+                                        </tr>
+                                    </tfoot>
                                 </table>
                             </div>
                         ) : (
