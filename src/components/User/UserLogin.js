@@ -12,10 +12,16 @@ import {
     getEnvironmentColor,
 } from "../Shop/databaseEnvironment";
 
-const graduatePhotos = Array.from({ length: 6 }, (_, index) => ({
-    src: `${process.env.PUBLIC_URL}/graduates/p${index + 1}.jpg`,
-    alt: `MDR graduate portrait ${index + 1} of 6`,
-}));
+const raisonPhotos = [
+    {
+        src: `${process.env.PUBLIC_URL}/raison/raison-champion-1.png`,
+        alt: "Raison holding his championship trophy and award",
+    },
+    {
+        src: `${process.env.PUBLIC_URL}/raison/raison-champion-2.png`,
+        alt: "Raison celebrating his championship win on stage",
+    },
+];
 
 const UserLogin = ({ showLoginForm = true }) => {
     const activeShopColor = useActiveShopColor();
@@ -29,7 +35,7 @@ const UserLogin = ({ showLoginForm = true }) => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [activeGraduate, setActiveGraduate] = useState(0);
+    const [activeRaisonPhoto, setActiveRaisonPhoto] = useState(0);
     const [isCarouselPaused, setIsCarouselPaused] = useState(false);
 
     useEffect(() => {
@@ -43,20 +49,20 @@ const UserLogin = ({ showLoginForm = true }) => {
         if (isCarouselPaused || prefersReducedMotion) return undefined;
 
         const timer = window.setInterval(() => {
-            setActiveGraduate((current) => (current + 1) % graduatePhotos.length);
+            setActiveRaisonPhoto((current) => (current + 1) % raisonPhotos.length);
         }, 4500);
 
         return () => window.clearInterval(timer);
     }, [isCarouselPaused]);
 
-    const showPreviousGraduate = () => {
-        setActiveGraduate((current) =>
-            (current - 1 + graduatePhotos.length) % graduatePhotos.length
+    const showPreviousRaisonPhoto = () => {
+        setActiveRaisonPhoto((current) =>
+            (current - 1 + raisonPhotos.length) % raisonPhotos.length
         );
     };
 
-    const showNextGraduate = () => {
-        setActiveGraduate((current) => (current + 1) % graduatePhotos.length);
+    const showNextRaisonPhoto = () => {
+        setActiveRaisonPhoto((current) => (current + 1) % raisonPhotos.length);
     };
 
     const updateField = (event) => {
@@ -146,13 +152,13 @@ const UserLogin = ({ showLoginForm = true }) => {
             className={`login-page${showLoginForm ? "" : " celebration-only"}`}
             style={{
                 "--shop-color": activeShopColor || "#4f2d23",
-                "--graduates-background": `url(${process.env.PUBLIC_URL}/pup-graduates-2026.jpg)`,
+                "--celebration-background": `url(${process.env.PUBLIC_URL}/raison/raison-champion-1.png)`,
             }}
         >
             <section className="login-overview" aria-labelledby="login-heading">
                 <div
-                    className="login-graduate-carousel"
-                    aria-label="MDR graduate portraits"
+                    className="login-celebration-carousel"
+                    aria-label="Raison championship photos"
                     onMouseEnter={() => setIsCarouselPaused(true)}
                     onMouseLeave={() => setIsCarouselPaused(false)}
                     onFocus={() => setIsCarouselPaused(true)}
@@ -162,14 +168,14 @@ const UserLogin = ({ showLoginForm = true }) => {
                         }
                     }}
                 >
-                    <div className="login-graduate-slides">
-                        {graduatePhotos.map((photo, index) => (
+                    <div className="login-celebration-slides">
+                        {raisonPhotos.map((photo, index) => (
                             <img
                                 key={photo.src}
-                                className={index === activeGraduate ? "active" : ""}
+                                className={index === activeRaisonPhoto ? "active" : ""}
                                 src={photo.src}
-                                alt={index === activeGraduate ? photo.alt : ""}
-                                aria-hidden={index !== activeGraduate}
+                                alt={index === activeRaisonPhoto ? photo.alt : ""}
+                                aria-hidden={index !== activeRaisonPhoto}
                                 loading={index === 0 ? "eager" : "lazy"}
                             />
                         ))}
@@ -178,40 +184,40 @@ const UserLogin = ({ showLoginForm = true }) => {
                     <button
                         className="login-carousel-arrow previous"
                         type="button"
-                        onClick={showPreviousGraduate}
-                        aria-label="Show previous graduate"
+                        onClick={showPreviousRaisonPhoto}
+                        aria-label="Show previous Raison photo"
                     >
                         ‹
                     </button>
                     <button
                         className="login-carousel-arrow next"
                         type="button"
-                        onClick={showNextGraduate}
-                        aria-label="Show next graduate"
+                        onClick={showNextRaisonPhoto}
+                        aria-label="Show next Raison photo"
                     >
                         ›
                     </button>
 
-                    <div className="login-carousel-dots" aria-label="Choose a graduate portrait">
-                        {graduatePhotos.map((photo, index) => (
+                    <div className="login-carousel-dots" aria-label="Choose a Raison photo">
+                        {raisonPhotos.map((photo, index) => (
                             <button
                                 key={photo.src}
-                                className={index === activeGraduate ? "active" : ""}
+                                className={index === activeRaisonPhoto ? "active" : ""}
                                 type="button"
-                                onClick={() => setActiveGraduate(index)}
-                                aria-label={`Show graduate portrait ${index + 1}`}
-                                aria-current={index === activeGraduate ? "true" : undefined}
+                                onClick={() => setActiveRaisonPhoto(index)}
+                                aria-label={`Show Raison photo ${index + 1}`}
+                                aria-current={index === activeRaisonPhoto ? "true" : undefined}
                             />
                         ))}
                     </div>
                 </div>
 
                 <div className="login-welcome-copy">
-                    <span className="login-eyebrow">Celebrating our team</span>
-                    <h1 id="login-heading">Congratulations, PUP graduates!</h1>
+                    <span className="login-eyebrow">Celebrating our champion</span>
+                    <h1 id="login-heading">Congratulations, Raison!</h1>
                     <p>
-                        Your MDR family is proud of this incredible milestone. Your
-                        hard work, perseverance, and dedication inspire us all.
+                        Your MDR family is proud of your championship achievement.
+                        Your discipline, hard work, and dedication inspire us all.
                     </p>
                 </div>
             </section>
