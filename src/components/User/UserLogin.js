@@ -12,9 +12,6 @@ import {
     getEnvironmentColor,
 } from "../Shop/databaseEnvironment";
 
-<<<<<<< Updated upstream
-const UserLogin = () => {
-=======
 const raisonPhotos = [
     {
         src: `${process.env.PUBLIC_URL}/raison/raison-champion-1.png`,
@@ -27,7 +24,6 @@ const raisonPhotos = [
 ];
 
 const UserLogin = ({ showLoginForm = true }) => {
->>>>>>> Stashed changes
     const activeShopColor = useActiveShopColor();
     const [sessionExpired, setSessionExpired] = useState(
         () => new URLSearchParams(window.location.search).get("reason") === "session-expired"
@@ -39,11 +35,8 @@ const UserLogin = ({ showLoginForm = true }) => {
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-<<<<<<< Updated upstream
-=======
     const [activeRaisonPhoto, setActiveRaisonPhoto] = useState(0);
     const [isCarouselPaused, setIsCarouselPaused] = useState(false);
->>>>>>> Stashed changes
 
     useEffect(() => {
         if (sessionExpired) {
@@ -51,8 +44,6 @@ const UserLogin = ({ showLoginForm = true }) => {
         }
     }, [sessionExpired]);
 
-<<<<<<< Updated upstream
-=======
     useEffect(() => {
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         if (isCarouselPaused || prefersReducedMotion) return undefined;
@@ -73,8 +64,6 @@ const UserLogin = ({ showLoginForm = true }) => {
     const showNextRaisonPhoto = () => {
         setActiveRaisonPhoto((current) => (current + 1) % raisonPhotos.length);
     };
-
->>>>>>> Stashed changes
     const updateField = (event) => {
         const { name, value } = event.target;
         setCredentials((current) => ({ ...current, [name]: value }));
@@ -159,15 +148,6 @@ const UserLogin = ({ showLoginForm = true }) => {
 
     return (
         <main
-<<<<<<< Updated upstream
-            className="login-page"
-            style={{ "--shop-color": activeShopColor || "#4f2d23" }}
-        >
-            <section className="login-overview" aria-labelledby="login-heading">
-                <div className="login-brand-mark" aria-hidden="true">
-                    <span>☕</span>
-                    <span>📦</span>
-=======
             className={`login-page${showLoginForm ? "" : " celebration-only"}`}
             style={{
                 "--shop-color": activeShopColor || "#4f2d23",
@@ -229,22 +209,8 @@ const UserLogin = ({ showLoginForm = true }) => {
                             />
                         ))}
                     </div>
->>>>>>> Stashed changes
                 </div>
-                <span className="login-eyebrow">Internal business system</span>
-                <h1 id="login-heading">Operations, all in one place.</h1>
-                <p>
-                    Sign in to manage sales, stock, purchasing, customer orders,
-                    expenses, and business reporting.
-                </p>
 
-<<<<<<< Updated upstream
-                <div className="login-module-grid" aria-label="System modules">
-                    <div><span aria-hidden="true">▦</span> POS & sales</div>
-                    <div><span aria-hidden="true">□</span> Inventory</div>
-                    <div><span aria-hidden="true">↗</span> Purchase orders</div>
-                    <div><span aria-hidden="true">⌁</span> Reports & accounts</div>
-=======
                 <div className="login-welcome-copy">
                     <span className="login-eyebrow">Celebrating our champion</span>
                     <h1 id="login-heading">Congratulations, Raison!</h1>
@@ -252,11 +218,10 @@ const UserLogin = ({ showLoginForm = true }) => {
                         Your MDR family is proud of your championship achievement.
                         Your discipline, hard work, and dedication inspire us all.
                     </p>
->>>>>>> Stashed changes
                 </div>
             </section>
 
-            <section className="login-card" aria-label="Login form">
+            {showLoginForm && <section className="login-card" aria-label="Login form">
                 <div className="login-card-heading">
                     <span className="login-lock" aria-hidden="true">🔐</span>
                     <div>
@@ -332,7 +297,7 @@ const UserLogin = ({ showLoginForm = true }) => {
                         Your session and account access are protected.
                     </p>
                 </div>
-            </section>
+            </section>}
         </main>
     );
 };

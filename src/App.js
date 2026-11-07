@@ -366,7 +366,7 @@ const App = () => {
 
   useEffect(() => scheduleSessionExpiration(() => {
     clearAuthSession();
-    window.location.replace("/login?reason=session-expired");
+    window.location.replace("/staff-login?reason=session-expired");
   }), []);
 
   // useEffect(() => {
@@ -385,12 +385,8 @@ const App = () => {
         <br />
         <div className="container mt-3">
           <Routes>
-<<<<<<< Updated upstream
-            <Route path="/login" element={<UserLogin />} />
-=======
             <Route path="/login" element={<UserLogin showLoginForm={false} />} />
             <Route path="/staff-login" element={<UserLogin />} />
->>>>>>> Stashed changes
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/userRegistration" element={<Navigate to="/login" replace />} />
             {/* Required for the secure link sent by the forgot-password email. */}

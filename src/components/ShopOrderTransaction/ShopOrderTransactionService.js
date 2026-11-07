@@ -16,16 +16,14 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionListV2(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListV2", data);
     }
-<<<<<<< Updated upstream
     fetchOnlineShopOrderOverpaymentListV2() {
         return this.fetchOnlineShopOrderRefundTransactionListV2();
     }
     fetchOnlineShopOrderRefundTransactionListV2(data = {}) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderRefundTransactionListV2", data);
-=======
+    }
     fetchOnlineShopOrderTransactionPaidOutsideDateV2(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionPaidOutsideDateV2", data);
->>>>>>> Stashed changes
     }
     fetchOnlineShopOrderTransactionListByIdV2(id) {
         return axios.get(`/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListByIdV2/${id}`);
