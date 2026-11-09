@@ -117,6 +117,12 @@ class ShopOrderTransactionService {
     fetchOnlineShopOrderTransactionListReportByDateV2(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionListReportByDateV2", data);
     }
+    fetchOnlineShopOrderTransactionAwaitingCompletionV2(data) {
+        return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionAwaitingCompletionV2", data);
+    }
+    fetchOnlineShopOrderTransactionPaidOutsidePeriodV2(data) {
+        return axios.post("/api/shopOrderTransaction/fetchOnlineShopOrderTransactionPaidOutsidePeriodV2", data);
+    }
     fetchOnlineShopMonthlySalesForecast(data) {
         return axios.post("/api/shopOrderTransaction/fetchOnlineShopMonthlySalesForecast", data);
     }

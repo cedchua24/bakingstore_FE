@@ -288,6 +288,62 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
+.profit-report__awaiting-link {
+    display: block;
+    padding: 16px 18px;
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.16);
+    text-decoration: none;
+    transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.profit-report__awaiting-link:hover,
+.profit-report__awaiting-link:focus-visible {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.65);
+    background: rgba(255, 255, 255, 0.24);
+    transform: translateY(-2px);
+}
+
+.profit-report__awaiting-link.is-disabled {
+    cursor: default;
+    opacity: 0.72;
+}
+
+.profit-report__awaiting-link > span,
+.profit-report__awaiting-link > strong,
+.profit-report__awaiting-link > small,
+.profit-report__awaiting-link > b {
+    display: block;
+}
+
+.profit-report__awaiting-link > span {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.profit-report__awaiting-link > strong {
+    margin: 7px 0 5px;
+    font-size: 1.3rem;
+}
+
+.profit-report__awaiting-link > small {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+.profit-report__awaiting-link > b {
+    margin-top: 11px;
+    color: #d1fae5;
+    font-size: 0.75rem;
+}
+
 .profit-report__fully-paid-grid span,
 .profit-report__fully-paid-grid strong,
 .profit-report__fully-paid-grid b,

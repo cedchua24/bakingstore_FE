@@ -166,6 +166,8 @@ import FinalizeShopOrder from "./components/ShopOrderTransaction/FinalizeShopOrd
 import CustomerOrderTransactionList from "./components/ShopOrderTransaction/CustomerOrderTransactionList";
 import PaymentReceivedList from "./components/ShopOrderTransaction/PaymentReceivedList";
 import PaidOutsideTransactionList from "./components/ShopOrderTransaction/PaidOutsideTransactionList";
+import AwaitingCompletionTransactionList from "./components/ShopOrderTransaction/AwaitingCompletionTransactionList";
+import OutsidePeriodPaymentList from "./components/ShopOrderTransaction/OutsidePeriodPaymentList";
 import QuantitySorted from "./components/ShopOrderTransaction/QuantitySorted";
 import ProductSoldToday from "./components/dashboard/ProductSoldToday";
 import EmployeePerformance from "./components/dashboard/EmployeePerformance";
@@ -760,6 +762,8 @@ const App = () => {
 
 
           <Route exact path="/reports/reportsList" element={<ReportList />} />
+          <Route exact path="/reports/transactionsAwaitingCompletion" element={<AwaitingCompletionTransactionList />} />
+          <Route exact path="/reports/paymentsFromOutsidePeriod" element={<OutsidePeriodPaymentList />} />
           <Route exact path="/reports/reportSales" element={<ReportSales />} />
           <Route exact path="/reports/monthlySalesForecast" element={<MonthlySalesForecast />} />
           <Route exact path="/reports/salesImpactAnalysis" element={<SalesImpactAnalysis />} />
