@@ -343,14 +343,26 @@ const ReportSales = () => {
                                     </small>
                                 </article>
                                 <article className="is-outside">
-                                    <div className="sales-report__payment-period-label">
-                                        <span>Orders placed outside period</span>
-                                        <b>{outsidePaymentShare.toFixed(2)}%</b>
-                                    </div>
-                                    <strong>{numberFormat(paymentPeriodTotals.outside)}</strong>
-                                    <small>
-                                        {paymentPeriodTotals.outsideCount.toLocaleString("en-US")} {paymentPeriodTotals.outsideCount === 1 ? "order was" : "orders were"} created outside but paid within the selected dates
-                                    </small>
+                                    <Link
+                                        className={`sales-report__outside-period-link${paymentPeriodTotals.outsideCount > 0 ? "" : " is-disabled"}`}
+                                        to={paymentPeriodTotals.outsideCount > 0
+                                            ? `/reports/paymentsFromOutsidePeriod?dateFrom=${encodeURIComponent(customerOrderDate.dateFrom)}&dateTo=${encodeURIComponent(customerOrderDate.dateTo)}`
+                                            : "#"}
+                                        onClick={(event) => {
+                                            if (paymentPeriodTotals.outsideCount <= 0) event.preventDefault();
+                                        }}
+                                        aria-label={`View ${paymentPeriodTotals.outsideCount} outside-period payment entries`}
+                                    >
+                                        <div className="sales-report__payment-period-label">
+                                            <span>Orders placed outside period</span>
+                                            <b>{outsidePaymentShare.toFixed(2)}%</b>
+                                        </div>
+                                        <strong>{numberFormat(paymentPeriodTotals.outside)}</strong>
+                                        <small>
+                                            {paymentPeriodTotals.outsideCount.toLocaleString("en-US")} payment {paymentPeriodTotals.outsideCount === 1 ? "entry" : "entries"} from orders created outside but paid within the selected dates
+                                        </small>
+                                        {paymentPeriodTotals.outsideCount > 0 && <em>View transactions →</em>}
+                                    </Link>
                                 </article>
                             </div>
                             <div className={`sales-report__payment-reconciliation ${paymentTotalsReconcile ? "is-reconciled" : "has-difference"}`}>
