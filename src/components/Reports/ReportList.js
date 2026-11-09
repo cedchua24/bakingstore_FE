@@ -635,11 +635,21 @@ const ReportList = () => {
                                         </small>
                                     </article>
                                 )}
-                                <article>
+                                <Link
+                                    className={`profit-report__awaiting-link${pendingTransactions > 0 ? "" : " is-disabled"}`}
+                                    to={pendingTransactions > 0
+                                        ? `/reports/transactionsAwaitingCompletion?dateFrom=${encodeURIComponent(customerOrderDate.dateFrom)}&dateTo=${encodeURIComponent(customerOrderDate.dateTo)}`
+                                        : "#"}
+                                    onClick={(event) => {
+                                        if (pendingTransactions <= 0) event.preventDefault();
+                                    }}
+                                    aria-label={`View ${pendingTransactions} transactions awaiting completion`}
+                                >
                                     <span>Transactions awaiting completion</span>
                                     <strong>{pendingTransactions.toLocaleString("en-US")}</strong>
-                                    <small>Included only in this scenario, not in realized results</small>
-                                </article>
+                                    <small>Click to view incomplete payments and outstanding balances</small>
+                                    {pendingTransactions > 0 && <b>View transactions →</b>}
+                                </Link>
                             </div>
                         </section>
 
