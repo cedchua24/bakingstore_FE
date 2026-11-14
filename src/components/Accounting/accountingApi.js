@@ -1,9 +1,12 @@
 import axios from "axios";
 
 export const ACCOUNTING_TOKEN_KEY = "accounting_auth_token";
+const BAKINGSTORE_TOKEN_KEY = "auth_token";
+const ACCOUNTING_API_URL = process.env.REACT_APP_ACCOUNTING_API_URL || "http://127.0.0.1:8081/api";
+let accountingSessionRequest = null;
 
 const accountingApi = axios.create({
-    baseURL: process.env.REACT_APP_ACCOUNTING_API_URL || "http://127.0.0.1:8081/api",
+    baseURL: ACCOUNTING_API_URL,
     headers: { Accept: "application/json", "Content-Type": "application/json" },
 });
 
@@ -23,6 +26,33 @@ accountingApi.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+export const ensureAccountingSession = async () => {
+    const currentToken = localStorage.getItem(ACCOUNTING_TOKEN_KEY);
+    if (currentToken) return currentToken;
+
+    const bakingStoreToken = localStorage.getItem(BAKINGSTORE_TOKEN_KEY);
+    if (!bakingStoreToken) return null;
+
+    if (!accountingSessionRequest) {
+        accountingSessionRequest = accountingApi
+            .post("/integrations/bakingstore/session", {}, {
+                headers: { Authorization: `Bearer ${bakingStoreToken}` },
+            })
+            .then((response) => {
+                const token = response.data?.token;
+                if (!token) throw new Error("Central Accounting did not return an access token.");
+                localStorage.setItem(ACCOUNTING_TOKEN_KEY, token);
+                window.dispatchEvent(new Event("accounting-session-connected"));
+                return token;
+            })
+            .finally(() => {
+                accountingSessionRequest = null;
+            });
+    }
+
+    return accountingSessionRequest;
+};
 
 export const fetchAllAccountingPages = async (path, params = {}) => {
     let page = 1;

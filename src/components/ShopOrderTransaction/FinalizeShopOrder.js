@@ -11,7 +11,7 @@ import PaymentTypePoService from "../OtherService/PaymentTypePoService";
 import PaymentTermService from "../OtherService/PaymentTermService";
 import ModeOfPaymentService from "../OtherService/ModeOfPaymentService";
 import CentralCustomerPaymentService from "../Accounting/CentralCustomerPaymentService";
-import { ACCOUNTING_TOKEN_KEY } from "../Accounting/accountingApi";
+import { ACCOUNTING_TOKEN_KEY, ensureAccountingSession } from "../Accounting/accountingApi";
 import { formatDecimal } from "../../utils/numberFormat";
 
 import TextField from '@mui/material/TextField';
@@ -74,9 +74,6 @@ const FinalizeShopOrder = () => {
     useEffect(() => {
         fetchShopOrderTransaction(id);
         fetchShopOrderDTO(id);
-        loadCentralPaymentOptions();
-        fetchCentralPaymentSummary(id);
-
     }, []);
 
     const [submitLoadingAdd, setSubmitLoadingAdd] = useState(false);
@@ -92,7 +89,37 @@ const FinalizeShopOrder = () => {
     const [paymentAccountList, setPaymentAccountList] = useState([]);
     const [selectedPaymentTerm, setSelectedPaymentTerm] = useState(null);
     const [selectedPaymentAccount, setSelectedPaymentAccount] = useState(null);
-    const accountingConnected = Boolean(localStorage.getItem(ACCOUNTING_TOKEN_KEY));
+    const [accountingConnected, setAccountingConnected] = useState(() => Boolean(localStorage.getItem(ACCOUNTING_TOKEN_KEY)));
+    const [accountingConnecting, setAccountingConnecting] = useState(() => (
+        !localStorage.getItem(ACCOUNTING_TOKEN_KEY) && Boolean(localStorage.getItem('auth_token'))
+    ));
+
+    useEffect(() => {
+        let active = true;
+
+        const connectAccounting = async () => {
+            try {
+                const token = await ensureAccountingSession();
+                if (active) setAccountingConnected(Boolean(token));
+            } catch (error) {
+                if (active) {
+                    setAccountingConnected(false);
+                    setValidator({ severity: 'error', message: accountingErrorMessage(error), isShow: true });
+                }
+            } finally {
+                if (active) setAccountingConnecting(false);
+            }
+        };
+
+        connectAccounting();
+        return () => { active = false; };
+    }, []);
+
+    useEffect(() => {
+        if (!accountingConnected) return;
+        loadCentralPaymentOptions();
+        fetchCentralPaymentSummary(id);
+    }, [accountingConnected, id]);
 
     const hasDisplayValue = (value) => {
         const normalizedValue = String(value ?? '').trim();
@@ -1332,7 +1359,11 @@ const FinalizeShopOrder = () => {
                                 </Typography>
                             </Box>
 
-                            {!accountingConnected &&
+                            {accountingConnecting &&
+                                <Alert severity="info">Connecting to Central Accounting…</Alert>
+                            }
+
+                            {!accountingConnecting && !accountingConnected &&
                                 <Alert
                                     severity="warning"
                                     action={<Button color="inherit" size="small" onClick={() => navigate('/accounting')}>Connect</Button>}

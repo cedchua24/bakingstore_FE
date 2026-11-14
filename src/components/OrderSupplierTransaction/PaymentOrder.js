@@ -86,6 +86,7 @@ const PaymentOrder = () => {
 
     const [paymentTermList, setPaymentTermList] = useState([]);
     const [paymentTypePoList, setPaymentTypePoList] = useState([]);
+    const [selectedPaymentAccount, setSelectedPaymentAccount] = useState(null);
     const [shop, setShop] = useState({ id: 0, shop_name: '' });
     const [installmentCount, setInstallmentCount] = useState(1);
     const [errorStock, setErrorStock] = useState(false);
@@ -121,6 +122,7 @@ const PaymentOrder = () => {
         status: 0,
         type: 0,
         date: '',
+        cheque_due_date: '',
         created_at: '',
         updated_at: ''
     });
@@ -204,6 +206,7 @@ const PaymentOrder = () => {
                     isShow: true,
                 });
                 fetchPaymentTypePoByShopTransactionId(id, orderSupplierTransaction.total_transaction_price);
+                fetchPaymentAccounts();
                 // window.location.reload();
             })
             .catch(e => {
@@ -220,6 +223,7 @@ const PaymentOrder = () => {
     }
 
     const handlePaymentTypeChange = (e, value) => {
+        setSelectedPaymentAccount(value || null);
         if (!value) {
             setModeOfPaymentPo({ ...modeOfPaymentPo, payment_type_po_id: 0 });
             return;
@@ -234,11 +238,13 @@ const PaymentOrder = () => {
     }
 
     const handlePaymentTermChange = (e, value) => {
+        setSelectedPaymentAccount(null);
         if (!value) {
             setModeOfPaymentPo({
                 ...modeOfPaymentPo,
                 payment_term_id: 0,
                 payment_type_po_id: 0,
+                cheque_due_date: '',
             });
             setInstallmentCount(1);
             return;
@@ -247,6 +253,7 @@ const PaymentOrder = () => {
             ...modeOfPaymentPo,
             payment_term_id: value.id,
             payment_type_po_id: 0,
+            cheque_due_date: '',
         });
         if (value.type !== 'credit_card') setInstallmentCount(1);
     }
@@ -354,9 +361,14 @@ const PaymentOrder = () => {
         }
         if (modeOfPaymentPo.amount == 0) {
             errors.amount = "Amount is Required!";
+        } else if (Number(modeOfPaymentPo.amount) > maximumPaymentAmount) {
+            errors.amount = `Amount cannot exceed ${numberFormat(maximumPaymentAmount)}.`;
         }
         if (modeOfPaymentPo.date == 0) {
             errors.date = "Date is Required!";
+        }
+        if (selectedPaymentMethod?.type === 'cheque' && !modeOfPaymentPo.cheque_due_date) {
+            errors.cheque_due_date = "Cheque due date is Required!";
         }
         if (!shop.id || !shop.shop_name) {
             errors.payment_term_id = "Current branch could not be identified.";
@@ -390,12 +402,16 @@ const PaymentOrder = () => {
                 financial_account_id: Number(modeOfPaymentPo.payment_type_po_id),
                 payment_method_id: Number(modeOfPaymentPo.payment_term_id),
                 payment_date: modeOfPaymentPo.date,
+                cheque_due_date: selectedPaymentMethod?.type === 'cheque' ? modeOfPaymentPo.cheque_due_date : undefined,
                 amount: Number(modeOfPaymentPo.amount),
                 installment_count: Number(installmentCount || 1),
                 currency: 'PHP',
             })
                 .then(summary => {
                     applyCentralPaymentSummary(summary, orderSupplierTransaction.total_transaction_price);
+                    setSelectedPaymentAccount(null);
+                    setModeOfPaymentPo(current => ({ ...current, payment_type_po_id: 0, cheque_due_date: '' }));
+                    fetchPaymentAccounts();
                     setSubmitLoadingAdd(false);
                     setIsAddDisabled(false);
                     setErrorStock(false);
@@ -419,7 +435,7 @@ const PaymentOrder = () => {
             payment_line_id: line.id,
             bank_name: line.financial_account?.institution?.name,
             account_name: line.financial_account?.name,
-            account_holder: line.financial_account?.account_holder,
+            account_holder: line.financial_account?.user_account?.name,
             account_number: line.financial_account?.masked_account_number,
             description: line.financial_account?.description,
             kind: line.financial_account?.kind,
@@ -467,23 +483,32 @@ const PaymentOrder = () => {
         if (payment.kind === 'credit_card') {
             const institutionName = String(payment.institution?.name || payment.bank_name || '').trim();
             let description = String(payment.description || payment.name || payment.account_name || '').trim();
-
+            const accountHolder = String(
+                payment.user_account?.name
+                || payment.account_holder_name
+                || (!/^\d+$/.test(String(payment.account_holder || '').trim()) ? payment.account_holder : '')
+                || ''
+            ).trim();
             while (institutionName && description.toLowerCase().startsWith(institutionName.toLowerCase())) {
                 description = description.slice(institutionName.length).replace(/^\s*[-–—·:]?\s*/, '').trim();
             }
 
             const primaryLabel = [institutionName, description].filter(hasDisplayValue).join(' - ');
+            const availableCredit = payment.available_credit ?? payment.available_balance;
             return [
                 primaryLabel,
-                payment.account_holder,
+                accountHolder,
                 payment.masked_account_number || payment.account_number,
+                availableCredit !== null && availableCredit !== undefined
+                    ? `Available ${numberFormat(Number(availableCredit))}`
+                    : '',
             ]
                 .filter(hasDisplayValue)
                 .filter((value, index, entries) => entries.findIndex((candidate) => String(candidate).trim().toLowerCase() === String(value).trim().toLowerCase()) === index)
                 .join(' · ') || 'Payment';
         }
 
-        return [
+        const accountLabel = [
             payment.institution?.name || payment.bank_name,
             payment.name || payment.account_name,
             payment.masked_account_number || payment.account_number,
@@ -491,6 +516,13 @@ const PaymentOrder = () => {
             .filter(hasDisplayValue)
             .filter((value, index, entries) => entries.findIndex((candidate) => String(candidate).trim().toLowerCase() === String(value).trim().toLowerCase()) === index)
             .join(' · ') || 'Payment';
+
+        const showsAvailableBalance = ['bank_transfer', 'e_wallet'].includes(selectedPaymentMethod?.type);
+        const availableBalance = payment.available_balance ?? payment.current_balance;
+
+        return showsAvailableBalance && availableBalance !== null && availableBalance !== undefined
+            ? `${accountLabel} · Available ${numberFormat(Number(availableBalance))}`
+            : accountLabel;
     };
 
     const isFullyPaid = Number(orderSupplierTransaction.payment_status) === 1;
@@ -505,6 +537,18 @@ const PaymentOrder = () => {
     const availablePaymentAccounts = paymentTypePoList.filter((account) => (
         (accountKindsByMethod[selectedPaymentMethod?.type] || []).includes(account.kind)
     ));
+    const selectedAccountAvailableBalance = Number(
+        selectedPaymentAccount?.available_credit
+        ?? selectedPaymentAccount?.available_balance
+        ?? modeOfPaymentDTO.balance
+        ?? 0
+    );
+    const maximumPaymentAmount = selectedPaymentMethod?.type === 'credit_card'
+        ? Math.min(Number(modeOfPaymentDTO.balance || 0), selectedAccountAvailableBalance)
+        : Number(modeOfPaymentDTO.balance || 0);
+    const amountHelperText = selectedPaymentMethod?.type === 'credit_card' && selectedPaymentAccount
+        ? `Order balance: ${numberFormat(modeOfPaymentDTO.balance || 0)} · Available credit: ${numberFormat(selectedAccountAvailableBalance)}`
+        : `Maximum balance: ${numberFormat(modeOfPaymentDTO.balance || 0)}`;
 
 
 
@@ -591,9 +635,11 @@ const PaymentOrder = () => {
                         <div className="po-form-field po-form-field-full">
                             <Autocomplete
                                 options={availablePaymentAccounts}
+                                value={selectedPaymentAccount}
                                 id="payment-account-select"
                                 onChange={handlePaymentTypeChange}
                                 getOptionLabel={paymentAccountLabel}
+                                isOptionEqualToValue={(option, value) => Number(option.id) === Number(value.id)}
                                 renderInput={(params) => (
                                     <TextField
                                         {...params}
@@ -617,11 +663,11 @@ const PaymentOrder = () => {
                                     value={modeOfPaymentPo.amount}
                                     onChange={onChangeInput}
                                     error={Boolean(formErrors.amount)}
-                                    helperText={formErrors.amount || `Maximum balance: ${numberFormat(modeOfPaymentDTO.balance || 0)}`}
+                                    helperText={formErrors.amount || amountHelperText}
                                     InputProps={{
                                         startAdornment: <InputAdornment position="start">₱</InputAdornment>
                                     }}
-                                    inputProps={{ min: 0, max: modeOfPaymentDTO.balance }}
+                                    inputProps={{ min: 0, max: maximumPaymentAmount }}
                                 />
                             </div>
                             <div className="po-form-field">
@@ -637,6 +683,23 @@ const PaymentOrder = () => {
                                     InputLabelProps={{ shrink: true }}
                                 />
                             </div>
+                            {selectedPaymentMethod?.type === 'cheque' && (
+                                <div className="po-form-field">
+                                    <TextField
+                                        fullWidth
+                                        required
+                                        type="date"
+                                        label="Cheque due date"
+                                        name="cheque_due_date"
+                                        value={modeOfPaymentPo.cheque_due_date || ''}
+                                        onChange={onChangeInput}
+                                        error={Boolean(formErrors.cheque_due_date)}
+                                        helperText={formErrors.cheque_due_date || 'This will be added automatically to the Accounting cheque list.'}
+                                        InputLabelProps={{ shrink: true }}
+                                        inputProps={{ min: modeOfPaymentPo.date || undefined }}
+                                    />
+                                </div>
+                            )}
                             {selectedPaymentMethod?.type === 'credit_card' && (
                                 <div className="po-form-field">
                                     <TextField

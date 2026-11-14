@@ -1,0 +1,130 @@
+.database-export-page {
+  min-height: calc(100vh - 110px);
+  padding: 28px;
+  background: #f5f7fb;
+  color: #172033;
+}
+
+.database-export-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 920px;
+  margin: 0 auto 22px;
+}
+
+.database-export-header span {
+  color: #a65416;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.database-export-header h1 {
+  margin: 4px 0;
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 800;
+}
+
+.database-export-header p,
+.database-export-card-content > p {
+  margin: 0;
+  color: #667085;
+}
+
+.database-export-header-icon,
+.database-export-card-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 18px;
+  color: #a65416;
+  background: #fff0df;
+}
+
+.database-export-header-icon { width: 64px; height: 64px; }
+.database-export-header-icon svg { font-size: 32px; }
+
+.database-export-alert,
+.database-export-card {
+  max-width: 920px;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.database-export-alert { margin-bottom: 18px; }
+
+.database-export-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 22px;
+  padding: 30px;
+  border: 1px solid #dde3ec;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(23, 32, 51, .06);
+}
+
+.database-export-card-icon { width: 58px; height: 58px; }
+.database-export-card-icon svg { font-size: 29px; }
+
+.database-export-card-content h2 {
+  margin: 1px 0 8px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.database-export-card-content > p { max-width: 650px; line-height: 1.65; }
+
+.database-export-note {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 650px;
+  margin: 22px 0;
+  padding: 14px 16px;
+  border: 1px solid #dbe5f3;
+  border-radius: 12px;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.database-export-note > svg { color: #52719e; }
+.database-export-note strong,
+.database-export-note span { display: block; }
+.database-export-note span { margin-top: 2px; color: #667085; font-size: 13px; }
+
+.database-export-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 46px;
+  padding: 11px 18px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: #a65416;
+  font-weight: 800;
+  box-shadow: 0 7px 16px rgba(166, 84, 22, .2);
+  transition: background-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.database-export-button:hover:not(:disabled) {
+  background: #88420f;
+  box-shadow: 0 9px 20px rgba(136, 66, 15, .25);
+  transform: translateY(-1px);
+}
+
+.database-export-button:focus-visible { outline: 3px solid rgba(166, 84, 22, .3); outline-offset: 3px; }
+.database-export-button:disabled { cursor: not-allowed; opacity: .72; }
+.database-export-wait-message { display: block; margin-top: 12px; color: #7a8494; }
+
+@media (max-width: 640px) {
+  .database-export-page { padding: 22px 16px; }
+  .database-export-header-icon { display: none; }
+  .database-export-card { grid-template-columns: 1fr; padding: 22px; }
+  .database-export-card-icon { width: 50px; height: 50px; }
+  .database-export-button { width: 100%; }
+}
