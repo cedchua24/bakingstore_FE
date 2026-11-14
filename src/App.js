@@ -21,6 +21,7 @@ import SpoilageList from "./components/Spoilage/SpoilageList";
 
 
 import CreditCardDueSettings from "./components/Settings/CreditCardDueSettings";
+import DatabaseExport from "./components/Settings/DatabaseExport";
 
 import ProductListV2 from "./components/Product/ProductListV2";
 import ProductListDisabled from "./components/Product/ProductListDisabled";
@@ -418,6 +419,10 @@ const App = () => {
 
 
           <Route path="/settings/CreditCardDueSettings" element={<CreditCardDueSettings />} />
+          <Route
+            path="/settings/database-export"
+            element={<DatabaseExport />}
+          />
 
           <Route path="/addProduct" element={<AddProduct />} />
           <Route path="/productList" element={<ProductList />} />
