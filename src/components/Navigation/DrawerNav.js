@@ -80,6 +80,7 @@ import PercentRoundedIcon from '@mui/icons-material/PercentRounded';
 import AddIcon from '@mui/icons-material/Add';
 import ListIcon from '@mui/icons-material/List';
 import SettingsIcon from '@mui/icons-material/Settings';
+import StorageRoundedIcon from '@mui/icons-material/StorageRounded';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
 import ChecklistIcon from '@mui/icons-material/Checklist';
@@ -1064,6 +1065,11 @@ export default function PersistentDrawerLeft() {
             "name": "Credit Card Due",
             "url": "/settings/creditCardDueSettings",
             "icon": <AddIcon />
+        },
+        {
+            "name": "Export Database",
+            "url": "/settings/database-export",
+            "icon": <StorageRoundedIcon />
         },
     ]);
 
